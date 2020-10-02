@@ -1,8 +1,7 @@
 #!/bin/sh
 
 ## Simple proof of concept bootstrap script to load devfiles into an oci registry
-REGISTRY_HOST=localhost:5000
-DEVFILES=/scripts/registry/devfiles/
+DEVFILES=/registry/devfiles
 
 # Generate the index.json from the devfiles
 cd /registry
