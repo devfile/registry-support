@@ -1,5 +1,5 @@
 Header set Access-Control-Allow-Origin "*"
-Header set Access-Control-Allow-Headers "Authorization"
+Header set Access-Control-Allow-Headers "*"
 DirectoryIndex README.md
 
 AddType image/svg+xml svg svgz

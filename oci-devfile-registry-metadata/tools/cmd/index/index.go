@@ -13,6 +13,8 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+const repository = "devfile-catalog"
+
 // genIndex generate new index from meta.yaml files in dir.
 // meta.yaml file is expected to be in dir/<devfiledir>/meta.yaml
 func genIndex(dir string) ([]types.MetaIndex, error) {
@@ -36,7 +38,7 @@ func genIndex(dir string) ([]types.MetaIndex, error) {
 				return nil, err
 			}
 
-			self := fmt.Sprintf("/%s/%s/%s", filepath.Base(dir), file.Name(), "devfile.yaml")
+			self := fmt.Sprintf("/%s/%s:%s", repository, meta.Name, "latest")
 
 			metaIndex := types.MetaIndex{
 				Meta: meta,
