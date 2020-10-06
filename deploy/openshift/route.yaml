@@ -3,7 +3,7 @@ apiVersion: route.openshift.io/v1
 metadata:
   name: registry
 spec:
-  host: registry-demo.apps.jcollier-ocp.devcluster.openshift.com
+  host: $HOST
   to:
     kind: Service
     name: devfile-registry
@@ -17,7 +17,7 @@ apiVersion: route.openshift.io/v1
 metadata:
   name: devfile-registry
 spec:
-  host: registry-demo.apps.jcollier-ocp.devcluster.openshift.com
+  host: $HOST
   path: /devfiles
   to:
     kind: Service
