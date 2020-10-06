@@ -1,0 +1,28 @@
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: registry
+spec:
+  host: registry-demo.apps.jcollier-ocp.devcluster.openshift.com
+  to:
+    kind: Service
+    name: devfile-registry
+    weight: 100
+  port:
+    targetPort: devfile-registry
+  wildcardPolicy: None
+---
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: devfile-registry
+spec:
+  host: registry-demo.apps.jcollier-ocp.devcluster.openshift.com
+  path: /devfiles
+  to:
+    kind: Service
+    name: devfile-registry
+    weight: 100
+  port:
+    targetPort: devfile-registry-metadata
+  wildcardPolicy: None
