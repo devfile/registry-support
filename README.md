@@ -2,6 +2,9 @@
 
 Simple proof of concept devfile registry using an OCI-based registry for storage on Kubernetes.
 
+## Architecture
+![Test Image 1](https://user-images.githubusercontent.com/606959/88183913-5e417280-cc32-11ea-9509-651bb44d9280.png)
+
 ## Deploy
 
 ### OpenShift
