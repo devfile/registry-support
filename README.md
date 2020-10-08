@@ -1,9 +1,3 @@
-<<<<<<< HEAD
-# registry-support
-Provide support for devfile registries
-
-Issue tracking repo: https://github.com/devfile/api with label `area/registry`
-=======
 # oci-devfile-registry
 
 Simple proof of concept devfile registry using an OCI-based registry for storage on Kubernetes.
@@ -30,4 +24,3 @@ The `oci-devfile-registry-metadata` container is a sidecar deployed alongside th
 2) Set the value of `$HOST` in `route.yaml` to your routing suffix (such as apps.devcluster.example.com)
 3) Run `oc apply -f registry.yaml`
 4) Run `oc apply -f route.yaml`
->>>>>>> d11398004863911731f76b9cef5a91898797420a
