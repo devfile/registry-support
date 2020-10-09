@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: devfile-registry-metadata
-        image: docker.io/johncollier/devfile-registry-metadata:latest
+        image: docker.io/johncollier/oci-devfile-registry-metadata:latest
         ports:
         - containerPort: 8080
       - name: devfile-registry

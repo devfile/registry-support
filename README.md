@@ -1,6 +1,8 @@
 # oci-devfile-registry
 
-Simple proof of concept devfile registry using an OCI-based registry for storage on Kubernetes.
+Provide support for devfile registries
+
+Issue tracking repo: https://github.com/devfile/api with label area/registry
 
 ## Architecture
 

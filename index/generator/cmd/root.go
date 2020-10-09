@@ -127,7 +127,7 @@ func generateIndex(registryDirPath string, indexFilePath string) error {
 			fmt.Errorf("failed to unmarshal %s data: %v", metaFilePath, err)
 		}
 		indexComponent.Links = schema.Links{
-			Self: fmt.Sprintf("/%s/%s:%s", "devfile-catalog", indexComponent.Name, "latest"),
+			Self: fmt.Sprintf("%s/%s:%s", "devfile-catalog", indexComponent.Name, "latest"),
 		}
 		index = append(index, indexComponent)
 	}

@@ -1,8 +1,8 @@
 # Build the registry index generator
 FROM golang:alpine3.11 AS build
 WORKDIR /tools
-COPY tools .
-RUN CGO_ENABLED=0 go build cmd/index/index.go
+COPY generator .
+RUN ./build.sh
 
 FROM docker.io/httpd:2.4.43-alpine AS registry
 
@@ -35,7 +35,7 @@ COPY entrypoint.sh /scripts/entrypoint.sh
 # Git clone the devfiles
 # ToDo: Switch to github.com/devfile/catalog/
 RUN git clone https://github.com/odo-devfiles/registry /registry
-COPY --from=build /tools/index /registry/index
+COPY --from=build /tools/index-generator /registry/index-generator
 RUN chgrp -R 0 /registry && \
     chmod -R g=u /registry
 
