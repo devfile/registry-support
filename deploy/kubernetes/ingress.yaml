@@ -1,0 +1,28 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: devfile-registry-ingress
+spec:
+  rules:
+  - host: $HOST
+    http:
+      paths:
+      - backend:
+          serviceName: devfile-registry
+          servicePort: 8080
+        path: /devfiles
+        pathType: ImplementationSpecific
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: registry-ingress
+spec:
+  rules:
+  - host: $HOST
+    http:
+      paths:
+      - backend:
+          serviceName: devfile-registry
+          servicePort: 5000
+        path: /

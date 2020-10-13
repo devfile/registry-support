@@ -1,0 +1,28 @@
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: registry
+spec:
+  host: $HOST
+  to:
+    kind: Service
+    name: devfile-registry
+    weight: 100
+  port:
+    targetPort: devfile-registry
+  wildcardPolicy: None
+---
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: devfile-registry
+spec:
+  host: $HOST
+  path: /devfiles
+  to:
+    kind: Service
+    name: devfile-registry
+    weight: 100
+  port:
+    targetPort: devfile-registry-metadata
+  wildcardPolicy: None
