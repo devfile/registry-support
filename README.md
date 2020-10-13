@@ -1,4 +1,4 @@
-# oci-devfile-registry
+# registry-support
 
 Provide support for devfile registries
 
@@ -10,7 +10,7 @@ Issue tracking repo: https://github.com/devfile/api with label area/registry
 
 A standard OCI registry, currently using the [reference implementation from Docker](https://hub.docker.com/_/registry). Devfile artifacts are fed into it via the `devfile-registry-metadata` container upon startup.
 
-![Test Image 1](https://user-images.githubusercontent.com/606959/88183913-5e417280-cc32-11ea-9509-651bb44d9280.png)
+![Registry Architecture](https://user-images.githubusercontent.com/606959/88183913-5e417280-cc32-11ea-9509-651bb44d9280.png)
 
 ### Metadata Container
 
