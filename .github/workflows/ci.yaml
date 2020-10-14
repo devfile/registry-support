@@ -11,10 +11,13 @@ jobs:
     name: Check index-generator build
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - name: Check out code
+      uses: actions/checkout@v2
 
     - name: Setup Go environment
       uses: actions/setup-go@v2.1.2
+      with:
+        go-version: 1.13
 
     - name: Check if index-generator build is working
       run: cd index/generator && ./build.sh
