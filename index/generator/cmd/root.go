@@ -16,16 +16,12 @@ limitations under the License.
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
-	"path/filepath"
 
 	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v2"
 
-	"github.com/devfile/registry-support/index/generator/schema"
+	"github.com/devfile/registry-support/index/generator/library"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"
 )
@@ -33,8 +29,6 @@ import (
 const (
 	shortDesc = "Generate index file"
 	longDesc  = "Generate index file based on the index schema and registry devfiles"
-	meta      = "meta.yaml"
-	devfile   = "devfile.yaml"
 )
 
 var cfgFile string
@@ -48,9 +42,15 @@ var rootCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		registryDirPath := args[0]
 		indexFilePath := args[1]
-		err := generateIndex(registryDirPath, indexFilePath)
+
+		index, err := library.GenerateIndexStruct(registryDirPath)
 		if err != nil {
-			fmt.Errorf("failed to generate index file: %v", err)
+			fmt.Printf("failed to generate index struct: %v", err)
+		}
+
+		err = library.CreateIndexFile(index, indexFilePath)
+		if err != nil {
+			fmt.Printf("failed to create index file: %v", err)
 		}
 	},
 }
@@ -102,43 +102,4 @@ func initConfig() {
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
 	}
-}
-
-func generateIndex(registryDirPath string, indexFilePath string) error {
-	registryDir, err := ioutil.ReadDir(registryDirPath)
-	if err != nil {
-		fmt.Errorf("failed to read registry directory %s: %v", registryDirPath, err)
-	}
-
-	var index []schema.Schema
-	for _, devfileDir := range registryDir {
-		if !devfileDir.IsDir() {
-			fmt.Errorf("%s is not a directory: %v", filepath.Join(registryDirPath, devfileDir.Name()), err)
-		}
-
-		metaFilePath := filepath.Join(registryDirPath, devfileDir.Name(), meta)
-		bytes, err := ioutil.ReadFile(metaFilePath)
-		if err != nil {
-			fmt.Errorf("failed to read %s: %v", metaFilePath, err)
-		}
-		var indexComponent schema.Schema
-		err = yaml.Unmarshal(bytes, &indexComponent)
-		if err != nil {
-			fmt.Errorf("failed to unmarshal %s data: %v", metaFilePath, err)
-		}
-		indexComponent.Links = schema.Links{
-			Self: fmt.Sprintf("%s/%s:%s", "devfile-catalog", indexComponent.Name, "latest"),
-		}
-		index = append(index, indexComponent)
-	}
-
-	bytes, err := json.MarshalIndent(index, "", "  ")
-	if err != nil {
-		fmt.Errorf("failed to marshal %s data: %v", indexFilePath, err)
-	}
-	err = ioutil.WriteFile(indexFilePath, bytes, 0644)
-	if err != nil {
-		fmt.Errorf("failed to write %s: %v", indexFilePath, err)
-	}
-	return nil
 }
