@@ -3,7 +3,6 @@ apiVersion: route.openshift.io/v1
 metadata:
   name: registry
 spec:
-  host: $HOST
   to:
     kind: Service
     name: devfile-registry
@@ -17,8 +16,6 @@ apiVersion: route.openshift.io/v1
 metadata:
   name: devfile-registry
 spec:
-  host: $HOST
-  path: /devfiles
   to:
     kind: Service
     name: devfile-registry

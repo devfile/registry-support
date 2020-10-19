@@ -10,7 +10,7 @@ spec:
       - backend:
           serviceName: devfile-registry
           servicePort: 8080
-        path: /devfiles
+        path: /
         pathType: ImplementationSpecific
 ---
 apiVersion: extensions/v1beta1
