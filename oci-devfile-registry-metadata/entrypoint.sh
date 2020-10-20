@@ -8,8 +8,14 @@ cd /registry
 ./index-generator ./devfiles /usr/local/apache2/htdocs/devfiles/index.json
 
 # Push the devfiles to the registry
-# ToDo: Cleanup
 cd /registry/devfiles
+
+# Wait for the registry to start
+until $(curl --output /dev/null --silent --head --fail http://localhost:5000); do
+    printf 'Waiting for the registry at localhost:5000 to start\n'
+    sleep 0.5
+done
+
 for devfileDir in "$DEVFILES"/*
 do
   devfile="$devfileDir/devfile.yaml"
@@ -24,7 +30,7 @@ do
   # 5) Do in Golang
   echo "Pushing $stackName to $REGISTRY_HOST"
   cd $stackName
-  oras push devfile-registry:5000/devfile-catalog/$stackName:latest --manifest-config /dev/null:application/vnd.devfileio.devfile.config.v2+json ./devfile.yaml:application/vnd.devfileio.devfile.layer.v1 --plain-http
+  oras push localhost:5000/devfile-catalog/$stackName:latest --manifest-config /dev/null:application/vnd.devfileio.devfile.config.v2+json ./devfile.yaml:application/vnd.devfileio.devfile.layer.v1 --plain-http
   cd /registry/devfiles
 done
 
