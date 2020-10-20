@@ -38,9 +38,12 @@ func GenerateIndexStruct(registryDirPath string) ([]schema.Schema, error) {
 		if err != nil {
 			return nil, fmt.Errorf("failed to unmarshal %s data: %v", metaFilePath, err)
 		}
-		indexComponent.Links = schema.Links{
-			Self: fmt.Sprintf("%s/%s:%s", "devfile-catalog", indexComponent.Name, "latest"),
+
+		if indexComponent.Links == nil {
+			indexComponent.Links = make(map[string]string)
 		}
+		indexComponent.Links["self"] = fmt.Sprintf("%s/%s:%s", "devfile-catalog", indexComponent.Name, "latest")
+
 		index = append(index, indexComponent)
 	}
 

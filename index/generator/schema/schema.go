@@ -46,24 +46,18 @@ description: string - The description of devfile
 tags: string[] - The tags associated to devfile
 projectType: string - The project framework that is used in the devfile
 language: string - The project language that is used in the devfile
-links: object
-    self: string - The link to the devfile image or devfile path
+links: map[string]string - Links related to the devfile
 starterProjects: string[] - The project templates that can be used in the devfile
 */
 
 // Schema is the index file schema
 type Schema struct {
-	Name            string   `yaml:"name,omitempty" json:"name,omitempty"`
-	DisplayName     string   `yaml:"displayName,omitempty" json:"displayName,omitempty"`
-	Description     string   `yaml:"description,omitempty" json:"description,omitempty"`
-	Tags            []string `yaml:"tags,omitempty" json:"tags,omitempty"`
-	ProjectType     string   `yaml:"projectType,omitempty" json:"projectType,omitempty"`
-	Language        string   `yaml:"language,omitempty" json:"language,omitempty"`
-	Links           Links    `yaml:"links,omitempty" json:"links,omitempty"`
-	StarterProjects []string `yaml:"starterProjects,omitempty" json:"starterProjects,omitempty"`
-}
-
-// Links are the links to devfile
-type Links struct {
-	Self string `yaml:"self,omitempty" json:"self,omitempty"`
+	Name            string            `yaml:"name,omitempty" json:"name,omitempty"`
+	DisplayName     string            `yaml:"displayName,omitempty" json:"displayName,omitempty"`
+	Description     string            `yaml:"description,omitempty" json:"description,omitempty"`
+	Tags            []string          `yaml:"tags,omitempty" json:"tags,omitempty"`
+	ProjectType     string            `yaml:"projectType,omitempty" json:"projectType,omitempty"`
+	Language        string            `yaml:"language,omitempty" json:"language,omitempty"`
+	Links           map[string]string `yaml:"links,omitempty" json:"links,omitempty"`
+	StarterProjects []string          `yaml:"starterProjects,omitempty" json:"starterProjects,omitempty"`
 }
