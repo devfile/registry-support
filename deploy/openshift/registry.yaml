@@ -20,16 +20,16 @@ spec:
           claimName: devfile-registry-storage
       containers:
       - name: devfile-registry-metadata
-        image: docker.io/johncollier/oci-devfile-registry-metadata:latest
+        image: quay.io/devfile/metadata-server:latest
         ports:
         - containerPort: 8080
         resources:
           requests:
             memory: "64Mi"
-            cpu: "250m"
+            cpu: "100m"
           limits:
             memory: "128Mi"
-            cpu: "500m"
+            cpu: "250m"
         livenessProbe:
           httpGet:
             path: /devfiles/index.json
@@ -53,7 +53,7 @@ spec:
         resources:
           requests:
             memory: "64Mi"
-            cpu: "250m"
+            cpu: "100m"
           limits:
             memory: "256Mi"
             cpu: "500m"
