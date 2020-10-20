@@ -7,7 +7,7 @@ RUN ./build.sh
 FROM docker.io/httpd:2.4.43-alpine AS registry
 
 # Install and configure dependencies
-RUN apk add --no-cache bash git && \
+RUN apk add --no-cache bash git curl && \
     # Allow htaccess
     sed -i 's|    AllowOverride None|    AllowOverride All|' /usr/local/apache2/conf/httpd.conf && \
     sed -i 's|Listen 80|Listen 8080|' /usr/local/apache2/conf/httpd.conf && \
