@@ -1,14 +1,14 @@
 #!/bin/sh
 
 ## Simple proof of concept bootstrap script to load devfiles into an oci registry
-DEVFILES=/registry/devfiles
+DEVFILES=/registry/stacks
 
 # Generate the index.json from the devfiles
 cd /registry
-./index-generator ./devfiles /usr/local/apache2/htdocs/devfiles/index.json
+./index-generator $DEVFILES /usr/local/apache2/htdocs/devfiles/index.json
 
 # Push the devfiles to the registry
-cd /registry/devfiles
+cd $DEVFILES
 
 # Wait for the registry to start
 until $(curl --output /dev/null --silent --head --fail http://localhost:5000); do
@@ -31,7 +31,7 @@ do
   echo "Pushing $stackName to $REGISTRY_HOST"
   cd $stackName
   oras push localhost:5000/devfile-catalog/$stackName:latest --manifest-config /dev/null:application/vnd.devfileio.devfile.config.v2+json ./devfile.yaml:application/vnd.devfileio.devfile.layer.v1 --plain-http
-  cd /registry/devfiles
+  cd $DEVFILES
 done
 
 # Launch the server hosting the index.json

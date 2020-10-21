@@ -34,7 +34,7 @@ COPY entrypoint.sh /scripts/entrypoint.sh
 
 # Git clone the devfiles
 # ToDo: Switch to github.com/devfile/catalog/
-RUN git clone https://github.com/odo-devfiles/registry /registry
+RUN git clone https://github.com/devfile/registry /registry
 COPY --from=build /tools/index-generator /registry/index-generator
 RUN chgrp -R 0 /registry && \
     chmod -R g=u /registry
