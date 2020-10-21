@@ -22,7 +22,9 @@ The `oci-devfile-registry-metadata` container is a sidecar deployed alongside th
 
 ### OpenShift
 
-1) `cd deploy/openshift`
-2) Set the value of `$HOST` in `route.yaml` to your routing suffix (such as apps.devcluster.example.com)
-3) Run `oc apply -f registry.yaml`
-4) Run `oc apply -f route.yaml`
+1) Run `oc apply -f deploy/openshift/`
+
+### Kubernetes
+
+1) Set the value of `$HOST` in `deploy/kubernetes/ingress.yaml` to your ingress domain (such as 192.168.1.1.nip.io)
+2) Run `kubectl apply -f deploy/kubernetes/`

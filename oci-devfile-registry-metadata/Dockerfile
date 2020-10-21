@@ -7,7 +7,7 @@ RUN ./build.sh
 FROM docker.io/httpd:2.4.43-alpine AS registry
 
 # Install and configure dependencies
-RUN apk add --no-cache bash git && \
+RUN apk add --no-cache bash git curl && \
     # Allow htaccess
     sed -i 's|    AllowOverride None|    AllowOverride All|' /usr/local/apache2/conf/httpd.conf && \
     sed -i 's|Listen 80|Listen 8080|' /usr/local/apache2/conf/httpd.conf && \
@@ -34,7 +34,7 @@ COPY entrypoint.sh /scripts/entrypoint.sh
 
 # Git clone the devfiles
 # ToDo: Switch to github.com/devfile/catalog/
-RUN git clone https://github.com/odo-devfiles/registry /registry
+RUN git clone https://github.com/devfile/registry /registry
 COPY --from=build /tools/index-generator /registry/index-generator
 RUN chgrp -R 0 /registry && \
     chmod -R g=u /registry
