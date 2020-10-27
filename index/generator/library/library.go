@@ -25,7 +25,7 @@ func GenerateIndexStruct(registryDirPath string) ([]schema.Schema, error) {
 	var index []schema.Schema
 	for _, devfileDir := range registryDir {
 		if !devfileDir.IsDir() {
-			return nil, fmt.Errorf("%s is not a directory", filepath.Join(registryDirPath, devfileDir.Name()))
+			continue
 		}
 
 		metaFilePath := filepath.Join(registryDirPath, devfileDir.Name(), meta)
