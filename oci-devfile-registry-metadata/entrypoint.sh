@@ -1,14 +1,7 @@
 #!/bin/sh
 
 ## Simple proof of concept bootstrap script to load devfiles into an oci registry
-DEVFILES=/registry/stacks
-
-# Generate the index.json from the devfiles
-cd /registry
-./index-generator $DEVFILES /usr/local/apache2/htdocs/devfiles/index.json
-
-# Push the devfiles to the registry
-cd $DEVFILES
+DEVFILES=/stacks
 
 # Wait for the registry to start
 until $(curl --output /dev/null --silent --head --fail http://localhost:5000); do
@@ -16,6 +9,8 @@ until $(curl --output /dev/null --silent --head --fail http://localhost:5000); d
     sleep 0.5
 done
 
+# Push the devfiles to the registry
+cd $DEVFILES
 for devfileDir in "$DEVFILES"/*
 do
   devfile="$devfileDir/devfile.yaml"
@@ -34,6 +29,8 @@ do
   cd $DEVFILES
 done
 
-# Launch the server hosting the index.json
-echo $REGISTRY_HOST
-exec "${@}"
+# Copy the index.json over to /www/data
+cp /index.json /www/data/
+
+# Start the nginx server
+exec "$@"
