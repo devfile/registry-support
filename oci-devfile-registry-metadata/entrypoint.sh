@@ -3,6 +3,15 @@
 ## Simple proof of concept bootstrap script to load devfiles into an oci registry
 DEVFILES=/stacks
 
+if [ ! -d "$DEVFILES" ]; then
+    echo "The container does not contain any devfile stacks in $DEVFILES. Exiting..."
+    exit 1
+fi
+if [! -e /index.json ]; then
+    echo "The container does not contain an index.json at /index.json. Exiting..."
+    exit 1
+fi
+
 # Wait for the registry to start
 until $(curl --output /dev/null --silent --head --fail http://localhost:5000); do
     printf 'Waiting for the registry at localhost:5000 to start\n'
