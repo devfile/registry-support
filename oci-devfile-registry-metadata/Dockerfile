@@ -18,8 +18,6 @@ RUN set -x ; \
 RUN touch /var/run/nginx.pid
 RUN mkdir -p /www/data
 
-
-
 # Modify the permissions on the necessary files to allow the container to properly run as a non-root UID
 RUN chown -R www-data:root /var/run/nginx.pid && \
   chown -R www-data:root /var/cache/nginx && \
@@ -28,6 +26,10 @@ RUN chmod g+rwx /var/run/nginx.pid && \
   chmod -R g+rwx /var/cache/nginx && chmod -R g+rwx /etc/nginx && chmod -R g+rwx /www/data
 
 USER www-data
+
+# Set env vars for the locations of the devfile stacks and index.json
+ENV DEVFILE_STACKS /stacks
+ENV DEVFILE_INDEX /index.json
 
 EXPOSE 8080
 ENTRYPOINT ["/entrypoint.sh"]

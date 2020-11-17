@@ -1,14 +1,13 @@
 #!/bin/sh
 
 ## Simple proof of concept bootstrap script to load devfiles into an oci registry
-DEVFILES=/stacks
 
-if [ ! -d "$DEVFILES" ]; then
-    echo "The container does not contain any devfile stacks in $DEVFILES. Exiting..."
+if [ ! -d "$DEVFILE_STACKS" ]; then
+    echo "The container does not contain any devfile stacks in $DEVFILE_STACKS. Exiting..."
     exit 1
 fi
-if [! -e /index.json ]; then
-    echo "The container does not contain an index.json at /index.json. Exiting..."
+if [ ! -e "$DEVFILE_INDEX" ]; then
+    echo "The container does not contain an index.json at $DEVFILE_INDEX. Exiting..."
     exit 1
 fi
 
@@ -19,8 +18,8 @@ until $(curl --output /dev/null --silent --head --fail http://localhost:5000); d
 done
 
 # Push the devfiles to the registry
-cd $DEVFILES
-for devfileDir in "$DEVFILES"/*
+cd $DEVFILE_STACKS
+for devfileDir in "$DEVFILE_STACKS"/*
 do
   devfile="$devfileDir/devfile.yaml"
   stackName=`basename $devfileDir`
@@ -35,11 +34,11 @@ do
   echo "Pushing $stackName to $REGISTRY_HOST"
   cd $stackName
   oras push localhost:5000/devfile-catalog/$stackName:latest --manifest-config /dev/null:application/vnd.devfileio.devfile.config.v2+json ./devfile.yaml:application/vnd.devfileio.devfile.layer.v1 --plain-http
-  cd $DEVFILES
+  cd $DEVFILE_STACKS
 done
 
 # Copy the index.json over to /www/data
-cp /index.json /www/data/
+cp $DEVFILE_INDEX /www/data/
 
 # Start the nginx server
 exec "$@"
