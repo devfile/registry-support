@@ -1,44 +1,36 @@
-# Build the registry index generator
-FROM golang:alpine3.11 AS build
-WORKDIR /tools
-COPY generator .
-RUN ./build.sh
-
-FROM docker.io/httpd:2.4.43-alpine AS registry
+FROM nginx:stable-alpine
 
 # Install and configure dependencies
-RUN apk add --no-cache bash git curl && \
-    # Allow htaccess
-    sed -i 's|    AllowOverride None|    AllowOverride All|' /usr/local/apache2/conf/httpd.conf && \
-    sed -i 's|Listen 80|Listen 8080|' /usr/local/apache2/conf/httpd.conf && \
-    mkdir -m 777 /usr/local/apache2/htdocs/devfiles && \
-    mkdir -p /var/www && ln -s /usr/local/apache2/htdocs /var/www/html && \
-    chmod -R g+rwX /usr/local/apache2 && \
-    echo "ServerName localhost" >> /usr/local/apache2/conf/httpd.conf && \
-    apk add --no-cache coreutils
-    
-# Install ORAS
+RUN apk add --no-cache bash git curl coreutils
 RUN wget https://github.com/deislabs/oras/releases/download/v0.8.1/oras_0.8.1_linux_amd64.tar.gz && \
   mkdir -p oras-install/ && \
   tar -zxf oras_0.8.1_*.tar.gz -C oras-install/ && \
   mv oras-install/oras /usr/local/bin/ && \
   rm -rf oras_0.8.1_*.tar.gz oras-install/
-  
- 
-COPY .htaccess /usr/local/apache2/htdocs/
-RUN chgrp -R 0 /usr/local/apache2/htdocs && \
-      chmod -R g=u /usr/local/apache2/htdocs
 
+COPY nginx.conf /etc/nginx/nginx.conf
+COPY entrypoint.sh /
 
-COPY entrypoint.sh /scripts/entrypoint.sh
+# Create a non-root user to run the nginx server as
+RUN set -x ; \
+  adduser -u 82 -D -S -G root www-data && exit 0 ; exit 1
 
-# Git clone the devfiles
-# ToDo: Switch to github.com/devfile/catalog/
-RUN git clone https://github.com/devfile/registry /registry
-COPY --from=build /tools/index-generator /registry/index-generator
-RUN chgrp -R 0 /registry && \
-    chmod -R g=u /registry
+RUN touch /var/run/nginx.pid
+RUN mkdir -p /www/data
 
-# Load the devfiles into the registry
-ENTRYPOINT ["/scripts/entrypoint.sh"]
-CMD ["httpd-foreground"]
+# Modify the permissions on the necessary files to allow the container to properly run as a non-root UID
+RUN chown -R www-data:root /var/run/nginx.pid && \
+  chown -R www-data:root /var/cache/nginx && \
+  chown www-data:root /etc/nginx/conf.d /etc/nginx/nginx.conf
+RUN chmod g+rwx /var/run/nginx.pid && \
+  chmod -R g+rwx /var/cache/nginx && chmod -R g+rwx /etc/nginx && chmod -R g+rwx /www/data
+
+USER www-data
+
+# Set env vars for the locations of the devfile stacks and index.json
+ENV DEVFILE_STACKS /stacks
+ENV DEVFILE_INDEX /index.json
+
+EXPOSE 8080
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["nginx", "-g", "daemon off;"]
