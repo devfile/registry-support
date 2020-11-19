@@ -28,4 +28,4 @@ jobs:
     - name: Build the registry metadata image
       run: cd oci-devfile-registry-metadata && ./build.sh
     - name: Push the registry metadata image
-      run: cd oci-devfile-registry-metadata  && ./push.sh quay.io/devfile/metadata-server:next
+      run: cd oci-devfile-registry-metadata  && ./push.sh quay.io/devfile/devfile-index-base:next
