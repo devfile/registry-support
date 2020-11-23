@@ -20,4 +20,3 @@ nginx -g "daemon off;" &
 /registry/index-server
 
 fg %1
-

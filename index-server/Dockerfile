@@ -40,7 +40,3 @@ ENV DEVFILE_INDEX /registry/index.json
 
 EXPOSE 8080
 ENTRYPOINT ["/entrypoint.sh"]
-
-
-
-

@@ -30,4 +30,4 @@ jobs:
       uses: actions/checkout@v2
       
     - name: Check if registry image build is working
-      run: cd oci-devfile-registry-metadata && ./build.sh
+      run: cd index-server && ./build.sh
