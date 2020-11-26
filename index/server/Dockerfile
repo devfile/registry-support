@@ -35,8 +35,8 @@ RUN chmod g+rwx /var/run/nginx.pid && \
 USER www-data
 
 # Set env vars for the locations of the devfile stacks and index.json
-ENV DEVFILE_STACKS /registry/stacks
-ENV DEVFILE_INDEX /registry/index.json
+ENV DEVFILE_STACKS /stacks
+ENV DEVFILE_INDEX /index.json
 
 EXPOSE 8080
 ENTRYPOINT ["/entrypoint.sh"]

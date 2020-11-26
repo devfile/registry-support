@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"path"
 	"path/filepath"
 	"time"
@@ -24,10 +25,13 @@ const (
 	devfileName            = "devfile.yaml"
 	devfileConfigMediaType = "application/vnd.devfileio.devfile.config.v2+json"
 	devfileMediaType       = "application/vnd.devfileio.devfile.layer.v1"
-	registryPath           = "/registry/stacks"
-	indexPath              = "/registry/index.json"
 	scheme                 = "http"
 	registryService        = "localhost:5000"
+)
+
+var (
+	stacksPath = os.Getenv("DEVFILE_STACKS")
+	indexPath  = os.Getenv("DEVFILE_INDEX")
 )
 
 func main() {
@@ -44,7 +48,7 @@ func main() {
 			log.Println("Registry is up and running")
 		}
 		log.Println("Waiting for registry to start...")
-		time.Sleep(time.Second)
+		time.Sleep(time.Millisecond)
 	}
 
 	// Load index file
@@ -53,6 +57,8 @@ func main() {
 		log.Fatalf("failed to read index file: %v", err)
 	}
 
+	// TODO: add code block to parse index.json by using common library
+	// Issue: https://github.com/devfile/api/issues/223
 	var index []indexSchema.Schema
 	err = json.Unmarshal(bytes, &index)
 	if err != nil {
@@ -76,24 +82,9 @@ func main() {
 		})
 	})
 
-	router.GET("/devfiles/:name", func(c *gin.Context) {
-		name := c.Param("name")
-		for _, devfileIndex := range index {
-			if devfileIndex.Name == name {
-				bytes, err := pullStackFromRegistry(devfileIndex)
-				if err != nil {
-					log.Fatal(err.Error())
-					c.JSON(http.StatusInternalServerError, gin.H{
-						"error":  err.Error(),
-						"status": fmt.Sprintf("failed to pull the devfile of %s", name),
-					})
-				}
-				c.Data(http.StatusOK, http.DetectContentType(bytes), bytes)
-			}
-		}
-	})
-
-	router.StaticFile("/index", indexPath)
+	router.Static("/stacks", stacksPath)
+	router.StaticFile("/index.json", indexPath)
+	router.StaticFile("/", indexPath)
 
 	router.Run(":7070")
 }
@@ -101,7 +92,7 @@ func main() {
 // pushStackToRegistry pushes the given devfile stack to the OCI registry
 func pushStackToRegistry(devfileIndex indexSchema.Schema) error {
 	// Load the devfile into memory and set up the pushing resource (file name, file content, media type, ref)
-	devfileContent, err := ioutil.ReadFile(filepath.Join(registryPath, devfileIndex.Name, devfileName))
+	devfileContent, err := ioutil.ReadFile(filepath.Join(stacksPath, devfileIndex.Name, devfileName))
 	if err != nil {
 		return err
 	}

@@ -1,0 +1,81 @@
+[
+  {
+    "name": "java-maven",
+    "displayName": "Maven Java",
+    "description": "Upstream Maven and OpenJDK 11",
+    "tags": [
+      "Java",
+      "Maven"
+    ],
+    "projectType": "maven",
+    "language": "java",
+    "links": {
+      "self": "devfile-catalog/java-maven:latest"
+    }
+  },
+  {
+    "name": "java-openliberty",
+    "displayName": "Open Liberty",
+    "description": "Open Liberty microservice in Java",
+    "projectType": "docker",
+    "language": "java",
+    "links": {
+      "self": "devfile-catalog/java-openliberty:latest"
+    },
+    "starterProjects": [
+      "user-app"
+    ]
+  },
+  {
+    "name": "java-quarkus",
+    "displayName": "Quarkus Java",
+    "description": "Upstream Quarkus with Java+GraalVM",
+    "tags": [
+      "Java",
+      "Quarkus"
+    ],
+    "projectType": "quarkus",
+    "language": "java",
+    "links": {
+      "self": "devfile-catalog/java-quarkus:latest"
+    },
+    "starterProjects": [
+      "quarkus-ex"
+    ]
+  },
+  {
+    "name": "java-springboot",
+    "displayName": "Spring Boot®",
+    "description": "Spring Boot® using Java",
+    "tags": [
+      "Java",
+      "Spring"
+    ],
+    "projectType": "spring",
+    "language": "java",
+    "links": {
+      "self": "devfile-catalog/java-springboot:latest"
+    },
+    "starterProjects": [
+      "springbootproject"
+    ]
+  },
+  {
+    "name": "nodejs",
+    "displayName": "NodeJS Runtime",
+    "description": "Stack with NodeJS 12",
+    "tags": [
+      "NodeJS",
+      "Express",
+      "ubi8"
+    ],
+    "projectType": "nodejs",
+    "language": "nodejs",
+    "links": {
+      "self": "devfile-catalog/nodejs:latest"
+    },
+    "starterProjects": [
+      "nodejs-starter"
+    ]
+  }
+]

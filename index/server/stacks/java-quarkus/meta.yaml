@@ -1,0 +1,7 @@
+name: java-quarkus
+displayName: Quarkus Java
+description: Upstream Quarkus with Java+GraalVM
+tags: ["Java", "Quarkus"]
+projectType: "quarkus"
+language: "java"
+starterProjects: ["quarkus-ex"]

@@ -1,0 +1,7 @@
+name: java-openliberty
+displayName: "Open Liberty"
+description: "Open Liberty microservice in Java"
+language: "java"
+projectType: "docker"
+location: "https://github.com/microclimate-dev2ops/openLibertyTemplate"
+starterProjects: ["user-app"]
