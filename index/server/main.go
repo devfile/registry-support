@@ -40,7 +40,8 @@ func main() {
 	err := wait.PollImmediate(time.Millisecond, time.Second*30, func() (bool, error) {
 		resp, err := http.Get(scheme + "://" + registryService)
 		if err != nil {
-			return false, err
+			log.Println(err.Error())
+			return false, nil
 		}
 
 		if resp.StatusCode == http.StatusOK {
