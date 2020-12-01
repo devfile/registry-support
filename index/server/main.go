@@ -19,6 +19,7 @@ import (
 	"github.com/containerd/containerd/remotes/docker"
 	"github.com/gin-gonic/gin"
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
+	"k8s.io/apimachinery/pkg/util/wait"
 )
 
 const (
@@ -36,19 +37,22 @@ var (
 
 func main() {
 	// Wait until registry is up and running
-	isDone := false
-	for !isDone {
+	err := wait.PollImmediate(time.Millisecond, time.Second*30, func() (bool, error) {
 		resp, err := http.Get(scheme + "://" + registryService)
 		if err != nil {
-			log.Fatal(err.Error())
+			return false, err
 		}
 
 		if resp.StatusCode == http.StatusOK {
-			isDone = true
 			log.Println("Registry is up and running")
+			return true, nil
 		}
+
 		log.Println("Waiting for registry to start...")
-		time.Sleep(time.Millisecond)
+		return false, nil
+	})
+	if err != nil {
+		log.Fatal(err.Error())
 	}
 
 	// Load index file

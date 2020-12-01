@@ -1,4 +1,4 @@
-module github.com/devfile/registry-support/metadata-server
+module github.com/devfile/registry-support/index/server
 
 go 1.14
 
@@ -8,4 +8,6 @@ require (
 	github.com/devfile/registry-support/index/generator v0.0.0-20201027142749-62d041d56b76
 	github.com/gin-gonic/gin v1.6.3
 	github.com/opencontainers/image-spec v1.0.1
+	gotest.tools/v3 v3.0.3 // indirect
+	k8s.io/apimachinery v0.19.4
 )

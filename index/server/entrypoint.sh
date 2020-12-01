@@ -1,8 +1,5 @@
 #!/bin/sh
 
-# turn on bash's job control
-set -m
-
 # Check if devfile stacks and index.json exist
 if [ ! -d "$DEVFILE_STACKS" ]; then
     echo "The container does not contain any devfile stacks in $DEVFILE_STACKS. Exiting..."
