@@ -44,6 +44,16 @@ func GenerateIndexStruct(registryDirPath string) ([]schema.Schema, error) {
 		}
 		indexComponent.Links["self"] = fmt.Sprintf("%s/%s:%s", "devfile-catalog", indexComponent.Name, "latest")
 
+		// Get the files in the stack folder
+		stackFolder := filepath.Join(registryDirPath, devfileDir.Name())
+		stackFiles, err := ioutil.ReadDir(stackFolder)
+		for _, stackFile := range stackFiles {
+			// The registry build should have already packaged any folders and miscellaneous files into an archive.tar file
+			// But, add this check as a safeguard, as OCI doesn't support unarchived folders being pushed up.
+			if !stackFile.IsDir() {
+				indexComponent.Resources = append(indexComponent.Resources, stackFile.Name())
+			}
+		}
 		index = append(index, indexComponent)
 	}
 
