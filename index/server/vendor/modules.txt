@@ -44,7 +44,7 @@ github.com/containerd/containerd/version
 github.com/deislabs/oras/pkg/artifact
 github.com/deislabs/oras/pkg/content
 github.com/deislabs/oras/pkg/oras
-# github.com/devfile/registry-support/index/generator v0.0.0-20201027142749-62d041d56b76
+# github.com/devfile/registry-support/index/generator v0.0.0-20201211145454-bc904934d987
 ## explicit
 github.com/devfile/registry-support/index/generator/schema
 # github.com/gin-contrib/sse v0.1.0

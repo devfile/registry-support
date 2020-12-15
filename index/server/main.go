@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -23,12 +24,24 @@ import (
 )
 
 const (
-	devfileName            = "devfile.yaml"
-	devfileConfigMediaType = "application/vnd.devfileio.devfile.config.v2+json"
-	devfileMediaType       = "application/vnd.devfileio.devfile.layer.v1"
-	scheme                 = "http"
-	registryService        = "localhost:5000"
+	devfileName             = "devfile.yaml"
+	devfileConfigMediaType  = "application/vnd.devfileio.devfile.config.v2+json"
+	devfileMediaType        = "application/vnd.devfileio.devfile.layer.v1"
+	devfileVSXMediaType     = "application/vnd.devfileio.vsx.layer.v1.tar"
+	devfileSVGLogoMediaType = "image/svg+xml"
+	devfilePNGLogoMediaType = "image/png"
+	devfileArchiveMediaType = "application/x-tar"
+	scheme                  = "http"
+	registryService         = "localhost:5000"
 )
+
+var mediaTypeMapping = map[string]string{
+	"devfile.yaml": devfileMediaType,
+	"vsx":          devfileVSXMediaType,
+	"logo.svg":     devfileSVGLogoMediaType,
+	"logo.png":     devfilePNGLogoMediaType,
+	"archive.tar":  devfileArchiveMediaType,
+}
 
 var (
 	stacksPath = os.Getenv("DEVFILE_STACKS")
@@ -97,24 +110,52 @@ func main() {
 // pushStackToRegistry pushes the given devfile stack to the OCI registry
 func pushStackToRegistry(devfileIndex indexSchema.Schema) error {
 	// Load the devfile into memory and set up the pushing resource (file name, file content, media type, ref)
-	devfileContent, err := ioutil.ReadFile(filepath.Join(stacksPath, devfileIndex.Name, devfileName))
-	if err != nil {
-		return err
+	memoryStore := content.NewMemoryStore()
+	pushContents := []ocispec.Descriptor{}
+	for _, resource := range devfileIndex.Resources {
+		if resource == "meta.yaml" {
+			// Some registries may still have the meta.yaml in it, but we don't need it, so skip pushing it up
+			continue
+		}
+
+		// Get the media type that corresponds to the resource
+		// Some resources have media types that depends on the entire filename (e.g. devfile.yaml, archive.tar),
+		// others just depend on the file extension (e.g. vsx files)
+		var mediaType string
+		var found bool
+		switch resource {
+		case devfileName, "logo.svg", "logo.png", "archive.tar":
+			// Get the media type associated with the file
+			if mediaType, found = mediaTypeMapping[resource]; !found {
+				return errors.New("media type not found for file " + resource)
+			}
+		default:
+			// Probably vsx file, but get the extension of the file just in case
+			fileExtension := filepath.Ext(resource)
+			if mediaType, found = mediaTypeMapping[fileExtension]; !found {
+				return errors.New("media type not found for file extension" + fileExtension)
+			}
+		}
+
+		// Load the resource into memory and add to the push contents
+		resourceContent, err := ioutil.ReadFile(filepath.Join(stacksPath, devfileIndex.Name, resource))
+		if err != nil {
+			return err
+		}
+
+		desc := memoryStore.Add(resource, mediaType, resourceContent)
+		pushContents = append(pushContents, desc)
+
 	}
+
 	ref := path.Join(registryService, "/", devfileIndex.Links["self"])
 
 	ctx := context.Background()
 	resolver := docker.NewResolver(docker.ResolverOptions{PlainHTTP: true})
-
-	// Add the devfile (and its custom media type) to the memory store
-	memoryStore := content.NewMemoryStore()
-	desc := memoryStore.Add(devfileName, devfileMediaType, devfileContent)
-	pushContents := []ocispec.Descriptor{desc}
-
-	log.Printf("Pushing %s to %s...\n", devfileName, ref)
-	desc, err = oras.Push(ctx, resolver, ref, memoryStore, pushContents, oras.WithConfigMediaType(devfileConfigMediaType))
+	log.Printf("Pushing %s to %s...\n", devfileIndex.Name, ref)
+	desc, err := oras.Push(ctx, resolver, ref, memoryStore, pushContents, oras.WithConfigMediaType(devfileConfigMediaType))
 	if err != nil {
-		return fmt.Errorf("failed to push %s to %s: %v", devfileName, ref, err)
+		return fmt.Errorf("failed to push %s to %s: %v", devfileIndex.Name, ref, err)
 	}
 	log.Printf("Pushed to %s with digest %s\n", ref, desc.Digest)
 	return nil
