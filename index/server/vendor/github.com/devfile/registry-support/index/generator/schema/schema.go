@@ -59,5 +59,6 @@ type Schema struct {
 	ProjectType     string            `yaml:"projectType,omitempty" json:"projectType,omitempty"`
 	Language        string            `yaml:"language,omitempty" json:"language,omitempty"`
 	Links           map[string]string `yaml:"links,omitempty" json:"links,omitempty"`
+	Resources       []string          `yaml:"resources,omitempty" json:"resources,omitempty"`
 	StarterProjects []string          `yaml:"starterProjects,omitempty" json:"starterProjects,omitempty"`
 }

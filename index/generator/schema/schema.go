@@ -15,7 +15,10 @@ Sample index file:
     "language": "java",
     "links": {
       "Link": "/devfile/java-maven/devfile.yaml"
-    }
+    },
+    "resources": [
+      "devfile.yaml",
+    ]
   },
   {
     "name": "nodejs",
@@ -31,6 +34,10 @@ Sample index file:
     "links": {
       "Link": "/devfile/nodejs/devfile.yaml"
     },
+    "resources": [
+      "devfile.yaml",
+      "node.vsx"
+    ],
     "starterProjects": [
       "nodejs-starter"
     ]
@@ -47,6 +54,7 @@ tags: string[] - The tags associated to devfile
 projectType: string - The project framework that is used in the devfile
 language: string - The project language that is used in the devfile
 links: map[string]string - Links related to the devfile
+resources: []string - The file resources that compose a devfile stack.
 starterProjects: string[] - The project templates that can be used in the devfile
 */
 
