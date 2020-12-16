@@ -24,23 +24,29 @@ import (
 )
 
 const (
-	devfileName             = "devfile.yaml"
-	devfileConfigMediaType  = "application/vnd.devfileio.devfile.config.v2+json"
-	devfileMediaType        = "application/vnd.devfileio.devfile.layer.v1"
-	devfileVSXMediaType     = "application/vnd.devfileio.vsx.layer.v1.tar"
-	devfileSVGLogoMediaType = "image/svg+xml"
-	devfilePNGLogoMediaType = "image/png"
-	devfileArchiveMediaType = "application/x-tar"
-	scheme                  = "http"
-	registryService         = "localhost:5000"
+	// Constants for resource names and media types
+	archiveMediaType       = "application/x-tar"
+	archiveName            = "archive.tar"
+	devfileName            = "devfile.yaml"
+	devfileConfigMediaType = "application/vnd.devfileio.devfile.config.v2+json"
+	devfileMediaType       = "application/vnd.devfileio.devfile.layer.v1"
+	pngLogoMediaType       = "image/png"
+	pngLogoName            = "logo.png"
+	svgLogoMediaType       = "image/svg+xml"
+	svgLogoName            = "logo.svg"
+	vsxMediaType           = "application/vnd.devfileio.vsx.layer.v1.tar"
+	vsxName                = "vsx"
+
+	scheme          = "http"
+	registryService = "localhost:5000"
 )
 
 var mediaTypeMapping = map[string]string{
-	"devfile.yaml": devfileMediaType,
-	"vsx":          devfileVSXMediaType,
-	"logo.svg":     devfileSVGLogoMediaType,
-	"logo.png":     devfilePNGLogoMediaType,
-	"archive.tar":  devfileArchiveMediaType,
+	devfileName: devfileMediaType,
+	vsxName:     vsxMediaType,
+	svgLogoName: svgLogoMediaType,
+	pngLogoName: pngLogoMediaType,
+	archiveName: archiveMediaType,
 }
 
 var (
@@ -124,7 +130,7 @@ func pushStackToRegistry(devfileIndex indexSchema.Schema) error {
 		var mediaType string
 		var found bool
 		switch resource {
-		case devfileName, "logo.svg", "logo.png", "archive.tar":
+		case devfileName, svgLogoName, pngLogoName, archiveName:
 			// Get the media type associated with the file
 			if mediaType, found = mediaTypeMapping[resource]; !found {
 				return errors.New("media type not found for file " + resource)
