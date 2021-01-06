@@ -106,9 +106,27 @@ func main() {
 		})
 	})
 
+	router.GET("/devfiles/:name", func(c *gin.Context) {
+		name := c.Param("name")
+		for _, devfileIndex := range index {
+			if devfileIndex.Name == name {
+				bytes, err := pullStackFromRegistry(devfileIndex)
+				if err != nil {
+					log.Fatal(err.Error())
+					c.JSON(http.StatusInternalServerError, gin.H{
+						"error":  err.Error(),
+						"status": fmt.Sprintf("failed to pull the devfile of %s", name),
+					})
+				}
+				c.Data(http.StatusOK, http.DetectContentType(bytes), bytes)
+			}
+		}
+	})
+
 	router.Static("/stacks", stacksPath)
 	router.StaticFile("/index.json", indexPath)
 	router.StaticFile("/", indexPath)
+	router.StaticFile("/index", indexPath)
 
 	router.Run(":7070")
 }
