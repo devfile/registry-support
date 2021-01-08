@@ -5,10 +5,11 @@ COPY . .
 RUN CGO_ENABLED=0 go build -mod=vendor -o index-server main.go
 
 # Application image
-FROM nginx:stable-alpine
+FROM registry.access.redhat.com/ubi8-minimal:8.2
+COPY nginx.repo  /etc/yum.repos.d/nginx.repo
 
 # Install and configure dependencies
-RUN apk add --no-cache bash git curl coreutils
+RUN microdnf update -y && rm -rf /var/cache/yum && microdnf install nginx shadow-utils findutils
 
 COPY nginx.conf /etc/nginx/nginx.conf
 COPY entrypoint.sh /
@@ -20,10 +21,10 @@ RUN chgrp -R 0 /registry && \
 
 # Create a non-root user to run the nginx server as
 RUN set -x ; \
-    adduser -u 82 -D -S -G root www-data && exit 0 ; exit 1
+    adduser www-data -u 82 -G root && exit 0
 
 RUN touch /var/run/nginx.pid
-RUN mkdir -p /www/data
+RUN mkdir -p /www/data && mkdir -p /var/cache/nginx
 
 # Modify the permissions on the necessary files to allow the container to properly run as a non-root UID
 RUN chown -R www-data:root /var/run/nginx.pid && \
