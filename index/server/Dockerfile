@@ -38,5 +38,5 @@ USER www-data
 ENV DEVFILE_STACKS /stacks
 ENV DEVFILE_INDEX /index.json
 
-EXPOSE 8080
+EXPOSE 8080 7071
 ENTRYPOINT ["/entrypoint.sh"]
