@@ -42,6 +42,6 @@ jobs:
         password: ${{ secrets.QUAY_PASSWORD }}
         registry: quay.io
         repository: devfile/oci-registry
-        dockerfile: ./oci-server/Dockerfile
+        dockerfile: ./oci-registry/Dockerfile
         tags: next
         tag_with_sha: true

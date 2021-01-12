@@ -9,7 +9,7 @@ FROM registry.access.redhat.com/ubi8-minimal:8.2
 COPY nginx.repo  /etc/yum.repos.d/nginx.repo
 
 # Install and configure dependencies
-RUN microdnf update -y && rm -rf /var/cache/yum && microdnf install nginx shadow-utils findutils
+RUN microdnf update -y && rm -rf /var/cache/yum && microdnf install nginx shadow-utils findutils git
 
 COPY nginx.conf /etc/nginx/nginx.conf
 COPY entrypoint.sh /
