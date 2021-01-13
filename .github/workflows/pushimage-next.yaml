@@ -14,18 +14,34 @@ on:
 
 jobs:
 
-  build:
+  indexServerBuild:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout registry-support source code
+    - name: Checkout devworkspace-operator source code
       uses: actions/checkout@v2
-    - name: Login to Quay
-      uses: docker/login-action@v1 
+    - name: Docker Build & Push
+      uses: docker/build-push-action@v1.1.0
       with:
-        registry: quay.io
         username: ${{ secrets.QUAY_USERNAME }}
         password: ${{ secrets.QUAY_PASSWORD }}
-    - name: Build the index server base image
-      run: cd index/server && ./build.sh
-    - name: Push the index server base image
-      run: cd index/server && ./push.sh quay.io/devfile/devfile-index-base:next
+        registry: quay.io
+        repository: devfile/devfile-index-base
+        dockerfile: ./index/server/Dockerfile
+        tags: next
+        tag_with_sha: true
+
+  ociRegistryBuild:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout devworkspace-operator source code
+      uses: actions/checkout@v2
+    - name: Docker Build & Push
+      uses: docker/build-push-action@v1.1.0
+      with:
+        username: ${{ secrets.QUAY_USERNAME }}
+        password: ${{ secrets.QUAY_PASSWORD }}
+        registry: quay.io
+        repository: devfile/oci-registry
+        dockerfile: ./oci-registry/Dockerfile
+        tags: next
+        tag_with_sha: true
