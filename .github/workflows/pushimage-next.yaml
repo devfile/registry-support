@@ -20,9 +20,9 @@ jobs:
     - name: Checkout devworkspace-operator source code
       uses: actions/checkout@v2
     - name: Docker Build & Push
-      uses: docker/build-push-action@v2.2.2
+      uses: docker/build-push-action@v1.1.0
       with:
-        context: ./index/server
+        path: ./index/server
         username: ${{ secrets.QUAY_USERNAME }}
         password: ${{ secrets.QUAY_PASSWORD }}
         registry: quay.io
@@ -37,9 +37,9 @@ jobs:
     - name: Checkout devworkspace-operator source code
       uses: actions/checkout@v2
     - name: Docker Build & Push
-      uses: docker/build-push-action@v2.2.2
+      uses: docker/build-push-action@v1.1.0
       with:
-        context: ./oci-registry
+        path: ./oci-registry
         username: ${{ secrets.QUAY_USERNAME }}
         password: ${{ secrets.QUAY_PASSWORD }}
         registry: quay.io
