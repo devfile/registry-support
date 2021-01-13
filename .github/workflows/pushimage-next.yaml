@@ -22,6 +22,7 @@ jobs:
     - name: Docker Build & Push
       uses: docker/build-push-action@v1.1.0
       with:
+        context: ./index/server
         username: ${{ secrets.QUAY_USERNAME }}
         password: ${{ secrets.QUAY_PASSWORD }}
         registry: quay.io
@@ -38,6 +39,7 @@ jobs:
     - name: Docker Build & Push
       uses: docker/build-push-action@v1.1.0
       with:
+        context: ./oci-registry
         username: ${{ secrets.QUAY_USERNAME }}
         password: ${{ secrets.QUAY_PASSWORD }}
         registry: quay.io
