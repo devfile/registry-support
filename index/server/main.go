@@ -13,6 +13,8 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+
 	"github.com/deislabs/oras/pkg/content"
 	"github.com/deislabs/oras/pkg/oras"
 	indexSchema "github.com/devfile/registry-support/index/generator/schema"
@@ -55,6 +57,11 @@ var (
 )
 
 func main() {
+	// Enable metrics
+	// Run on a separate port and router from the index server so that it's not exposed publicly
+	http.Handle("/metrics", promhttp.Handler())
+	go http.ListenAndServe(":7071", nil)
+
 	// Wait until registry is up and running
 	err := wait.PollImmediate(time.Millisecond, time.Second*30, func() (bool, error) {
 		resp, err := http.Get(scheme + "://" + registryService)
