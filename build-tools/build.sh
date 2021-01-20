@@ -65,7 +65,6 @@ do
   tarFiles=$(find . \( -not -name 'devfile.yaml' \
     -a -not -name "meta.yaml" \
     -a -not -name "*.vsx" \
-    -a -not -name ".DS_Store" \
     -a -not -name "." \
     -a -not -name "logo.svg" \
     -a -not -name "logo.png" \) -maxdepth 1)
