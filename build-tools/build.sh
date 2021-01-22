@@ -21,7 +21,7 @@ display_usage() {
 } 
 
 # cleanup_and_exit removes the temp folder we created and exits with the exit code passed into it
-clenaup_and_exit() {
+cleanup_and_exit() {
   rm -rf $registryFolder
   exit $1
 }
@@ -42,20 +42,11 @@ echo "Building index-generator tool"
 ./build.sh
 if [ $? -ne 0 ]; then
   echo "Failed to build index-generator tool"
-  clenaup_and_exit 1
+  cleanup_and_exit 1
 fi
 echo -e "Successfully built the index-generator tool\n"
 
 cd "$OLDPWD"
-
-# Run the index generator tool
-echo "Generate the devfile registry index"
-$generatorFolder/index-generator $registryFolder/stacks $registryFolder/index.json
-if [ $? -ne 0 ]; then
-  echo "Failed to build the devfile registry index"
-  clenaup_and_exit 1
-fi
-echo -e "Successfully built the devfile registry index\n"
 
 # Generate the tar archive
 for stackDir in $registryFolder/stacks/*/
@@ -77,13 +68,22 @@ do
   cd "$OLDPWD"
 done
 
+# Run the index generator tool
+echo "Generate the devfile registry index"
+$generatorFolder/index-generator $registryFolder/stacks $registryFolder/index.json
+if [ $? -ne 0 ]; then
+  echo "Failed to build the devfile registry index"
+  cleanup_and_exit 1
+fi
+echo -e "Successfully built the devfile registry index\n"
+
 # Build the Docker image containing the devfile stacks and index.json
 echo "Building the devfile registry index container"
 docker build -t devfile-index -f $buildToolsFolder/Dockerfile $registryFolder
 if [ $? -ne 0 ]; then
   echo "Failed to build the devfile registry index container"
-  clenaup_and_exit 1
+  cleanup_and_exit 1
 fi
 
 echo "Successfully built the devfile registry index container"
-clenaup_and_exit
+cleanup_and_exit 0
