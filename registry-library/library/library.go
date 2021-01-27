@@ -1,3 +1,14 @@
+//
+// Copyright (c) 2020 Red Hat, Inc.
+// This program and the accompanying materials are made
+// available under the terms of the Eclipse Public License 2.0
+// which is available at https://www.eclipse.org/legal/epl-2.0/
+//
+// SPDX-License-Identifier: EPL-2.0
+//
+// Contributors:
+//   Red Hat, Inc. - initial API and implementation
+
 package library
 
 import (
@@ -36,12 +47,16 @@ const (
 )
 
 var (
-	stacksPath = os.Getenv("DEVFILE_STACKS")
-	indexPath  = os.Getenv("DEVFILE_INDEX")
+	stacksPath               = os.Getenv("DEVFILE_STACKS")
+	indexPath                = os.Getenv("DEVFILE_INDEX")
+	DevfileMediaTypeList     = []string{DevfileMediaType}
+	DevfileAllMediaTypesList = []string{DevfileMediaType, DevfilePNGLogoMediaType, DevfileSVGLogoMediaType, DevfileVSXMediaType, DevfileArchiveMediaType}
 )
 
-// GetRegistryIndex gets the index of the specified registry
-func GetRegistryIndex(registry string) ([]indexSchema.Schema, error) {
+// GetRegistryStacks returns the list of stacks, more specifically
+// it gets the content of the index (index.json) of the specified registry
+// for listing the stacks
+func GetRegistryStacks(registry string) ([]indexSchema.Schema, error) {
 	// Call index server REST API to get the index
 	url := scheme + "://" + path.Join(registry, "index")
 	req, err := http.NewRequest("GET", url, nil)
@@ -70,10 +85,10 @@ func GetRegistryIndex(registry string) ([]indexSchema.Schema, error) {
 	return registryIndex, nil
 }
 
-// ListRegistryStacks lists the stacks of the registry
-func ListRegistryStacks(registry string) error {
+// PrintRegistryStacks prints the stacks of the registry
+func PrintRegistryStacks(registry string) error {
 	// Get the registry index
-	registryIndex, err := GetRegistryIndex(registry)
+	registryIndex, err := GetRegistryStacks(registry)
 	if err != nil {
 		return err
 	}
@@ -87,10 +102,10 @@ func ListRegistryStacks(registry string) error {
 	return nil
 }
 
-// PullStackFromRegistry pulls stack from registry with allowed media types
-func PullStackFromRegistry(registry string, stack string, allowedMediaTypes []string) error {
+// PullStackByMediaTypesFromRegistry pulls stack from registry with allowed media types
+func PullStackByMediaTypesFromRegistry(registry string, stack string, allowedMediaTypes []string) error {
 	// Get the registry index
-	registryIndex, err := GetRegistryIndex(registry)
+	registryIndex, err := GetRegistryStacks(registry)
 	if err != nil {
 		return err
 	}
@@ -138,6 +153,11 @@ func PullStackFromRegistry(registry string, stack string, allowedMediaTypes []st
 	}
 
 	return nil
+}
+
+// PullStackFromRegistry pulls stack from registry with all stack resources (all media types)
+func PullStackFromRegistry(registry string, stack string) error {
+	return PullStackByMediaTypesFromRegistry(registry, stack, DevfileAllMediaTypesList)
 }
 
 // decompress extracts the archive file

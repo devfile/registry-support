@@ -8,7 +8,7 @@ on:
 
 jobs:
   go:
-    name: Check index-generator build
+    name: Check go tools build
     runs-on: ubuntu-latest
     steps:
     - name: Check out code
@@ -21,6 +21,9 @@ jobs:
 
     - name: Check if index-generator build is working
       run: cd index/generator && ./build.sh
+
+    - name: Check if registry-library build is working
+      run: cd registry-library && ./build.sh
       
   docker:
     name: Check docker builds
