@@ -21,6 +21,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"path"
 	"text/tabwriter"
@@ -41,7 +42,6 @@ const (
 	DevfilePNGLogoMediaType = "image/png"
 	DevfileArchiveMediaType = "application/x-tar"
 
-	scheme                = "http"
 	httpRequestTimeout    = 30 * time.Second // httpRequestTimeout configures timeout of all HTTP requests
 	responseHeaderTimeout = 30 * time.Second // responseHeaderTimeout is the timeout to retrieve the server's response headers
 )
@@ -58,7 +58,12 @@ var (
 // for listing the stacks
 func GetRegistryStacks(registry string) ([]indexSchema.Schema, error) {
 	// Call index server REST API to get the index
-	url := scheme + "://" + path.Join(registry, "index")
+	urlObj, err := url.Parse(registry)
+	if err != nil {
+		return nil, err
+	}
+	urlObj.Path = path.Join(urlObj.Path, "index")
+	url := urlObj.String()
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err
@@ -126,8 +131,16 @@ func PullStackByMediaTypesFromRegistry(registry string, stack string, allowedMed
 
 	// Pull stack initialization
 	ctx := context.Background()
-	resolver := docker.NewResolver(docker.ResolverOptions{PlainHTTP: true})
-	ref := path.Join(registry, stackIndex.Links["self"])
+	urlObj, err := url.Parse(registry)
+	if err != nil {
+		return err
+	}
+	plainHTTP := true
+	if urlObj.Scheme == "https" {
+		plainHTTP = false
+	}
+	resolver := docker.NewResolver(docker.ResolverOptions{PlainHTTP: plainHTTP})
+	ref := path.Join(urlObj.Host, stackIndex.Links["self"])
 	fileStore := content.NewFileStore("")
 	defer fileStore.Close()
 
