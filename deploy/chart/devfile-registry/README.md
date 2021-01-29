@@ -1,0 +1,50 @@
+# Devfile Registry
+
+## Chart details
+Installing this chart will deploy an OCI-based devfile registry on to your Kubernetes cluster, exposed over a single ingress endpoint.
+
+## Prerequisites
+- A Kubernetes or OpenShift cluster.
+- Helm CLI, version 3 or higher
+- Knowledge of your cluster's ingress domain
+
+## Installing the Devfile Registry
+
+Run the following command to install the devfile registry on to your cluster:
+
+```
+helm install <release-name> deploy/chart/devfile-registry --set global.ingress.domain=<ingress-domain>
+```
+
+E.g. if your cluster's ingress domain is 192.168.1.0.nip.io, you would run:
+```
+helm install <release-name> deploy/chart/devfile-registry --set global.ingress.domain=192.168.1.0.nip.io
+```
+
+## Uninstalling the Devfile Registry
+
+To uninstall or delete the devfile registry Helm release, run:
+
+```bash
+helm delete <release-name>
+```
+
+## Configuration
+
+The following fields can be configured in the Helm chart, either via the `values.yaml` file or with the `--values` flag in the `helm` CLI.
+
+| Parameter                              | Description                                     | Default                                                    |
+| -----------------------                | ---------------------------------------------   | ---------------------------------------------------------- |
+| `global.ingress.domain`                | Ingress domain for the devfile registry         | **MUST BE SET BY USER**     |
+| `global.ingress.class`                 | Ingress class for the devfile registry          | `nginx` |
+| `global.ingress.secretName`            | Name of an existing tls secret if using TLS     | ` '' ` |
+| `devfileIndex.image`                   | Image used for the devfile index image          | `quay.io/devfile/devfile-index` |
+| `devfileIndex.tag`                     | Tag for devfile index image                     | `next` |
+| `devfileIndex.imagePullpolicy`         | Image pull policy for devfile index image       | `Always` |
+| `devfileIndex.memoryLimit`             | Memory for devfile index container              | `256Mi` |
+| `ociRegistry.image`                    | Image used for the oci registry image           | `quay.io/devfile/oci-registry` |
+| `ociRegistry.tag`                      | Tag for oci registry image                      | `next` |
+| `ociRegistry.imagePullpolicy`          | Image pull policy for oci registry image        | `Always` |
+| `ociRegistry.memoryLimit`              | Memory for oci registry container               | `256Mi` |
+| `persistence.enabled`                  | Enable persistent storage for the registry      | `true` |
+| `persistence.size`                     | The size of the persistent volume (if-enabled)  | `1Gi` |
