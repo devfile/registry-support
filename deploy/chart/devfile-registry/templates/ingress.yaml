@@ -27,9 +27,9 @@ spec:
         backend:
           serviceName: devfile-registry
           servicePort: 8080
-{{- if .Values.cheDevfileRegistryIngressSecretName }}
+{{- if .Values.global.ingress.secretName }}
   tls:
   - hosts:
-    - {{ template "devfileregistry.hostname" . -}} . {{- .Values.global.ingressDomain }}
-    secretName: {{ .Values.devfileRegistryIngressSecretName }}
+    - {{ template "devfileregistry.hostname" . -}} . {{- .Values.global.ingress.domain }}
+    secretName: {{ .Values.global.ingress.secretName }}
 {{- end -}}
