@@ -62,7 +62,7 @@ do
 
   # There are files that need to be pulled into a tar archive
   if [[ ! -z $tarFiles ]]; then
-    tar -cvf archive.tar $tarFiles
+    tar -czvf archive.tar $tarFiles
     rm -rf $tarFiles
   fi
   cd "$OLDPWD"
