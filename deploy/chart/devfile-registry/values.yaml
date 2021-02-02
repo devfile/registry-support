@@ -10,12 +10,12 @@
 global:
   ingress:
     class: 'nginx'
-    domain: johncollier.ca
+    domain: 192.168.2.1.nip.io
     secretName: ''
 
 devfileIndex:
-  image: johncollier/devfile-index
-  tag: latest
+  image: quay.io/devfile/devfile-index
+  tag: next
   imagePullPolicy: Always
   memoryLimit: 256Mi
 
