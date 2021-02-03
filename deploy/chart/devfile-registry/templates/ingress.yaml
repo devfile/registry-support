@@ -25,7 +25,7 @@ spec:
       paths:
       - path: /
         backend:
-          serviceName: devfile-registry
+          serviceName: {{ template "devfileregistry.fullname" . }}
           servicePort: 8080
 {{- if .Values.global.ingress.secretName }}
   tls:

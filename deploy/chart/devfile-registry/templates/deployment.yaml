@@ -24,9 +24,6 @@ spec:
       app: {{ template "devfileregistry.name" . }}
   strategy:
     type: RollingUpdate
-    rollingUpdate:
-      maxSurge: 25%
-      maxUnavailable: 25%
   template:
     metadata:
       labels:

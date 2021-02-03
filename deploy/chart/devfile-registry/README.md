@@ -13,20 +13,35 @@ Installing this chart will deploy an OCI-based devfile registry on to your Kuber
 Run the following command to install the devfile registry on to your cluster:
 
 ```
-helm install <release-name> deploy/chart/devfile-registry --set global.ingress.domain=<ingress-domain>
+helm install <release-name> <path-to-chart> --set global.ingress.domain=<ingress-domain>
 ```
 
 E.g. if your cluster's ingress domain is 192.168.1.0.nip.io, you would run:
 ```
-helm install <release-name> deploy/chart/devfile-registry --set global.ingress.domain=192.168.1.0.nip.io
+helm install devfile-registry deploy/chart/devfile-registry --set global.ingress.domain=192.168.1.0.nip.io
 ```
+
+## Updating the Devfile Registry
+
+If you wish to update the devfile registry (such as to add change the devfile index image or change some configurations), you can run the following command:
+
+```bash
+helm upgrade <release-name> <path-to-chart> [--set options]
+```
+
+For example, updating the devfile index image of the devfile registry `my-registry` might look like:
+```bash
+helm upgrade my-registry deploy/chart/devfile-registry --set devfileIndex.image=docker.io/myuser/devfile-index --set defileIndex.tag=2.0
+```
+
+Alternatively to using `--set`, you can change the fields in `values.yaml` and then run the `helm upgrade` command.
 
 ## Uninstalling the Devfile Registry
 
 To uninstall or delete the devfile registry Helm release, run:
 
 ```bash
-helm delete <release-name>
+helm uninstall <release-name>
 ```
 
 ## Configuration
