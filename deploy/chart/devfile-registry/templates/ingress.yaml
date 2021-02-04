@@ -6,7 +6,7 @@
 #
 # SPDX-License-Identifier: EPL-2.0
 #
-
+{{- if not .Values.global.isOpenShift }}
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
@@ -32,4 +32,5 @@ spec:
   - hosts:
     - {{ template "devfileregistry.hostname" . -}} . {{- .Values.global.ingress.domain }}
     secretName: {{ .Values.global.ingress.secretName }}
+{{- end -}}
 {{- end -}}
