@@ -53,6 +53,7 @@ The following fields can be configured in the Helm chart, either via the `values
 | `global.ingress.domain`                | Ingress domain for the devfile registry         | **MUST BE SET BY USER**     |
 | `global.ingress.class`                 | Ingress class for the devfile registry          | `nginx` |
 | `global.ingress.secretName`            | Name of an existing tls secret if using TLS     | ` '' ` |
+| `global.isOpenShift  `                 | Set to true to use OpenShift routes instead of ingress   | `false` |
 | `devfileIndex.image`                   | Image used for the devfile index image          | `quay.io/devfile/devfile-index` |
 | `devfileIndex.tag`                     | Tag for devfile index image                     | `next` |
 | `devfileIndex.imagePullpolicy`         | Image pull policy for devfile index image       | `Always` |

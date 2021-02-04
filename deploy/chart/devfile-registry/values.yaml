@@ -12,6 +12,7 @@ global:
     class: 'nginx'
     domain: 192.168.2.1.nip.io
     secretName: ''
+  isOpenShift: false
 
 devfileIndex:
   image: quay.io/devfile/devfile-index
