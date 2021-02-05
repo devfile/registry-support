@@ -1,11 +1,12 @@
 #
-# Copyright (c) 2020 Red Hat, Inc.
+# Copyright (c) 2020-2021 Red Hat, Inc.
 # This program and the accompanying materials are made
 # available under the terms of the Eclipse Public License 2.0
 # which is available at https://www.eclipse.org/legal/epl-2.0/
 #
 # SPDX-License-Identifier: EPL-2.0
 #
+
 name: Next Dockerimage
 
 on:
@@ -13,13 +14,12 @@ on:
     branches: [ master ]
 
 jobs:
-
   indexServerBuild:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout devworkspace-operator source code
+    - name: Check out registry support source code
       uses: actions/checkout@v2
-    - name: Docker Build & Push
+    - name: Build and push devfile-index-base docker image
       uses: docker/build-push-action@v1.1.0
       with:
         path: ./index/server
@@ -31,12 +31,26 @@ jobs:
         tags: next
         tag_with_sha: true
 
+  dispatch:
+    needs: indexServerBuild
+    strategy:
+      matrix:
+        repo: ['devfile/registry']
+    runs-on: ubuntu-latest
+    steps:
+      - name: Repository dispatch
+        uses: peter-evans/repository-dispatch@v1
+        with:
+          token: ${{ secrets.REPO_ACCESS_TOKEN }}
+          repository: ${{ matrix.repo }}
+          event-type: build
+
   ociRegistryBuild:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout devworkspace-operator source code
+    - name: Check out registry support source code
       uses: actions/checkout@v2
-    - name: Docker Build & Push
+    - name: Build and push oci-registry docker image
       uses: docker/build-push-action@v1.1.0
       with:
         path: ./oci-registry
