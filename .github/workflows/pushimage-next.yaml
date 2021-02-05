@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Red Hat, Inc.
+# Copyright (c) 2020-2021 Red Hat, Inc.
 # This program and the accompanying materials are made
 # available under the terms of the Eclipse Public License 2.0
 # which is available at https://www.eclipse.org/legal/epl-2.0/
@@ -19,12 +19,6 @@ jobs:
     steps:
     - name: Check out registry support source code
       uses: actions/checkout@v2
-    - name: Check out registry source code
-      uses: actions/checkout@v2
-      with:
-        repository: devfile/registry
-        persist-credentials: false
-        path: registry
     - name: Build and push devfile-index-base docker image
       uses: docker/build-push-action@v1.1.0
       with:
@@ -36,27 +30,27 @@ jobs:
         dockerfile: ./index/server/Dockerfile
         tags: next
         tag_with_sha: true
-    - name: Setup Go environment
-      uses: actions/setup-go@v2
-      with:
-        go-version: 1.13
-    - name: Login to Quay
-      uses: docker/login-action@v1 
-      with:
-        registry: quay.io
-        username: ${{ secrets.QUAY_USERNAME }}
-        password: ${{ secrets.QUAY_PASSWORD }}
-    - name: Build the devfile-index image
-      run: ./build-tools/build.sh registry
-    - name: Push the devfile-index image
-      run: ./build-tools/push.sh quay.io/devfile/devfile-index:next
+
+  dispatch:
+    needs: indexServerBuild
+    strategy:
+      matrix:
+        repo: ['devfile/registry']
+    runs-on: ubuntu-latest
+    steps:
+      - name: Repository dispatch
+        uses: peter-evans/repository-dispatch@v1
+        with:
+          token: ${{ secrets.REPO_ACCESS_TOKEN }}
+          repository: ${{ matrix.repo }}
+          event-type: build
 
   ociRegistryBuild:
     runs-on: ubuntu-latest
     steps:
     - name: Check out registry support source code
       uses: actions/checkout@v2
-    - name: Docker Build & Push
+    - name: Build and push oci-registry docker image
       uses: docker/build-push-action@v1.1.0
       with:
         path: ./oci-registry
