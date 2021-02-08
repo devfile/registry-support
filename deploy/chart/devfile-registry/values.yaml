@@ -1,0 +1,31 @@
+#
+# Copyright (c) 2021 Red Hat, Inc.
+# This program and the accompanying materials are made
+# available under the terms of the Eclipse Public License 2.0
+# which is available at https://www.eclipse.org/legal/epl-2.0/
+#
+# SPDX-License-Identifier: EPL-2.0
+#
+
+global:
+  ingress:
+    class: 'nginx'
+    domain: 192.168.2.1.nip.io
+    secretName: ''
+  isOpenShift: false
+
+devfileIndex:
+  image: quay.io/devfile/devfile-index
+  tag: next
+  imagePullPolicy: Always
+  memoryLimit: 256Mi
+
+ociRegistry:
+  image: quay.io/devfile/oci-registry
+  tag: next
+  imagePullPolicy: Always
+  memoryLimit: 256Mi
+
+persistence:
+  enabled: true
+  size: 1Gi
