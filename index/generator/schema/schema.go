@@ -70,3 +70,8 @@ type Schema struct {
 	Resources       []string          `yaml:"resources,omitempty" json:"resources,omitempty"`
 	StarterProjects []string          `yaml:"starterProjects,omitempty" json:"starterProjects,omitempty"`
 }
+
+// Meta is the devfile metadata
+type Meta struct {
+	Schema Schema `yaml:"metadata,omitempty" json:"metadata,omitempty"`
+}
