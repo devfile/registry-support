@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/prometheus/client_golang/prometheus"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -52,14 +53,23 @@ var mediaTypeMapping = map[string]string{
 }
 
 var (
-	stacksPath = os.Getenv("DEVFILE_STACKS")
-	indexPath  = os.Getenv("DEVFILE_INDEX")
+	stacksPath      = os.Getenv("DEVFILE_STACKS")
+	indexPath       = os.Getenv("DEVFILE_INDEX")
+	getIndexLatency = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Name:    "index_http_request_duration_seconds",
+			Help:    "Latency of index request in seconds.",
+			Buckets: prometheus.LinearBuckets(0.5, 0.5, 10),
+		},
+		[]string{"status"},
+	)
 )
 
 func main() {
 	// Enable metrics
 	// Run on a separate port and router from the index server so that it's not exposed publicly
 	http.Handle("/metrics", promhttp.Handler())
+	prometheus.MustRegister(getIndexLatency)
 	go http.ListenAndServe(":7071", nil)
 
 	// Wait until registry is up and running
@@ -107,6 +117,10 @@ func main() {
 	// Start the server and serve requests and index.json
 	router := gin.Default()
 
+	router.GET("/", serveDevfileIndex)
+	router.GET("/index", serveDevfileIndex)
+	router.GET("/index.json", serveDevfileIndex)
+
 	router.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"message": "the server is up and running",
@@ -131,9 +145,6 @@ func main() {
 	})
 
 	router.Static("/stacks", stacksPath)
-	router.StaticFile("/index.json", indexPath)
-	router.StaticFile("/", indexPath)
-	router.StaticFile("/index", indexPath)
 
 	router.Run(":7070")
 }
@@ -216,4 +227,19 @@ func pullStackFromRegistry(devfileIndex indexSchema.Schema) ([]byte, error) {
 
 	log.Printf("Pulled from %s with digest %s\n", ref, desc.Digest)
 	return bytes, nil
+}
+
+// serveDevfileIndex serves the index.json file located in the container at `serveDevfileIndex`
+func serveDevfileIndex(c *gin.Context) {
+	// Start the counter for the request
+	var status string
+	timer := prometheus.NewTimer(prometheus.ObserverFunc(func(v float64) {
+		getIndexLatency.WithLabelValues(status).Observe(v)
+	}))
+	defer func() {
+		timer.ObserveDuration()
+	}()
+
+	// Serve the index.json file
+	c.File(indexPath)
 }
