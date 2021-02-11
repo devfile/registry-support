@@ -6,17 +6,17 @@ import (
 	"io/ioutil"
 	"path/filepath"
 
+	devfileParser "github.com/devfile/library/pkg/devfile/parser"
 	"github.com/devfile/registry-support/index/generator/schema"
 	"gopkg.in/yaml.v2"
 )
 
 const (
-	meta    = "meta.yaml"
 	devfile = "devfile.yaml"
 )
 
 // GenerateIndexStruct parses registry then generates index struct according to the schema
-func GenerateIndexStruct(registryDirPath string) ([]schema.Schema, error) {
+func GenerateIndexStruct(registryDirPath string, force bool) ([]schema.Schema, error) {
 	registryDir, err := ioutil.ReadDir(registryDirPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read registry directory %s: %v", registryDirPath, err)
@@ -28,17 +28,26 @@ func GenerateIndexStruct(registryDirPath string) ([]schema.Schema, error) {
 			continue
 		}
 
-		metaFilePath := filepath.Join(registryDirPath, devfileDir.Name(), meta)
-		bytes, err := ioutil.ReadFile(metaFilePath)
-		if err != nil {
-			return nil, fmt.Errorf("failed to read %s: %v", metaFilePath, err)
-		}
-		var indexComponent schema.Schema
-		err = yaml.Unmarshal(bytes, &indexComponent)
-		if err != nil {
-			return nil, fmt.Errorf("failed to unmarshal %s data: %v", metaFilePath, err)
+		devfilePath := filepath.Join(registryDirPath, devfileDir.Name(), devfile)
+
+		if !force {
+			// Devfile validation
+			_, err := devfileParser.Parse(devfilePath)
+			if err != nil {
+				return nil, fmt.Errorf("%s devfile is not valid: %v", devfileDir.Name(), err)
+			}
 		}
 
+		bytes, err := ioutil.ReadFile(devfilePath)
+		if err != nil {
+			return nil, fmt.Errorf("failed to read %s: %v", devfilePath, err)
+		}
+		var meta schema.Meta
+		err = yaml.Unmarshal(bytes, &meta)
+		if err != nil {
+			return nil, fmt.Errorf("failed to unmarshal %s data: %v", devfilePath, err)
+		}
+		indexComponent := meta.Schema
 		if indexComponent.Links == nil {
 			indexComponent.Links = make(map[string]string)
 		}
@@ -54,6 +63,15 @@ func GenerateIndexStruct(registryDirPath string) ([]schema.Schema, error) {
 				indexComponent.Resources = append(indexComponent.Resources, stackFile.Name())
 			}
 		}
+
+		if !force {
+			// Index component validation
+			err := validateIndexComponent(indexComponent)
+			if err != nil {
+				return nil, fmt.Errorf("%s index component is not valid: %v", devfileDir.Name(), err)
+			}
+		}
+
 		index = append(index, indexComponent)
 	}
 
@@ -70,6 +88,20 @@ func CreateIndexFile(index []schema.Schema, indexFilePath string) error {
 	err = ioutil.WriteFile(indexFilePath, bytes, 0644)
 	if err != nil {
 		return fmt.Errorf("failed to write %s: %v", indexFilePath, err)
+	}
+
+	return nil
+}
+
+func validateIndexComponent(indexComponent schema.Schema) error {
+	if indexComponent.Name == "" {
+		return fmt.Errorf("index component name is not initialized")
+	}
+	if indexComponent.Links == nil {
+		return fmt.Errorf("index component links are empty")
+	}
+	if indexComponent.Resources == nil {
+		return fmt.Errorf("index component resources are empty")
 	}
 
 	return nil

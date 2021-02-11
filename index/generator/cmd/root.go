@@ -32,6 +32,7 @@ const (
 )
 
 var cfgFile string
+var force bool
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -43,7 +44,7 @@ var rootCmd = &cobra.Command{
 		registryDirPath := args[0]
 		indexFilePath := args[1]
 
-		index, err := library.GenerateIndexStruct(registryDirPath)
+		index, err := library.GenerateIndexStruct(registryDirPath, force)
 		if err != nil {
 			fmt.Printf("failed to generate index struct: %v", err)
 		}
@@ -72,6 +73,7 @@ func init() {
 	// will be global for your application.
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.generator.yaml)")
+	rootCmd.PersistentFlags().BoolVarP(&force, "force", "f", false, "force to generate index file, ignore validation errors")
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
