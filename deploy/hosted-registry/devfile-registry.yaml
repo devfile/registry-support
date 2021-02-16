@@ -120,41 +120,6 @@ objects:
     selector:
       app: devfile-registry
 - apiVersion: v1
-  kind: Route
-  metadata:
-    labels:
-      app: devfile-registry
-    name: devfile-registry
-  spec:
-    host: ${DEVFILE_REGISTRY_HOST}
-    to:
-      kind: Service
-      name: devfile-registry
-      weight: 100
-    port:
-      targetPort: 8080
-    tls:
-      termination: edge
-      insecureEdgeTerminationPolicy: Redirect
-- apiVersion: v1
-  kind: Route
-  metadata:
-    labels:
-      app: devfile-registry
-    name: oci-registry
-  spec:
-    host: ${DEVFILE_REGISTRY_HOST}
-    path: /v2
-    to:
-      kind: Service
-      name: devfile-registry
-      weight: 100
-    port:
-      targetPort: 8080
-    tls:
-      termination: edge
-      insecureEdgeTerminationPolicy: Redirect
-- apiVersion: v1
   kind: ConfigMap
   metadata:
     name: devfile-registry
@@ -180,11 +145,6 @@ objects:
             path: /metrics
 
 parameters:
-- name: DEVFILE_REGISTRY_HOST
-  value: ""
-  displayName: Devfile registry hostname
-  description: Hostname for the devfile registry service. Defaults to cluster's router.
-  required: false
 - name: DEVFILE_INDEX_IMAGE
   value: quay.io/devfile/devfile-index
   displayName: Devfile registry index image
