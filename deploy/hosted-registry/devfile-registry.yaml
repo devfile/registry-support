@@ -19,7 +19,7 @@ objects:
       app: devfile-registry
     name: devfile-registry
   spec:
-    replicas: ${{REPLICAS}}
+    replicas: ${REPLICAS}
     selector:
       matchLabels:
         app: devfile-registry
