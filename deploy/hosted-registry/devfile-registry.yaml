@@ -19,7 +19,7 @@ objects:
       app: devfile-registry
     name: devfile-registry
   spec:
-    replicas: ${REPLICAS}
+    replicas: ${{REPLICAS}}
     selector:
       matchLabels:
         app: devfile-registry
@@ -178,6 +178,6 @@ parameters:
   displayName: Devfile registry image pull policy
   description: Always pull by default. Can be IfNotPresent
 - name: REPLICAS
-  value: 1
+  value: "1"
   displayName: Devfile registry replicas
   description: The number of replicas for the hosted devfile registry service
