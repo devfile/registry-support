@@ -71,7 +71,13 @@ type Schema struct {
 	StarterProjects []string          `yaml:"starterProjects,omitempty" json:"starterProjects,omitempty"`
 }
 
-// Meta is the devfile metadata
-type Meta struct {
-	Schema Schema `yaml:"metadata,omitempty" json:"metadata,omitempty"`
+// StarterProject is the devfile starter project
+type StarterProject struct {
+	Name string `yaml:"name,omitempty" json:"name,omitempty"`
+}
+
+// Devfile is the devfile structure that is used by index component
+type Devfile struct {
+	Meta            Schema           `yaml:"metadata,omitempty" json:"metadata,omitempty"`
+	StarterProjects []StarterProject `yaml:"starterProjects,omitempty" json:"starterProjects,omitempty"`
 }

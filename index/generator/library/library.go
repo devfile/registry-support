@@ -42,16 +42,20 @@ func GenerateIndexStruct(registryDirPath string, force bool) ([]schema.Schema, e
 		if err != nil {
 			return nil, fmt.Errorf("failed to read %s: %v", devfilePath, err)
 		}
-		var meta schema.Meta
-		err = yaml.Unmarshal(bytes, &meta)
+		var devfile schema.Devfile
+		err = yaml.Unmarshal(bytes, &devfile)
 		if err != nil {
 			return nil, fmt.Errorf("failed to unmarshal %s data: %v", devfilePath, err)
 		}
-		indexComponent := meta.Schema
+		indexComponent := devfile.Meta
 		if indexComponent.Links == nil {
 			indexComponent.Links = make(map[string]string)
 		}
 		indexComponent.Links["self"] = fmt.Sprintf("%s/%s:%s", "devfile-catalog", indexComponent.Name, "latest")
+
+		for _, starterProject := range devfile.StarterProjects {
+			indexComponent.StarterProjects = append(indexComponent.StarterProjects, starterProject.Name)
+		}
 
 		// Get the files in the stack folder
 		stackFolder := filepath.Join(registryDirPath, devfileDir.Name())
