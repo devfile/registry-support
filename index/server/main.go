@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/prometheus/client_golang/prometheus"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -14,6 +13,8 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/prometheus/client_golang/prometheus"
+
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	"github.com/deislabs/oras/pkg/content"
@@ -21,6 +22,7 @@ import (
 	indexSchema "github.com/devfile/registry-support/index/generator/schema"
 
 	"github.com/containerd/containerd/remotes/docker"
+	_ "github.com/devfile/registry-support/index/server/docs"
 	"github.com/gin-gonic/gin"
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -138,10 +140,17 @@ func main() {
 						"error":  err.Error(),
 						"status": fmt.Sprintf("failed to pull the devfile of %s", name),
 					})
+					return
 				}
+
 				c.Data(http.StatusOK, http.DetectContentType(bytes), bytes)
+				return
 			}
 		}
+
+		c.JSON(http.StatusNotFound, gin.H{
+			"status": fmt.Sprintf("the devfile of %s didn't exist", name),
+		})
 	})
 
 	router.Static("/stacks", stacksPath)

@@ -5,6 +5,7 @@ go 1.14
 require (
 	github.com/containerd/containerd v1.4.1
 	github.com/deislabs/oras v0.8.1
+	github.com/devfile/api/v2 v2.0.0
 	github.com/devfile/registry-support/index/generator v0.0.0-20201211145454-bc904934d987
 	github.com/gin-gonic/gin v1.6.3
 	github.com/opencontainers/image-spec v1.0.1
