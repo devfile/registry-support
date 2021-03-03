@@ -52,6 +52,7 @@ import (
 //
 //     Produces:
 //     - application/yaml
+//     - application/json
 //
 //     Responses:
 //         200: devfileResponse
