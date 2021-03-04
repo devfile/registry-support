@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 
 	devfileParser "github.com/devfile/library/pkg/devfile/parser"
@@ -12,7 +13,8 @@ import (
 )
 
 const (
-	devfile = "devfile.yaml"
+	devfile       = "devfile.yaml"
+	devfileHidden = ".devfile.yaml"
 )
 
 // GenerateIndexStruct parses registry then generates index struct according to the schema
@@ -28,7 +30,15 @@ func GenerateIndexStruct(registryDirPath string, force bool) ([]schema.Schema, e
 			continue
 		}
 
+		// Allow devfile.yaml or .devfile.yaml
 		devfilePath := filepath.Join(registryDirPath, devfileDir.Name(), devfile)
+		devfileHiddenPath := filepath.Join(registryDirPath, devfileDir.Name(), devfileHidden)
+		if fileExists(devfilePath) && fileExists(devfileHiddenPath) {
+			return nil, fmt.Errorf("both %s and %s exist", devfilePath, devfileHiddenPath)
+		}
+		if fileExists(devfileHiddenPath) {
+			devfilePath = devfileHiddenPath
+		}
 
 		if !force {
 			// Devfile validation
@@ -109,4 +119,12 @@ func validateIndexComponent(indexComponent schema.Schema) error {
 	}
 
 	return nil
+}
+
+func fileExists(filepath string) bool {
+	if _, err := os.Stat(filepath); os.IsNotExist(err) {
+		return false
+	}
+
+	return true
 }
