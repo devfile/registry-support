@@ -1,0 +1,2728 @@
+consumes:
+- application/json
+- application/yaml
+definitions:
+  ApplyCommand:
+    properties:
+      component:
+        description: Describes component that will be applied
+        type: string
+        x-go-name: Component
+      group:
+        $ref: '#/definitions/CommandGroup'
+      label:
+        description: |-
+          +optional
+          Optional label that provides a label for this command
+          to be used in Editor UI menus for example
+        type: string
+        x-go-name: Label
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  ApplyCommandParentOverride:
+    properties:
+      component:
+        description: |-
+          +optional
+          Describes component that will be applied
+        type: string
+        x-go-name: Component
+      group:
+        $ref: '#/definitions/CommandGroupParentOverride'
+      label:
+        description: |-
+          +optional
+          Optional label that provides a label for this command
+          to be used in Editor UI menus for example
+        type: string
+        x-go-name: Label
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  ApplyCommandPluginOverride:
+    properties:
+      component:
+        description: |-
+          +optional
+          Describes component that will be applied
+        type: string
+        x-go-name: Component
+      group:
+        $ref: '#/definitions/CommandGroupPluginOverride'
+      label:
+        description: |-
+          +optional
+          Optional label that provides a label for this command
+          to be used in Editor UI menus for example
+        type: string
+        x-go-name: Label
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  ApplyCommandPluginOverrideParentOverride:
+    properties:
+      component:
+        description: |-
+          +optional
+          Describes component that will be applied
+        type: string
+        x-go-name: Component
+      group:
+        $ref: '#/definitions/CommandGroupPluginOverrideParentOverride'
+      label:
+        description: |-
+          +optional
+          Optional label that provides a label for this command
+          to be used in Editor UI menus for example
+        type: string
+        x-go-name: Label
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  Attributes:
+    additionalProperties:
+      $ref: '#/definitions/JSON'
+    description: |-
+      Attributes provides a way to add a map of arbitrary YAML/JSON
+      objects.
+      +kubebuilder:validation:Type=object
+      +kubebuilder:validation:XPreserveUnknownFields
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/attributes
+  CheckoutFrom:
+    properties:
+      remote:
+        description: |-
+          The remote name should be used as init. Required if there are more than one remote configured
+          +optional
+        type: string
+        x-go-name: Remote
+      revision:
+        description: |-
+          The revision to checkout from. Should be branch name, tag or commit id.
+          Default branch is used if missing or specified revision is not found.
+          +optional
+        type: string
+        x-go-name: Revision
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  CheckoutFromParentOverride:
+    properties:
+      remote:
+        description: |-
+          The remote name should be used as init. Required if there are more than one remote configured
+          +optional
+        type: string
+        x-go-name: Remote
+      revision:
+        description: |-
+          The revision to checkout from. Should be branch name, tag or commit id.
+          Default branch is used if missing or specified revision is not found.
+          +optional
+        type: string
+        x-go-name: Revision
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  Command:
+    properties:
+      apply:
+        $ref: '#/definitions/ApplyCommand'
+      attributes:
+        $ref: '#/definitions/Attributes'
+      commandType:
+        $ref: '#/definitions/CommandType'
+      composite:
+        $ref: '#/definitions/CompositeCommand'
+      custom:
+        $ref: '#/definitions/CustomCommand'
+      exec:
+        $ref: '#/definitions/ExecCommand'
+      id:
+        description: |-
+          Mandatory identifier that allows referencing
+          this command in composite commands, from
+          a parent, or in events.
+          +kubebuilder:validation:Pattern=^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
+          +kubebuilder:validation:MaxLength=63
+        type: string
+        x-go-name: Id
+      vscodeLaunch:
+        $ref: '#/definitions/VscodeConfigurationCommand'
+      vscodeTask:
+        $ref: '#/definitions/VscodeConfigurationCommand'
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  CommandGroup:
+    properties:
+      isDefault:
+        description: |-
+          +optional
+          Identifies the default command for a given group kind
+        type: boolean
+        x-go-name: IsDefault
+      kind:
+        $ref: '#/definitions/CommandGroupKind'
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  CommandGroupKind:
+    description: +kubebuilder:validation:Enum=build;run;test;debug
+    title: CommandGroupKind describes the kind of command group.
+    type: string
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  CommandGroupKindParentOverride:
+    description: +kubebuilder:validation:Enum=build;run;test;debug
+    title: CommandGroupKind describes the kind of command group.
+    type: string
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  CommandGroupKindPluginOverride:
+    description: +kubebuilder:validation:Enum=build;run;test;debug
+    title: CommandGroupKind describes the kind of command group.
+    type: string
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  CommandGroupKindPluginOverrideParentOverride:
+    description: +kubebuilder:validation:Enum=build;run;test;debug
+    title: CommandGroupKind describes the kind of command group.
+    type: string
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  CommandGroupParentOverride:
+    properties:
+      isDefault:
+        description: |-
+          +optional
+          Identifies the default command for a given group kind
+        type: boolean
+        x-go-name: IsDefault
+      kind:
+        $ref: '#/definitions/CommandGroupKindParentOverride'
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  CommandGroupPluginOverride:
+    properties:
+      isDefault:
+        description: |-
+          +optional
+          Identifies the default command for a given group kind
+        type: boolean
+        x-go-name: IsDefault
+      kind:
+        $ref: '#/definitions/CommandGroupKindPluginOverride'
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  CommandGroupPluginOverrideParentOverride:
+    properties:
+      isDefault:
+        description: |-
+          +optional
+          Identifies the default command for a given group kind
+        type: boolean
+        x-go-name: IsDefault
+      kind:
+        $ref: '#/definitions/CommandGroupKindPluginOverrideParentOverride'
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  CommandParentOverride:
+    properties:
+      apply:
+        $ref: '#/definitions/ApplyCommandParentOverride'
+      attributes:
+        $ref: '#/definitions/Attributes'
+      commandType:
+        $ref: '#/definitions/CommandTypeParentOverride'
+      composite:
+        $ref: '#/definitions/CompositeCommandParentOverride'
+      exec:
+        $ref: '#/definitions/ExecCommandParentOverride'
+      id:
+        description: |-
+          Mandatory identifier that allows referencing
+          this command in composite commands, from
+          a parent, or in events.
+          +kubebuilder:validation:Pattern=^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
+          +kubebuilder:validation:MaxLength=63
+        type: string
+        x-go-name: Id
+      vscodeLaunch:
+        $ref: '#/definitions/VscodeConfigurationCommandParentOverride'
+      vscodeTask:
+        $ref: '#/definitions/VscodeConfigurationCommandParentOverride'
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  CommandPluginOverride:
+    properties:
+      apply:
+        $ref: '#/definitions/ApplyCommandPluginOverride'
+      attributes:
+        $ref: '#/definitions/Attributes'
+      commandType:
+        $ref: '#/definitions/CommandTypePluginOverride'
+      composite:
+        $ref: '#/definitions/CompositeCommandPluginOverride'
+      exec:
+        $ref: '#/definitions/ExecCommandPluginOverride'
+      id:
+        description: |-
+          Mandatory identifier that allows referencing
+          this command in composite commands, from
+          a parent, or in events.
+          +kubebuilder:validation:Pattern=^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
+          +kubebuilder:validation:MaxLength=63
+        type: string
+        x-go-name: Id
+      vscodeLaunch:
+        $ref: '#/definitions/VscodeConfigurationCommandPluginOverride'
+      vscodeTask:
+        $ref: '#/definitions/VscodeConfigurationCommandPluginOverride'
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  CommandPluginOverrideParentOverride:
+    properties:
+      apply:
+        $ref: '#/definitions/ApplyCommandPluginOverrideParentOverride'
+      attributes:
+        $ref: '#/definitions/Attributes'
+      commandType:
+        $ref: '#/definitions/CommandTypePluginOverrideParentOverride'
+      composite:
+        $ref: '#/definitions/CompositeCommandPluginOverrideParentOverride'
+      exec:
+        $ref: '#/definitions/ExecCommandPluginOverrideParentOverride'
+      id:
+        description: |-
+          Mandatory identifier that allows referencing
+          this command in composite commands, from
+          a parent, or in events.
+          +kubebuilder:validation:Pattern=^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
+          +kubebuilder:validation:MaxLength=63
+        type: string
+        x-go-name: Id
+      vscodeLaunch:
+        $ref: '#/definitions/VscodeConfigurationCommandPluginOverrideParentOverride'
+      vscodeTask:
+        $ref: '#/definitions/VscodeConfigurationCommandPluginOverrideParentOverride'
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  CommandType:
+    description: |-
+      Only one of the following command type may be specified.
+      +kubebuilder:validation:Enum=Exec;Apply;VscodeTask;VscodeLaunch;Composite;Custom
+    title: CommandType describes the type of command.
+    type: string
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  CommandTypeParentOverride:
+    description: Only one of the following command type may be specified.
+    title: CommandType describes the type of command.
+    type: string
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  CommandTypePluginOverride:
+    description: Only one of the following command type may be specified.
+    title: CommandType describes the type of command.
+    type: string
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  CommandTypePluginOverrideParentOverride:
+    description: Only one of the following command type may be specified.
+    title: CommandType describes the type of command.
+    type: string
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  Component:
+    description: +k8s:openapi-gen=true
+    properties:
+      attributes:
+        $ref: '#/definitions/Attributes'
+      componentType:
+        $ref: '#/definitions/ComponentType'
+      container:
+        $ref: '#/definitions/ContainerComponent'
+      custom:
+        $ref: '#/definitions/CustomComponent'
+      kubernetes:
+        $ref: '#/definitions/KubernetesComponent'
+      name:
+        description: |-
+          Mandatory name that allows referencing the component
+          from other elements (such as commands) or from an external
+          devfile that may reference this component through a parent or a plugin.
+          +kubebuilder:validation:Pattern=^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
+          +kubebuilder:validation:MaxLength=63
+        type: string
+        x-go-name: Name
+      openshift:
+        $ref: '#/definitions/OpenshiftComponent'
+      plugin:
+        $ref: '#/definitions/PluginComponent'
+      volume:
+        $ref: '#/definitions/VolumeComponent'
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  ComponentParentOverride:
+    description: +k8s:openapi-gen=true
+    properties:
+      attributes:
+        $ref: '#/definitions/Attributes'
+      componentType:
+        $ref: '#/definitions/ComponentTypeParentOverride'
+      container:
+        $ref: '#/definitions/ContainerComponentParentOverride'
+      kubernetes:
+        $ref: '#/definitions/KubernetesComponentParentOverride'
+      name:
+        description: |-
+          Mandatory name that allows referencing the component
+          from other elements (such as commands) or from an external
+          devfile that may reference this component through a parent or a plugin.
+          +kubebuilder:validation:Pattern=^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
+          +kubebuilder:validation:MaxLength=63
+        type: string
+        x-go-name: Name
+      openshift:
+        $ref: '#/definitions/OpenshiftComponentParentOverride'
+      plugin:
+        $ref: '#/definitions/PluginComponentParentOverride'
+      volume:
+        $ref: '#/definitions/VolumeComponentParentOverride'
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  ComponentPluginOverride:
+    description: +k8s:openapi-gen=true
+    properties:
+      attributes:
+        $ref: '#/definitions/Attributes'
+      componentType:
+        $ref: '#/definitions/ComponentTypePluginOverride'
+      container:
+        $ref: '#/definitions/ContainerComponentPluginOverride'
+      kubernetes:
+        $ref: '#/definitions/KubernetesComponentPluginOverride'
+      name:
+        description: |-
+          Mandatory name that allows referencing the component
+          from other elements (such as commands) or from an external
+          devfile that may reference this component through a parent or a plugin.
+          +kubebuilder:validation:Pattern=^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
+          +kubebuilder:validation:MaxLength=63
+        type: string
+        x-go-name: Name
+      openshift:
+        $ref: '#/definitions/OpenshiftComponentPluginOverride'
+      volume:
+        $ref: '#/definitions/VolumeComponentPluginOverride'
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  ComponentPluginOverrideParentOverride:
+    description: +k8s:openapi-gen=true
+    properties:
+      attributes:
+        $ref: '#/definitions/Attributes'
+      componentType:
+        $ref: '#/definitions/ComponentTypePluginOverrideParentOverride'
+      container:
+        $ref: '#/definitions/ContainerComponentPluginOverrideParentOverride'
+      kubernetes:
+        $ref: '#/definitions/KubernetesComponentPluginOverrideParentOverride'
+      name:
+        description: |-
+          Mandatory name that allows referencing the component
+          from other elements (such as commands) or from an external
+          devfile that may reference this component through a parent or a plugin.
+          +kubebuilder:validation:Pattern=^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
+          +kubebuilder:validation:MaxLength=63
+        type: string
+        x-go-name: Name
+      openshift:
+        $ref: '#/definitions/OpenshiftComponentPluginOverrideParentOverride'
+      volume:
+        $ref: '#/definitions/VolumeComponentPluginOverrideParentOverride'
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  ComponentType:
+    description: |-
+      Only one of the following component type may be specified.
+      +kubebuilder:validation:Enum=Container;Kubernetes;Openshift;Volume;Plugin;Custom
+    title: ComponentType describes the type of component.
+    type: string
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  ComponentTypeParentOverride:
+    description: Only one of the following component type may be specified.
+    title: ComponentType describes the type of component.
+    type: string
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  ComponentTypePluginOverride:
+    description: Only one of the following component type may be specified.
+    title: ComponentType describes the type of component.
+    type: string
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  ComponentTypePluginOverrideParentOverride:
+    description: Only one of the following component type may be specified.
+    title: ComponentType describes the type of component.
+    type: string
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  CompositeCommand:
+    properties:
+      commands:
+        description: The commands that comprise this composite command
+        items:
+          type: string
+        type: array
+        x-go-name: Commands
+      group:
+        $ref: '#/definitions/CommandGroup'
+      label:
+        description: |-
+          +optional
+          Optional label that provides a label for this command
+          to be used in Editor UI menus for example
+        type: string
+        x-go-name: Label
+      parallel:
+        description: |-
+          Indicates if the sub-commands should be executed concurrently
+          +optional
+        type: boolean
+        x-go-name: Parallel
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  CompositeCommandParentOverride:
+    properties:
+      commands:
+        description: The commands that comprise this composite command
+        items:
+          type: string
+        type: array
+        x-go-name: Commands
+      group:
+        $ref: '#/definitions/CommandGroupParentOverride'
+      label:
+        description: |-
+          +optional
+          Optional label that provides a label for this command
+          to be used in Editor UI menus for example
+        type: string
+        x-go-name: Label
+      parallel:
+        description: |-
+          Indicates if the sub-commands should be executed concurrently
+          +optional
+        type: boolean
+        x-go-name: Parallel
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  CompositeCommandPluginOverride:
+    properties:
+      commands:
+        description: The commands that comprise this composite command
+        items:
+          type: string
+        type: array
+        x-go-name: Commands
+      group:
+        $ref: '#/definitions/CommandGroupPluginOverride'
+      label:
+        description: |-
+          +optional
+          Optional label that provides a label for this command
+          to be used in Editor UI menus for example
+        type: string
+        x-go-name: Label
+      parallel:
+        description: |-
+          Indicates if the sub-commands should be executed concurrently
+          +optional
+        type: boolean
+        x-go-name: Parallel
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  CompositeCommandPluginOverrideParentOverride:
+    properties:
+      commands:
+        description: The commands that comprise this composite command
+        items:
+          type: string
+        type: array
+        x-go-name: Commands
+      group:
+        $ref: '#/definitions/CommandGroupPluginOverrideParentOverride'
+      label:
+        description: |-
+          +optional
+          Optional label that provides a label for this command
+          to be used in Editor UI menus for example
+        type: string
+        x-go-name: Label
+      parallel:
+        description: |-
+          Indicates if the sub-commands should be executed concurrently
+          +optional
+        type: boolean
+        x-go-name: Parallel
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  ContainerComponent:
+    description: Component that allows the developer to add a configured container
+      into his workspace
+    properties:
+      args:
+        description: |-
+          The arguments to supply to the command running the dockerimage component. The arguments are supplied either to the default command provided in the image or to the overridden command.
+
+          Defaults to an empty array, meaning use whatever is defined in the image.
+          +optional
+        items:
+          type: string
+        type: array
+        x-go-name: Args
+      command:
+        description: |-
+          The command to run in the dockerimage component instead of the default one provided in the image.
+
+          Defaults to an empty array, meaning use whatever is defined in the image.
+          +optional
+        items:
+          type: string
+        type: array
+        x-go-name: Command
+      dedicatedPod:
+        description: |-
+          Specify if a container should run in its own separated pod,
+          instead of running as part of the main development environment pod.
+
+          Default value is `false`
+          +optional
+        type: boolean
+        x-go-name: DedicatedPod
+      endpoints:
+        items:
+          $ref: '#/definitions/Endpoint'
+        type: array
+        x-go-name: Endpoints
+      env:
+        description: |-
+          +optional
+          +patchMergeKey=name
+          +patchStrategy=merge
+          Environment variables used in this container.
+
+          The following variables are reserved and cannot be overridden via env:
+
+          `$PROJECTS_ROOT`
+
+          `$PROJECT_SOURCE`
+        items:
+          $ref: '#/definitions/EnvVar'
+        type: array
+        x-go-name: Env
+      image:
+        type: string
+        x-go-name: Image
+      memoryLimit:
+        description: +optional
+        type: string
+        x-go-name: MemoryLimit
+      mountSources:
+        description: |-
+          Toggles whether or not the project source code should
+          be mounted in the component.
+
+          Defaults to true for all component types except plugins and components that set `dedicatedPod` to true.
+          +optional
+        type: boolean
+        x-go-name: MountSources
+      sourceMapping:
+        description: |-
+          Optional specification of the path in the container where
+          project sources should be transferred/mounted when `mountSources` is `true`.
+          When omitted, the default value of /projects is used.
+          +optional
+          +kubebuilder:default=/projects
+        type: string
+        x-go-name: SourceMapping
+      volumeMounts:
+        description: |-
+          +optional
+          List of volumes mounts that should be mounted is this container.
+        items:
+          $ref: '#/definitions/VolumeMount'
+        type: array
+        x-go-name: VolumeMounts
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  ContainerComponentParentOverride:
+    description: Component that allows the developer to add a configured container
+      into his workspace
+    properties:
+      args:
+        description: |-
+          The arguments to supply to the command running the dockerimage component. The arguments are supplied either to the default command provided in the image or to the overridden command.
+
+          Defaults to an empty array, meaning use whatever is defined in the image.
+          +optional
+        items:
+          type: string
+        type: array
+        x-go-name: Args
+      command:
+        description: |-
+          The command to run in the dockerimage component instead of the default one provided in the image.
+
+          Defaults to an empty array, meaning use whatever is defined in the image.
+          +optional
+        items:
+          type: string
+        type: array
+        x-go-name: Command
+      dedicatedPod:
+        description: |-
+          Specify if a container should run in its own separated pod,
+          instead of running as part of the main development environment pod.
+
+          Default value is `false`
+          +optional
+        type: boolean
+        x-go-name: DedicatedPod
+      endpoints:
+        items:
+          $ref: '#/definitions/EndpointParentOverride'
+        type: array
+        x-go-name: Endpoints
+      env:
+        description: |-
+          +optional
+          +patchMergeKey=name
+          +patchStrategy=merge
+          Environment variables used in this container.
+
+          The following variables are reserved and cannot be overridden via env:
+
+          `$PROJECTS_ROOT`
+
+          `$PROJECT_SOURCE`
+        items:
+          $ref: '#/definitions/EnvVarParentOverride'
+        type: array
+        x-go-name: Env
+      image:
+        description: +optional
+        type: string
+        x-go-name: Image
+      memoryLimit:
+        description: +optional
+        type: string
+        x-go-name: MemoryLimit
+      mountSources:
+        description: |-
+          Toggles whether or not the project source code should
+          be mounted in the component.
+
+          Defaults to true for all component types except plugins and components that set `dedicatedPod` to true.
+          +optional
+        type: boolean
+        x-go-name: MountSources
+      sourceMapping:
+        description: |-
+          Optional specification of the path in the container where
+          project sources should be transferred/mounted when `mountSources` is `true`.
+          When omitted, the default value of /projects is used.
+          +optional
+        type: string
+        x-go-name: SourceMapping
+      volumeMounts:
+        description: |-
+          +optional
+          List of volumes mounts that should be mounted is this container.
+        items:
+          $ref: '#/definitions/VolumeMountParentOverride'
+        type: array
+        x-go-name: VolumeMounts
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  ContainerComponentPluginOverride:
+    description: Component that allows the developer to add a configured container
+      into his workspace
+    properties:
+      args:
+        description: |-
+          The arguments to supply to the command running the dockerimage component. The arguments are supplied either to the default command provided in the image or to the overridden command.
+
+          Defaults to an empty array, meaning use whatever is defined in the image.
+          +optional
+        items:
+          type: string
+        type: array
+        x-go-name: Args
+      command:
+        description: |-
+          The command to run in the dockerimage component instead of the default one provided in the image.
+
+          Defaults to an empty array, meaning use whatever is defined in the image.
+          +optional
+        items:
+          type: string
+        type: array
+        x-go-name: Command
+      dedicatedPod:
+        description: |-
+          Specify if a container should run in its own separated pod,
+          instead of running as part of the main development environment pod.
+
+          Default value is `false`
+          +optional
+        type: boolean
+        x-go-name: DedicatedPod
+      endpoints:
+        items:
+          $ref: '#/definitions/EndpointPluginOverride'
+        type: array
+        x-go-name: Endpoints
+      env:
+        description: |-
+          +optional
+          +patchMergeKey=name
+          +patchStrategy=merge
+          Environment variables used in this container.
+
+          The following variables are reserved and cannot be overridden via env:
+
+          `$PROJECTS_ROOT`
+
+          `$PROJECT_SOURCE`
+        items:
+          $ref: '#/definitions/EnvVarPluginOverride'
+        type: array
+        x-go-name: Env
+      image:
+        description: +optional
+        type: string
+        x-go-name: Image
+      memoryLimit:
+        description: +optional
+        type: string
+        x-go-name: MemoryLimit
+      mountSources:
+        description: |-
+          Toggles whether or not the project source code should
+          be mounted in the component.
+
+          Defaults to true for all component types except plugins and components that set `dedicatedPod` to true.
+          +optional
+        type: boolean
+        x-go-name: MountSources
+      sourceMapping:
+        description: |-
+          Optional specification of the path in the container where
+          project sources should be transferred/mounted when `mountSources` is `true`.
+          When omitted, the default value of /projects is used.
+          +optional
+        type: string
+        x-go-name: SourceMapping
+      volumeMounts:
+        description: |-
+          +optional
+          List of volumes mounts that should be mounted is this container.
+        items:
+          $ref: '#/definitions/VolumeMountPluginOverride'
+        type: array
+        x-go-name: VolumeMounts
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  ContainerComponentPluginOverrideParentOverride:
+    description: Component that allows the developer to add a configured container
+      into his workspace
+    properties:
+      args:
+        description: |-
+          The arguments to supply to the command running the dockerimage component. The arguments are supplied either to the default command provided in the image or to the overridden command.
+
+          Defaults to an empty array, meaning use whatever is defined in the image.
+          +optional
+        items:
+          type: string
+        type: array
+        x-go-name: Args
+      command:
+        description: |-
+          The command to run in the dockerimage component instead of the default one provided in the image.
+
+          Defaults to an empty array, meaning use whatever is defined in the image.
+          +optional
+        items:
+          type: string
+        type: array
+        x-go-name: Command
+      dedicatedPod:
+        description: |-
+          Specify if a container should run in its own separated pod,
+          instead of running as part of the main development environment pod.
+
+          Default value is `false`
+          +optional
+        type: boolean
+        x-go-name: DedicatedPod
+      endpoints:
+        items:
+          $ref: '#/definitions/EndpointPluginOverrideParentOverride'
+        type: array
+        x-go-name: Endpoints
+      env:
+        description: |-
+          +optional
+          +patchMergeKey=name
+          +patchStrategy=merge
+          Environment variables used in this container.
+
+          The following variables are reserved and cannot be overridden via env:
+
+          `$PROJECTS_ROOT`
+
+          `$PROJECT_SOURCE`
+        items:
+          $ref: '#/definitions/EnvVarPluginOverrideParentOverride'
+        type: array
+        x-go-name: Env
+      image:
+        description: +optional
+        type: string
+        x-go-name: Image
+      memoryLimit:
+        description: +optional
+        type: string
+        x-go-name: MemoryLimit
+      mountSources:
+        description: |-
+          Toggles whether or not the project source code should
+          be mounted in the component.
+
+          Defaults to true for all component types except plugins and components that set `dedicatedPod` to true.
+          +optional
+        type: boolean
+        x-go-name: MountSources
+      sourceMapping:
+        description: |-
+          Optional specification of the path in the container where
+          project sources should be transferred/mounted when `mountSources` is `true`.
+          When omitted, the default value of /projects is used.
+          +optional
+        type: string
+        x-go-name: SourceMapping
+      volumeMounts:
+        description: |-
+          +optional
+          List of volumes mounts that should be mounted is this container.
+        items:
+          $ref: '#/definitions/VolumeMountPluginOverrideParentOverride'
+        type: array
+        x-go-name: VolumeMounts
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  CustomCommand:
+    properties:
+      commandClass:
+        description: |-
+          Class of command that the associated implementation component
+          should use to process this command with the appropriate logic
+        type: string
+        x-go-name: CommandClass
+      embeddedResource:
+        $ref: '#/definitions/RawExtension'
+      group:
+        $ref: '#/definitions/CommandGroup'
+      label:
+        description: |-
+          +optional
+          Optional label that provides a label for this command
+          to be used in Editor UI menus for example
+        type: string
+        x-go-name: Label
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  CustomComponent:
+    properties:
+      componentClass:
+        description: |-
+          Class of component that the associated implementation controller
+          should use to process this command with the appropriate logic
+        type: string
+        x-go-name: ComponentClass
+      embeddedResource:
+        $ref: '#/definitions/RawExtension'
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  CustomProjectSource:
+    properties:
+      embeddedResource:
+        $ref: '#/definitions/RawExtension'
+      projectSourceClass:
+        type: string
+        x-go-name: ProjectSourceClass
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  Devfile:
+    description: |-
+      +k8s:deepcopy-gen=false
+      +devfile:jsonschema:generate:omitCustomUnionMembers=true
+    properties:
+      commands:
+        description: |-
+          Predefined, ready-to-use, workspace-related commands
+          +optional
+          +patchMergeKey=id
+          +patchStrategy=merge
+          +devfile:overrides:include:description=Overrides of commands encapsulated in a parent devfile or a plugin.
+          +devfile:toplevellist
+        items:
+          $ref: '#/definitions/Command'
+        type: array
+        x-go-name: Commands
+      components:
+        description: |-
+          List of the workspace components, such as editor and plugins,
+          user-provided containers, or other types of components
+          +optional
+          +patchMergeKey=name
+          +patchStrategy=merge
+          +devfile:overrides:include:description=Overrides of components encapsulated in a parent devfile or a plugin.
+          +devfile:toplevellist
+        items:
+          $ref: '#/definitions/Component'
+        type: array
+        x-go-name: Components
+      events:
+        $ref: '#/definitions/Events'
+      metadata:
+        $ref: '#/definitions/DevfileMetadata'
+      parent:
+        $ref: '#/definitions/Parent'
+      projects:
+        description: |-
+          Projects worked on in the workspace, containing names and sources locations
+          +optional
+          +patchMergeKey=name
+          +patchStrategy=merge
+          +devfile:overrides:include:omitInPlugin=true,description=Overrides of projects encapsulated in a parent devfile.
+          +devfile:toplevellist
+        items:
+          $ref: '#/definitions/Project'
+        type: array
+        x-go-name: Projects
+      schemaVersion:
+        description: |-
+          Devfile schema version
+          +kubebuilder:validation:Pattern=^([2-9])\.([0-9]+)\.([0-9]+)(\-[0-9a-z-]+(\.[0-9a-z-]+)*)?(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$
+        type: string
+        x-go-name: SchemaVersion
+      starterProjects:
+        description: |-
+          StarterProjects is a project that can be used as a starting point when bootstrapping new projects
+          +optional
+          +patchMergeKey=name
+          +patchStrategy=merge
+          +devfile:overrides:include:omitInPlugin=true,description=Overrides of starterProjects encapsulated in a parent devfile.
+          +devfile:toplevellist
+        items:
+          $ref: '#/definitions/StarterProject'
+        type: array
+        x-go-name: StarterProjects
+    title: Devfile describes the structure of a cloud-native workspace and development
+      environment.
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  DevfileMetadata:
+    properties:
+      attributes:
+        $ref: '#/definitions/Attributes'
+      description:
+        description: |-
+          Optional devfile description
+          +optional
+        type: string
+        x-go-name: Description
+      displayName:
+        description: |-
+          Optional devfile display name
+          +optional
+        type: string
+        x-go-name: DisplayName
+      globalMemoryLimit:
+        description: |-
+          Optional devfile global memory limit
+          +optional
+        type: string
+        x-go-name: GlobalMemoryLimit
+      icon:
+        description: |-
+          Optional devfile icon
+          +optional
+        type: string
+        x-go-name: Icon
+      name:
+        description: |-
+          Optional devfile name
+          +optional
+        type: string
+        x-go-name: Name
+      tags:
+        description: |-
+          Optional devfile tags
+          +optional
+        items:
+          type: string
+        type: array
+        x-go-name: Tags
+      version:
+        description: |-
+          Optional semver-compatible version
+          +optional
+          +kubebuilder:validation:Pattern=^([0-9]+)\.([0-9]+)\.([0-9]+)(\-[0-9a-z-]+(\.[0-9a-z-]+)*)?(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$
+        type: string
+        x-go-name: Version
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/devfile
+  Endpoint:
+    properties:
+      attributes:
+        $ref: '#/definitions/Attributes'
+      exposure:
+        $ref: '#/definitions/EndpointExposure'
+      name:
+        description: |-
+          +kubebuilder:validation:Pattern=^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
+          +kubebuilder:validation:MaxLength=63
+        type: string
+        x-go-name: Name
+      path:
+        description: |-
+          Path of the endpoint URL
+          +optional
+        type: string
+        x-go-name: Path
+      protocol:
+        $ref: '#/definitions/EndpointProtocol'
+      secure:
+        description: |-
+          Describes whether the endpoint should be secured and protected by some
+          authentication process. This requires a protocol of `https` or `wss`.
+          +optional
+        type: boolean
+        x-go-name: Secure
+      targetPort:
+        format: int64
+        type: integer
+        x-go-name: TargetPort
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  EndpointExposure:
+    description: |-
+      Only one of the following exposures may be specified: public, internal, none.
+      +kubebuilder:validation:Enum=public;internal;none
+    title: EndpointExposure describes the way an endpoint is exposed on the network.
+    type: string
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  EndpointExposureParentOverride:
+    description: |-
+      Only one of the following exposures may be specified: public, internal, none.
+      +kubebuilder:validation:Enum=public;internal;none
+    title: EndpointExposure describes the way an endpoint is exposed on the network.
+    type: string
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  EndpointExposurePluginOverride:
+    description: |-
+      Only one of the following exposures may be specified: public, internal, none.
+      +kubebuilder:validation:Enum=public;internal;none
+    title: EndpointExposure describes the way an endpoint is exposed on the network.
+    type: string
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  EndpointExposurePluginOverrideParentOverride:
+    description: |-
+      Only one of the following exposures may be specified: public, internal, none.
+      +kubebuilder:validation:Enum=public;internal;none
+    title: EndpointExposure describes the way an endpoint is exposed on the network.
+    type: string
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  EndpointParentOverride:
+    properties:
+      attributes:
+        $ref: '#/definitions/Attributes'
+      exposure:
+        $ref: '#/definitions/EndpointExposureParentOverride'
+      name:
+        description: |-
+          +kubebuilder:validation:Pattern=^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
+          +kubebuilder:validation:MaxLength=63
+        type: string
+        x-go-name: Name
+      path:
+        description: |-
+          Path of the endpoint URL
+          +optional
+        type: string
+        x-go-name: Path
+      protocol:
+        $ref: '#/definitions/EndpointProtocolParentOverride'
+      secure:
+        description: |-
+          Describes whether the endpoint should be secured and protected by some
+          authentication process. This requires a protocol of `https` or `wss`.
+          +optional
+        type: boolean
+        x-go-name: Secure
+      targetPort:
+        description: +optional
+        format: int64
+        type: integer
+        x-go-name: TargetPort
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  EndpointPluginOverride:
+    properties:
+      attributes:
+        $ref: '#/definitions/Attributes'
+      exposure:
+        $ref: '#/definitions/EndpointExposurePluginOverride'
+      name:
+        description: |-
+          +kubebuilder:validation:Pattern=^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
+          +kubebuilder:validation:MaxLength=63
+        type: string
+        x-go-name: Name
+      path:
+        description: |-
+          Path of the endpoint URL
+          +optional
+        type: string
+        x-go-name: Path
+      protocol:
+        $ref: '#/definitions/EndpointProtocolPluginOverride'
+      secure:
+        description: |-
+          Describes whether the endpoint should be secured and protected by some
+          authentication process. This requires a protocol of `https` or `wss`.
+          +optional
+        type: boolean
+        x-go-name: Secure
+      targetPort:
+        description: +optional
+        format: int64
+        type: integer
+        x-go-name: TargetPort
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  EndpointPluginOverrideParentOverride:
+    properties:
+      attributes:
+        $ref: '#/definitions/Attributes'
+      exposure:
+        $ref: '#/definitions/EndpointExposurePluginOverrideParentOverride'
+      name:
+        description: |-
+          +kubebuilder:validation:Pattern=^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
+          +kubebuilder:validation:MaxLength=63
+        type: string
+        x-go-name: Name
+      path:
+        description: |-
+          Path of the endpoint URL
+          +optional
+        type: string
+        x-go-name: Path
+      protocol:
+        $ref: '#/definitions/EndpointProtocolPluginOverrideParentOverride'
+      secure:
+        description: |-
+          Describes whether the endpoint should be secured and protected by some
+          authentication process. This requires a protocol of `https` or `wss`.
+          +optional
+        type: boolean
+        x-go-name: Secure
+      targetPort:
+        description: +optional
+        format: int64
+        type: integer
+        x-go-name: TargetPort
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  EndpointProtocol:
+    description: |-
+      Only one of the following protocols may be specified: http, ws, tcp, udp.
+      +kubebuilder:validation:Enum=http;https;ws;wss;tcp;udp
+    title: EndpointProtocol defines the application and transport protocols of the
+      traffic that will go through this endpoint.
+    type: string
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  EndpointProtocolParentOverride:
+    description: |-
+      Only one of the following protocols may be specified: http, ws, tcp, udp.
+      +kubebuilder:validation:Enum=http;https;ws;wss;tcp;udp
+    title: EndpointProtocol defines the application and transport protocols of the
+      traffic that will go through this endpoint.
+    type: string
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  EndpointProtocolPluginOverride:
+    description: |-
+      Only one of the following protocols may be specified: http, ws, tcp, udp.
+      +kubebuilder:validation:Enum=http;https;ws;wss;tcp;udp
+    title: EndpointProtocol defines the application and transport protocols of the
+      traffic that will go through this endpoint.
+    type: string
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  EndpointProtocolPluginOverrideParentOverride:
+    description: |-
+      Only one of the following protocols may be specified: http, ws, tcp, udp.
+      +kubebuilder:validation:Enum=http;https;ws;wss;tcp;udp
+    title: EndpointProtocol defines the application and transport protocols of the
+      traffic that will go through this endpoint.
+    type: string
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  EnvVar:
+    properties:
+      name:
+        type: string
+        x-go-name: Name
+      value:
+        type: string
+        x-go-name: Value
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  EnvVarParentOverride:
+    properties:
+      name:
+        type: string
+        x-go-name: Name
+      value:
+        description: +optional
+        type: string
+        x-go-name: Value
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  EnvVarPluginOverride:
+    properties:
+      name:
+        type: string
+        x-go-name: Name
+      value:
+        description: +optional
+        type: string
+        x-go-name: Value
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  EnvVarPluginOverrideParentOverride:
+    properties:
+      name:
+        type: string
+        x-go-name: Name
+      value:
+        description: +optional
+        type: string
+        x-go-name: Value
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  Events:
+    properties:
+      postStart:
+        description: |-
+          IDs of commands that should be executed after the workspace is completely started.
+          In the case of Che-Theia, these commands should be executed after all plugins and extensions have started, including project cloning.
+          This means that those commands are not triggered until the user opens the IDE in his browser.
+          +optional
+        items:
+          type: string
+        type: array
+        x-go-name: PostStart
+      postStop:
+        description: |-
+          +optional
+          IDs of commands that should be executed after stopping the workspace.
+        items:
+          type: string
+        type: array
+        x-go-name: PostStop
+      preStart:
+        description: |-
+          IDs of commands that should be executed before the workspace start.
+          Kubernetes-wise, these commands would typically be executed in init containers of the workspace POD.
+          +optional
+        items:
+          type: string
+        type: array
+        x-go-name: PreStart
+      preStop:
+        description: |-
+          +optional
+          IDs of commands that should be executed before stopping the workspace.
+        items:
+          type: string
+        type: array
+        x-go-name: PreStop
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  ExecCommand:
+    properties:
+      commandLine:
+        description: |-
+          The actual command-line string
+
+          Special variables that can be used:
+
+          `$PROJECTS_ROOT`: A path where projects sources are mounted as defined by container component's sourceMapping.
+
+          `$PROJECT_SOURCE`: A path to a project source ($PROJECTS_ROOT/<project-name>). If there are multiple projects, this will point to the directory of the first one.
+        type: string
+        x-go-name: CommandLine
+      component:
+        description: Describes component to which given action relates
+        type: string
+        x-go-name: Component
+      env:
+        description: |-
+          +optional
+          +patchMergeKey=name
+          +patchStrategy=merge
+          Optional list of environment variables that have to be set
+          before running the command
+        items:
+          $ref: '#/definitions/EnvVar'
+        type: array
+        x-go-name: Env
+      group:
+        $ref: '#/definitions/CommandGroup'
+      hotReloadCapable:
+        description: |-
+          +optional
+          Whether the command is capable to reload itself when source code changes.
+          If set to `true` the command won't be restarted and it is expected to handle file changes on its own.
+
+          Default value is `false`
+        type: boolean
+        x-go-name: HotReloadCapable
+      label:
+        description: |-
+          +optional
+          Optional label that provides a label for this command
+          to be used in Editor UI menus for example
+        type: string
+        x-go-name: Label
+      workingDir:
+        description: |-
+          Working directory where the command should be executed
+
+          Special variables that can be used:
+
+          `$PROJECTS_ROOT`: A path where projects sources are mounted as defined by container component's sourceMapping.
+
+          `$PROJECT_SOURCE`: A path to a project source ($PROJECTS_ROOT/<project-name>). If there are multiple projects, this will point to the directory of the first one.
+          +optional
+        type: string
+        x-go-name: WorkingDir
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  ExecCommandParentOverride:
+    properties:
+      commandLine:
+        description: |-
+          +optional
+          The actual command-line string
+
+          Special variables that can be used:
+
+          `$PROJECTS_ROOT`: A path where projects sources are mounted as defined by container component's sourceMapping.
+
+          `$PROJECT_SOURCE`: A path to a project source ($PROJECTS_ROOT/<project-name>). If there are multiple projects, this will point to the directory of the first one.
+        type: string
+        x-go-name: CommandLine
+      component:
+        description: |-
+          +optional
+          Describes component to which given action relates
+        type: string
+        x-go-name: Component
+      env:
+        description: |-
+          +optional
+          +patchMergeKey=name
+          +patchStrategy=merge
+          Optional list of environment variables that have to be set
+          before running the command
+        items:
+          $ref: '#/definitions/EnvVarParentOverride'
+        type: array
+        x-go-name: Env
+      group:
+        $ref: '#/definitions/CommandGroupParentOverride'
+      hotReloadCapable:
+        description: |-
+          +optional
+          Whether the command is capable to reload itself when source code changes.
+          If set to `true` the command won't be restarted and it is expected to handle file changes on its own.
+
+          Default value is `false`
+        type: boolean
+        x-go-name: HotReloadCapable
+      label:
+        description: |-
+          +optional
+          Optional label that provides a label for this command
+          to be used in Editor UI menus for example
+        type: string
+        x-go-name: Label
+      workingDir:
+        description: |-
+          Working directory where the command should be executed
+
+          Special variables that can be used:
+
+          `$PROJECTS_ROOT`: A path where projects sources are mounted as defined by container component's sourceMapping.
+
+          `$PROJECT_SOURCE`: A path to a project source ($PROJECTS_ROOT/<project-name>). If there are multiple projects, this will point to the directory of the first one.
+          +optional
+        type: string
+        x-go-name: WorkingDir
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  ExecCommandPluginOverride:
+    properties:
+      commandLine:
+        description: |-
+          +optional
+          The actual command-line string
+
+          Special variables that can be used:
+
+          `$PROJECTS_ROOT`: A path where projects sources are mounted as defined by container component's sourceMapping.
+
+          `$PROJECT_SOURCE`: A path to a project source ($PROJECTS_ROOT/<project-name>). If there are multiple projects, this will point to the directory of the first one.
+        type: string
+        x-go-name: CommandLine
+      component:
+        description: |-
+          +optional
+          Describes component to which given action relates
+        type: string
+        x-go-name: Component
+      env:
+        description: |-
+          +optional
+          +patchMergeKey=name
+          +patchStrategy=merge
+          Optional list of environment variables that have to be set
+          before running the command
+        items:
+          $ref: '#/definitions/EnvVarPluginOverride'
+        type: array
+        x-go-name: Env
+      group:
+        $ref: '#/definitions/CommandGroupPluginOverride'
+      hotReloadCapable:
+        description: |-
+          +optional
+          Whether the command is capable to reload itself when source code changes.
+          If set to `true` the command won't be restarted and it is expected to handle file changes on its own.
+
+          Default value is `false`
+        type: boolean
+        x-go-name: HotReloadCapable
+      label:
+        description: |-
+          +optional
+          Optional label that provides a label for this command
+          to be used in Editor UI menus for example
+        type: string
+        x-go-name: Label
+      workingDir:
+        description: |-
+          Working directory where the command should be executed
+
+          Special variables that can be used:
+
+          `$PROJECTS_ROOT`: A path where projects sources are mounted as defined by container component's sourceMapping.
+
+          `$PROJECT_SOURCE`: A path to a project source ($PROJECTS_ROOT/<project-name>). If there are multiple projects, this will point to the directory of the first one.
+          +optional
+        type: string
+        x-go-name: WorkingDir
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  ExecCommandPluginOverrideParentOverride:
+    properties:
+      commandLine:
+        description: |-
+          +optional
+          The actual command-line string
+
+          Special variables that can be used:
+
+          `$PROJECTS_ROOT`: A path where projects sources are mounted as defined by container component's sourceMapping.
+
+          `$PROJECT_SOURCE`: A path to a project source ($PROJECTS_ROOT/<project-name>). If there are multiple projects, this will point to the directory of the first one.
+        type: string
+        x-go-name: CommandLine
+      component:
+        description: |-
+          +optional
+          Describes component to which given action relates
+        type: string
+        x-go-name: Component
+      env:
+        description: |-
+          +optional
+          +patchMergeKey=name
+          +patchStrategy=merge
+          Optional list of environment variables that have to be set
+          before running the command
+        items:
+          $ref: '#/definitions/EnvVarPluginOverrideParentOverride'
+        type: array
+        x-go-name: Env
+      group:
+        $ref: '#/definitions/CommandGroupPluginOverrideParentOverride'
+      hotReloadCapable:
+        description: |-
+          +optional
+          Whether the command is capable to reload itself when source code changes.
+          If set to `true` the command won't be restarted and it is expected to handle file changes on its own.
+
+          Default value is `false`
+        type: boolean
+        x-go-name: HotReloadCapable
+      label:
+        description: |-
+          +optional
+          Optional label that provides a label for this command
+          to be used in Editor UI menus for example
+        type: string
+        x-go-name: Label
+      workingDir:
+        description: |-
+          Working directory where the command should be executed
+
+          Special variables that can be used:
+
+          `$PROJECTS_ROOT`: A path where projects sources are mounted as defined by container component's sourceMapping.
+
+          `$PROJECT_SOURCE`: A path to a project source ($PROJECTS_ROOT/<project-name>). If there are multiple projects, this will point to the directory of the first one.
+          +optional
+        type: string
+        x-go-name: WorkingDir
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  GitProjectSource:
+    properties:
+      checkoutFrom:
+        $ref: '#/definitions/CheckoutFrom'
+      remotes:
+        additionalProperties:
+          type: string
+        description: The remotes map which should be initialized in the git project.
+          Must have at least one remote configured
+        type: object
+        x-go-name: Remotes
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  GitProjectSourceParentOverride:
+    properties:
+      checkoutFrom:
+        $ref: '#/definitions/CheckoutFromParentOverride'
+      remotes:
+        additionalProperties:
+          type: string
+        description: |-
+          +optional
+          The remotes map which should be initialized in the git project. Must have at least one remote configured
+        type: object
+        x-go-name: Remotes
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  GithubProjectSource:
+    properties:
+      checkoutFrom:
+        $ref: '#/definitions/CheckoutFrom'
+      remotes:
+        additionalProperties:
+          type: string
+        description: The remotes map which should be initialized in the git project.
+          Must have at least one remote configured
+        type: object
+        x-go-name: Remotes
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  GithubProjectSourceParentOverride:
+    properties:
+      checkoutFrom:
+        $ref: '#/definitions/CheckoutFromParentOverride'
+      remotes:
+        additionalProperties:
+          type: string
+        description: |-
+          +optional
+          The remotes map which should be initialized in the git project. Must have at least one remote configured
+        type: object
+        x-go-name: Remotes
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  ImportReferenceType:
+    description: |-
+      ImportReferenceType describes the type of location
+      from where the referenced template structure should be retrieved.
+      Only one of the following parent locations may be specified.
+      +kubebuilder:validation:Enum=Uri;Id;Kubernetes
+    type: string
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  ImportReferenceTypeParentOverride:
+    description: |-
+      ImportReferenceType describes the type of location
+      from where the referenced template structure should be retrieved.
+      Only one of the following parent locations may be specified.
+    type: string
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  JSON:
+    description: 'These types are supported: bool, int64, float64, string, []interface{},
+      map[string]interface{} and nil.'
+    properties:
+      Raw:
+        items:
+          format: uint8
+          type: integer
+        type: array
+    title: JSON represents any valid JSON value.
+    type: object
+    x-go-package: k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1
+  K8sLikeComponentLocationType:
+    description: |-
+      K8sLikeComponentLocationType describes the type of
+      the location the configuration is fetched from.
+      Only one of the following component type may be specified.
+      +kubebuilder:validation:Enum=Uri;Inlined
+    type: string
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  K8sLikeComponentLocationTypeParentOverride:
+    description: |-
+      K8sLikeComponentLocationType describes the type of
+      the location the configuration is fetched from.
+      Only one of the following component type may be specified.
+    type: string
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  K8sLikeComponentLocationTypePluginOverride:
+    description: |-
+      K8sLikeComponentLocationType describes the type of
+      the location the configuration is fetched from.
+      Only one of the following component type may be specified.
+    type: string
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  K8sLikeComponentLocationTypePluginOverrideParentOverride:
+    description: |-
+      K8sLikeComponentLocationType describes the type of
+      the location the configuration is fetched from.
+      Only one of the following component type may be specified.
+    type: string
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  KubernetesComponent:
+    description: Component that allows partly importing Kubernetes resources into
+      the workspace POD
+    properties:
+      endpoints:
+        items:
+          $ref: '#/definitions/Endpoint'
+        type: array
+        x-go-name: Endpoints
+      inlined:
+        description: |-
+          Inlined manifest
+          +optional
+        type: string
+        x-go-name: Inlined
+      locationType:
+        $ref: '#/definitions/K8sLikeComponentLocationType'
+      uri:
+        description: |-
+          Location in a file fetched from a uri.
+          +optional
+        type: string
+        x-go-name: Uri
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  KubernetesComponentParentOverride:
+    description: Component that allows partly importing Kubernetes resources into
+      the workspace POD
+    properties:
+      endpoints:
+        items:
+          $ref: '#/definitions/EndpointParentOverride'
+        type: array
+        x-go-name: Endpoints
+      inlined:
+        description: |-
+          Inlined manifest
+          +optional
+        type: string
+        x-go-name: Inlined
+      locationType:
+        $ref: '#/definitions/K8sLikeComponentLocationTypeParentOverride'
+      uri:
+        description: |-
+          Location in a file fetched from a uri.
+          +optional
+        type: string
+        x-go-name: Uri
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  KubernetesComponentPluginOverride:
+    description: Component that allows partly importing Kubernetes resources into
+      the workspace POD
+    properties:
+      endpoints:
+        items:
+          $ref: '#/definitions/EndpointPluginOverride'
+        type: array
+        x-go-name: Endpoints
+      inlined:
+        description: |-
+          Inlined manifest
+          +optional
+        type: string
+        x-go-name: Inlined
+      locationType:
+        $ref: '#/definitions/K8sLikeComponentLocationTypePluginOverride'
+      uri:
+        description: |-
+          Location in a file fetched from a uri.
+          +optional
+        type: string
+        x-go-name: Uri
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  KubernetesComponentPluginOverrideParentOverride:
+    description: Component that allows partly importing Kubernetes resources into
+      the workspace POD
+    properties:
+      endpoints:
+        items:
+          $ref: '#/definitions/EndpointPluginOverrideParentOverride'
+        type: array
+        x-go-name: Endpoints
+      inlined:
+        description: |-
+          Inlined manifest
+          +optional
+        type: string
+        x-go-name: Inlined
+      locationType:
+        $ref: '#/definitions/K8sLikeComponentLocationTypePluginOverrideParentOverride'
+      uri:
+        description: |-
+          Location in a file fetched from a uri.
+          +optional
+        type: string
+        x-go-name: Uri
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  KubernetesCustomResourceImportReference:
+    properties:
+      name:
+        type: string
+        x-go-name: Name
+      namespace:
+        description: +optional
+        type: string
+        x-go-name: Namespace
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  KubernetesCustomResourceImportReferenceParentOverride:
+    properties:
+      name:
+        description: +optional
+        type: string
+        x-go-name: Name
+      namespace:
+        description: +optional
+        type: string
+        x-go-name: Namespace
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  OpenshiftComponent:
+    description: Component that allows partly importing Openshift resources into the
+      workspace POD
+    properties:
+      endpoints:
+        items:
+          $ref: '#/definitions/Endpoint'
+        type: array
+        x-go-name: Endpoints
+      inlined:
+        description: |-
+          Inlined manifest
+          +optional
+        type: string
+        x-go-name: Inlined
+      locationType:
+        $ref: '#/definitions/K8sLikeComponentLocationType'
+      uri:
+        description: |-
+          Location in a file fetched from a uri.
+          +optional
+        type: string
+        x-go-name: Uri
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  OpenshiftComponentParentOverride:
+    description: Component that allows partly importing Openshift resources into the
+      workspace POD
+    properties:
+      endpoints:
+        items:
+          $ref: '#/definitions/EndpointParentOverride'
+        type: array
+        x-go-name: Endpoints
+      inlined:
+        description: |-
+          Inlined manifest
+          +optional
+        type: string
+        x-go-name: Inlined
+      locationType:
+        $ref: '#/definitions/K8sLikeComponentLocationTypeParentOverride'
+      uri:
+        description: |-
+          Location in a file fetched from a uri.
+          +optional
+        type: string
+        x-go-name: Uri
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  OpenshiftComponentPluginOverride:
+    description: Component that allows partly importing Openshift resources into the
+      workspace POD
+    properties:
+      endpoints:
+        items:
+          $ref: '#/definitions/EndpointPluginOverride'
+        type: array
+        x-go-name: Endpoints
+      inlined:
+        description: |-
+          Inlined manifest
+          +optional
+        type: string
+        x-go-name: Inlined
+      locationType:
+        $ref: '#/definitions/K8sLikeComponentLocationTypePluginOverride'
+      uri:
+        description: |-
+          Location in a file fetched from a uri.
+          +optional
+        type: string
+        x-go-name: Uri
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  OpenshiftComponentPluginOverrideParentOverride:
+    description: Component that allows partly importing Openshift resources into the
+      workspace POD
+    properties:
+      endpoints:
+        items:
+          $ref: '#/definitions/EndpointPluginOverrideParentOverride'
+        type: array
+        x-go-name: Endpoints
+      inlined:
+        description: |-
+          Inlined manifest
+          +optional
+        type: string
+        x-go-name: Inlined
+      locationType:
+        $ref: '#/definitions/K8sLikeComponentLocationTypePluginOverrideParentOverride'
+      uri:
+        description: |-
+          Location in a file fetched from a uri.
+          +optional
+        type: string
+        x-go-name: Uri
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  Parent:
+    properties:
+      commands:
+        description: |-
+          Overrides of commands encapsulated in a parent devfile or a plugin.
+          Overriding is done according to K8S strategic merge patch standard rules.
+          +optional
+          +patchMergeKey=id
+          +patchStrategy=merge
+          +devfile:toplevellist
+        items:
+          $ref: '#/definitions/CommandParentOverride'
+        type: array
+        x-go-name: Commands
+      components:
+        description: |-
+          Overrides of components encapsulated in a parent devfile or a plugin.
+          Overriding is done according to K8S strategic merge patch standard rules.
+          +optional
+          +patchMergeKey=name
+          +patchStrategy=merge
+          +devfile:toplevellist
+        items:
+          $ref: '#/definitions/ComponentParentOverride'
+        type: array
+        x-go-name: Components
+      id:
+        description: |-
+          Id in a registry that contains a Devfile yaml file
+          +optional
+        type: string
+        x-go-name: Id
+      importReferenceType:
+        $ref: '#/definitions/ImportReferenceType'
+      kubernetes:
+        $ref: '#/definitions/KubernetesCustomResourceImportReference'
+      projects:
+        description: |-
+          Overrides of projects encapsulated in a parent devfile.
+          Overriding is done according to K8S strategic merge patch standard rules.
+          +optional
+          +patchMergeKey=name
+          +patchStrategy=merge
+          +devfile:toplevellist
+        items:
+          $ref: '#/definitions/ProjectParentOverride'
+        type: array
+        x-go-name: Projects
+      registryUrl:
+        description: +optional
+        type: string
+        x-go-name: RegistryUrl
+      starterProjects:
+        description: |-
+          Overrides of starterProjects encapsulated in a parent devfile.
+          Overriding is done according to K8S strategic merge patch standard rules.
+          +optional
+          +patchMergeKey=name
+          +patchStrategy=merge
+          +devfile:toplevellist
+        items:
+          $ref: '#/definitions/StarterProjectParentOverride'
+        type: array
+        x-go-name: StarterProjects
+      uri:
+        description: |-
+          Uri of a Devfile yaml file
+          +optional
+        type: string
+        x-go-name: Uri
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  PluginComponent:
+    properties:
+      commands:
+        description: |-
+          Overrides of commands encapsulated in a parent devfile or a plugin.
+          Overriding is done according to K8S strategic merge patch standard rules.
+          +optional
+          +patchMergeKey=id
+          +patchStrategy=merge
+          +devfile:toplevellist
+        items:
+          $ref: '#/definitions/CommandPluginOverride'
+        type: array
+        x-go-name: Commands
+      components:
+        description: |-
+          Overrides of components encapsulated in a parent devfile or a plugin.
+          Overriding is done according to K8S strategic merge patch standard rules.
+          +optional
+          +patchMergeKey=name
+          +patchStrategy=merge
+          +devfile:toplevellist
+        items:
+          $ref: '#/definitions/ComponentPluginOverride'
+        type: array
+        x-go-name: Components
+      id:
+        description: |-
+          Id in a registry that contains a Devfile yaml file
+          +optional
+        type: string
+        x-go-name: Id
+      importReferenceType:
+        $ref: '#/definitions/ImportReferenceType'
+      kubernetes:
+        $ref: '#/definitions/KubernetesCustomResourceImportReference'
+      registryUrl:
+        description: +optional
+        type: string
+        x-go-name: RegistryUrl
+      uri:
+        description: |-
+          Uri of a Devfile yaml file
+          +optional
+        type: string
+        x-go-name: Uri
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  PluginComponentParentOverride:
+    properties:
+      commands:
+        description: |-
+          Overrides of commands encapsulated in a parent devfile or a plugin.
+          Overriding is done according to K8S strategic merge patch standard rules.
+          +optional
+          +patchMergeKey=id
+          +patchStrategy=merge
+          +devfile:toplevellist
+        items:
+          $ref: '#/definitions/CommandPluginOverrideParentOverride'
+        type: array
+        x-go-name: Commands
+      components:
+        description: |-
+          Overrides of components encapsulated in a parent devfile or a plugin.
+          Overriding is done according to K8S strategic merge patch standard rules.
+          +optional
+          +patchMergeKey=name
+          +patchStrategy=merge
+          +devfile:toplevellist
+        items:
+          $ref: '#/definitions/ComponentPluginOverrideParentOverride'
+        type: array
+        x-go-name: Components
+      id:
+        description: |-
+          Id in a registry that contains a Devfile yaml file
+          +optional
+        type: string
+        x-go-name: Id
+      importReferenceType:
+        $ref: '#/definitions/ImportReferenceTypeParentOverride'
+      kubernetes:
+        $ref: '#/definitions/KubernetesCustomResourceImportReferenceParentOverride'
+      registryUrl:
+        description: +optional
+        type: string
+        x-go-name: RegistryUrl
+      uri:
+        description: |-
+          Uri of a Devfile yaml file
+          +optional
+        type: string
+        x-go-name: Uri
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  Project:
+    properties:
+      attributes:
+        $ref: '#/definitions/Attributes'
+      clonePath:
+        description: |-
+          Path relative to the root of the projects to which this project should be cloned into. This is a unix-style relative path (i.e. uses forward slashes). The path is invalid if it is absolute or tries to escape the project root through the usage of '..'. If not specified, defaults to the project name.
+          +optional
+        type: string
+        x-go-name: ClonePath
+      custom:
+        $ref: '#/definitions/CustomProjectSource'
+      git:
+        $ref: '#/definitions/GitProjectSource'
+      github:
+        $ref: '#/definitions/GithubProjectSource'
+      name:
+        description: |-
+          Project name
+          +kubebuilder:validation:Pattern=^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
+          +kubebuilder:validation:MaxLength=63
+        type: string
+        x-go-name: Name
+      sourceType:
+        $ref: '#/definitions/ProjectSourceType'
+      sparseCheckoutDirs:
+        description: |-
+          Populate the project sparsely with selected directories.
+          +optional
+        items:
+          type: string
+        type: array
+        x-go-name: SparseCheckoutDirs
+      zip:
+        $ref: '#/definitions/ZipProjectSource'
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  ProjectParentOverride:
+    properties:
+      attributes:
+        $ref: '#/definitions/Attributes'
+      clonePath:
+        description: |-
+          Path relative to the root of the projects to which this project should be cloned into. This is a unix-style relative path (i.e. uses forward slashes). The path is invalid if it is absolute or tries to escape the project root through the usage of '..'. If not specified, defaults to the project name.
+          +optional
+        type: string
+        x-go-name: ClonePath
+      git:
+        $ref: '#/definitions/GitProjectSourceParentOverride'
+      github:
+        $ref: '#/definitions/GithubProjectSourceParentOverride'
+      name:
+        description: |-
+          Project name
+          +kubebuilder:validation:Pattern=^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
+          +kubebuilder:validation:MaxLength=63
+        type: string
+        x-go-name: Name
+      sourceType:
+        $ref: '#/definitions/ProjectSourceTypeParentOverride'
+      sparseCheckoutDirs:
+        description: |-
+          Populate the project sparsely with selected directories.
+          +optional
+        items:
+          type: string
+        type: array
+        x-go-name: SparseCheckoutDirs
+      zip:
+        $ref: '#/definitions/ZipProjectSourceParentOverride'
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  ProjectSourceType:
+    description: |-
+      Only one of the following project sources may be specified.
+      If none of the following policies is specified, the default one
+      is AllowConcurrent.
+      +kubebuilder:validation:Enum=Git;Github;Zip;Custom
+    title: ProjectSourceType describes the type of Project sources.
+    type: string
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  ProjectSourceTypeParentOverride:
+    description: |-
+      Only one of the following project sources may be specified.
+      If none of the following policies is specified, the default one
+      is AllowConcurrent.
+    title: ProjectSourceType describes the type of Project sources.
+    type: string
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  RawExtension:
+    description: |-
+      To use this, make a field which has RawExtension as its type in your external, versioned
+      struct, and Object in your internal struct. You also need to register your
+      various plugin types.
+
+      Internal package:
+      type MyAPIObject struct {
+      runtime.TypeMeta `json:",inline"`
+      MyPlugin runtime.Object `json:"myPlugin"`
+      }
+      type PluginA struct {
+      AOption string `json:"aOption"`
+      }
+
+      External package:
+      type MyAPIObject struct {
+      runtime.TypeMeta `json:",inline"`
+      MyPlugin runtime.RawExtension `json:"myPlugin"`
+      }
+      type PluginA struct {
+      AOption string `json:"aOption"`
+      }
+
+      On the wire, the JSON will look something like this:
+      {
+      "kind":"MyAPIObject",
+      "apiVersion":"v1",
+      "myPlugin": {
+      "kind":"PluginA",
+      "aOption":"foo",
+      },
+      }
+
+      So what happens? Decode first uses json or yaml to unmarshal the serialized data into
+      your external MyAPIObject. That causes the raw JSON to be stored, but not unpacked.
+      The next step is to copy (using pkg/conversion) into the internal struct. The runtime
+      package's DefaultScheme has conversion functions installed which will unpack the
+      JSON stored in RawExtension, turning it into the correct object type, and storing it
+      in the Object. (TODO: In the case where the object is of an unknown type, a
+      runtime.Unknown object will be created and stored.)
+
+      +k8s:deepcopy-gen=true
+      +protobuf=true
+      +k8s:openapi-gen=true
+    title: RawExtension is used to hold extensions in external versions.
+    type: object
+    x-go-package: k8s.io/apimachinery/pkg/runtime
+  Schema:
+    description: Schema is the index file schema
+    properties:
+      description:
+        type: string
+        x-go-name: Description
+      displayName:
+        type: string
+        x-go-name: DisplayName
+      language:
+        type: string
+        x-go-name: Language
+      links:
+        additionalProperties:
+          type: string
+        type: object
+        x-go-name: Links
+      name:
+        type: string
+        x-go-name: Name
+      projectType:
+        type: string
+        x-go-name: ProjectType
+      resources:
+        items:
+          type: string
+        type: array
+        x-go-name: Resources
+      starterProjects:
+        items:
+          type: string
+        type: array
+        x-go-name: StarterProjects
+      tags:
+        items:
+          type: string
+        type: array
+        x-go-name: Tags
+    type: object
+    x-go-package: github.com/devfile/registry-support/index/generator/schema
+  StarterProject:
+    properties:
+      attributes:
+        $ref: '#/definitions/Attributes'
+      custom:
+        $ref: '#/definitions/CustomProjectSource'
+      description:
+        description: |-
+          Description of a starter project
+          +optional
+        type: string
+        x-go-name: Description
+      git:
+        $ref: '#/definitions/GitProjectSource'
+      github:
+        $ref: '#/definitions/GithubProjectSource'
+      name:
+        description: |-
+          Project name
+          +kubebuilder:validation:Pattern=^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
+          +kubebuilder:validation:MaxLength=63
+        type: string
+        x-go-name: Name
+      sourceType:
+        $ref: '#/definitions/ProjectSourceType'
+      subDir:
+        description: |-
+          Sub-directory from a starter project to be used as root for starter project.
+          +optional
+        type: string
+        x-go-name: SubDir
+      zip:
+        $ref: '#/definitions/ZipProjectSource'
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  StarterProjectParentOverride:
+    properties:
+      attributes:
+        $ref: '#/definitions/Attributes'
+      description:
+        description: |-
+          Description of a starter project
+          +optional
+        type: string
+        x-go-name: Description
+      git:
+        $ref: '#/definitions/GitProjectSourceParentOverride'
+      github:
+        $ref: '#/definitions/GithubProjectSourceParentOverride'
+      name:
+        description: |-
+          Project name
+          +kubebuilder:validation:Pattern=^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
+          +kubebuilder:validation:MaxLength=63
+        type: string
+        x-go-name: Name
+      sourceType:
+        $ref: '#/definitions/ProjectSourceTypeParentOverride'
+      subDir:
+        description: |-
+          Sub-directory from a starter project to be used as root for starter project.
+          +optional
+        type: string
+        x-go-name: SubDir
+      zip:
+        $ref: '#/definitions/ZipProjectSourceParentOverride'
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  VolumeComponent:
+    description: Component that allows the developer to declare and configure a volume
+      into his workspace
+    properties:
+      size:
+        description: |-
+          +optional
+          Size of the volume
+        type: string
+        x-go-name: Size
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  VolumeComponentParentOverride:
+    description: Component that allows the developer to declare and configure a volume
+      into his workspace
+    properties:
+      size:
+        description: |-
+          +optional
+          Size of the volume
+        type: string
+        x-go-name: Size
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  VolumeComponentPluginOverride:
+    description: Component that allows the developer to declare and configure a volume
+      into his workspace
+    properties:
+      size:
+        description: |-
+          +optional
+          Size of the volume
+        type: string
+        x-go-name: Size
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  VolumeComponentPluginOverrideParentOverride:
+    description: Component that allows the developer to declare and configure a volume
+      into his workspace
+    properties:
+      size:
+        description: |-
+          +optional
+          Size of the volume
+        type: string
+        x-go-name: Size
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  VolumeMount:
+    description: Volume that should be mounted to a component container
+    properties:
+      name:
+        description: |-
+          The volume mount name is the name of an existing `Volume` component.
+          If several containers mount the same volume name
+          then they will reuse the same volume and will be able to access to the same files.
+          +kubebuilder:validation:Pattern=^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
+          +kubebuilder:validation:MaxLength=63
+        type: string
+        x-go-name: Name
+      path:
+        description: |-
+          The path in the component container where the volume should be mounted.
+          If not path is mentioned, default path is the is `/<name>`.
+          +optional
+        type: string
+        x-go-name: Path
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  VolumeMountParentOverride:
+    description: Volume that should be mounted to a component container
+    properties:
+      name:
+        description: |-
+          The volume mount name is the name of an existing `Volume` component.
+          If several containers mount the same volume name
+          then they will reuse the same volume and will be able to access to the same files.
+          +kubebuilder:validation:Pattern=^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
+          +kubebuilder:validation:MaxLength=63
+        type: string
+        x-go-name: Name
+      path:
+        description: |-
+          The path in the component container where the volume should be mounted.
+          If not path is mentioned, default path is the is `/<name>`.
+          +optional
+        type: string
+        x-go-name: Path
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  VolumeMountPluginOverride:
+    description: Volume that should be mounted to a component container
+    properties:
+      name:
+        description: |-
+          The volume mount name is the name of an existing `Volume` component.
+          If several containers mount the same volume name
+          then they will reuse the same volume and will be able to access to the same files.
+          +kubebuilder:validation:Pattern=^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
+          +kubebuilder:validation:MaxLength=63
+        type: string
+        x-go-name: Name
+      path:
+        description: |-
+          The path in the component container where the volume should be mounted.
+          If not path is mentioned, default path is the is `/<name>`.
+          +optional
+        type: string
+        x-go-name: Path
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  VolumeMountPluginOverrideParentOverride:
+    description: Volume that should be mounted to a component container
+    properties:
+      name:
+        description: |-
+          The volume mount name is the name of an existing `Volume` component.
+          If several containers mount the same volume name
+          then they will reuse the same volume and will be able to access to the same files.
+          +kubebuilder:validation:Pattern=^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
+          +kubebuilder:validation:MaxLength=63
+        type: string
+        x-go-name: Name
+      path:
+        description: |-
+          The path in the component container where the volume should be mounted.
+          If not path is mentioned, default path is the is `/<name>`.
+          +optional
+        type: string
+        x-go-name: Path
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  VscodeConfigurationCommand:
+    properties:
+      group:
+        $ref: '#/definitions/CommandGroup'
+      inlined:
+        description: |-
+          Inlined content of the VsCode configuration
+          +optional
+        type: string
+        x-go-name: Inlined
+      locationType:
+        $ref: '#/definitions/VscodeConfigurationCommandLocationType'
+      uri:
+        description: |-
+          Location as an absolute of relative URI
+          the VsCode configuration will be fetched from
+          +optional
+        type: string
+        x-go-name: Uri
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  VscodeConfigurationCommandLocationType:
+    description: |-
+      VscodeConfigurationCommandLocationType describes the type of
+      the location the configuration is fetched from.
+      Only one of the following component type may be specified.
+      +kubebuilder:validation:Enum=Uri;Inlined
+    type: string
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  VscodeConfigurationCommandLocationTypeParentOverride:
+    description: |-
+      VscodeConfigurationCommandLocationType describes the type of
+      the location the configuration is fetched from.
+      Only one of the following component type may be specified.
+    type: string
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  VscodeConfigurationCommandLocationTypePluginOverride:
+    description: |-
+      VscodeConfigurationCommandLocationType describes the type of
+      the location the configuration is fetched from.
+      Only one of the following component type may be specified.
+    type: string
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  VscodeConfigurationCommandLocationTypePluginOverrideParentOverride:
+    description: |-
+      VscodeConfigurationCommandLocationType describes the type of
+      the location the configuration is fetched from.
+      Only one of the following component type may be specified.
+    type: string
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  VscodeConfigurationCommandParentOverride:
+    properties:
+      group:
+        $ref: '#/definitions/CommandGroupParentOverride'
+      inlined:
+        description: |-
+          Inlined content of the VsCode configuration
+          +optional
+        type: string
+        x-go-name: Inlined
+      locationType:
+        $ref: '#/definitions/VscodeConfigurationCommandLocationTypeParentOverride'
+      uri:
+        description: |-
+          Location as an absolute of relative URI
+          the VsCode configuration will be fetched from
+          +optional
+        type: string
+        x-go-name: Uri
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  VscodeConfigurationCommandPluginOverride:
+    properties:
+      group:
+        $ref: '#/definitions/CommandGroupPluginOverride'
+      inlined:
+        description: |-
+          Inlined content of the VsCode configuration
+          +optional
+        type: string
+        x-go-name: Inlined
+      locationType:
+        $ref: '#/definitions/VscodeConfigurationCommandLocationTypePluginOverride'
+      uri:
+        description: |-
+          Location as an absolute of relative URI
+          the VsCode configuration will be fetched from
+          +optional
+        type: string
+        x-go-name: Uri
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  VscodeConfigurationCommandPluginOverrideParentOverride:
+    properties:
+      group:
+        $ref: '#/definitions/CommandGroupPluginOverrideParentOverride'
+      inlined:
+        description: |-
+          Inlined content of the VsCode configuration
+          +optional
+        type: string
+        x-go-name: Inlined
+      locationType:
+        $ref: '#/definitions/VscodeConfigurationCommandLocationTypePluginOverrideParentOverride'
+      uri:
+        description: |-
+          Location as an absolute of relative URI
+          the VsCode configuration will be fetched from
+          +optional
+        type: string
+        x-go-name: Uri
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  ZipProjectSource:
+    properties:
+      location:
+        description: |-
+          Zip project's source location address. Should be file path of the archive, e.g. file://$FILE_PATH
+          +required
+        type: string
+        x-go-name: Location
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+  ZipProjectSourceParentOverride:
+    properties:
+      location:
+        description: |-
+          Zip project's source location address. Should be file path of the archive, e.g. file://$FILE_PATH
+          +required
+        type: string
+        x-go-name: Location
+    type: object
+    x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+host: preview-devfile-registry-stage.apps.app-sre-stage-0.k3s7.p1.openshiftapps.com
+info:
+  description: |-
+    Documentation of devfile registry REST API.
+
+    The devfile registry REST API is used for interacting with devfile registry. In this documentation, the host is serving the public devfile registry, you can change it to your own host if you want to use private devfile registry.
+  title: Devfile registry REST API.
+  version: 1.0.0
+paths:
+  /devfiles/{stack}:
+    get:
+      description: Return the specific stack devfile content of devfile registry.
+      operationId: getDevfile
+      parameters:
+      - description: The stack name
+        in: path
+        name: stack
+        required: true
+        type: string
+        x-go-name: Stack
+      produces:
+      - application/yaml
+      - application/json
+      responses:
+        "200":
+          $ref: '#/responses/devfileResponse'
+        "404":
+          $ref: '#/responses/devfileNotFoundResponse'
+        "500":
+          $ref: '#/responses/devfileErrorResponse'
+      summary: Get devfile by stack name.
+      tags:
+      - devfile
+  /health:
+    get:
+      description: Return the devfile registry health status.
+      operationId: getStatus
+      produces:
+      - application/json
+      responses:
+        "200":
+          $ref: '#/responses/healthResponse'
+        "404":
+          description: ' Page not found.'
+      summary: Get health status.
+      tags:
+      - server
+  /index:
+    get:
+      description: Return the index content of devfile registry.
+      operationId: getIndex
+      produces:
+      - application/json
+      responses:
+        "200":
+          $ref: '#/responses/indexResponse'
+        "404":
+          description: ' Page not found.'
+      summary: Get index.
+      tags:
+      - devfile
+produces:
+- application/json
+- application/yaml
+responses:
+  devfileErrorResponse:
+    description: Failed to get the devfile.
+    schema:
+      properties:
+        error:
+          type: string
+          x-go-name: Error
+        status:
+          type: string
+          x-go-name: Status
+      type: object
+  devfileNotFoundResponse:
+    description: Failed to find the devfile.
+    schema:
+      properties:
+        status:
+          type: string
+          x-go-name: Status
+      type: object
+  devfileResponse:
+    description: |-
+      Successful operation.
+
+      Stack devfile content.
+    schema:
+      $ref: '#/definitions/Devfile'
+  healthResponse:
+    description: |-
+      Successful operation.
+
+      Health status.
+    schema:
+      properties:
+        message:
+          type: string
+          x-go-name: Message
+      type: object
+  indexResponse:
+    description: |-
+      Successful operation.
+
+      Index content.
+    schema:
+      items:
+        $ref: '#/definitions/Schema'
+      type: array
+schemes:
+- http
+- https
+securityDefinitions:
+  basic:
+    type: basic
+swagger: "2.0"
