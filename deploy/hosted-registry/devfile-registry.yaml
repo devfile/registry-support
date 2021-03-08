@@ -125,6 +125,8 @@ objects:
   kind: ConfigMap
   metadata:
     name: devfile-registry
+    annotations:
+      qontract.recycle: "true"
   data:
     registry-config.yml: |
       version: 0.1
