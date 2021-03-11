@@ -33,6 +33,7 @@ const (
 	archiveMediaType       = "application/x-tar"
 	archiveName            = "archive.tar"
 	devfileName            = "devfile.yaml"
+	devfileNameHidden      = ".devfile.yaml"
 	devfileConfigMediaType = "application/vnd.devfileio.devfile.config.v2+json"
 	devfileMediaType       = "application/vnd.devfileio.devfile.layer.v1"
 	pngLogoMediaType       = "image/png"
@@ -47,11 +48,12 @@ const (
 )
 
 var mediaTypeMapping = map[string]string{
-	devfileName: devfileMediaType,
-	vsxName:     vsxMediaType,
-	svgLogoName: svgLogoMediaType,
-	pngLogoName: pngLogoMediaType,
-	archiveName: archiveMediaType,
+	devfileName:       devfileMediaType,
+	devfileNameHidden: devfileMediaType,
+	vsxName:           vsxMediaType,
+	svgLogoName:       svgLogoMediaType,
+	pngLogoName:       pngLogoMediaType,
+	archiveName:       archiveMediaType,
 }
 
 var (
@@ -175,7 +177,7 @@ func pushStackToRegistry(devfileIndex indexSchema.Schema) error {
 		var mediaType string
 		var found bool
 		switch resource {
-		case devfileName, svgLogoName, pngLogoName, archiveName:
+		case devfileName, devfileNameHidden, svgLogoName, pngLogoName, archiveName:
 			// Get the media type associated with the file
 			if mediaType, found = mediaTypeMapping[resource]; !found {
 				return errors.New("media type not found for file " + resource)
@@ -224,14 +226,25 @@ func pullStackFromRegistry(devfileIndex indexSchema.Schema) ([]byte, error) {
 	memoryStore := content.NewMemoryStore()
 	allowedMediaTypes := []string{devfileMediaType}
 
-	log.Printf("Pulling %s from %s...\n", devfileName, ref)
+	var devfile string
+	for _, resource := range devfileIndex.Resources {
+		if resource == devfileName {
+			devfile = devfileName
+			break
+		}
+		if resource == devfileNameHidden {
+			devfile = devfileNameHidden
+			break
+		}
+	}
+	log.Printf("Pulling %s from %s...\n", devfile, ref)
 	desc, _, err := oras.Pull(ctx, resolver, ref, memoryStore, oras.WithAllowedMediaTypes(allowedMediaTypes))
 	if err != nil {
-		return nil, fmt.Errorf("failed to pull %s from %s: %v", devfileName, ref, err)
+		return nil, fmt.Errorf("failed to pull %s from %s: %v", devfile, ref, err)
 	}
-	_, bytes, ok := memoryStore.GetByName(devfileName)
+	_, bytes, ok := memoryStore.GetByName(devfile)
 	if !ok {
-		return nil, fmt.Errorf("failed to load %s to memory", devfileName)
+		return nil, fmt.Errorf("failed to load %s to memory", devfile)
 	}
 
 	log.Printf("Pulled from %s with digest %s\n", ref, desc.Digest)
