@@ -89,5 +89,5 @@ parameters:
   value: "latest"
 - name: REPLICAS
   value: "3"
-  displayName: Devfile registry replicas
-  description: The number of replicas for the hosted devfile registry service
+  displayName: Devfile.io replicas
+  description: The number of replicas for the devfile.io redirector service.
