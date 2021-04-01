@@ -33,6 +33,7 @@ var (
 	registry     = os.Getenv("REGISTRY")
 	cfgFile      string
 	allResources bool
+	destDir      string
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -77,9 +78,9 @@ func init() {
 			var err error
 
 			if allResources {
-				err = library.PullStackFromRegistry(registry, stack)
+				err = library.PullStackFromRegistry(registry, stack, destDir)
 			} else {
-				err = library.PullStackByMediaTypesFromRegistry(registry, stack, library.DevfileMediaTypeList)
+				err = library.PullStackByMediaTypesFromRegistry(registry, stack, library.DevfileMediaTypeList, destDir)
 			}
 			if err != nil {
 				fmt.Printf("Failed to pull %s from registry %s: %v\n", stack, registry, err)
@@ -87,6 +88,7 @@ func init() {
 		},
 	}
 	pullCmd.Flags().BoolVarP(&allResources, "all", "a", false, "pull all resources of the given stack")
+	pullCmd.Flags().StringVar(&destDir, "context", ".", "destination directory that stores stack resources")
 
 	var listCmd = &cobra.Command{
 		Use:   "list",
