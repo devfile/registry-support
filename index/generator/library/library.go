@@ -7,7 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
-	devfileParser "github.com/devfile/library/pkg/devfile/parser"
+	devfileParser "github.com/devfile/library/pkg/devfile"
 	"github.com/devfile/registry-support/index/generator/schema"
 	"gopkg.in/yaml.v2"
 )
@@ -42,7 +42,7 @@ func GenerateIndexStruct(registryDirPath string, force bool) ([]schema.Schema, e
 
 		if !force {
 			// Devfile validation
-			_, err := devfileParser.Parse(devfilePath)
+			_, err := devfileParser.ParseAndValidate(devfilePath)
 			if err != nil {
 				return nil, fmt.Errorf("%s devfile is not valid: %v", devfileDir.Name(), err)
 			}
