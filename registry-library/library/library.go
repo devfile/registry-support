@@ -14,7 +14,6 @@ package library
 import (
 	"archive/tar"
 	"compress/gzip"
-	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -27,6 +26,8 @@ import (
 	"path/filepath"
 	"text/tabwriter"
 	"time"
+
+	orasctx "github.com/deislabs/oras/pkg/context"
 
 	"github.com/containerd/containerd/remotes/docker"
 	"github.com/deislabs/oras/pkg/content"
@@ -131,7 +132,7 @@ func PullStackByMediaTypesFromRegistry(registry string, stack string, allowedMed
 	}
 
 	// Pull stack initialization
-	ctx := context.Background()
+	ctx := orasctx.Background()
 	urlObj, err := url.Parse(registry)
 	if err != nil {
 		return err
