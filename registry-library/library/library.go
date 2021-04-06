@@ -147,12 +147,10 @@ func PullStackByMediaTypesFromRegistry(registry string, stack string, allowedMed
 	defer fileStore.Close()
 
 	// Pull stack from registry and save it to disk
-	log.Printf("Pulling stack %s from %s with allowed media types %v...\n", stack, ref, allowedMediaTypes)
-	desc, _, err := oras.Pull(ctx, resolver, ref, fileStore, oras.WithAllowedMediaTypes(allowedMediaTypes))
+	_, _, err = oras.Pull(ctx, resolver, ref, fileStore, oras.WithAllowedMediaTypes(allowedMediaTypes))
 	if err != nil {
-		return fmt.Errorf("Failed to pull stack %s from %s: %v", stack, ref, err)
+		return fmt.Errorf("Failed to pull stack %s from %s with allowed media types %v: %v", stack, ref, allowedMediaTypes, err)
 	}
-	log.Printf("Pulled stack %s from %s with digest %s\n", stack, ref, desc.Digest)
 
 	// Decompress archive.tar
 	archivePath := filepath.Join(destDir, "archive.tar")
