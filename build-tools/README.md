@@ -4,6 +4,14 @@ This folder contains tools for building up a Devfile Registry Repository and pac
 
 ## How to Run
 
-To build a devfile registry repository, run: `./build.sh <path-to-devfile-registry-folder>`.
+### Prerequisites
+
+- Golang 1.13.x or higher
+- Docker 17.05 or higher
+- Git
+
+### Building the Devfile Registry
+
+To build a devfile registry repository, run: `./build_image.sh <path-to-devfile-registry-folder>`.
 
 The build script will build the index generator, generate the index.json from the specified devfile registry, and build the stacks and index.json into a devfile index container image.
