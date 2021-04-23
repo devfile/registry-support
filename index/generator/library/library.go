@@ -105,17 +105,26 @@ func GenerateIndexStruct(registryDirPath string, force bool) ([]schema.Schema, e
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal %s data: %v", extraDevfileEntriesPath, err)
 	}
-	for _, devfileEntry := range devfileEntries.Samples {
-		indexComponent := devfileEntry
-		indexComponent.Type = "sample"
-		if !force {
-			// Index component validation
-			err := validateIndexComponent(indexComponent, "sample")
-			if err != nil {
-				return nil, fmt.Errorf("%s index component is not valid: %v", indexComponent.Name, err)
-			}
+	devfileTypes := []string{"sample", "stack"}
+	for _, devfileType := range devfileTypes {
+		var devfileEntriesWithType []schema.Schema
+		if devfileType == "sample" {
+			devfileEntriesWithType = devfileEntries.Samples
+		} else if devfileType == "stack" {
+			devfileEntriesWithType = devfileEntries.Stacks
 		}
-		index = append(index, indexComponent)
+		for _, devfileEntry := range devfileEntriesWithType {
+			indexComponent := devfileEntry
+			indexComponent.Type = devfileType
+			if !force {
+				// Index component validation
+				err := validateIndexComponent(indexComponent, devfileType)
+				if err != nil {
+					return nil, fmt.Errorf("%s index component is not valid: %v", indexComponent.Name, err)
+				}
+			}
+			index = append(index, indexComponent)
+		}
 	}
 
 	return index, nil

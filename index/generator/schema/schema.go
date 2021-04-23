@@ -107,4 +107,5 @@ type Git struct {
 // ExtraDevfileEntries is the extraDevfileEntries structure that is used by index component
 type ExtraDevfileEntries struct {
 	Samples []Schema `yaml:"samples,omitempty" json:"samples,omitempty"`
+	Stacks  []Schema `yaml:"stacks,omitempty" json:"stacks,omitempty"`
 }
