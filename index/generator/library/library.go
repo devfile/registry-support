@@ -21,9 +21,67 @@ const (
 
 // GenerateIndexStruct parses registry then generates index struct according to the schema
 func GenerateIndexStruct(registryDirPath string, force bool) ([]schema.Schema, error) {
-	var index []schema.Schema
+	// Parse devfile registry then populate index struct
+	indexFromDevfileRegistry, err := parseDevfileRegistry(registryDirPath, force)
+	if err != nil {
+		return indexFromDevfileRegistry, err
+	}
 
-	// Parse stack directory
+	// Parse extraDevfileEntries.yaml then populate the index struct
+	indexFromExtraDevfileEntries, err := parseExtraDevfileEntries(registryDirPath, force)
+	if err != nil {
+		return indexFromExtraDevfileEntries, err
+	}
+
+	index := append(indexFromDevfileRegistry, indexFromExtraDevfileEntries...)
+	return index, nil
+}
+
+// CreateIndexFile creates index file in disk
+func CreateIndexFile(index []schema.Schema, indexFilePath string) error {
+	bytes, err := json.MarshalIndent(index, "", "  ")
+	if err != nil {
+		return fmt.Errorf("failed to marshal %s data: %v", indexFilePath, err)
+	}
+
+	err = ioutil.WriteFile(indexFilePath, bytes, 0644)
+	if err != nil {
+		return fmt.Errorf("failed to write %s: %v", indexFilePath, err)
+	}
+
+	return nil
+}
+
+func validateIndexComponent(indexComponent schema.Schema, componentType string) error {
+	if componentType == "stack" {
+		if indexComponent.Name == "" {
+			return fmt.Errorf("index component name is not initialized")
+		}
+		if indexComponent.Links == nil {
+			return fmt.Errorf("index component links are empty")
+		}
+		if indexComponent.Resources == nil {
+			return fmt.Errorf("index component resources are empty")
+		}
+	} else if componentType == "sample" {
+		if indexComponent.Git == nil {
+			return fmt.Errorf("index component git is empty")
+		}
+	}
+
+	return nil
+}
+
+func fileExists(filepath string) bool {
+	if _, err := os.Stat(filepath); os.IsNotExist(err) {
+		return false
+	}
+
+	return true
+}
+
+func parseDevfileRegistry(registryDirPath string, force bool) ([]schema.Schema, error) {
+	var index []schema.Schema
 	stackDirPath := path.Join(registryDirPath, "stacks")
 	stackDir, err := ioutil.ReadDir(stackDirPath)
 	if err != nil {
@@ -94,7 +152,11 @@ func GenerateIndexStruct(registryDirPath string, force bool) ([]schema.Schema, e
 		index = append(index, indexComponent)
 	}
 
-	// Parse extraDevfileEntries.yaml
+	return index, nil
+}
+
+func parseExtraDevfileEntries(registryDirPath string, force bool) ([]schema.Schema, error) {
+	var index []schema.Schema
 	extraDevfileEntriesPath := path.Join(registryDirPath, extraDevfileEntries)
 	bytes, err := ioutil.ReadFile(extraDevfileEntriesPath)
 	if err != nil {
@@ -128,47 +190,4 @@ func GenerateIndexStruct(registryDirPath string, force bool) ([]schema.Schema, e
 	}
 
 	return index, nil
-}
-
-// CreateIndexFile creates index file in disk
-func CreateIndexFile(index []schema.Schema, indexFilePath string) error {
-	bytes, err := json.MarshalIndent(index, "", "  ")
-	if err != nil {
-		return fmt.Errorf("failed to marshal %s data: %v", indexFilePath, err)
-	}
-
-	err = ioutil.WriteFile(indexFilePath, bytes, 0644)
-	if err != nil {
-		return fmt.Errorf("failed to write %s: %v", indexFilePath, err)
-	}
-
-	return nil
-}
-
-func validateIndexComponent(indexComponent schema.Schema, componentType string) error {
-	if componentType == "stack" {
-		if indexComponent.Name == "" {
-			return fmt.Errorf("index component name is not initialized")
-		}
-		if indexComponent.Links == nil {
-			return fmt.Errorf("index component links are empty")
-		}
-		if indexComponent.Resources == nil {
-			return fmt.Errorf("index component resources are empty")
-		}
-	} else if componentType == "sample" {
-		if indexComponent.Git == nil {
-			return fmt.Errorf("index component git is empty")
-		}
-	}
-
-	return nil
-}
-
-func fileExists(filepath string) bool {
-	if _, err := os.Stat(filepath); os.IsNotExist(err) {
-		return false
-	}
-
-	return true
 }
