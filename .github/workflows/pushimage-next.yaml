@@ -26,7 +26,7 @@ jobs:
         username: ${{ secrets.QUAY_USERNAME }}
         password: ${{ secrets.QUAY_PASSWORD }}
         registry: quay.io
-        repository: devfile/devfile-index-base
+        repository: jcollier/devfile-index-base
         dockerfile: ./index/server/Dockerfile
         tags: next
         tag_with_sha: true
@@ -57,7 +57,7 @@ jobs:
         username: ${{ secrets.QUAY_USERNAME }}
         password: ${{ secrets.QUAY_PASSWORD }}
         registry: quay.io
-        repository: devfile/oci-registry
+        repository: jcollier/oci-registry
         dockerfile: ./oci-registry/Dockerfile
         tags: next
         tag_with_sha: true
