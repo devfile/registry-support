@@ -20,7 +20,7 @@ display_usage() {
 # cleanup_and_exit removes the temp folder we created and exits with the exit code passed into it
 cleanup_and_exit() {
   rm -rf $registryFolder
-  exit 1
+  exit $1
 }
 
 # Check if a registry repository folder was passed in, if not, exit
