@@ -70,7 +70,7 @@ done
 
 # Run the index generator tool
 echo "Generate the devfile registry index"
-$generatorFolder/index-generator $registryFolder/stacks $registryFolder/index.json
+$generatorFolder/index-generator $registryFolder $registryFolder/index.json
 if [ $? -ne 0 ]; then
   echo "Failed to build the devfile registry index"
   cleanup_and_exit 1

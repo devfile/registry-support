@@ -1,0 +1,38 @@
+[
+    {
+      "name": "nodejs-basic",
+      "displayName": "Basic NodeJS",
+      "description": "A simple Hello World application",
+      "type": "sample",
+      "tags": [
+        "NodeJS",
+        "Express"
+      ],
+      "icon": "nodejsIcon.svg",
+      "projectType": "nodejs",
+      "language": "nodejs",
+      "git": {
+        "remotes": {
+          "origin": "https://github.com/redhat-developer/devfile-sample"
+        }
+      }
+    },
+    {
+      "name": "vertx-secured-http",
+      "displayName": "Vert.x with secured HTTP",
+      "description": "A Vert.x application using secured HTTP",
+      "type": "sample",
+      "tags": [
+        "Java",
+        "Vert.x"
+      ],
+      "icon": "vertxIcon.svg",
+      "projectType": "vertx",
+      "language": "java",
+      "git": {
+        "remotes": {
+          "origin": "https://github.com/openshift-vertx-examples/vertx-secured-http-example-redhat"
+        }
+      }
+    }
+  ]

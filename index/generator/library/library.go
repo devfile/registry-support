@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path"
 	"path/filepath"
 
 	devfileParser "github.com/devfile/library/pkg/devfile"
@@ -13,26 +14,87 @@ import (
 )
 
 const (
-	devfile       = "devfile.yaml"
-	devfileHidden = ".devfile.yaml"
+	devfile             = "devfile.yaml"
+	devfileHidden       = ".devfile.yaml"
+	extraDevfileEntries = "extraDevfileEntries.yaml"
 )
 
 // GenerateIndexStruct parses registry then generates index struct according to the schema
 func GenerateIndexStruct(registryDirPath string, force bool) ([]schema.Schema, error) {
-	registryDir, err := ioutil.ReadDir(registryDirPath)
+	// Parse devfile registry then populate index struct
+	indexFromDevfileRegistry, err := parseDevfileRegistry(registryDirPath, force)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read registry directory %s: %v", registryDirPath, err)
+		return indexFromDevfileRegistry, err
 	}
 
+	// Parse extraDevfileEntries.yaml then populate the index struct
+	indexFromExtraDevfileEntries, err := parseExtraDevfileEntries(registryDirPath, force)
+	if err != nil {
+		return indexFromExtraDevfileEntries, err
+	}
+
+	index := append(indexFromDevfileRegistry, indexFromExtraDevfileEntries...)
+	return index, nil
+}
+
+// CreateIndexFile creates index file in disk
+func CreateIndexFile(index []schema.Schema, indexFilePath string) error {
+	bytes, err := json.MarshalIndent(index, "", "  ")
+	if err != nil {
+		return fmt.Errorf("failed to marshal %s data: %v", indexFilePath, err)
+	}
+
+	err = ioutil.WriteFile(indexFilePath, bytes, 0644)
+	if err != nil {
+		return fmt.Errorf("failed to write %s: %v", indexFilePath, err)
+	}
+
+	return nil
+}
+
+func validateIndexComponent(indexComponent schema.Schema, componentType string) error {
+	if componentType == "stack" {
+		if indexComponent.Name == "" {
+			return fmt.Errorf("index component name is not initialized")
+		}
+		if indexComponent.Links == nil {
+			return fmt.Errorf("index component links are empty")
+		}
+		if indexComponent.Resources == nil {
+			return fmt.Errorf("index component resources are empty")
+		}
+	} else if componentType == "sample" {
+		if indexComponent.Git == nil {
+			return fmt.Errorf("index component git is empty")
+		}
+	}
+
+	return nil
+}
+
+func fileExists(filepath string) bool {
+	if _, err := os.Stat(filepath); os.IsNotExist(err) {
+		return false
+	}
+
+	return true
+}
+
+func parseDevfileRegistry(registryDirPath string, force bool) ([]schema.Schema, error) {
 	var index []schema.Schema
-	for _, devfileDir := range registryDir {
+	stackDirPath := path.Join(registryDirPath, "stacks")
+	stackDir, err := ioutil.ReadDir(stackDirPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read stack directory %s: %v", stackDirPath, err)
+	}
+	for _, devfileDir := range stackDir {
 		if !devfileDir.IsDir() {
 			continue
 		}
 
 		// Allow devfile.yaml or .devfile.yaml
-		devfilePath := filepath.Join(registryDirPath, devfileDir.Name(), devfile)
-		devfileHiddenPath := filepath.Join(registryDirPath, devfileDir.Name(), devfileHidden)
+		devfilePath := filepath.Join(stackDirPath, devfileDir.Name(), devfile)
+		devfileHiddenPath := filepath.Join(stackDirPath, devfileDir.Name(), devfileHidden)
 		if fileExists(devfilePath) && fileExists(devfileHiddenPath) {
 			return nil, fmt.Errorf("both %s and %s exist", devfilePath, devfileHiddenPath)
 		}
@@ -62,13 +124,14 @@ func GenerateIndexStruct(registryDirPath string, force bool) ([]schema.Schema, e
 			indexComponent.Links = make(map[string]string)
 		}
 		indexComponent.Links["self"] = fmt.Sprintf("%s/%s:%s", "devfile-catalog", indexComponent.Name, "latest")
+		indexComponent.Type = "stack"
 
 		for _, starterProject := range devfile.StarterProjects {
 			indexComponent.StarterProjects = append(indexComponent.StarterProjects, starterProject.Name)
 		}
 
 		// Get the files in the stack folder
-		stackFolder := filepath.Join(registryDirPath, devfileDir.Name())
+		stackFolder := filepath.Join(stackDirPath, devfileDir.Name())
 		stackFiles, err := ioutil.ReadDir(stackFolder)
 		for _, stackFile := range stackFiles {
 			// The registry build should have already packaged any folders and miscellaneous files into an archive.tar file
@@ -80,7 +143,7 @@ func GenerateIndexStruct(registryDirPath string, force bool) ([]schema.Schema, e
 
 		if !force {
 			// Index component validation
-			err := validateIndexComponent(indexComponent)
+			err := validateIndexComponent(indexComponent, "stack")
 			if err != nil {
 				return nil, fmt.Errorf("%s index component is not valid: %v", devfileDir.Name(), err)
 			}
@@ -92,39 +155,39 @@ func GenerateIndexStruct(registryDirPath string, force bool) ([]schema.Schema, e
 	return index, nil
 }
 
-// CreateIndexFile creates index file in disk
-func CreateIndexFile(index []schema.Schema, indexFilePath string) error {
-	bytes, err := json.MarshalIndent(index, "", "  ")
+func parseExtraDevfileEntries(registryDirPath string, force bool) ([]schema.Schema, error) {
+	var index []schema.Schema
+	extraDevfileEntriesPath := path.Join(registryDirPath, extraDevfileEntries)
+	bytes, err := ioutil.ReadFile(extraDevfileEntriesPath)
 	if err != nil {
-		return fmt.Errorf("failed to marshal %s data: %v", indexFilePath, err)
+		return nil, fmt.Errorf("failed to read %s: %v", extraDevfileEntriesPath, err)
 	}
-
-	err = ioutil.WriteFile(indexFilePath, bytes, 0644)
+	var devfileEntries schema.ExtraDevfileEntries
+	err = yaml.Unmarshal(bytes, &devfileEntries)
 	if err != nil {
-		return fmt.Errorf("failed to write %s: %v", indexFilePath, err)
+		return nil, fmt.Errorf("failed to unmarshal %s data: %v", extraDevfileEntriesPath, err)
+	}
+	devfileTypes := []string{"sample", "stack"}
+	for _, devfileType := range devfileTypes {
+		var devfileEntriesWithType []schema.Schema
+		if devfileType == "sample" {
+			devfileEntriesWithType = devfileEntries.Samples
+		} else if devfileType == "stack" {
+			devfileEntriesWithType = devfileEntries.Stacks
+		}
+		for _, devfileEntry := range devfileEntriesWithType {
+			indexComponent := devfileEntry
+			indexComponent.Type = devfileType
+			if !force {
+				// Index component validation
+				err := validateIndexComponent(indexComponent, devfileType)
+				if err != nil {
+					return nil, fmt.Errorf("%s index component is not valid: %v", indexComponent.Name, err)
+				}
+			}
+			index = append(index, indexComponent)
+		}
 	}
 
-	return nil
-}
-
-func validateIndexComponent(indexComponent schema.Schema) error {
-	if indexComponent.Name == "" {
-		return fmt.Errorf("index component name is not initialized")
-	}
-	if indexComponent.Links == nil {
-		return fmt.Errorf("index component links are empty")
-	}
-	if indexComponent.Resources == nil {
-		return fmt.Errorf("index component resources are empty")
-	}
-
-	return nil
-}
-
-func fileExists(filepath string) bool {
-	if _, err := os.Stat(filepath); os.IsNotExist(err) {
-		return false
-	}
-
-	return true
+	return index, nil
 }

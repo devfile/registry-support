@@ -22,6 +22,9 @@ jobs:
     - name: Check if index-generator build is working
       run: cd index/generator && ./build.sh
 
+    - name: Test index-generator
+      run: cd index/generator && go test ./...
+
     - name: Check if registry-library build is working
       run: cd registry-library && ./build.sh
       
