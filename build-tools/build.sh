@@ -102,7 +102,7 @@ check_params() {
   fi
 }
 
-# Check if a registry repository folder was passed in, if not, exit
+# Check if a registry repository folder and a output folder were passed in, if not, exit
 if [ $# -ne 2 ]; then
   display_usage
   exit 1
