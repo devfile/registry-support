@@ -22,7 +22,7 @@ display_usage() {
 # cleanup_and_exit removes the build folder and exits with the exit code passed into it
 cleanup_and_exit() {
   rm -rf $outputFolder
-  exit 1
+  exit $1
 }
 
 # build_registry <registry-folder> <output>
