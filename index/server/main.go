@@ -112,9 +112,11 @@ func main() {
 
 	// Before starting the server, push the devfile artifacts to the registry
 	for _, devfileIndex := range index {
-		err := pushStackToRegistry(devfileIndex)
-		if err != nil {
-			log.Fatal(err.Error())
+		if len(devfileIndex.Resources) != 0 {
+			err := pushStackToRegistry(devfileIndex)
+			if err != nil {
+				log.Fatal(err.Error())
+			}
 		}
 	}
 
