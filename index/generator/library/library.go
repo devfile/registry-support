@@ -22,18 +22,21 @@ const (
 // GenerateIndexStruct parses registry then generates index struct according to the schema
 func GenerateIndexStruct(registryDirPath string, force bool) ([]schema.Schema, error) {
 	// Parse devfile registry then populate index struct
-	indexFromDevfileRegistry, err := parseDevfileRegistry(registryDirPath, force)
+	index, err := parseDevfileRegistry(registryDirPath, force)
 	if err != nil {
-		return indexFromDevfileRegistry, err
+		return index, err
 	}
 
-	// Parse extraDevfileEntries.yaml then populate the index struct
-	indexFromExtraDevfileEntries, err := parseExtraDevfileEntries(registryDirPath, force)
-	if err != nil {
-		return indexFromExtraDevfileEntries, err
+	// Parse extraDevfileEntries.yaml then populate the index struct (optional)
+	extraDevfileEntriesPath := path.Join(registryDirPath, extraDevfileEntries)
+	if fileExists(extraDevfileEntriesPath) {
+		indexFromExtraDevfileEntries, err := parseExtraDevfileEntries(registryDirPath, force)
+		if err != nil {
+			return index, err
+		}
+		index = append(index, indexFromExtraDevfileEntries...)
 	}
 
-	index := append(indexFromDevfileRegistry, indexFromExtraDevfileEntries...)
 	return index, nil
 }
 
