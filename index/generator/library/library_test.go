@@ -13,7 +13,7 @@ func TestValidateIndexComponent(t *testing.T) {
 	tests := []struct {
 		name           string
 		indexComponent schema.Schema
-		componentType  string
+		componentType  schema.IndexType
 		wantErr        bool
 	}{
 		{
@@ -26,7 +26,7 @@ func TestValidateIndexComponent(t *testing.T) {
 					"devfile.yaml",
 				},
 			},
-			"stack",
+			schema.StackIndexType,
 			true,
 		},
 		{
@@ -37,7 +37,7 @@ func TestValidateIndexComponent(t *testing.T) {
 					"devfile.yaml",
 				},
 			},
-			"stack",
+			schema.StackIndexType,
 			true,
 		},
 		{
@@ -48,7 +48,7 @@ func TestValidateIndexComponent(t *testing.T) {
 					"self": "devfile-catalog/java-maven:latest",
 				},
 			},
-			"stack",
+			schema.StackIndexType,
 			true,
 		},
 		{
@@ -56,7 +56,7 @@ func TestValidateIndexComponent(t *testing.T) {
 			schema.Schema{
 				Name: "nodejs",
 			},
-			"sample",
+			schema.SampleIndexType,
 			true,
 		},
 		{
@@ -70,7 +70,7 @@ func TestValidateIndexComponent(t *testing.T) {
 					"devfile.yaml",
 				},
 			},
-			"stack",
+			schema.StackIndexType,
 			false,
 		},
 		{
@@ -83,7 +83,7 @@ func TestValidateIndexComponent(t *testing.T) {
 					},
 				},
 			},
-			"sample",
+			schema.SampleIndexType,
 			false,
 		},
 	}

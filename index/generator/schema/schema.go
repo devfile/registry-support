@@ -57,7 +57,7 @@ version: string - The stack version
 attributes: map[string]apiext.JSON - Map of implementation-dependant free-form YAML attributes
 displayName: string - The display name of devfile
 description: string - The description of devfile
-Type: string - The type of the devfile, currently support stack and sample
+type: string - The type of the devfile, currently support stack and sample
 tags: string[] - The tags associated to devfile
 icon: string - The devfile icon
 globalMemoryLimit: string - The devfile global memory limit
@@ -76,7 +76,7 @@ type Schema struct {
 	Attributes        map[string]apiext.JSON `yaml:"attributes,omitempty" json:"attributes,omitempty"`
 	DisplayName       string                 `yaml:"displayName,omitempty" json:"displayName,omitempty"`
 	Description       string                 `yaml:"description,omitempty" json:"description,omitempty"`
-	Type              string                 `yaml:"type,omitempty" json:"type,omitempty"`
+	Type              IndexType              `yaml:"type,omitempty" json:"type,omitempty"`
 	Tags              []string               `yaml:"tags,omitempty" json:"tags,omitempty"`
 	Icon              string                 `yaml:"icon,omitempty" json:"icon,omitempty"`
 	GlobalMemoryLimit string                 `yaml:"globalMemoryLimit,omitempty" json:"globalMemoryLimit,omitempty"`
@@ -87,6 +87,17 @@ type Schema struct {
 	StarterProjects   []string               `yaml:"starterProjects,omitempty" json:"starterProjects,omitempty"`
 	Git               *Git                   `yaml:"git,omitempty" json:"git,omitempty"`
 }
+
+// IndexType describes the type of index entry
+type IndexType string
+
+const (
+	// SampleIndexType represents a sample index
+	SampleIndexType IndexType = "sample"
+
+	// StackIndexType represents a stack index
+	StackIndexType IndexType = "stack"
+)
 
 // StarterProject is the devfile starter project
 type StarterProject struct {
