@@ -19,6 +19,7 @@ import (
 
 	"github.com/deislabs/oras/pkg/content"
 	"github.com/deislabs/oras/pkg/oras"
+	indexLibrary "github.com/devfile/registry-support/index/generator/library"
 	indexSchema "github.com/devfile/registry-support/index/generator/schema"
 
 	"github.com/containerd/containerd/remotes/docker"
@@ -59,6 +60,8 @@ var mediaTypeMapping = map[string]string{
 var (
 	stacksPath      = os.Getenv("DEVFILE_STACKS")
 	indexPath       = os.Getenv("DEVFILE_INDEX")
+	sampleIndexPath = os.Getenv("DEVFILE_SAMPLE_INDEX")
+	stackIndexPath  = os.Getenv("DEVFILE_STACK_INDEX")
 	getIndexLatency = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
 			Name:    "index_http_request_duration_seconds",
@@ -111,13 +114,30 @@ func main() {
 	}
 
 	// Before starting the server, push the devfile artifacts to the registry
+	// Build sample_index.json and stack_index.json given index.json
+	var sampleIndex []indexSchema.Schema
+	var stackIndex []indexSchema.Schema
 	for _, devfileIndex := range index {
+		if devfileIndex.Type == "sample" {
+			sampleIndex = append(sampleIndex, devfileIndex)
+		} else if devfileIndex.Type == "stack" {
+			stackIndex = append(stackIndex, devfileIndex)
+		}
+
 		if len(devfileIndex.Resources) != 0 {
 			err := pushStackToRegistry(devfileIndex)
 			if err != nil {
 				log.Fatal(err.Error())
 			}
 		}
+	}
+	err = indexLibrary.CreateIndexFile(sampleIndex, sampleIndexPath)
+	if err != nil {
+		log.Fatalf("failed to generate %s: %v", sampleIndexPath, err)
+	}
+	indexLibrary.CreateIndexFile(stackIndex, stackIndexPath)
+	if err != nil {
+		log.Fatalf("failed to generate %s: %v", stackIndexPath, err)
 	}
 
 	// Start the server and serve requests and index.json
@@ -126,6 +146,21 @@ func main() {
 	router.GET("/", serveDevfileIndex)
 	router.GET("/index", serveDevfileIndex)
 	router.GET("/index.json", serveDevfileIndex)
+
+	router.GET("/index/:type", func(c *gin.Context) {
+		indexType := c.Param("type")
+
+		// Serve the index with type
+		if indexType == "sample" {
+			c.File(sampleIndexPath)
+		} else if indexType == "stack" {
+			c.File(stackIndexPath)
+		} else {
+			c.JSON(http.StatusNotFound, gin.H{
+				"status": fmt.Sprintf("the devfile with %s type didn't exist", indexType),
+			})
+		}
+	})
 
 	router.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
