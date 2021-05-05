@@ -55,8 +55,8 @@ func CreateIndexFile(index []schema.Schema, indexFilePath string) error {
 	return nil
 }
 
-func validateIndexComponent(indexComponent schema.Schema, componentType string) error {
-	if componentType == "stack" {
+func validateIndexComponent(indexComponent schema.Schema, componentType schema.DevfileType) error {
+	if componentType == schema.StackDevfileType {
 		if indexComponent.Name == "" {
 			return fmt.Errorf("index component name is not initialized")
 		}
@@ -66,7 +66,7 @@ func validateIndexComponent(indexComponent schema.Schema, componentType string) 
 		if indexComponent.Resources == nil {
 			return fmt.Errorf("index component resources are empty")
 		}
-	} else if componentType == "sample" {
+	} else if componentType == schema.SampleDevfileType {
 		if indexComponent.Git == nil {
 			return fmt.Errorf("index component git is empty")
 		}
@@ -127,7 +127,7 @@ func parseDevfileRegistry(registryDirPath string, force bool) ([]schema.Schema, 
 			indexComponent.Links = make(map[string]string)
 		}
 		indexComponent.Links["self"] = fmt.Sprintf("%s/%s:%s", "devfile-catalog", indexComponent.Name, "latest")
-		indexComponent.Type = "stack"
+		indexComponent.Type = schema.StackDevfileType
 
 		for _, starterProject := range devfile.StarterProjects {
 			indexComponent.StarterProjects = append(indexComponent.StarterProjects, starterProject.Name)
@@ -146,7 +146,7 @@ func parseDevfileRegistry(registryDirPath string, force bool) ([]schema.Schema, 
 
 		if !force {
 			// Index component validation
-			err := validateIndexComponent(indexComponent, "stack")
+			err := validateIndexComponent(indexComponent, schema.StackDevfileType)
 			if err != nil {
 				return nil, fmt.Errorf("%s index component is not valid: %v", devfileDir.Name(), err)
 			}
@@ -170,12 +170,12 @@ func parseExtraDevfileEntries(registryDirPath string, force bool) ([]schema.Sche
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal %s data: %v", extraDevfileEntriesPath, err)
 	}
-	devfileTypes := []string{"sample", "stack"}
+	devfileTypes := []schema.DevfileType{schema.SampleDevfileType, schema.StackDevfileType}
 	for _, devfileType := range devfileTypes {
 		var devfileEntriesWithType []schema.Schema
-		if devfileType == "sample" {
+		if devfileType == schema.SampleDevfileType {
 			devfileEntriesWithType = devfileEntries.Samples
-		} else if devfileType == "stack" {
+		} else if devfileType == schema.StackDevfileType {
 			devfileEntriesWithType = devfileEntries.Stacks
 		}
 		for _, devfileEntry := range devfileEntriesWithType {
