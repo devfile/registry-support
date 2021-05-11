@@ -153,8 +153,8 @@ func main() {
 		// Serve the index with type
 		if indexType == "sample" {
 			c.File(sampleIndexPath)
-		} else if indexType == "stack" {
-			c.File(stackIndexPath)
+		} else if indexType == "all" {
+			c.File(indexPath)
 		} else {
 			c.JSON(http.StatusNotFound, gin.H{
 				"status": fmt.Sprintf("the devfile with %s type didn't exist", indexType),
@@ -300,5 +300,5 @@ func serveDevfileIndex(c *gin.Context) {
 	}()
 
 	// Serve the index.json file
-	c.File(indexPath)
+	c.File(stackIndexPath)
 }
