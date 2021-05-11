@@ -135,8 +135,8 @@ github.com/devfile/api/v2 v2.0.0-20210211160219-33a78aec06af h1:egbFAAS/CWJMAqa4
 github.com/devfile/api/v2 v2.0.0-20210211160219-33a78aec06af/go.mod h1:Cot4snybn3qhIh48oIFi9McocnIx7zY5fFbjfrIpPvg=
 github.com/devfile/library v1.0.0-alpha.2 h1:LN3KOQnUtP/NXl9CLYW7gQgH6gPpCSrEH2mmhxvrpgc=
 github.com/devfile/library v1.0.0-alpha.2/go.mod h1:aGJSpcGrRiYwsQQJMQH1ChHuOptUf49n+j0RDBYyTIQ=
-github.com/devfile/registry-support/index/generator v0.0.0-20210429184348-5c33a2d14a61 h1:xUIhWR+ijcwv1LH5Wywahs7E67JAnzuut8x5+QOJ6KA=
-github.com/devfile/registry-support/index/generator v0.0.0-20210429184348-5c33a2d14a61/go.mod h1:02/+7NmfHFJQ0C0S7akdfCeJSQSWmOvep8MmYcsSFko=
+github.com/devfile/registry-support/index/generator v0.0.0-20210505173027-d06fe2bb3ee8 h1:BWDxSgyFihqnox1uRNKT+qerjuwIEHNOohHOTg17FM0=
+github.com/devfile/registry-support/index/generator v0.0.0-20210505173027-d06fe2bb3ee8/go.mod h1:02/+7NmfHFJQ0C0S7akdfCeJSQSWmOvep8MmYcsSFko=
 github.com/dgrijalva/jwt-go v0.0.0-20170104182250-a601269ab70c/go.mod h1:E3ru+11k8xSBh+hMPgOLZmtrrCbhqsmaPHjLKYnJCaQ=
 github.com/dgrijalva/jwt-go v3.2.0+incompatible/go.mod h1:E3ru+11k8xSBh+hMPgOLZmtrrCbhqsmaPHjLKYnJCaQ=
 github.com/dgryski/go-sip13 v0.0.0-20181026042036-e10d5fee7954/go.mod h1:vAd38F8PWV+bWy6jNmig1y/TA+kYO4g3RSRF0IAv0no=

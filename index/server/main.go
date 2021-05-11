@@ -118,9 +118,9 @@ func main() {
 	var sampleIndex []indexSchema.Schema
 	var stackIndex []indexSchema.Schema
 	for _, devfileIndex := range index {
-		if devfileIndex.Type == "sample" {
+		if devfileIndex.Type == indexSchema.SampleDevfileType {
 			sampleIndex = append(sampleIndex, devfileIndex)
-		} else if devfileIndex.Type == "stack" {
+		} else if devfileIndex.Type == indexSchema.StackDevfileType {
 			stackIndex = append(stackIndex, devfileIndex)
 		}
 
@@ -151,7 +151,7 @@ func main() {
 		indexType := c.Param("type")
 
 		// Serve the index with type
-		if indexType == "sample" {
+		if indexType == string(indexSchema.SampleDevfileType) {
 			c.File(sampleIndexPath)
 		} else if indexType == "all" {
 			c.File(indexPath)

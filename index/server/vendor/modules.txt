@@ -70,7 +70,7 @@ github.com/devfile/library/pkg/devfile/parser/data/v2/common
 github.com/devfile/library/pkg/devfile/validate
 github.com/devfile/library/pkg/testingutil/filesystem
 github.com/devfile/library/pkg/util
-# github.com/devfile/registry-support/index/generator v0.0.0-20210429184348-5c33a2d14a61
+# github.com/devfile/registry-support/index/generator v0.0.0-20210505173027-d06fe2bb3ee8
 ## explicit
 github.com/devfile/registry-support/index/generator/library
 github.com/devfile/registry-support/index/generator/schema
