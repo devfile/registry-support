@@ -55,16 +55,22 @@ var (
 	DevfileAllMediaTypesList = []string{DevfileMediaType, DevfilePNGLogoMediaType, DevfileSVGLogoMediaType, DevfileVSXMediaType, DevfileArchiveMediaType}
 )
 
-// GetRegistryStacks returns the list of stacks, more specifically
-// it gets the content of the index (index.json) of the specified registry
-// for listing the stacks
-func GetRegistryStacks(registry string) ([]indexSchema.Schema, error) {
+// GetRegistry returns the list of stacks and/or samples, more specifically
+// it gets the stacks and/or samples content of the index of the specified registry
+// for listing the stacks and/or samples
+func GetRegistry(registry string, devfileType indexSchema.DevfileType) ([]indexSchema.Schema, error) {
 	// Call index server REST API to get the index
 	urlObj, err := url.Parse(registry)
 	if err != nil {
 		return nil, err
 	}
-	urlObj.Path = path.Join(urlObj.Path, "index")
+	if devfileType == indexSchema.StackDevfileType {
+		urlObj.Path = path.Join(urlObj.Path, "index")
+	} else if devfileType == indexSchema.SampleDevfileType {
+		urlObj.Path = path.Join(urlObj.Path, "index", "sample")
+	} else {
+		urlObj.Path = path.Join(urlObj.Path, "index", "all")
+	}
 	url := urlObj.String()
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -92,10 +98,18 @@ func GetRegistryStacks(registry string) ([]indexSchema.Schema, error) {
 	return registryIndex, nil
 }
 
-// PrintRegistryStacks prints the stacks of the registry
-func PrintRegistryStacks(registry string) error {
+// PrintRegistry prints the registry with devfile type
+func PrintRegistry(registry string, devfileType string) error {
 	// Get the registry index
-	registryIndex, err := GetRegistryStacks(registry)
+	var registryIndex []indexSchema.Schema
+	var err error
+	if devfileType == string(indexSchema.StackDevfileType) {
+		registryIndex, err = GetRegistry(registry, indexSchema.StackDevfileType)
+	} else if devfileType == string(indexSchema.SampleDevfileType) {
+		registryIndex, err = GetRegistry(registry, indexSchema.SampleDevfileType)
+	} else {
+		registryIndex, err = GetRegistry(registry, "")
+	}
 	if err != nil {
 		return err
 	}
@@ -112,7 +126,7 @@ func PrintRegistryStacks(registry string) error {
 // PullStackByMediaTypesFromRegistry pulls stack from registry with allowed media types to the destination directory
 func PullStackByMediaTypesFromRegistry(registry string, stack string, allowedMediaTypes []string, destDir string) error {
 	// Get the registry index
-	registryIndex, err := GetRegistryStacks(registry)
+	registryIndex, err := GetRegistry(registry, indexSchema.StackDevfileType)
 	if err != nil {
 		return err
 	}

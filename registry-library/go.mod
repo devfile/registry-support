@@ -5,7 +5,7 @@ go 1.14
 require (
 	github.com/containerd/containerd v1.4.3
 	github.com/deislabs/oras v0.8.1
-	github.com/devfile/registry-support/index/generator v0.0.0-20201211145454-bc904934d987
+	github.com/devfile/registry-support/index/generator v0.0.0-20210505173027-d06fe2bb3ee8
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/spf13/cobra v1.1.1
 	github.com/spf13/viper v1.7.1
