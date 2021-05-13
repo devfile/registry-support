@@ -70,6 +70,9 @@ func validateIndexComponent(indexComponent schema.Schema, componentType schema.D
 		if indexComponent.Git == nil {
 			return fmt.Errorf("index component git is empty")
 		}
+		if len(indexComponent.Git.Remotes) > 1 {
+			return fmt.Errorf("index component has multiple remotes")
+		}
 	}
 
 	return nil
