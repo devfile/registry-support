@@ -38,8 +38,8 @@ USER www-data
 # Set env vars for the locations of the devfile stacks and index.json
 ENV DEVFILE_STACKS /stacks
 ENV DEVFILE_INDEX /index.json
-ENV DEVFILE_SAMPLE_INDEX /home/www-data/sample_index.json
-ENV DEVFILE_STACK_INDEX /home/www-data/stack_index.json
+ENV DEVFILE_SAMPLE_INDEX /www/data/sample_index.json
+ENV DEVFILE_STACK_INDEX /www/data/stack_index.json
 
 EXPOSE 8080 7071
 ENTRYPOINT ["/entrypoint.sh"]
