@@ -34,6 +34,7 @@ var (
 	cfgFile      string
 	allResources bool
 	destDir      string
+	devfileType  string
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -94,12 +95,13 @@ func init() {
 		Use:   "list",
 		Short: "List stacks of the registry",
 		Run: func(cmd *cobra.Command, args []string) {
-			err := library.PrintRegistryStacks(registry)
+			err := library.PrintRegistry(registry, devfileType)
 			if err != nil {
 				fmt.Printf("Failed to list stacks of registry %s: %v\n", registry, err)
 			}
 		},
 	}
+	listCmd.Flags().StringVar(&devfileType, "type", "", "specify devfile type")
 
 	rootCmd.AddCommand(pullCmd, listCmd)
 }
