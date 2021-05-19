@@ -86,6 +86,20 @@ func TestValidateIndexComponent(t *testing.T) {
 			schema.SampleDevfileType,
 			false,
 		},
+		{
+			"Case 7: test index component git has multiple remotes",
+			schema.Schema{
+				Name: "nodejs",
+				Git: &schema.Git{
+					Remotes: map[string]string{
+						"origin": "https://github.com/redhat-developer/devfile-sample",
+						"test":   "https://github.com/redhat-developer/test",
+					},
+				},
+			},
+			schema.SampleDevfileType,
+			true,
+		},
 	}
 
 	for _, tt := range tests {
