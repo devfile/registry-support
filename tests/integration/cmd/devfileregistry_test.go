@@ -40,6 +40,7 @@ var _ = ginkgo.SynchronizedBeforeSuite(func() []byte {
 		config.Registry = registry
 	} else {
 		config.Registry = "https://registry.devfile.io"
+		os.Setenv("REGISTRY", config.Registry)
 	}
 
 	return nil
