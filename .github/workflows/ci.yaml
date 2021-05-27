@@ -40,3 +40,6 @@ jobs:
 
     - name: Check if oci server build is working
       run: cd oci-registry && ./build.sh
+    
+    - name: Check if devfile-registry-integration build is working
+      run: cd tests/integration && ./docker-build.sh
