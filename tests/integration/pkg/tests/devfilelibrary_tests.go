@@ -38,6 +38,12 @@ var _ = ginkgo.Describe("[Verify registry library works with registry]", func() 
 		gomega.Expect(output).To(gomega.ContainSubstring("nodejs-basic"))
 	})
 
+	ginkgo.It("should properly list both devfile stacks and samples", func() {
+		output := util.CmdShouldPass("registry-library", "list", "--type", "all")
+		gomega.Expect(output).To(gomega.ContainSubstring("nodejs-basic"))
+		gomega.Expect(output).To(gomega.ContainSubstring("java-quarkus"))
+	})
+
 	ginkgo.It("should properly retrieve devfile stacks", func() {
 		// Verify that the devfile library can properly pull a devfile stack from the registry
 		tempDir := os.TempDir()
