@@ -72,7 +72,7 @@ spec:
           limits:
             memory: {{ .Values.devfileIndex.memoryLimit }}
           requests:
-            memory: 256Mi
+            memory: 64Mi
       - image: "{{ .Values.ociRegistry.image }}:{{ .Values.ociRegistry.tag }}"
         imagePullPolicy: {{ .Values.ociRegistry.imagePullPolicy }}
         name: oci-registry
@@ -97,7 +97,7 @@ spec:
           limits:
             memory: {{ .Values.ociRegistry.memoryLimit }}
           requests:
-            memory: 256Mi
+            memory: 64Mi
         volumeMounts:
         - name: devfile-registry-storage
           mountPath: "/var/lib/registry"
