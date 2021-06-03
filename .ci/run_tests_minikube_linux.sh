@@ -6,25 +6,20 @@
 # Share docker env with Minikube
 eval $(minikube docker-env)
 
-# only exit with zero if all commands of the pipeline exit successfully
-#set -o pipefail
 # error on unset variables
 set -u
 # print each command before executing it
 set -x
 
-# Build the index server base image
-docker build -t devfile-index-base:latest ./index/server/
-
 # Build the test devfile registry image
-docker build -t devfile-registry-test:latest -f .ci/Dockerfile .
+./build_registry.sh
 
 # Deploy the devfile registry using the Helm chart
 # Use the test registry image built in the previous step.
 # Since minikube is running on Docker, we can specify a local image NOT pushed up to a registry
 # This saves us a fair bit of hassle with having to dynamically push the test image to a container registry
 helm install devfile-registry ./deploy/chart/devfile-registry --set global.ingress.domain="$(minikube ip).nip.io" \
-	--set devfileIndex.image=devfile-registry-test \
+	--set devfileIndex.image=devfile-index \
 	--set devfileIndex.tag=latest \
 	--set devfileIndex.imagePullPolicy=Never
 
@@ -33,6 +28,7 @@ kubectl wait deploy/devfile-registry --for=condition=Available --timeout=600s
 if [ $? -ne 0 ]; then
   kubectl get pods
   kubectl describe pods
+  exit 1
 fi
 
 # Get the ingress URL for the registry

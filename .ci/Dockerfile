@@ -17,9 +17,6 @@ COPY build-tools /build-tools
 COPY index/ /index
 COPY tests/registry /registry
 
-# Download the registry build tools
-#RUN git clone https://github.com/devfile/registry-support.git /registry-support
-
 # Run the registry build tools
 RUN /build-tools/build.sh /registry /build
 
