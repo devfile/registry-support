@@ -27,5 +27,5 @@ ociRegistry:
   memoryLimit: 256Mi
 
 persistence:
-  enabled: true
+  enabled: false
   size: 1Gi
