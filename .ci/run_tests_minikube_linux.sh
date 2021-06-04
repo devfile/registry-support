@@ -13,6 +13,10 @@ set -x
 
 # Build the test devfile registry image
 ./build_registry.sh
+if [ $? -ne 0 ]; then
+  echo "Error building devfile registry images"
+  exit 1;
+fi
 
 # Deploy the devfile registry using the Helm chart
 # Use the test registry image built in the previous step.
