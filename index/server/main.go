@@ -48,6 +48,7 @@ const (
 
 	scheme          = "http"
 	registryService = "localhost:5000"
+	encodeFormat    = "base64"
 )
 
 var mediaTypeMapping = map[string]string{
@@ -60,11 +61,14 @@ var mediaTypeMapping = map[string]string{
 }
 
 var (
-	stacksPath      = os.Getenv("DEVFILE_STACKS")
-	indexPath       = os.Getenv("DEVFILE_INDEX")
-	sampleIndexPath = os.Getenv("DEVFILE_SAMPLE_INDEX")
-	stackIndexPath  = os.Getenv("DEVFILE_STACK_INDEX")
-	getIndexLatency = prometheus.NewHistogramVec(
+	stacksPath            = os.Getenv("DEVFILE_STACKS")
+	indexPath             = os.Getenv("DEVFILE_INDEX")
+	base64IndexPath       = os.Getenv("DEVFILE_BASE64_INDEX")
+	sampleIndexPath       = os.Getenv("DEVFILE_SAMPLE_INDEX")
+	sampleBase64IndexPath = os.Getenv("DEVFILE_SAMPLE_BASE64_INDEX")
+	stackIndexPath        = os.Getenv("DEVFILE_STACK_INDEX")
+	stackBase64IndexPath  = os.Getenv("DEVFILE_STACK_BASE64_INDEX")
+	getIndexLatency       = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
 			Name:    "index_http_request_duration_seconds",
 			Help:    "Latency of index request in seconds.",
@@ -155,22 +159,48 @@ func main() {
 
 		// Serve the index with type
 		if indexType == string(indexSchema.SampleDevfileType) {
-			if iconType == "base64" {
-				bytes, err := encodeIndexIconToBase64(sampleIndexPath)
-				if err != nil {
-					log.Fatal(err.Error())
+			if iconType != "" {
+				if iconType == encodeFormat {
+					if _, err := os.Stat(sampleBase64IndexPath); os.IsNotExist(err) {
+						bytes, err := encodeIndexIconToBase64(sampleIndexPath, sampleBase64IndexPath)
+						if err != nil {
+							c.JSON(http.StatusInternalServerError, gin.H{
+								"status": fmt.Sprintf("failed to encode sample icons to base64 format: %v", err),
+							})
+							return
+						}
+						c.Data(http.StatusOK, http.DetectContentType(bytes), bytes)
+					} else {
+						c.File(sampleBase64IndexPath)
+					}
+				} else {
+					c.JSON(http.StatusBadRequest, gin.H{
+						"status": fmt.Sprintf("the icon type %s is not supported", iconType),
+					})
 				}
-				c.Data(http.StatusOK, http.DetectContentType(bytes), bytes)
 			} else {
 				c.File(sampleIndexPath)
 			}
 		} else if indexType == "all" {
-			if iconType == "base64" {
-				bytes, err := encodeIndexIconToBase64(indexPath)
-				if err != nil {
-					log.Fatal(err.Error())
+			if iconType != "" {
+				if iconType == encodeFormat {
+					if _, err := os.Stat(base64IndexPath); os.IsNotExist(err) {
+						bytes, err := encodeIndexIconToBase64(indexPath, base64IndexPath)
+						if err != nil {
+							c.JSON(http.StatusInternalServerError, gin.H{
+								"status": fmt.Sprintf("failed to encode all icons to base64 format: %v", err),
+							})
+							return
+						}
+						c.Data(http.StatusOK, http.DetectContentType(bytes), bytes)
+					} else {
+						c.File(base64IndexPath)
+					}
+				} else {
+					c.JSON(http.StatusBadRequest, gin.H{
+						"status": fmt.Sprintf("the icon type %s is not supported", iconType),
+					})
 				}
-				c.Data(http.StatusOK, http.DetectContentType(bytes), bytes)
 			} else {
 				c.File(indexPath)
 			}
@@ -320,19 +350,32 @@ func serveDevfileIndex(c *gin.Context) {
 
 	// Serve the index.json file
 	iconType := c.Query("icon")
-	if iconType == "base64" {
-		bytes, err := encodeIndexIconToBase64(stackIndexPath)
-		if err != nil {
-			log.Fatal(err.Error())
+	if iconType != "" {
+		if iconType == encodeFormat {
+			if _, err := os.Stat(stackBase64IndexPath); os.IsNotExist(err) {
+				bytes, err := encodeIndexIconToBase64(stackIndexPath, stackBase64IndexPath)
+				if err != nil {
+					c.JSON(http.StatusInternalServerError, gin.H{
+						"status": fmt.Sprintf("failed to encode stack icons to base64 format: %v", err),
+					})
+					return
+				}
+				c.Data(http.StatusOK, http.DetectContentType(bytes), bytes)
+			} else {
+				c.File(stackBase64IndexPath)
+			}
+		} else {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"status": fmt.Sprintf("the icon type %s is not supported", iconType),
+			})
 		}
-		c.Data(http.StatusOK, http.DetectContentType(bytes), bytes)
 	} else {
 		c.File(stackIndexPath)
 	}
 }
 
 // encodeIndexIconToBase64 encodes all index icons to base64 format given the index file path
-func encodeIndexIconToBase64(indexPath string) ([]byte, error) {
+func encodeIndexIconToBase64(indexPath string, base64IndexPath string) ([]byte, error) {
 	// load index
 	bytes, err := ioutil.ReadFile(indexPath)
 	if err != nil {
@@ -353,6 +396,10 @@ func encodeIndexIconToBase64(indexPath string) ([]byte, error) {
 				return nil, err
 			}
 		}
+	}
+	err = indexLibrary.CreateIndexFile(index, base64IndexPath)
+	if err != nil {
+		return nil, err
 	}
 	bytes, err = json.MarshalIndent(&index, "", "  ")
 	if err != nil {

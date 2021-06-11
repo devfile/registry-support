@@ -38,6 +38,9 @@ jobs:
     - name: Check if index server build is working
       run: cd index/server && ./build.sh
 
+    - name: Test index server
+      run: cd index/server && go test ./...
+
     - name: Check if oci server build is working
       run: cd oci-registry && ./build.sh
     
