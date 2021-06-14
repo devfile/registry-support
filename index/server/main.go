@@ -158,57 +158,7 @@ func main() {
 		iconType := c.Query("icon")
 
 		// Serve the index with type
-		if indexType == string(indexSchema.SampleDevfileType) {
-			if iconType != "" {
-				if iconType == encodeFormat {
-					if _, err := os.Stat(sampleBase64IndexPath); os.IsNotExist(err) {
-						bytes, err := encodeIndexIconToBase64(sampleIndexPath, sampleBase64IndexPath)
-						if err != nil {
-							c.JSON(http.StatusInternalServerError, gin.H{
-								"status": fmt.Sprintf("failed to encode sample icons to base64 format: %v", err),
-							})
-							return
-						}
-						c.Data(http.StatusOK, http.DetectContentType(bytes), bytes)
-					} else {
-						c.File(sampleBase64IndexPath)
-					}
-				} else {
-					c.JSON(http.StatusBadRequest, gin.H{
-						"status": fmt.Sprintf("the icon type %s is not supported", iconType),
-					})
-				}
-			} else {
-				c.File(sampleIndexPath)
-			}
-		} else if indexType == "all" {
-			if iconType != "" {
-				if iconType == encodeFormat {
-					if _, err := os.Stat(base64IndexPath); os.IsNotExist(err) {
-						bytes, err := encodeIndexIconToBase64(indexPath, base64IndexPath)
-						if err != nil {
-							c.JSON(http.StatusInternalServerError, gin.H{
-								"status": fmt.Sprintf("failed to encode all icons to base64 format: %v", err),
-							})
-							return
-						}
-						c.Data(http.StatusOK, http.DetectContentType(bytes), bytes)
-					} else {
-						c.File(base64IndexPath)
-					}
-				} else {
-					c.JSON(http.StatusBadRequest, gin.H{
-						"status": fmt.Sprintf("the icon type %s is not supported", iconType),
-					})
-				}
-			} else {
-				c.File(indexPath)
-			}
-		} else {
-			c.JSON(http.StatusNotFound, gin.H{
-				"status": fmt.Sprintf("the devfile with %s type didn't exist", indexType),
-			})
-		}
+		buildIndexAPIResponse(c, indexType, iconType)
 	})
 
 	router.GET("/health", func(c *gin.Context) {
@@ -349,29 +299,9 @@ func serveDevfileIndex(c *gin.Context) {
 	}()
 
 	// Serve the index.json file
+	indexType := "stack"
 	iconType := c.Query("icon")
-	if iconType != "" {
-		if iconType == encodeFormat {
-			if _, err := os.Stat(stackBase64IndexPath); os.IsNotExist(err) {
-				bytes, err := encodeIndexIconToBase64(stackIndexPath, stackBase64IndexPath)
-				if err != nil {
-					c.JSON(http.StatusInternalServerError, gin.H{
-						"status": fmt.Sprintf("failed to encode stack icons to base64 format: %v", err),
-					})
-					return
-				}
-				c.Data(http.StatusOK, http.DetectContentType(bytes), bytes)
-			} else {
-				c.File(stackBase64IndexPath)
-			}
-		} else {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"status": fmt.Sprintf("the icon type %s is not supported", iconType),
-			})
-		}
-	} else {
-		c.File(stackIndexPath)
-	}
+	buildIndexAPIResponse(c, indexType, iconType)
 }
 
 // encodeIndexIconToBase64 encodes all index icons to base64 format given the index file path
@@ -448,4 +378,49 @@ func encodeToBase64(uri string) (string, error) {
 	}
 	base64Encoding += base64.StdEncoding.EncodeToString(bytes)
 	return base64Encoding, nil
+}
+
+// buildIndexAPIResponse builds the response of the REST API of getting the devfile index
+func buildIndexAPIResponse(c *gin.Context, indexType string, iconType string) {
+	var responseIndexPath string
+	var responseBase64IndexPath string
+	switch indexType {
+	case string(indexSchema.StackDevfileType):
+		responseIndexPath = stackIndexPath
+		responseBase64IndexPath = stackBase64IndexPath
+	case string(indexSchema.SampleDevfileType):
+		responseIndexPath = sampleIndexPath
+		responseBase64IndexPath = sampleBase64IndexPath
+	case "all":
+		responseIndexPath = indexPath
+		responseBase64IndexPath = base64IndexPath
+	default:
+		c.JSON(http.StatusNotFound, gin.H{
+			"status": fmt.Sprintf("the devfile with %s type didn't exist", indexType),
+		})
+		return
+	}
+
+	if iconType != "" {
+		if iconType == encodeFormat {
+			if _, err := os.Stat(responseBase64IndexPath); os.IsNotExist(err) {
+				bytes, err := encodeIndexIconToBase64(responseIndexPath, responseBase64IndexPath)
+				if err != nil {
+					c.JSON(http.StatusInternalServerError, gin.H{
+						"status": fmt.Sprintf("failed to encode %s icons to base64 format: %v", indexType, err),
+					})
+					return
+				}
+				c.Data(http.StatusOK, http.DetectContentType(bytes), bytes)
+			} else {
+				c.File(responseBase64IndexPath)
+			}
+		} else {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"status": fmt.Sprintf("the icon type %s is not supported", iconType),
+			})
+		}
+	} else {
+		c.File(responseIndexPath)
+	}
 }
