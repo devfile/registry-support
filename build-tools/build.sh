@@ -62,11 +62,21 @@ build_registry() {
 
     # There are files that need to be pulled into a tar archive
     if [[ ! -z $tarFiles ]]; then
-      tar -czvf archive.tar $tarFiles
+      tar -czvf archive.tar $tarFiles > /dev/null
       rm -rf $tarFiles
     fi
     cd "$OLDPWD"
   done
+
+  # Cache any devfile samples if needed
+  if [ -f $registryRepository/extraDevfileEntries.yaml ]; then
+    mkdir $outputFolder/samples
+    $buildToolsFolder/cache_samples.sh $registryRepository/extraDevfileEntries.yaml $outputFolder/samples
+    if [ $? -ne 0 ]; then
+      echo "Error caching the devfile samples"
+      exit 1;
+    fi
+  fi
 
   # Run the index generator tool
   echo "Generating the devfile registry index"
