@@ -11,7 +11,7 @@ name: Next Dockerimage
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
 
 jobs:
   indexServerBuild:

@@ -39,8 +39,11 @@ USER www-data
 ENV DEVFILE_STACKS /registry/stacks
 ENV DEVFILE_SAMPLES /registry/stacks
 ENV DEVFILE_INDEX /registry/index.json
+ENV DEVFILE_BASE64_INDEX /www/data/index_base64.json
 ENV DEVFILE_SAMPLE_INDEX /www/data/sample_index.json
+ENV DEVFILE_SAMPLE_BASE64_INDEX /www/data/sample_base64_index.json
 ENV DEVFILE_STACK_INDEX /www/data/stack_index.json
+ENV DEVFILE_STACK_BASE64_INDEX /www/data/stack_base64_index.json
 
 EXPOSE 8080 7071
 ENTRYPOINT ["/entrypoint.sh"]

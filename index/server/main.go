@@ -2,12 +2,14 @@ package main
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"path"
 	"path/filepath"
@@ -46,6 +48,7 @@ const (
 
 	scheme          = "http"
 	registryService = "localhost:5000"
+	encodeFormat    = "base64"
 )
 
 var mediaTypeMapping = map[string]string{
@@ -58,11 +61,14 @@ var mediaTypeMapping = map[string]string{
 }
 
 var (
-	stacksPath      = os.Getenv("DEVFILE_STACKS")
-	indexPath       = os.Getenv("DEVFILE_INDEX")
-	sampleIndexPath = os.Getenv("DEVFILE_SAMPLE_INDEX")
-	stackIndexPath  = os.Getenv("DEVFILE_STACK_INDEX")
-	getIndexLatency = prometheus.NewHistogramVec(
+	stacksPath            = os.Getenv("DEVFILE_STACKS")
+	indexPath             = os.Getenv("DEVFILE_INDEX")
+	base64IndexPath       = os.Getenv("DEVFILE_BASE64_INDEX")
+	sampleIndexPath       = os.Getenv("DEVFILE_SAMPLE_INDEX")
+	sampleBase64IndexPath = os.Getenv("DEVFILE_SAMPLE_BASE64_INDEX")
+	stackIndexPath        = os.Getenv("DEVFILE_STACK_INDEX")
+	stackBase64IndexPath  = os.Getenv("DEVFILE_STACK_BASE64_INDEX")
+	getIndexLatency       = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
 			Name:    "index_http_request_duration_seconds",
 			Help:    "Latency of index request in seconds.",
@@ -149,17 +155,10 @@ func main() {
 
 	router.GET("/index/:type", func(c *gin.Context) {
 		indexType := c.Param("type")
+		iconType := c.Query("icon")
 
 		// Serve the index with type
-		if indexType == string(indexSchema.SampleDevfileType) {
-			c.File(sampleIndexPath)
-		} else if indexType == "all" {
-			c.File(indexPath)
-		} else {
-			c.JSON(http.StatusNotFound, gin.H{
-				"status": fmt.Sprintf("the devfile with %s type didn't exist", indexType),
-			})
-		}
+		buildIndexAPIResponse(c, indexType, iconType)
 	})
 
 	router.GET("/health", func(c *gin.Context) {
@@ -300,5 +299,128 @@ func serveDevfileIndex(c *gin.Context) {
 	}()
 
 	// Serve the index.json file
-	c.File(stackIndexPath)
+	indexType := "stack"
+	iconType := c.Query("icon")
+	buildIndexAPIResponse(c, indexType, iconType)
+}
+
+// encodeIndexIconToBase64 encodes all index icons to base64 format given the index file path
+func encodeIndexIconToBase64(indexPath string, base64IndexPath string) ([]byte, error) {
+	// load index
+	bytes, err := ioutil.ReadFile(indexPath)
+	if err != nil {
+		return nil, err
+	}
+	var index []indexSchema.Schema
+	err = json.Unmarshal(bytes, &index)
+	if err != nil {
+		return nil, err
+	}
+
+	// encode all index icons to base64 format
+	for i, indexEntry := range index {
+		if indexEntry.Icon != "" {
+			base64Icon, err := encodeToBase64(indexEntry.Icon)
+			index[i].Icon = base64Icon
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+	err = indexLibrary.CreateIndexFile(index, base64IndexPath)
+	if err != nil {
+		return nil, err
+	}
+	bytes, err = json.MarshalIndent(&index, "", "  ")
+	if err != nil {
+		return nil, err
+	}
+	return bytes, nil
+}
+
+// encodeToBase64 encodes the content from the given uri to base64 format
+func encodeToBase64(uri string) (string, error) {
+	url, err := url.Parse(uri)
+	if err != nil {
+		return "", err
+	}
+
+	// load the content from the given uri
+	var bytes []byte
+	if url.Scheme == "http" || url.Scheme == "https" {
+		resp, err := http.Get(uri)
+		if err != nil {
+			return "", err
+		}
+		defer resp.Body.Close()
+
+		bytes, err = ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return "", err
+		}
+	} else {
+		bytes, err = ioutil.ReadFile(uri)
+		if err != nil {
+			return "", err
+		}
+	}
+
+	// encode the content to base64 format
+	var base64Encoding string
+	mimeType := http.DetectContentType(bytes)
+	switch mimeType {
+	case "image/jpeg":
+		base64Encoding += "data:image/jpeg;base64,"
+	case "image/png":
+		base64Encoding += "data:image/png;base64,"
+	default:
+		base64Encoding += "data:image/svg+xml;base64,"
+	}
+	base64Encoding += base64.StdEncoding.EncodeToString(bytes)
+	return base64Encoding, nil
+}
+
+// buildIndexAPIResponse builds the response of the REST API of getting the devfile index
+func buildIndexAPIResponse(c *gin.Context, indexType string, iconType string) {
+	var responseIndexPath string
+	var responseBase64IndexPath string
+	switch indexType {
+	case string(indexSchema.StackDevfileType):
+		responseIndexPath = stackIndexPath
+		responseBase64IndexPath = stackBase64IndexPath
+	case string(indexSchema.SampleDevfileType):
+		responseIndexPath = sampleIndexPath
+		responseBase64IndexPath = sampleBase64IndexPath
+	case "all":
+		responseIndexPath = indexPath
+		responseBase64IndexPath = base64IndexPath
+	default:
+		c.JSON(http.StatusNotFound, gin.H{
+			"status": fmt.Sprintf("the devfile with %s type didn't exist", indexType),
+		})
+		return
+	}
+
+	if iconType != "" {
+		if iconType == encodeFormat {
+			if _, err := os.Stat(responseBase64IndexPath); os.IsNotExist(err) {
+				bytes, err := encodeIndexIconToBase64(responseIndexPath, responseBase64IndexPath)
+				if err != nil {
+					c.JSON(http.StatusInternalServerError, gin.H{
+						"status": fmt.Sprintf("failed to encode %s icons to base64 format: %v", indexType, err),
+					})
+					return
+				}
+				c.Data(http.StatusOK, http.DetectContentType(bytes), bytes)
+			} else {
+				c.File(responseBase64IndexPath)
+			}
+		} else {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"status": fmt.Sprintf("the icon type %s is not supported", iconType),
+			})
+		}
+	} else {
+		c.File(responseIndexPath)
+	}
 }

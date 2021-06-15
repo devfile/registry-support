@@ -1,0 +1,73 @@
+[
+    {
+      "name": "nodejs-basic",
+      "displayName": "Basic NodeJS",
+      "description": "A simple Hello World Node.js application",
+      "type": "sample",
+      "tags": [
+        "NodeJS",
+        "Express"
+      ],
+      "icon": "https://raw.githubusercontent.com/maysunfaisal/node-bulletin-board-2/main/nodejs-icon.png",
+      "projectType": "nodejs",
+      "language": "nodejs",
+      "git": {
+        "remotes": {
+          "origin": "https://github.com/redhat-developer/devfile-sample.git"
+        }
+      }
+    },
+    {
+      "name": "code-with-quarkus",
+      "displayName": "Basic Quarkus",
+      "description": "A simple Hello World Java application using Quarkus",
+      "type": "sample",
+      "tags": [
+        "Java",
+        "Quarkus"
+      ],
+      "icon": "https://raw.githubusercontent.com/elsony/devfile-sample-code-with-quarkus/main/.devfile/icon/quarkus.png",
+      "projectType": "quarkus",
+      "language": "java",
+      "git": {
+        "remotes": {
+          "origin": "https://github.com/elsony/devfile-sample-code-with-quarkus.git"
+        }
+      }
+    },
+    {
+      "name": "java-springboot-basic",
+      "displayName": "Basic Spring Boot",
+      "description": "A simple Hello World Java Spring Boot application using Maven",
+      "type": "sample",
+      "tags": [
+        "Java",
+        "Spring"
+      ],
+      "icon": "https://raw.githubusercontent.com/elsony/devfile-sample-java-springboot-basic/main/.devfile/icon/spring-logo.png",
+      "projectType": "springboot",
+      "language": "java",
+      "git": {
+        "remotes": {
+          "origin": "https://github.com/elsony/devfile-sample-java-springboot-basic.git"
+        }
+      }
+    },
+    {
+      "name": "python-basic",
+      "displayName": "Basic Python",
+      "description": "A simple Hello World application using Python",
+      "type": "sample",
+      "tags": [
+        "Python"
+      ],
+      "icon": "https://raw.githubusercontent.com/elsony/devfile-sample-python-basic/main/.devfile/icon/python.png",
+      "projectType": "python",
+      "language": "python",
+      "git": {
+        "remotes": {
+          "origin": "https://github.com/elsony/devfile-sample-python-basic.git"
+        }
+      }
+    }
+  ]
