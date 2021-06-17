@@ -6,6 +6,6 @@
 #
 # SPDX-License-Identifier: EPL-2.0
 #
-FROM quay.io/openshift-pipeline/golang:1.15-alpine AS builder
+FROM quay.io/devfile/devfile-index-base:next
 
 COPY . /registry

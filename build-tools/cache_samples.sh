@@ -2,7 +2,7 @@
 
 # This script downloads and caches the devfile samples in the registry
 # This is only called if extraDevfilesEntries.yaml exists and has entries for devfile samples
-# The downloaded samples are cached under /samples in the devfile registry container
+# The downloaded samples are cached under /registry/samples in the devfile registry container
 set -eu
 
 # download_sample takes in a given sample name (e.g. nodejs-basic), and git clones its corresponding repository

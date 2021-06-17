@@ -5,11 +5,11 @@ COPY . .
 RUN CGO_ENABLED=0 go build -mod=vendor -o index-server main.go
 
 # Application image
-FROM registry.access.redhat.com/ubi8-minimal:8.2
-COPY nginx.repo  /etc/yum.repos.d/nginx.repo
+FROM registry.access.redhat.com/ubi8/nginx-118:1
 
 # Install and configure dependencies
-RUN microdnf update -y && rm -rf /var/cache/yum && microdnf install nginx shadow-utils findutils git
+USER root
+RUN yum -y install shadow-utils findutils git
 
 COPY nginx.conf /etc/nginx/nginx.conf
 COPY entrypoint.sh /
@@ -37,7 +37,7 @@ USER www-data
 
 # Set env vars for the locations of the devfile stacks and index.json
 ENV DEVFILE_STACKS /registry/stacks
-ENV DEVFILE_SAMPLES /registry/stacks
+ENV DEVFILE_SAMPLES /registry/samples
 ENV DEVFILE_INDEX /registry/index.json
 ENV DEVFILE_BASE64_INDEX /www/data/index_base64.json
 ENV DEVFILE_SAMPLE_INDEX /www/data/sample_index.json
