@@ -5,11 +5,11 @@ COPY . .
 RUN CGO_ENABLED=0 go build -mod=vendor -o index-server main.go
 
 # Application image
-FROM registry.access.redhat.com/ubi8-minimal:8.2
-COPY nginx.repo  /etc/yum.repos.d/nginx.repo
+FROM registry.access.redhat.com/ubi8/nginx-118:1
 
 # Install and configure dependencies
-RUN microdnf update -y && rm -rf /var/cache/yum && microdnf install nginx shadow-utils findutils git
+USER root
+RUN yum -y install shadow-utils findutils git
 
 COPY nginx.conf /etc/nginx/nginx.conf
 COPY entrypoint.sh /
