@@ -26,16 +26,20 @@ import (
 		return err
 	}
     ```
-    b. Download the stack devfile from devfile registry
+    b. Get the indices of multiple devfile registries for various devfile types
     ```
-	err := registryLibrary.PullStackByMediaTypesFromRegistry(registry, stack, registryLibrary.DevfileMediaTypeList)
+    registryList := GetMultipleRegistriesIndices(registryURLs, StackDevfileType)
+    ```
+    c. Download the stack devfile from devfile registry
+    ```
+	err := registryLibrary.PullStackByMediaTypesFromRegistry(registry, stack, registryLibrary.DevfileMediaTypeList, destDir)
 	if err != nil {
 		return err
 	}
     ```
-    c. Download the whole stack from devfile registry
+    d. Download the whole stack from devfile registry
     ```
-    err := registryLibrary.PullStackFromRegistry(registry, stack)
+    err := registryLibrary.PullStackFromRegistry(registry, stack, destDir)
     if err != nil {
 		return err
 	}
