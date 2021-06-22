@@ -14,7 +14,6 @@ package tests
 
 import (
 	"net/http"
-	"strings"
 
 	devfilePkg "github.com/devfile/library/pkg/devfile"
 	"github.com/devfile/library/pkg/devfile/parser"
@@ -30,31 +29,28 @@ import (
 // Integration/e2e test logic based on https://github.com/devfile/registry-operator/tree/master/test/integration
 
 var _ = ginkgo.Describe("[Verify index server is working properly]", func() {
-	registryList := strings.Split(config.Registry, ",")
-	registry := registryList[0]
-
 	ginkgo.It("Root endpoint should be available", func() {
-		resp, err := http.Get(registry)
+		resp, err := http.Get(config.Registry)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		gomega.Expect(resp.StatusCode).To(gomega.Equal(http.StatusOK))
 	})
 
 	ginkgo.It("/index endpoint should return list of stacks", func() {
-		registryIndex := util.GetRegistryIndex(registry + "/index")
+		registryIndex := util.GetRegistryIndex(config.Registry + "/index")
 		for _, index := range registryIndex {
 			gomega.Expect(index.Type).To(gomega.Equal(indexSchema.StackDevfileType))
 		}
 	})
 
 	ginkgo.It("/index/sample endpoint should return list of samples", func() {
-		registryIndex := util.GetRegistryIndex(registry + "/index/sample")
+		registryIndex := util.GetRegistryIndex(config.Registry + "/index/sample")
 		for _, index := range registryIndex {
 			gomega.Expect(index.Type).To(gomega.Equal(indexSchema.SampleDevfileType))
 		}
 	})
 
 	ginkgo.It("/index/all endpoint should return stacks and samples", func() {
-		registryIndex := util.GetRegistryIndex(registry + "/index/all")
+		registryIndex := util.GetRegistryIndex(config.Registry + "/index/all")
 
 		hasStacks := false
 		hasSamples := false
@@ -71,7 +67,7 @@ var _ = ginkgo.Describe("[Verify index server is working properly]", func() {
 
 	ginkgo.It("/devfiles/<devfile> endpoint should return a devfile", func() {
 		parserArgs := parser.ParserArgs{
-			URL: registry + "/devfiles/nodejs",
+			URL: config.Registry + "/devfiles/nodejs",
 		}
 		_, _, err := devfilePkg.ParseDevfileAndValidate(parserArgs)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())

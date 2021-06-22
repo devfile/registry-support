@@ -17,7 +17,6 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
-	"strings"
 
 	"github.com/devfile/registry-support/tests/integration/pkg/config"
 	"github.com/devfile/registry-support/tests/integration/pkg/util"
@@ -29,17 +28,14 @@ import (
 // Integration/e2e test logic based on https://github.com/devfile/registry-operator/tree/master/test/integration
 
 var _ = ginkgo.Describe("[Verify oci registry is working properly]", func() {
-	registryList := strings.Split(config.Registry, ",")
-	registry := registryList[0]
-
 	ginkgo.It("/v2 endpoint should be available", func() {
-		resp, err := http.Get(registry + "/v2")
+		resp, err := http.Get(config.Registry + "/v2")
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		gomega.Expect(resp.StatusCode).To(gomega.Equal(http.StatusOK))
 	})
 
 	ginkgo.It("/v2/_catalog endpoint should return a list of OCI artifacts", func() {
-		resp, err := http.Get(registry + "/v2/_catalog")
+		resp, err := http.Get(config.Registry + "/v2/_catalog")
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		gomega.Expect(resp.StatusCode).To(gomega.Equal(http.StatusOK))
 
@@ -57,7 +53,7 @@ var _ = ginkgo.Describe("[Verify oci registry is working properly]", func() {
 		responseBody := bytes.NewBuffer(nil)
 
 		// Nginx proxy should return a 403 forbidden error
-		resp, err := http.Post(registry+"/v2", "application/text", responseBody)
+		resp, err := http.Post(config.Registry+"/v2", "application/text", responseBody)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		gomega.Expect(resp.StatusCode).To(gomega.Equal(http.StatusForbidden))
 	})
