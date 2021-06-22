@@ -24,30 +24,44 @@ import (
 	"github.com/onsi/gomega"
 )
 
+const (
+	devfilePublicRegistry = "https://registry.devfile.io"
+	devfileStageRegistry  = "https://registry.stage.devfile.io"
+	nodejsStack           = "nodejs"
+	quarkusStack          = "java-quarkus"
+	nodejsSample          = "nodejs-basic"
+)
+
 // Integration/e2e test logic based on https://github.com/devfile/registry-operator/tree/master/test/integration
 // Tests use the CLI version of the registry-library to test.
 // Note: Requires adding the CLI to the system path before running these tests
 var _ = ginkgo.Describe("[Verify registry library works with registry]", func() {
 	ginkgo.It("should properly list devfile stacks", func() {
 		output := util.CmdShouldPass("registry-library", "list", "--type", "stack")
-		gomega.Expect(output).To(gomega.ContainSubstring("nodejs"))
+		gomega.Expect(output).To(gomega.ContainSubstring(nodejsStack))
+		gomega.Expect(output).To(gomega.ContainSubstring(devfilePublicRegistry))
+		gomega.Expect(output).To(gomega.ContainSubstring(devfileStageRegistry))
 	})
 
 	ginkgo.It("should properly list devfile samples", func() {
 		output := util.CmdShouldPass("registry-library", "list", "--type", "sample")
-		gomega.Expect(output).To(gomega.ContainSubstring("nodejs-basic"))
+		gomega.Expect(output).To(gomega.ContainSubstring(nodejsSample))
+		gomega.Expect(output).To(gomega.ContainSubstring(devfilePublicRegistry))
+		gomega.Expect(output).To(gomega.ContainSubstring(devfileStageRegistry))
 	})
 
 	ginkgo.It("should properly list both devfile stacks and samples", func() {
 		output := util.CmdShouldPass("registry-library", "list", "--type", "all")
-		gomega.Expect(output).To(gomega.ContainSubstring("nodejs-basic"))
-		gomega.Expect(output).To(gomega.ContainSubstring("java-quarkus"))
+		gomega.Expect(output).To(gomega.ContainSubstring(nodejsSample))
+		gomega.Expect(output).To(gomega.ContainSubstring(quarkusStack))
+		gomega.Expect(output).To(gomega.ContainSubstring(devfilePublicRegistry))
+		gomega.Expect(output).To(gomega.ContainSubstring(devfileStageRegistry))
 	})
 
 	ginkgo.It("should properly retrieve devfile stacks", func() {
 		// Verify that the devfile library can properly pull a devfile stack from the registry
 		tempDir := os.TempDir()
-		util.CmdShouldPass("registry-library", "pull", "nodejs", "--context", tempDir)
+		util.CmdShouldPass("registry-library", "pull", devfilePublicRegistry, nodejsStack, "--context", tempDir)
 		devfilePath := path.Join(tempDir, "devfile.yaml")
 		_, err := os.Stat(devfilePath)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())

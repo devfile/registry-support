@@ -35,12 +35,12 @@ const (
 //SynchronizedBeforeSuite blocks is executed before run all test suites
 var _ = ginkgo.SynchronizedBeforeSuite(func() []byte {
 	fmt.Println("Starting to setup objects before run ginkgo suite")
-	registry := os.Getenv("REGISTRY")
+	registry := os.Getenv("REGISTRY_LIST")
 	if registry != "" {
 		config.Registry = registry
 	} else {
-		config.Registry = "https://registry.devfile.io"
-		os.Setenv("REGISTRY", config.Registry)
+		config.Registry = "https://registry.devfile.io,https://registry.stage.devfile.io"
+		os.Setenv("REGISTRY_LIST", config.Registry)
 	}
 
 	return nil
