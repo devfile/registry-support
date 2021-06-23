@@ -7,7 +7,7 @@ Logs can be collected for both the devfile index server, and the OCI registry se
 To retrieve the logs from the devfile index server:
 
 ```bash
-kubectl logs <devfile-registry-pod> -c devfile-registry
+kubectl logs <devfile-registry-pod> -c devfile-registry-bootstrap
 ```
 
 To retrieve the logs from the oci registry server:
@@ -26,7 +26,7 @@ Potential causes of this include:
 
 - Specifying the wrong image for the devfile index image when deploying
 
-    - **Note:** The image produced by the devfile registry build tool must be used here if deploying your own devfile registry.
+    - **Note:** The devfile index image produced by the devfile registry build tool must be used here if deploying your own devfile registry.
     
 - No stacks in the devfile index image
 
