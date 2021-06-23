@@ -168,6 +168,14 @@ func parseExtraDevfileEntries(registryDirPath string, force bool) ([]schema.Sche
 	if err != nil {
 		return nil, fmt.Errorf("failed to read %s: %v", extraDevfileEntriesPath, err)
 	}
+
+	// Only validate samples if they have been cached
+	samplesDir := filepath.Join(registryDirPath, "samples")
+	validateSamples := false
+	if _, err := os.Stat(samplesDir); !os.IsNotExist(err) {
+		validateSamples = true
+	}
+
 	var devfileEntries schema.ExtraDevfileEntries
 	err = yaml.Unmarshal(bytes, &devfileEntries)
 	if err != nil {
@@ -185,6 +193,24 @@ func parseExtraDevfileEntries(registryDirPath string, force bool) ([]schema.Sche
 			indexComponent := devfileEntry
 			indexComponent.Type = devfileType
 			if !force {
+
+				// If sample, validate devfile associated with sample as well
+				// Can't handle during registry build since we don't have access to devfile library/parser
+				if indexComponent.Type == schema.SampleDevfileType && validateSamples {
+					devfilePath := filepath.Join(samplesDir, devfileEntry.Name, "devfile.yaml")
+					_, err := os.Stat(filepath.Join(devfilePath))
+					if err != nil {
+						// This error shouldn't occur since we check for the devfile's existence during registry build, but check for it regardless
+						return nil, fmt.Errorf("%s devfile sample does not have a devfile.yaml: %v", indexComponent.Name, err)
+					}
+
+					// Validate the sample devfile
+					_, err = devfileParser.ParseAndValidate(devfilePath)
+					if err != nil {
+						return nil, fmt.Errorf("%s sample devfile is not valid: %v", devfileEntry.Name, err)
+					}
+				}
+
 				// Index component validation
 				err := validateIndexComponent(indexComponent, devfileType)
 				if err != nil {

@@ -36,8 +36,9 @@ RUN chmod g+rwx /var/run/nginx.pid && \
 USER www-data
 
 # Set env vars for the locations of the devfile stacks and index.json
-ENV DEVFILE_STACKS /stacks
-ENV DEVFILE_INDEX /index.json
+ENV DEVFILE_STACKS /registry/stacks
+ENV DEVFILE_SAMPLES /registry/samples
+ENV DEVFILE_INDEX /registry/index.json
 ENV DEVFILE_BASE64_INDEX /www/data/index_base64.json
 ENV DEVFILE_SAMPLE_INDEX /www/data/sample_index.json
 ENV DEVFILE_SAMPLE_BASE64_INDEX /www/data/sample_base64_index.json

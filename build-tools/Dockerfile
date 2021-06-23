@@ -8,5 +8,4 @@
 #
 FROM quay.io/devfile/devfile-index-base:next
 
-COPY index.json /index.json
-COPY stacks /stacks
+COPY . /registry
