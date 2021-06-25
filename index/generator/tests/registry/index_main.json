@@ -277,20 +277,20 @@
       }
     },
     {
-      "name": "vertx-secured-http",
-      "displayName": "Vert.x with secured HTTP",
-      "description": "A Vert.x application using secured HTTP",
+      "name": "code-with-quarkus",
+      "displayName": "Basic Quarkus",
+      "description": "A simple Hello World Java application using Quarkus",
       "type": "sample",
       "tags": [
         "Java",
-        "Vert.x"
+        "Quarkus"
       ],
-      "icon": "vertxIcon.svg",
-      "projectType": "vertx",
+      "icon": "https://raw.githubusercontent.com/elsony/devfile-sample-code-with-quarkus/main/.devfile/icon/quarkus.png",
+      "projectType": "quarkus",
       "language": "java",
       "git": {
         "remotes": {
-          "origin": "https://github.com/openshift-vertx-examples/vertx-secured-http-example-redhat"
+          "origin": "https://github.com/elsony/devfile-sample-code-with-quarkus.git"
         }
       }
     }
