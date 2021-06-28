@@ -21,6 +21,11 @@ E.g. if your cluster's ingress domain is 192.168.1.0.nip.io, you would run:
 helm install devfile-registry deploy/chart/devfile-registry --set global.ingress.domain=192.168.1.0.nip.io
 ```
 
+If you're installing on OpenShift, you need to set `global.isOpenShift` to true, for example:
+```
+helm install devfile-registry deploy/chart/devfile-registry --set global.isOpenShift=true
+```
+
 ## Updating the Devfile Registry
 
 If you wish to update the devfile registry (such as to add change the devfile index image or change some configurations), you can run the following command:
@@ -54,6 +59,7 @@ The following fields can be configured in the Helm chart, either via the `values
 | `global.ingress.class`                 | Ingress class for the devfile registry          | `nginx` |
 | `global.ingress.secretName`            | Name of an existing tls secret if using TLS     | ` '' ` |
 | `global.isOpenShift  `                 | Set to true to use OpenShift routes instead of ingress   | `false` |
+| `global.tlsEnabled`                    | Set to true to use the devfile registry with TLS | `false` |
 | `devfileIndex.image`                   | Image used for the devfile index image          | `quay.io/devfile/devfile-index` |
 | `devfileIndex.tag`                     | Tag for devfile index image                     | `next` |
 | `devfileIndex.imagePullpolicy`         | Image pull policy for devfile index image       | `Always` |
