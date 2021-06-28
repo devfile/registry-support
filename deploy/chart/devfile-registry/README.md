@@ -8,9 +8,9 @@ Installing this chart will deploy an OCI-based devfile registry on to your Kuber
 - Helm CLI, version 3 or higher
 - Knowledge of your cluster's ingress domain
 
-## Installing the Devfile Registry
+## Installing the Devfile Registry on Kubernetes
 
-Run the following command to install the devfile registry on to your cluster:
+Run the following command to install the devfile registry on to your Kubernetes Cluster:
 
 ```
 helm install <release-name> <path-to-chart> --set global.ingress.domain=<ingress-domain>
@@ -21,9 +21,16 @@ E.g. if your cluster's ingress domain is 192.168.1.0.nip.io, you would run:
 helm install devfile-registry deploy/chart/devfile-registry --set global.ingress.domain=192.168.1.0.nip.io
 ```
 
+## Installing the Devfile Registry on OpenShift
+
 If you're installing on OpenShift, you need to set `global.isOpenShift` to true, for example:
 ```
 helm install devfile-registry deploy/chart/devfile-registry --set global.isOpenShift=true
+```
+
+or, if you want to install a specific devfile index image, you can run:
+```
+helm install devfile-registry deploy/chart/devfile-registry --set global.isOpenShift=true --set devfileIndex.image=quay.io/myuser/devfile-index --set defileIndex.tag=latest
 ```
 
 ## Updating the Devfile Registry
