@@ -115,8 +115,8 @@ func GetRegistryIndex(registryURL string, devfileTypes ...indexSchema.DevfileTyp
 	return registryIndex, nil
 }
 
-// GetMultipleRegistriesIndices returns returns the list of stacks and/or samples of multiple registries
-func GetMultipleRegistriesIndices(registryURLs []string, devfileTypes ...indexSchema.DevfileType) []Registry {
+// GetMultipleRegistryIndices returns returns the list of stacks and/or samples of multiple registries
+func GetMultipleRegistryIndices(registryURLs []string, devfileTypes ...indexSchema.DevfileType) []Registry {
 	registryList := make([]Registry, len(registryURLs))
 	registryContentsChannel := make(chan []indexSchema.Schema)
 	errChannel := make(chan error)
@@ -141,11 +141,11 @@ func PrintRegistry(registryURLs string, devfileType string) error {
 	var registryList []Registry
 
 	if devfileType == string(indexSchema.StackDevfileType) {
-		registryList = GetMultipleRegistriesIndices(registryURLArray, indexSchema.StackDevfileType)
+		registryList = GetMultipleRegistryIndices(registryURLArray, indexSchema.StackDevfileType)
 	} else if devfileType == string(indexSchema.SampleDevfileType) {
-		registryList = GetMultipleRegistriesIndices(registryURLArray, indexSchema.SampleDevfileType)
+		registryList = GetMultipleRegistryIndices(registryURLArray, indexSchema.SampleDevfileType)
 	} else if devfileType == "all" {
-		registryList = GetMultipleRegistriesIndices(registryURLArray, indexSchema.StackDevfileType, indexSchema.SampleDevfileType)
+		registryList = GetMultipleRegistryIndices(registryURLArray, indexSchema.StackDevfileType, indexSchema.SampleDevfileType)
 	}
 
 	w := tabwriter.NewWriter(os.Stdout, 5, 2, 3, ' ', tabwriter.TabIndent)

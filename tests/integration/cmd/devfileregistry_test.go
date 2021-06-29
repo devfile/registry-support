@@ -15,7 +15,6 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"strings"
 	"testing"
 
 	"github.com/devfile/registry-support/tests/integration/pkg/config"
@@ -36,12 +35,12 @@ const (
 //SynchronizedBeforeSuite blocks is executed before run all test suites
 var _ = ginkgo.SynchronizedBeforeSuite(func() []byte {
 	fmt.Println("Starting to setup objects before run ginkgo suite")
-	registryList := os.Getenv("REGISTRY_LIST")
-	if registryList == "" {
-		registryList = "https://registry.devfile.io,https://registry.stage.devfile.io"
+	registry := os.Getenv("REGISTRY")
+	if registry == "" {
+		registry = "https://registry.devfile.io"
 	}
-	config.RegistryList = registryList
-	config.Registry = strings.Split(registryList, ",")[0]
+	config.Registry = registry
+	config.RegistryList = registry + "," + "https://registry.devfile.io"
 	os.Setenv("REGISTRY_LIST", config.RegistryList)
 
 	return nil
