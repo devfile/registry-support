@@ -12,4 +12,5 @@
 
 package config
 
+var RegistryList string
 var Registry string

@@ -30,7 +30,7 @@ const (
 )
 
 var (
-	registry     = os.Getenv("REGISTRY")
+	registryList = os.Getenv("REGISTRY_LIST")
 	cfgFile      string
 	allResources bool
 	destDir      string
@@ -71,11 +71,12 @@ func init() {
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
 	var pullCmd = &cobra.Command{
-		Use:   "pull <stack name>",
+		Use:   "pull <registry name> <stack name>",
 		Short: "Pull stack resources from the registry, by default only pull devfile.yaml from the registry",
-		Args:  cobra.ExactArgs(1),
+		Args:  cobra.ExactArgs(2),
 		Run: func(cmd *cobra.Command, args []string) {
-			stack := args[0]
+			registry := args[0]
+			stack := args[1]
 			var err error
 
 			if allResources {
@@ -95,9 +96,13 @@ func init() {
 		Use:   "list",
 		Short: "List stacks of the registry",
 		Run: func(cmd *cobra.Command, args []string) {
-			err := library.PrintRegistry(registry, devfileType)
+			if devfileType == "" {
+				fmt.Printf("Please specify the devfile type by using flag --type\n")
+				return
+			}
+			err := library.PrintRegistry(registryList, devfileType)
 			if err != nil {
-				fmt.Printf("Failed to list stacks of registry %s: %v\n", registry, err)
+				fmt.Printf("Failed to list stacks of registry %s: %v\n", registryList, err)
 			}
 		},
 	}

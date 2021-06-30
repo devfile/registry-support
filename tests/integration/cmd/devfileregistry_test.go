@@ -36,12 +36,12 @@ const (
 var _ = ginkgo.SynchronizedBeforeSuite(func() []byte {
 	fmt.Println("Starting to setup objects before run ginkgo suite")
 	registry := os.Getenv("REGISTRY")
-	if registry != "" {
-		config.Registry = registry
-	} else {
-		config.Registry = "https://registry.devfile.io"
-		os.Setenv("REGISTRY", config.Registry)
+	if registry == "" {
+		registry = "https://registry.devfile.io"
 	}
+	config.Registry = registry
+	config.RegistryList = registry + "," + "https://registry.devfile.io"
+	os.Setenv("REGISTRY_LIST", config.RegistryList)
 
 	return nil
 }, func(data []byte) {})

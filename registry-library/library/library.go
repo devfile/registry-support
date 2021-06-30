@@ -24,6 +24,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 	"text/tabwriter"
 	"time"
 
@@ -49,20 +50,24 @@ const (
 )
 
 var (
-	stacksPath               = os.Getenv("DEVFILE_STACKS")
-	indexPath                = os.Getenv("DEVFILE_INDEX")
 	DevfileMediaTypeList     = []string{DevfileMediaType}
 	DevfileAllMediaTypesList = []string{DevfileMediaType, DevfilePNGLogoMediaType, DevfileSVGLogoMediaType, DevfileVSXMediaType, DevfileArchiveMediaType}
 )
 
+type Registry struct {
+	registryURL      string
+	registryContents []indexSchema.Schema
+	err              error
+}
+
 // GetRegistryIndex returns the list of stacks and/or samples, more specifically
 // it gets the stacks and/or samples content of the index of the specified registry
 // for listing the stacks and/or samples
-func GetRegistryIndex(registry string, devfileTypes ...indexSchema.DevfileType) ([]indexSchema.Schema, error) {
+func GetRegistryIndex(registryURL string, devfileTypes ...indexSchema.DevfileType) ([]indexSchema.Schema, error) {
 	var registryIndex []indexSchema.Schema
 
 	// Call index server REST API to get the index
-	urlObj, err := url.Parse(registry)
+	urlObj, err := url.Parse(registryURL)
 	if err != nil {
 		return nil, err
 	}
@@ -110,26 +115,49 @@ func GetRegistryIndex(registry string, devfileTypes ...indexSchema.DevfileType) 
 	return registryIndex, nil
 }
 
-// PrintRegistry prints the registry with devfile type
-func PrintRegistry(registry string, devfileType string) error {
-	// Get the registry index
-	var registryIndex []indexSchema.Schema
-	var err error
-	if devfileType == string(indexSchema.StackDevfileType) {
-		registryIndex, err = GetRegistryIndex(registry, indexSchema.StackDevfileType)
-	} else if devfileType == string(indexSchema.SampleDevfileType) {
-		registryIndex, err = GetRegistryIndex(registry, indexSchema.SampleDevfileType)
-	} else if devfileType == "all" {
-		registryIndex, err = GetRegistryIndex(registry, indexSchema.StackDevfileType, indexSchema.SampleDevfileType)
+// GetMultipleRegistryIndices returns returns the list of stacks and/or samples of multiple registries
+func GetMultipleRegistryIndices(registryURLs []string, devfileTypes ...indexSchema.DevfileType) []Registry {
+	registryList := make([]Registry, len(registryURLs))
+	registryContentsChannel := make(chan []indexSchema.Schema)
+	errChannel := make(chan error)
+
+	for index, registryURL := range registryURLs {
+		go func(chan []indexSchema.Schema, chan error) {
+			registryContents, err := GetRegistryIndex(registryURL, devfileTypes...)
+			registryContentsChannel <- registryContents
+			errChannel <- err
+		}(registryContentsChannel, errChannel)
+		registryList[index].registryURL = registryURL
+		registryList[index].registryContents = <-registryContentsChannel
+		registryList[index].err = <-errChannel
 	}
-	if err != nil {
-		return err
+	return registryList
+}
+
+// PrintRegistry prints the registry with devfile type
+func PrintRegistry(registryURLs string, devfileType string) error {
+	// Get the registry index
+	registryURLArray := strings.Split(registryURLs, ",")
+	var registryList []Registry
+
+	if devfileType == string(indexSchema.StackDevfileType) {
+		registryList = GetMultipleRegistryIndices(registryURLArray, indexSchema.StackDevfileType)
+	} else if devfileType == string(indexSchema.SampleDevfileType) {
+		registryList = GetMultipleRegistryIndices(registryURLArray, indexSchema.SampleDevfileType)
+	} else if devfileType == "all" {
+		registryList = GetMultipleRegistryIndices(registryURLArray, indexSchema.StackDevfileType, indexSchema.SampleDevfileType)
 	}
 
 	w := tabwriter.NewWriter(os.Stdout, 5, 2, 3, ' ', tabwriter.TabIndent)
-	fmt.Fprintln(w, "Name", "\t", "Description", "\t")
-	for _, stackIndex := range registryIndex {
-		fmt.Fprintln(w, stackIndex.Name, "\t", stackIndex.Description, "\t")
+	fmt.Fprintln(w, "Name", "\t", "Description", "\t", "Registry", "\t", "Error", "\t")
+	for _, devfileRegistry := range registryList {
+		if devfileRegistry.err != nil {
+			fmt.Fprintln(w, "NONE", "\t", "NONE", "\t", devfileRegistry.registryURL, devfileRegistry.err.Error(), "\t")
+		} else {
+			for _, devfileEntry := range devfileRegistry.registryContents {
+				fmt.Fprintln(w, devfileEntry.Name, "\t", devfileEntry.Description, "\t", devfileRegistry.registryURL, "\t", "NONE", "\t")
+			}
+		}
 	}
 	w.Flush()
 	return nil
@@ -154,7 +182,7 @@ func PullStackByMediaTypesFromRegistry(registry string, stack string, allowedMed
 		}
 	}
 	if !exist {
-		return fmt.Errorf("Stack %s does not exist in the registry %s", stack, registry)
+		return fmt.Errorf("stack %s does not exist in the registry %s", stack, registry)
 	}
 
 	// Pull stack initialization
@@ -175,7 +203,7 @@ func PullStackByMediaTypesFromRegistry(registry string, stack string, allowedMed
 	// Pull stack from registry and save it to disk
 	_, _, err = oras.Pull(ctx, resolver, ref, fileStore, oras.WithAllowedMediaTypes(allowedMediaTypes))
 	if err != nil {
-		return fmt.Errorf("Failed to pull stack %s from %s with allowed media types %v: %v", stack, ref, allowedMediaTypes, err)
+		return fmt.Errorf("failed to pull stack %s from %s with allowed media types %v: %v", stack, ref, allowedMediaTypes, err)
 	}
 
 	// Decompress archive.tar
@@ -242,7 +270,6 @@ func decompress(targetDir string, tarFile string) error {
 			w.Close()
 		default:
 			log.Printf("Unsupported type: %v", header.Typeflag)
-			break
 		}
 	}
 
