@@ -7,14 +7,23 @@ import (
 	"testing"
 
 	"github.com/devfile/registry-support/index/generator/schema"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestValidateIndexComponent(t *testing.T) {
+
+	nameNotInitErr := ".*name is not initialized.*"
+	linkEmptyErr := ".*links are empty.*"
+	resourcesEmptyErr := ".*resources are empty.*"
+	gitEmptyErr := ".*git is empty.*"
+	multipleRemotesErr := ".*has multiple remotes.*"
+	noArchErr := ".*has no architecture.*"
+
 	tests := []struct {
 		name           string
 		indexComponent schema.Schema
 		componentType  schema.DevfileType
-		wantErr        bool
+		wantErr        *string
 	}{
 		{
 			"Case 1: test index component is not initialized for stack component",
@@ -27,7 +36,7 @@ func TestValidateIndexComponent(t *testing.T) {
 				},
 			},
 			schema.StackDevfileType,
-			true,
+			&nameNotInitErr,
 		},
 		{
 			"Case 2: test index component links are empty for stack component",
@@ -38,7 +47,7 @@ func TestValidateIndexComponent(t *testing.T) {
 				},
 			},
 			schema.StackDevfileType,
-			true,
+			&linkEmptyErr,
 		},
 		{
 			"Case 3: test index component resources are empty for stack component",
@@ -49,7 +58,7 @@ func TestValidateIndexComponent(t *testing.T) {
 				},
 			},
 			schema.StackDevfileType,
-			true,
+			&resourcesEmptyErr,
 		},
 		{
 			"Case 4: test index component git is empty for sample component",
@@ -57,7 +66,7 @@ func TestValidateIndexComponent(t *testing.T) {
 				Name: "nodejs",
 			},
 			schema.SampleDevfileType,
-			true,
+			&gitEmptyErr,
 		},
 		{
 			"Case 5: test happy path for for stack component",
@@ -69,9 +78,12 @@ func TestValidateIndexComponent(t *testing.T) {
 				Resources: []string{
 					"devfile.yaml",
 				},
+				Architectures: []string{
+					"amd64",
+				},
 			},
 			schema.StackDevfileType,
-			false,
+			nil,
 		},
 		{
 			"Case 6: test happy path for for sample component",
@@ -82,9 +94,12 @@ func TestValidateIndexComponent(t *testing.T) {
 						"origin": "https://github.com/redhat-developer/devfile-sample",
 					},
 				},
+				Architectures: []string{
+					"amd64",
+				},
 			},
 			schema.SampleDevfileType,
-			false,
+			nil,
 		},
 		{
 			"Case 7: test index component git has multiple remotes",
@@ -98,19 +113,30 @@ func TestValidateIndexComponent(t *testing.T) {
 				},
 			},
 			schema.SampleDevfileType,
-			true,
+			&multipleRemotesErr,
+		},
+		{
+			"Case 8: check for missing arch",
+			schema.Schema{
+				Name: "nodejs",
+				Git: &schema.Git{
+					Remotes: map[string]string{
+						"origin": "https://github.com/redhat-developer/devfile-sample",
+					},
+				},
+			},
+			schema.SampleDevfileType,
+			&noArchErr,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotErr := false
 			err := validateIndexComponent(tt.indexComponent, tt.componentType)
-			if err != nil {
-				gotErr = true
-			}
-			if gotErr != tt.wantErr {
-				t.Errorf("Got error: %t, want error: %t, function return error: %v", gotErr, tt.wantErr, err)
+			if tt.wantErr != nil && assert.Error(t, err) {
+				assert.Regexp(t, *tt.wantErr, err.Error(), "Error message should match")
+			} else {
+				assert.NoError(t, err, "Expected error to be nil")
 			}
 		})
 	}

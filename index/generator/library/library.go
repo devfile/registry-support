@@ -19,6 +19,15 @@ const (
 	extraDevfileEntries = "extraDevfileEntries.yaml"
 )
 
+// MissingArchError is an error if the architecture list is empty
+type MissingArchError struct {
+	devfile string
+}
+
+func (e *MissingArchError) Error() string {
+	return fmt.Sprintf("the %s devfile has no architecture(s) mentioned\n", e.devfile)
+}
+
 // GenerateIndexStruct parses registry then generates index struct according to the schema
 func GenerateIndexStruct(registryDirPath string, force bool) ([]schema.Schema, error) {
 	// Parse devfile registry then populate index struct
@@ -73,6 +82,10 @@ func validateIndexComponent(indexComponent schema.Schema, componentType schema.D
 		if len(indexComponent.Git.Remotes) > 1 {
 			return fmt.Errorf("index component has multiple remotes")
 		}
+	}
+
+	if len(indexComponent.Architectures) == 0 {
+		return &MissingArchError{devfile: indexComponent.Name}
 	}
 
 	return nil
@@ -151,7 +164,11 @@ func parseDevfileRegistry(registryDirPath string, force bool) ([]schema.Schema, 
 			// Index component validation
 			err := validateIndexComponent(indexComponent, schema.StackDevfileType)
 			if err != nil {
-				return nil, fmt.Errorf("%s index component is not valid: %v", devfileDir.Name(), err)
+				if _, ok := err.(*MissingArchError); !ok {
+					return nil, fmt.Errorf("%s index component is not valid: %v", devfileDir.Name(), err)
+				}
+				// log to the console as FYI if the devfile has no architectures
+				fmt.Printf("the %s devfile has no architecture(s) mentioned\n", indexComponent.Name)
 			}
 		}
 
@@ -214,7 +231,11 @@ func parseExtraDevfileEntries(registryDirPath string, force bool) ([]schema.Sche
 				// Index component validation
 				err := validateIndexComponent(indexComponent, devfileType)
 				if err != nil {
-					return nil, fmt.Errorf("%s index component is not valid: %v", indexComponent.Name, err)
+					if _, ok := err.(*MissingArchError); !ok {
+						return nil, fmt.Errorf("%s index component is not valid: %v", indexComponent.Name, err)
+					}
+					// log to the console as FYI if the devfile has no architectures
+					fmt.Printf("the %s devfile has no architecture(s) mentioned\n", indexComponent.Name)
 				}
 			}
 			index = append(index, indexComponent)

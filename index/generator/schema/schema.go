@@ -78,6 +78,7 @@ type Schema struct {
 	Description       string                 `yaml:"description,omitempty" json:"description,omitempty"`
 	Type              DevfileType            `yaml:"type,omitempty" json:"type,omitempty"`
 	Tags              []string               `yaml:"tags,omitempty" json:"tags,omitempty"`
+	Architectures     []string               `yaml:"architectures,omitempty" json:"architectures,omitempty"`
 	Icon              string                 `yaml:"icon,omitempty" json:"icon,omitempty"`
 	GlobalMemoryLimit string                 `yaml:"globalMemoryLimit,omitempty" json:"globalMemoryLimit,omitempty"`
 	ProjectType       string                 `yaml:"projectType,omitempty" json:"projectType,omitempty"`
