@@ -163,12 +163,11 @@ func parseDevfileRegistry(registryDirPath string, force bool) ([]schema.Schema, 
 		if !force {
 			// Index component validation
 			err := validateIndexComponent(indexComponent, schema.StackDevfileType)
-			if err != nil {
-				if _, ok := err.(*MissingArchError); !ok {
-					return nil, fmt.Errorf("%s index component is not valid: %v", devfileDir.Name(), err)
-				}
+			if _, ok := err.(*MissingArchError); ok {
 				// log to the console as FYI if the devfile has no architectures
-				fmt.Printf("the %s devfile has no architecture(s) mentioned\n", indexComponent.Name)
+				fmt.Printf("%s", err.Error())
+			} else if err != nil {
+				return nil, fmt.Errorf("%s index component is not valid: %v", devfileDir.Name(), err)
 			}
 		}
 
@@ -230,12 +229,11 @@ func parseExtraDevfileEntries(registryDirPath string, force bool) ([]schema.Sche
 
 				// Index component validation
 				err := validateIndexComponent(indexComponent, devfileType)
-				if err != nil {
-					if _, ok := err.(*MissingArchError); !ok {
-						return nil, fmt.Errorf("%s index component is not valid: %v", indexComponent.Name, err)
-					}
+				if _, ok := err.(*MissingArchError); ok {
 					// log to the console as FYI if the devfile has no architectures
-					fmt.Printf("the %s devfile has no architecture(s) mentioned\n", indexComponent.Name)
+					fmt.Printf("%s", err.Error())
+				} else if err != nil {
+					return nil, fmt.Errorf("%s index component is not valid: %v", indexComponent.Name, err)
 				}
 			}
 			index = append(index, indexComponent)
