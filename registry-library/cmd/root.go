@@ -30,12 +30,12 @@ const (
 )
 
 var (
-	registryList = os.Getenv("REGISTRY_LIST")
-	cfgFile      string
-	allResources bool
-	destDir      string
-	devfileType  string
-	insecure     bool
+	registryList  = os.Getenv("REGISTRY_LIST")
+	cfgFile       string
+	allResources  bool
+	destDir       string
+	devfileType   string
+	skipTLSVerify bool
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -81,9 +81,9 @@ func init() {
 			var err error
 
 			if allResources {
-				err = library.PullStackFromRegistry(registry, stack, destDir, insecure)
+				err = library.PullStackFromRegistry(registry, stack, destDir, skipTLSVerify)
 			} else {
-				err = library.PullStackByMediaTypesFromRegistry(registry, stack, library.DevfileMediaTypeList, destDir, insecure)
+				err = library.PullStackByMediaTypesFromRegistry(registry, stack, library.DevfileMediaTypeList, destDir, skipTLSVerify)
 			}
 			if err != nil {
 				fmt.Printf("Failed to pull %s from registry %s: %v\n", stack, registry, err)
@@ -92,7 +92,7 @@ func init() {
 	}
 	pullCmd.Flags().BoolVarP(&allResources, "all", "a", false, "pull all resources of the given stack")
 	pullCmd.Flags().StringVar(&destDir, "context", ".", "destination directory that stores stack resources")
-	pullCmd.Flags().BoolVar(&insecure, "insecure", false, "skip verification for security")
+	pullCmd.Flags().BoolVar(&skipTLSVerify, "skip-tls-verify", false, "skip TLS verification")
 
 	var listCmd = &cobra.Command{
 		Use:   "list",
@@ -102,14 +102,14 @@ func init() {
 				fmt.Printf("Please specify the devfile type by using flag --type\n")
 				return
 			}
-			err := library.PrintRegistry(registryList, devfileType, insecure)
+			err := library.PrintRegistry(registryList, devfileType, skipTLSVerify)
 			if err != nil {
 				fmt.Printf("Failed to list stacks of registry %s: %v\n", registryList, err)
 			}
 		},
 	}
 	listCmd.Flags().StringVar(&devfileType, "type", "", "specify devfile type")
-	listCmd.Flags().BoolVar(&insecure, "insecure", false, "skip verification for security")
+	listCmd.Flags().BoolVar(&skipTLSVerify, "skip-tls-verify", false, "skip TLS verification")
 
 	rootCmd.AddCommand(pullCmd, listCmd)
 }
