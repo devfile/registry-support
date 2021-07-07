@@ -14,6 +14,7 @@ package library
 import (
 	"archive/tar"
 	"compress/gzip"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -63,7 +64,7 @@ type Registry struct {
 // GetRegistryIndex returns the list of stacks and/or samples, more specifically
 // it gets the stacks and/or samples content of the index of the specified registry
 // for listing the stacks and/or samples
-func GetRegistryIndex(registryURL string, devfileTypes ...indexSchema.DevfileType) ([]indexSchema.Schema, error) {
+func GetRegistryIndex(registryURL string, skipTLSVerify bool, devfileTypes ...indexSchema.DevfileType) ([]indexSchema.Schema, error) {
 	var registryIndex []indexSchema.Schema
 
 	// Call index server REST API to get the index
@@ -97,6 +98,7 @@ func GetRegistryIndex(registryURL string, devfileTypes ...indexSchema.DevfileTyp
 	httpClient := &http.Client{
 		Transport: &http.Transport{
 			ResponseHeaderTimeout: responseHeaderTimeout,
+			TLSClientConfig:       &tls.Config{InsecureSkipVerify: skipTLSVerify},
 		},
 		Timeout: httpRequestTimeout,
 	}
@@ -116,14 +118,14 @@ func GetRegistryIndex(registryURL string, devfileTypes ...indexSchema.DevfileTyp
 }
 
 // GetMultipleRegistryIndices returns returns the list of stacks and/or samples of multiple registries
-func GetMultipleRegistryIndices(registryURLs []string, devfileTypes ...indexSchema.DevfileType) []Registry {
+func GetMultipleRegistryIndices(registryURLs []string, skipTLSVerify bool, devfileTypes ...indexSchema.DevfileType) []Registry {
 	registryList := make([]Registry, len(registryURLs))
 	registryContentsChannel := make(chan []indexSchema.Schema)
 	errChannel := make(chan error)
 
 	for index, registryURL := range registryURLs {
 		go func(chan []indexSchema.Schema, chan error) {
-			registryContents, err := GetRegistryIndex(registryURL, devfileTypes...)
+			registryContents, err := GetRegistryIndex(registryURL, skipTLSVerify, devfileTypes...)
 			registryContentsChannel <- registryContents
 			errChannel <- err
 		}(registryContentsChannel, errChannel)
@@ -135,17 +137,17 @@ func GetMultipleRegistryIndices(registryURLs []string, devfileTypes ...indexSche
 }
 
 // PrintRegistry prints the registry with devfile type
-func PrintRegistry(registryURLs string, devfileType string) error {
+func PrintRegistry(registryURLs string, devfileType string, skipTLSVerify bool) error {
 	// Get the registry index
 	registryURLArray := strings.Split(registryURLs, ",")
 	var registryList []Registry
 
 	if devfileType == string(indexSchema.StackDevfileType) {
-		registryList = GetMultipleRegistryIndices(registryURLArray, indexSchema.StackDevfileType)
+		registryList = GetMultipleRegistryIndices(registryURLArray, skipTLSVerify, indexSchema.StackDevfileType)
 	} else if devfileType == string(indexSchema.SampleDevfileType) {
-		registryList = GetMultipleRegistryIndices(registryURLArray, indexSchema.SampleDevfileType)
+		registryList = GetMultipleRegistryIndices(registryURLArray, skipTLSVerify, indexSchema.SampleDevfileType)
 	} else if devfileType == "all" {
-		registryList = GetMultipleRegistryIndices(registryURLArray, indexSchema.StackDevfileType, indexSchema.SampleDevfileType)
+		registryList = GetMultipleRegistryIndices(registryURLArray, skipTLSVerify, indexSchema.StackDevfileType, indexSchema.SampleDevfileType)
 	}
 
 	w := tabwriter.NewWriter(os.Stdout, 5, 2, 3, ' ', tabwriter.TabIndent)
@@ -164,9 +166,9 @@ func PrintRegistry(registryURLs string, devfileType string) error {
 }
 
 // PullStackByMediaTypesFromRegistry pulls stack from registry with allowed media types to the destination directory
-func PullStackByMediaTypesFromRegistry(registry string, stack string, allowedMediaTypes []string, destDir string) error {
+func PullStackByMediaTypesFromRegistry(registry string, stack string, allowedMediaTypes []string, destDir string, skipTLSVerify bool) error {
 	// Get the registry index
-	registryIndex, err := GetRegistryIndex(registry, indexSchema.StackDevfileType)
+	registryIndex, err := GetRegistryIndex(registry, skipTLSVerify, indexSchema.StackDevfileType)
 	if err != nil {
 		return err
 	}
@@ -195,7 +197,12 @@ func PullStackByMediaTypesFromRegistry(registry string, stack string, allowedMed
 	if urlObj.Scheme == "https" {
 		plainHTTP = false
 	}
-	resolver := docker.NewResolver(docker.ResolverOptions{PlainHTTP: plainHTTP})
+	httpClient := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: skipTLSVerify},
+		},
+	}
+	resolver := docker.NewResolver(docker.ResolverOptions{PlainHTTP: plainHTTP, Client: httpClient})
 	ref := path.Join(urlObj.Host, stackIndex.Links["self"])
 	fileStore := content.NewFileStore(destDir)
 	defer fileStore.Close()
@@ -224,8 +231,8 @@ func PullStackByMediaTypesFromRegistry(registry string, stack string, allowedMed
 }
 
 // PullStackFromRegistry pulls stack from registry with all stack resources (all media types) to the destination directory
-func PullStackFromRegistry(registry string, stack string, destDir string) error {
-	return PullStackByMediaTypesFromRegistry(registry, stack, DevfileAllMediaTypesList, destDir)
+func PullStackFromRegistry(registry string, stack string, destDir string, skipTLSVerify bool) error {
+	return PullStackByMediaTypesFromRegistry(registry, stack, DevfileAllMediaTypesList, destDir, skipTLSVerify)
 }
 
 // decompress extracts the archive file
