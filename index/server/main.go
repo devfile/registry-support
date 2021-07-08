@@ -193,7 +193,10 @@ func main() {
 	})
 
 	// Set up a simple proxy for /v2 endpoints
-	router.GET("/v2/*proxyPath", proxy)
+	// Only allow HEAD and GET requests
+	router.HEAD("/v2/*proxyPath", ociServerProxy)
+	router.GET("/v2/*proxyPath", ociServerProxy)
+
 	router.Static("/stacks", stacksPath)
 
 	router.Run(":8080")
@@ -319,7 +322,6 @@ func ociServerProxy(c *gin.Context) {
 	// Set up the request to the proxy
 	// This is a good place to set up telemetry for requests to the OCI server (e.g. by parsing the path)
 	proxy.Director = func(req *http.Request) {
-		req.Method = http.MethodGet
 		req.Header = c.Request.Header
 		req.Host = remote.Host
 		req.URL.Scheme = remote.Scheme
