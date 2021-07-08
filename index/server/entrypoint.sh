@@ -10,9 +10,6 @@ if [ ! -e "$DEVFILE_INDEX" ]; then
     exit 1
 fi
 
-# Start the nginx server
-nginx -g "daemon off;" &
-
 # Start the index server
 /registry/index-server
 
