@@ -194,7 +194,6 @@ func main() {
 
 	// Set up a simple proxy for /v2 endpoints
 	router.GET("/v2/*proxyPath", proxy)
-
 	router.Static("/stacks", stacksPath)
 
 	router.Run(":8080")
@@ -308,16 +307,17 @@ func serveDevfileIndex(c *gin.Context) {
 	buildIndexAPIResponse(c, indexType, iconType)
 }
 
-// proxy forwards all GET requests on /v2 to the OCI registry server
-func proxy(c *gin.Context) {
-	remote, err := url.Parse("http://localhost:5000")
+// ociServerProxy forwards all GET requests on /v2 to the OCI registry server
+func ociServerProxy(c *gin.Context) {
+	remote, err := url.Parse("http://" + registryService)
 	if err != nil {
 		panic(err)
 	}
 
 	proxy := httputil.NewSingleHostReverseProxy(remote)
-	//Define the director func
-	//This is a good place to log, for example
+
+	// Set up the request to the proxy
+	// This is a good place to set up telemetry for requests to the OCI server (e.g. by parsing the path)
 	proxy.Director = func(req *http.Request) {
 		req.Method = http.MethodGet
 		req.Header = c.Request.Header
