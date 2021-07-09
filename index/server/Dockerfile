@@ -5,33 +5,24 @@ COPY . .
 RUN CGO_ENABLED=0 go build -mod=vendor -o index-server main.go
 
 # Application image
-FROM registry.access.redhat.com/ubi8/nginx-118:1
+FROM registry.access.redhat.com/ubi8-minimal:8.4
 
 # Install and configure dependencies
-USER root
-RUN yum -y install shadow-utils findutils git
+RUN microdnf update -y && microdnf install shadow-utils findutils && rm -rf /var/cache/yum
 
-COPY nginx.conf /etc/nginx/nginx.conf
 COPY entrypoint.sh /
 
-# Load index server
+# Copy index server
 COPY --from=builder /tools/index-server /registry/index-server
 RUN chgrp -R 0 /registry && \
     chmod -R g=u /registry
 
-# Create a non-root user to run the nginx server as
+# Create a non-root user to run the server as
 RUN set -x ; \
     adduser www-data -u 82 -G root && exit 0
 
-RUN touch /var/run/nginx.pid
-RUN mkdir -p /www/data && mkdir -p /var/cache/nginx
-
 # Modify the permissions on the necessary files to allow the container to properly run as a non-root UID
-RUN chown -R www-data:root /var/run/nginx.pid && \
-    chown -R www-data:root /var/cache/nginx && \
-    chown www-data:root /etc/nginx/conf.d /etc/nginx/nginx.conf
-RUN chmod g+rwx /var/run/nginx.pid && \
-    chmod -R g+rwx /var/cache/nginx && chmod -R g+rwx /etc/nginx && chmod -R g+rwx /www/data
+RUN mkdir -p /www/data && chmod -R g+rwx /www/data
 
 USER www-data
 

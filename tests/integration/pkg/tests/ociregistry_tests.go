@@ -52,9 +52,9 @@ var _ = ginkgo.Describe("[Verify oci registry is working properly]", func() {
 	ginkgo.It("POST requests should be denied", func() {
 		responseBody := bytes.NewBuffer(nil)
 
-		// Nginx proxy should return a 403 forbidden error
+		// OCI server proxy should return a 404 not found error for non-GET requests
 		resp, err := http.Post(config.Registry+"/v2", "application/text", responseBody)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
-		gomega.Expect(resp.StatusCode).To(gomega.Equal(http.StatusForbidden))
+		gomega.Expect(resp.StatusCode).To(gomega.Equal(http.StatusNotFound))
 	})
 })
