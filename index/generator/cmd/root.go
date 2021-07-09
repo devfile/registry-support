@@ -36,23 +36,25 @@ var force bool
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "generator <registry directory path> <index file path>",
-	Short: shortDesc,
-	Long:  longDesc,
-	Args:  cobra.ExactArgs(2),
-	Run: func(cmd *cobra.Command, args []string) {
+	Use:          "generator <registry directory path> <index file path>",
+	Short:        shortDesc,
+	Long:         longDesc,
+	Args:         cobra.ExactArgs(2),
+	SilenceUsage: true,
+	RunE: func(cmd *cobra.Command, args []string) error {
 		registryDirPath := args[0]
 		indexFilePath := args[1]
 
 		index, err := library.GenerateIndexStruct(registryDirPath, force)
 		if err != nil {
-			fmt.Printf("failed to generate index struct: %v", err)
+			return fmt.Errorf("failed to generate index struct: %v", err)
 		}
 
 		err = library.CreateIndexFile(index, indexFilePath)
 		if err != nil {
-			fmt.Printf("failed to create index file: %v", err)
+			return fmt.Errorf("failed to create index file: %v", err)
 		}
+		return nil
 	},
 }
 
@@ -60,7 +62,6 @@ var rootCmd = &cobra.Command{
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
 		os.Exit(1)
 	}
 }
