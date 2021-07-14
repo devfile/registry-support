@@ -312,7 +312,7 @@ func serveDevfileIndex(c *gin.Context) {
 
 // ociServerProxy forwards all GET requests on /v2 to the OCI registry server
 func ociServerProxy(c *gin.Context) {
-	remote, err := url.Parse("http://" + registryService + "/v2")
+	remote, err := url.Parse(scheme + "://" + registryService + "/v2")
 	if err != nil {
 		panic(err)
 	}
@@ -323,7 +323,8 @@ func ociServerProxy(c *gin.Context) {
 	// This is a good place to set up telemetry for requests to the OCI server (e.g. by parsing the path)
 	proxy.Director = func(req *http.Request) {
 		req.Header = c.Request.Header
-		req.Host = remote.Host
+		req.Header.Add("X-Forwarded-Host", req.Host)
+		req.Header.Add("X-Origin-Host", remote.Host)
 		req.URL.Scheme = remote.Scheme
 		req.URL.Host = remote.Host
 	}
