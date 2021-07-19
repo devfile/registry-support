@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
 	"os"
 	"path"
@@ -191,9 +192,14 @@ func main() {
 		})
 	})
 
+	// Set up a simple proxy for /v2 endpoints
+	// Only allow HEAD and GET requests
+	router.HEAD("/v2/*proxyPath", ociServerProxy)
+	router.GET("/v2/*proxyPath", ociServerProxy)
+
 	router.Static("/stacks", stacksPath)
 
-	router.Run(":7070")
+	router.Run(":8080")
 }
 
 // pushStackToRegistry pushes the given devfile stack to the OCI registry
@@ -302,6 +308,28 @@ func serveDevfileIndex(c *gin.Context) {
 	indexType := "stack"
 	iconType := c.Query("icon")
 	buildIndexAPIResponse(c, indexType, iconType)
+}
+
+// ociServerProxy forwards all GET requests on /v2 to the OCI registry server
+func ociServerProxy(c *gin.Context) {
+	remote, err := url.Parse(scheme + "://" + registryService + "/v2")
+	if err != nil {
+		panic(err)
+	}
+
+	proxy := httputil.NewSingleHostReverseProxy(remote)
+
+	// Set up the request to the proxy
+	// This is a good place to set up telemetry for requests to the OCI server (e.g. by parsing the path)
+	proxy.Director = func(req *http.Request) {
+		req.Header = c.Request.Header
+		req.Header.Add("X-Forwarded-Host", req.Host)
+		req.Header.Add("X-Origin-Host", remote.Host)
+		req.URL.Scheme = remote.Scheme
+		req.URL.Host = remote.Host
+	}
+
+	proxy.ServeHTTP(c.Writer, c.Request)
 }
 
 // encodeIndexIconToBase64 encodes all index icons to base64 format given the index file path
