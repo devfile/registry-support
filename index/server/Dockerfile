@@ -1,19 +1,34 @@
-# Builder image
-FROM golang:alpine3.11 AS builder
+# Index Server build stage
+FROM golang:alpine3.11 AS index-builder
 WORKDIR /tools
 COPY . .
 RUN CGO_ENABLED=0 go build -mod=vendor -o index-server main.go
 
+# Registry Viewer build stage
+FROM registry.access.redhat.com/ubi8/nodejs-14-minimal AS node-builder
+USER root
+WORKDIR /app
+RUN npm install -g yarn
+COPY registry-viewer . 
+
+ENV DEVFILE_VIEWER_ROOT /viewer
+ENV DEVFILE_COMMUNITY_HOST false
+
+# Build the devfile registry viewer
+RUN $(npm get prefix)/bin/yarn install --frozen-lockfile --ignore-optional
+RUN $(npm get prefix)/bin/yarn build
+RUN $(npm get prefix)/bin/yarn install --production --ignore-scripts --prefer-offline --ignore-optional
+
 # Application image
-FROM registry.access.redhat.com/ubi8-minimal:8.4
+FROM registry.access.redhat.com/ubi8/nodejs-14-minimal AS runner
+USER root
 
 # Install and configure dependencies
 RUN microdnf update -y && microdnf install shadow-utils findutils && rm -rf /var/cache/yum
-
 COPY entrypoint.sh /
 
 # Copy index server
-COPY --from=builder /tools/index-server /registry/index-server
+COPY --from=index-builder /tools/index-server /registry/index-server
 RUN chgrp -R 0 /registry && \
     chmod -R g=u /registry
 
@@ -24,7 +39,21 @@ RUN set -x ; \
 # Modify the permissions on the necessary files to allow the container to properly run as a non-root UID
 RUN mkdir -p /www/data && chmod -R g+rwx /www/data
 
-USER www-data
+WORKDIR /app
+
+# Copy over the registry viewer's resources
+COPY --from=node-builder --chown=www-data:root /app/next.config.js ./
+COPY --from=node-builder --chown=www-data:root /app/public ./public
+COPY --from=node-builder --chown=www-data:root /app/.next ./.next
+COPY --from=node-builder /app/node_modules ./node_modules
+COPY --from=node-builder /app/package.json ./package.json
+COPY --from=node-builder --chown=www-data:root /app/config ./config
+
+# Run the registry viewer in production
+ENV NODE_ENV production
+
+ENV DEVFILE_VIEWER_ROOT /viewer
+ENV DEVFILE_COMMUNITY_HOST false
 
 # Set env vars for the locations of the devfile stacks and index.json
 ENV DEVFILE_STACKS /registry/stacks
@@ -36,5 +65,8 @@ ENV DEVFILE_SAMPLE_BASE64_INDEX /www/data/sample_base64_index.json
 ENV DEVFILE_STACK_INDEX /www/data/stack_index.json
 ENV DEVFILE_STACK_BASE64_INDEX /www/data/stack_base64_index.json
 
-EXPOSE 8080 7071
+USER www-data
+
+EXPOSE 8080
+
 ENTRYPOINT ["/entrypoint.sh"]

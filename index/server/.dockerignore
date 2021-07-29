@@ -1,0 +1,11 @@
+#registry-viewer dockerignore fields
+registry-viewer/tests
+registry-viewer/.vscode
+registry-viewer/.github
+registry-viewer/cypress
+registry-viewer/cypress.json
+registry-viewer/jest.config.js
+registry-viewer/jest.setup.js
+registry-viewer/LICENSE
+registry-viewer/OWNERSHIP
+registry-viewer/README.md

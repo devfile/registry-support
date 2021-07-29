@@ -14,6 +14,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -49,6 +50,7 @@ const (
 
 	scheme          = "http"
 	registryService = "localhost:5000"
+	viewerService   = "localhost:3000"
 	encodeFormat    = "base64"
 )
 
@@ -150,10 +152,9 @@ func main() {
 	// Start the server and serve requests and index.json
 	router := gin.Default()
 
-	router.GET("/", serveDevfileIndex)
-	router.GET("/index", serveDevfileIndex)
-	router.GET("/index.json", serveDevfileIndex)
+	router.GET("/", serveRootEndpoint)
 
+	router.GET("/index", serveDevfileIndex)
 	router.GET("/index/:type", func(c *gin.Context) {
 		indexType := c.Param("type")
 		iconType := c.Query("icon")
@@ -197,9 +198,33 @@ func main() {
 	router.HEAD("/v2/*proxyPath", ociServerProxy)
 	router.GET("/v2/*proxyPath", ociServerProxy)
 
+	router.Any("/viewer", serveUI)
+	router.Any("/viewer/*proxyPath", serveUI)
+
+	// Serve static content for stacks
 	router.Static("/stacks", stacksPath)
 
 	router.Run(":8080")
+}
+
+// serveDevfileIndex serves the index.json file located in the container at `serveDevfileIndex`
+func serveRootEndpoint(c *gin.Context) {
+	// Determine if text/html was requested by the client
+	acceptHeader := c.Request.Header.Values("Accept")
+	if isHtmlRequested(acceptHeader) {
+		c.Redirect(http.StatusFound, "/viewer")
+	} else {
+		serveDevfileIndex(c)
+	}
+}
+
+func isHtmlRequested(acceptHeader []string) bool {
+	for _, header := range acceptHeader {
+		if strings.Contains(header, "text/html") {
+			return true
+		}
+	}
+	return false
 }
 
 // pushStackToRegistry pushes the given devfile stack to the OCI registry
@@ -322,6 +347,26 @@ func ociServerProxy(c *gin.Context) {
 	// Set up the request to the proxy
 	// This is a good place to set up telemetry for requests to the OCI server (e.g. by parsing the path)
 	proxy.Director = func(req *http.Request) {
+		req.Header.Add("X-Forwarded-Host", req.Host)
+		req.Header.Add("X-Origin-Host", remote.Host)
+		req.URL.Scheme = remote.Scheme
+		req.URL.Host = remote.Host
+	}
+
+	proxy.ServeHTTP(c.Writer, c.Request)
+}
+
+func serveUI(c *gin.Context) {
+	remote, err := url.Parse(scheme + "://" + viewerService + "/viewer/")
+	if err != nil {
+		panic(err)
+	}
+
+	proxy := httputil.NewSingleHostReverseProxy(remote)
+
+	// Set up the request to the proxy
+	// This is a good place to set up telemetry for requests to the OCI server (e.g. by parsing the path)
+	proxy.Director = func(req *http.Request) {
 		req.Header = c.Request.Header
 		req.Header.Add("X-Forwarded-Host", req.Host)
 		req.Header.Add("X-Origin-Host", remote.Host)
@@ -428,7 +473,6 @@ func buildIndexAPIResponse(c *gin.Context, indexType string, iconType string) {
 		})
 		return
 	}
-
 	if iconType != "" {
 		if iconType == encodeFormat {
 			if _, err := os.Stat(responseBase64IndexPath); os.IsNotExist(err) {
