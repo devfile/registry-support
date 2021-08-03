@@ -185,6 +185,7 @@ func main() {
 				}
 
 				if err != nil {
+					log.Print(err.Error())
 					c.JSON(http.StatusInternalServerError, gin.H{
 						"error":  err.Error(),
 						"status": fmt.Sprintf("failed to pull the devfile of %s", name),
