@@ -13,6 +13,7 @@
 package tests
 
 import (
+	"io/ioutil"
 	"net/http"
 
 	devfilePkg "github.com/devfile/library/pkg/devfile"
@@ -33,6 +34,43 @@ var _ = ginkgo.Describe("[Verify index server is working properly]", func() {
 		resp, err := http.Get(config.Registry)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		gomega.Expect(resp.StatusCode).To(gomega.Equal(http.StatusOK))
+	})
+
+	ginkgo.It("Root endpoint should redirect to /viewer if text/html was requested", func() {
+		client := &http.Client{}
+		req, _ := http.NewRequest("GET", config.Registry, nil)
+		req.Header.Set("Accept", "text/html")
+		resp, err := client.Do(req)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		gomega.Expect(resp.StatusCode).To(gomega.Equal(http.StatusOK))
+
+		// Check the path of the response. Should have been redirected to /viewer
+		gomega.Expect(resp.Request.URL.Path).To(gomega.Equal("/viewer"))
+
+		bytes, err := ioutil.ReadAll(resp.Body)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		body := string(bytes)
+		gomega.Expect(body).To(gomega.ContainSubstring("<!DOCTYPE html>"))
+	})
+
+	ginkgo.It("/viewer should serve the registry viewer", func() {
+		client := &http.Client{}
+		req, _ := http.NewRequest("GET", config.Registry+"/viewer", nil)
+		resp, err := client.Do(req)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		gomega.Expect(resp.StatusCode).To(gomega.Equal(http.StatusOK))
+
+		// Check the path of the response. Should have been redirected to /viewer
+		gomega.Expect(resp.Request.URL.Path).To(gomega.Equal("/viewer"))
+
+		bytes, err := ioutil.ReadAll(resp.Body)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		body := string(bytes)
+
+		gomega.Expect(body).To(gomega.ContainSubstring("<!DOCTYPE html>"))
+
+		// Verify that the registry viewer's page has been properly generated
+		gomega.Expect(body).To(gomega.ContainSubstring("A simple Hello World Node.js application"))
 	})
 
 	ginkgo.It("/index endpoint should return list of stacks", func() {
