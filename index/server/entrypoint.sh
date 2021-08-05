@@ -20,18 +20,5 @@ until $(curl --output /dev/null --silent --head --fail http://localhost:3000/vie
     sleep 1
 done
 
-# Copy over the registry viewer config
-# cp -rf /viewer-config/devfile-registry-hosts.json /app/config/
-
 # Start the index server
 /registry/index-server
-
-
-# Try to force the registry viewer pages to generate
-# for n in {1..10}; do
-# 	echo "Sleeping $n"
-# 	sleep 1
-# 	curl http://localhost:8080/viewer || true
-# done
-
-tail -f /dev/null
