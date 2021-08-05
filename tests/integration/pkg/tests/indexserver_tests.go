@@ -65,11 +65,25 @@ var _ = ginkgo.Describe("[Verify index server is working properly]", func() {
 		gomega.Expect(hasStacks && hasSamples).To(gomega.BeTrue())
 	})
 
-	ginkgo.It("/devfiles/<devfile> endpoint should return a devfile", func() {
+	ginkgo.It("/devfiles/<devfile> endpoint should return a devfile for stacks", func() {
 		parserArgs := parser.ParserArgs{
 			URL: config.Registry + "/devfiles/nodejs",
 		}
 		_, _, err := devfilePkg.ParseDevfileAndValidate(parserArgs)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+	})
+
+	ginkgo.It("/devfiles/<devfile> endpoint should return a devfile for samples", func() {
+		parserArgs := parser.ParserArgs{
+			URL: config.Registry + "/devfiles/code-with-quarkus",
+		}
+		_, _, err := devfilePkg.ParseDevfileAndValidate(parserArgs)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+	})
+
+	ginkgo.It("/devfiles/<devfile> endpoint should return an error for a devfile that doesn't exist", func() {
+		resp, err := http.Get(config.Registry + "/devfiles/fake-stack")
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		gomega.Expect(resp.StatusCode).To(gomega.Equal(http.StatusNotFound))
 	})
 })

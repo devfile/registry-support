@@ -63,6 +63,7 @@ var mediaTypeMapping = map[string]string{
 
 var (
 	stacksPath            = os.Getenv("DEVFILE_STACKS")
+	samplesPath           = os.Getenv("DEVFILE_SAMPLES")
 	indexPath             = os.Getenv("DEVFILE_INDEX")
 	base64IndexPath       = os.Getenv("DEVFILE_BASE64_INDEX")
 	sampleIndexPath       = os.Getenv("DEVFILE_SAMPLE_INDEX")
@@ -172,9 +173,19 @@ func main() {
 		name := c.Param("name")
 		for _, devfileIndex := range index {
 			if devfileIndex.Name == name {
-				bytes, err := pullStackFromRegistry(devfileIndex)
+				var bytes []byte
+				if devfileIndex.Type == indexSchema.StackDevfileType {
+					bytes, err = pullStackFromRegistry(devfileIndex)
+				} else {
+					// Retrieve the sample devfile stored under /registry/samples/<devfile>
+					sampleDevfilePath := path.Join(samplesPath, devfileIndex.Name, devfileName)
+					if _, err = os.Stat(sampleDevfilePath); err == nil {
+						bytes, err = ioutil.ReadFile(sampleDevfilePath)
+					}
+				}
+
 				if err != nil {
-					log.Fatal(err.Error())
+					log.Print(err.Error())
 					c.JSON(http.StatusInternalServerError, gin.H{
 						"error":  err.Error(),
 						"status": fmt.Sprintf("failed to pull the devfile of %s", name),
