@@ -4,21 +4,6 @@ WORKDIR /tools
 COPY . .
 RUN CGO_ENABLED=0 go build -mod=vendor -o index-server main.go
 
-# Registry Viewer build stage
-FROM registry.access.redhat.com/ubi8/nodejs-14-minimal AS node-builder
-USER root
-WORKDIR /app
-RUN npm install -g yarn
-COPY registry-viewer . 
-
-ENV DEVFILE_VIEWER_ROOT /viewer
-ENV DEVFILE_COMMUNITY_HOST false
-
-# Build the devfile registry viewer
-RUN $(npm get prefix)/bin/yarn install --frozen-lockfile --ignore-optional
-RUN $(npm get prefix)/bin/yarn build
-RUN $(npm get prefix)/bin/yarn install --production --ignore-scripts --prefer-offline --ignore-optional
-
 # Application image
 FROM registry.access.redhat.com/ubi8/nodejs-14-minimal AS runner
 USER root
@@ -42,12 +27,15 @@ RUN mkdir -p /www/data && chmod -R g+rwx /www/data
 WORKDIR /app
 
 # Copy over the registry viewer's resources
-COPY --from=node-builder --chown=www-data:root /app/next.config.js ./
-COPY --from=node-builder --chown=www-data:root /app/public ./public
-COPY --from=node-builder --chown=www-data:root /app/.next ./.next
-COPY --from=node-builder /app/node_modules ./node_modules
-COPY --from=node-builder /app/package.json ./package.json
-COPY --from=node-builder --chown=www-data:root /app/config ./config
+COPY --from=registry-viewer --chown=www-data:root /app/next.config.js ./
+COPY --from=registry-viewer --chown=www-data:root /app/public ./public
+COPY --from=registry-viewer --chown=www-data:root /app/.next ./.next
+COPY --from=registry-viewer /app/node_modules ./node_modules
+COPY --from=registry-viewer /app/package.json ./package.json
+COPY --from=registry-viewer --chown=www-data:root /app/config ./config
+
+# Make sure .next is writable
+RUN chmod -R g+rwx /app/.next
 
 # Run the registry viewer in production
 ENV NODE_ENV production

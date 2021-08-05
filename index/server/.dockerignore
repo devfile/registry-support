@@ -1,9 +1,0 @@
-#registry-viewer dockerignore fields
-registry-viewer/tests
-registry-viewer/.vscode
-registry-viewer/.github
-registry-viewer/jest.config.js
-registry-viewer/jest.setup.js
-registry-viewer/LICENSE
-registry-viewer/OWNERS
-registry-viewer/README.md

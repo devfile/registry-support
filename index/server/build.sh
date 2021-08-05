@@ -9,4 +9,8 @@ if [ -d $buildfolder/registry-viewer ]; then
 fi
 git clone https://github.com/devfile/registry-viewer.git $buildfolder/registry-viewer
 
+# Build the registry viewer
+docker build -t registry-viewer --target builder --build-arg DEVFILE_VIEWER_ROOT=/viewer --build-arg DEVFILE_COMMUNITY_HOST=false $buildfolder/registry-viewer
+
+# Build the index server
 docker build -t devfile-index-base:latest $buildfolder
