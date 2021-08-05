@@ -198,8 +198,8 @@ func main() {
 	router.HEAD("/v2/*proxyPath", ociServerProxy)
 	router.GET("/v2/*proxyPath", ociServerProxy)
 
-	router.Any("/viewer", serveUI)
-	router.Any("/viewer/*proxyPath", serveUI)
+	router.GET("/viewer", serveUI)
+	router.GET("/viewer/*proxyPath", serveUI)
 
 	// Serve static content for stacks
 	router.Static("/stacks", stacksPath)
