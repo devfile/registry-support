@@ -48,7 +48,7 @@ spec:
                 path: config.yml
         - name: viewer-config
           configMap:
-            name: {{ template "devfileregistry.fullname" . }}-viewer
+            name: {{ template "devfileregistry.fullname" . }}
             items:
               - key: devfile-registry-hosts.json
                 path: devfile-registry-hosts.json
