@@ -198,8 +198,12 @@ func main() {
 	router.HEAD("/v2/*proxyPath", ociServerProxy)
 	router.GET("/v2/*proxyPath", ociServerProxy)
 
+	// Set up routes for the registry viewer
 	router.GET("/viewer", serveUI)
 	router.GET("/viewer/*proxyPath", serveUI)
+	// Static content not available under /viewer that the registry viewer needs
+	router.Static("/images", "/app/public/images")
+	router.StaticFile("/manifest.json/", "/app/public/manifest.json")
 
 	// Serve static content for stacks
 	router.Static("/stacks", stacksPath)
@@ -207,7 +211,8 @@ func main() {
 	router.Run(":8080")
 }
 
-// serveDevfileIndex serves the index.json file located in the container at `serveDevfileIndex`
+// serveRootEndpoint sets up the handler for the root (/) endpoint on the server
+// If html is requested (i.e. from a web browser), the viewer is displayed, otherwise the devfile index is served.
 func serveRootEndpoint(c *gin.Context) {
 	// Determine if text/html was requested by the client
 	acceptHeader := c.Request.Header.Values("Accept")
