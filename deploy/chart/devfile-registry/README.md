@@ -30,7 +30,7 @@ helm install devfile-registry deploy/chart/devfile-registry --set global.isOpenS
 
 or, if you want to install a specific devfile index image, you can run:
 ```
-helm install devfile-registry deploy/chart/devfile-registry --set global.isOpenShift=true --set devfileIndex.image=quay.io/myuser/devfile-index --set defileIndex.tag=latest
+helm install devfile-registry deploy/chart/devfile-registry --set global.isOpenShift=true --set devfileIndex.image=quay.io/myuser/devfile-index --set devfileIndex.tag=latest
 ```
 
 ## Updating the Devfile Registry
@@ -43,7 +43,7 @@ helm upgrade <release-name> <path-to-chart> [--set options]
 
 For example, updating the devfile index image of the devfile registry `my-registry` might look like:
 ```bash
-helm upgrade my-registry deploy/chart/devfile-registry --set devfileIndex.image=docker.io/myuser/devfile-index --set defileIndex.tag=2.0
+helm upgrade my-registry deploy/chart/devfile-registry --set devfileIndex.image=docker.io/myuser/devfile-index --set devfileIndex.tag=2.0
 ```
 
 Alternatively to using `--set`, you can change the fields in `values.yaml` and then run the `helm upgrade` command.

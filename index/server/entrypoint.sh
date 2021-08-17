@@ -1,4 +1,5 @@
-#!/bin/sh
+#!/bin/bash
+set -eux
 
 # Check if devfile stacks and index.json exist
 if [ ! -d "$DEVFILE_STACKS" ]; then
@@ -10,7 +11,14 @@ if [ ! -e "$DEVFILE_INDEX" ]; then
     exit 1
 fi
 
+# Start the registry viewer
+npm start &
+
+# Wait for server to start
+until $(curl --output /dev/null --silent --head --fail http://localhost:3000/viewer); do
+    printf '.'
+    sleep 1
+done
+
 # Start the index server
 /registry/index-server
-
-fg %1

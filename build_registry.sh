@@ -7,7 +7,7 @@
 set -eux
 
 # Build the index server base image
-docker build -t devfile-index-base:latest ./index/server/
+./index/server/build.sh
 
 # Build the test devfile registry image
 docker build -t devfile-index:latest -f .ci/Dockerfile .
