@@ -10,7 +10,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: devfile-registry
+  name: {{ template "devfileregistry.fullname" . }}
   labels:
     app: {{ template "devfileregistry.name" . }}
     chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
@@ -36,3 +36,10 @@ data:
         prometheus:
           enabled: true
           path: /metrics
+
+  devfile-registry-hosts.json: |
+    {
+      "Community": {
+        "url": "http://localhost:8080"
+      }
+    }
