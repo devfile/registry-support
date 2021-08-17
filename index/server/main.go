@@ -14,6 +14,8 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -29,6 +31,7 @@ import (
 	_ "github.com/devfile/registry-support/index/server/docs"
 	"github.com/gin-gonic/gin"
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
+	"gopkg.in/segmentio/analytics-go.v3"
 	"k8s.io/apimachinery/pkg/util/wait"
 )
 
@@ -50,7 +53,15 @@ const (
 	scheme          = "http"
 	registryService = "localhost:5000"
 	encodeFormat    = "base64"
+	telemetryKey    = "6HBMiy5UxBtsbxXx7O4n0t0u4dt8IAR3"
+	defaultUser     = "anonymous"
 )
+
+var eventTrackMap = map[string]string{
+	"list":     "list devfile",
+	"view":     "view devfile",
+	"download": "download devfile",
+}
 
 var mediaTypeMapping = map[string]string{
 	devfileName:       devfileMediaType,
@@ -70,6 +81,8 @@ var (
 	sampleBase64IndexPath = os.Getenv("DEVFILE_SAMPLE_BASE64_INDEX")
 	stackIndexPath        = os.Getenv("DEVFILE_STACK_INDEX")
 	stackBase64IndexPath  = os.Getenv("DEVFILE_STACK_BASE64_INDEX")
+	enableTelemetry       = getOptionalEnv("ENABLE_TELEMETRY", false).(bool)
+	registry              = getOptionalEnv("REGISTRY_NAME", "anonymous")
 	getIndexLatency       = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
 			Name:    "index_http_request_duration_seconds",
@@ -91,7 +104,7 @@ func main() {
 	err := wait.PollImmediate(time.Millisecond, time.Second*30, func() (bool, error) {
 		resp, err := http.Get(scheme + "://" + registryService)
 		if err != nil {
-			log.Println(err.Error())
+			log.Print(err.Error())
 			return false, nil
 		}
 
@@ -110,15 +123,12 @@ func main() {
 	// Load index file
 	bytes, err := ioutil.ReadFile(indexPath)
 	if err != nil {
-		log.Fatalf("failed to read index file: %v", err)
+		log.Fatalf("failed to read index file: %s", err.Error())
 	}
-
-	// TODO: add code block to parse index.json by using common library
-	// Issue: https://github.com/devfile/api/issues/223
 	var index []indexSchema.Schema
 	err = json.Unmarshal(bytes, &index)
 	if err != nil {
-		log.Fatalf("failed to unmarshal index file: %v", err)
+		log.Fatalf("failed to unmarshal index file: %s", err.Error())
 	}
 
 	// Before starting the server, push the devfile artifacts to the registry
@@ -151,63 +161,19 @@ func main() {
 	// Start the server and serve requests and index.json
 	router := gin.Default()
 
+	// Registry REST APIs
 	router.GET("/", serveDevfileIndex)
 	router.GET("/index", serveDevfileIndex)
-	router.GET("/index.json", serveDevfileIndex)
-
-	router.GET("/index/:type", func(c *gin.Context) {
-		indexType := c.Param("type")
-		iconType := c.Query("icon")
-
-		// Serve the index with type
-		buildIndexAPIResponse(c, indexType, iconType)
-	})
-
-	router.GET("/health", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"message": "the server is up and running",
-		})
-	})
-
-	router.GET("/devfiles/:name", func(c *gin.Context) {
-		name := c.Param("name")
-		for _, devfileIndex := range index {
-			if devfileIndex.Name == name {
-				var bytes []byte
-				if devfileIndex.Type == indexSchema.StackDevfileType {
-					bytes, err = pullStackFromRegistry(devfileIndex)
-				} else {
-					// Retrieve the sample devfile stored under /registry/samples/<devfile>
-					sampleDevfilePath := path.Join(samplesPath, devfileIndex.Name, devfileName)
-					if _, err = os.Stat(sampleDevfilePath); err == nil {
-						bytes, err = ioutil.ReadFile(sampleDevfilePath)
-					}
-				}
-
-				if err != nil {
-					log.Print(err.Error())
-					c.JSON(http.StatusInternalServerError, gin.H{
-						"error":  err.Error(),
-						"status": fmt.Sprintf("failed to pull the devfile of %s", name),
-					})
-					return
-				}
-
-				c.Data(http.StatusOK, http.DetectContentType(bytes), bytes)
-				return
-			}
-		}
-
-		c.JSON(http.StatusNotFound, gin.H{
-			"status": fmt.Sprintf("the devfile of %s didn't exist", name),
-		})
-	})
+	router.GET("/index/:type", serveDevfileIndexWithType)
+	router.GET("/health", serveHealthCheck)
+	router.GET("/devfiles/:name", serveDevfile)
 
 	// Set up a simple proxy for /v2 endpoints
 	// Only allow HEAD and GET requests
 	router.HEAD("/v2/*proxyPath", ociServerProxy)
 	router.GET("/v2/*proxyPath", ociServerProxy)
 
+	router.Static("/index.json", indexPath)
 	router.Static("/stacks", stacksPath)
 
 	router.Run(":8080")
@@ -315,10 +281,116 @@ func serveDevfileIndex(c *gin.Context) {
 		timer.ObserveDuration()
 	}()
 
-	// Serve the index.json file
 	indexType := "stack"
 	iconType := c.Query("icon")
+	user := getUser(c)
+
+	// Track event for telemetry
+	if enableTelemetry {
+		err := trackEvent(analytics.Track{
+			Event:  eventTrackMap["list"],
+			UserId: user,
+			Properties: analytics.NewProperties().
+				Set("type", indexType).
+				Set("registry", registry),
+		})
+		if err != nil {
+			log.Print(err)
+		}
+	}
+
+	// Serve the index.json file
 	buildIndexAPIResponse(c, indexType, iconType)
+}
+
+// serveDevfileIndexWithType returns the index file content with specific devfile type
+func serveDevfileIndexWithType(c *gin.Context) {
+	indexType := c.Param("type")
+	iconType := c.Query("icon")
+	user := getUser(c)
+
+	// Track event for telemetry
+	if enableTelemetry {
+		err := trackEvent(analytics.Track{
+			Event:  eventTrackMap["list"],
+			UserId: user,
+			Properties: analytics.NewProperties().
+				Set("type", indexType).
+				Set("registry", registry),
+		})
+		if err != nil {
+			log.Print(err)
+		}
+	}
+
+	// Serve the index with type
+	buildIndexAPIResponse(c, indexType, iconType)
+}
+
+// serveHealthCheck serves endpoint `/health` for registry health check
+func serveHealthCheck(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{
+		"message": "the server is up and running",
+	})
+}
+
+// serveDevfile returns the devfile content
+func serveDevfile(c *gin.Context) {
+	name := c.Param("name")
+	user := getUser(c)
+
+	// Track event for telemetry
+	if enableTelemetry {
+		err := trackEvent(analytics.Track{
+			Event:  eventTrackMap["view"],
+			UserId: user,
+			Properties: analytics.NewProperties().
+				Set("name", name).
+				Set("registry", registry),
+		})
+		if err != nil {
+			log.Print(err)
+		}
+	}
+
+	var index []indexSchema.Schema
+	bytes, err := ioutil.ReadFile(indexPath)
+	if err != nil {
+		log.Print(err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":  err.Error(),
+			"status": fmt.Sprintf("failed to pull the devfile of %s", name),
+		})
+		return
+	}
+	err = json.Unmarshal(bytes, &index)
+	if err != nil {
+		log.Print(err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":  err.Error(),
+			"status": fmt.Sprintf("failed to pull the devfile of %s", name),
+		})
+		return
+	}
+	for _, devfileIndex := range index {
+		if devfileIndex.Name == name {
+			bytes, err := pullStackFromRegistry(devfileIndex)
+			if err != nil {
+				log.Print(err.Error())
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"error":  err.Error(),
+					"status": fmt.Sprintf("failed to pull the devfile of %s", name),
+				})
+				return
+			}
+			c.Data(http.StatusOK, http.DetectContentType(bytes), bytes)
+			return
+		}
+	}
+
+	c.JSON(http.StatusNotFound, gin.H{
+		"status": fmt.Sprintf("the devfile of %s didn't exist", name),
+	})
 }
 
 // ociServerProxy forwards all GET requests on /v2 to the OCI registry server
@@ -332,6 +404,27 @@ func ociServerProxy(c *gin.Context) {
 
 	// Set up the request to the proxy
 	// This is a good place to set up telemetry for requests to the OCI server (e.g. by parsing the path)
+	proxyPath := c.Param("proxyPath")
+	if proxyPath != "" {
+		name := strings.Split(proxyPath, "/")[2]
+		resource := strings.Split(proxyPath, "/")[3]
+
+		// Track event for telemetry
+		if resource == "blobs" {
+			if enableTelemetry {
+				err := trackEvent(analytics.Track{
+					Event:  eventTrackMap["download"],
+					UserId: "test",
+					Properties: analytics.NewProperties().
+						Set("name", name).
+						Set("registry", registry),
+				})
+				if err != nil {
+					log.Print(err.Error())
+				}
+			}
+		}
+	}
 	proxy.Director = func(req *http.Request) {
 		req.Header = c.Request.Header
 		req.Header.Add("X-Forwarded-Host", req.Host)
@@ -462,4 +555,51 @@ func buildIndexAPIResponse(c *gin.Context, indexType string, iconType string) {
 	} else {
 		c.File(responseIndexPath)
 	}
+}
+
+// trackEvent tracks event for telemetry
+func trackEvent(event analytics.Message) error {
+	// Initialize client for telemetry
+	client := analytics.New(telemetryKey)
+	defer client.Close()
+
+	err := client.Enqueue(event)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// getUser gets the user
+func getUser(c *gin.Context) string {
+	user := defaultUser
+	if len(c.Request.Header["User"]) != 0 {
+		user = c.Request.Header["User"][0]
+	}
+	return user
+}
+
+// getOptionalEnv gets the optional environment variable
+func getOptionalEnv(key string, defaultValue interface{}) interface{} {
+	if value, present := os.LookupEnv(key); present {
+		switch defaultValue.(type) {
+		case bool:
+			boolValue, err := strconv.ParseBool(value)
+			if err != nil {
+				log.Print(err)
+			}
+			return boolValue
+
+		case int:
+			intValue, err := strconv.Atoi(value)
+			if err != nil {
+				log.Print(err)
+			}
+			return intValue
+
+		default:
+			return value
+		}
+	}
+	return defaultValue
 }

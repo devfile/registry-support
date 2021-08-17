@@ -10,6 +10,9 @@ require (
 	github.com/gin-gonic/gin v1.6.3
 	github.com/opencontainers/image-spec v1.0.1
 	github.com/prometheus/client_golang v1.9.0
+	github.com/segmentio/backo-go v0.0.0-20200129164019-23eae7c10bd3 // indirect
+	github.com/xtgo/uuid v0.0.0-20140804021211-a0b114877d4c // indirect
+	gopkg.in/segmentio/analytics-go.v3 v3.1.0
 	gotest.tools/v3 v3.0.3 // indirect
 	k8s.io/apimachinery v0.19.4
 )

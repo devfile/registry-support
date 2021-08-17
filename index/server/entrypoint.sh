@@ -13,4 +13,3 @@ fi
 # Start the index server
 /registry/index-server
 
-fg %1
