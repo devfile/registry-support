@@ -105,7 +105,7 @@ func main() {
 	err := wait.PollImmediate(time.Millisecond, time.Second*30, func() (bool, error) {
 		resp, err := http.Get(scheme + "://" + registryService)
 		if err != nil {
-			log.Print(err.Error())
+			log.Println(err.Error())
 			return false, nil
 		}
 
@@ -312,10 +312,11 @@ func serveDevfileIndex(c *gin.Context) {
 
 	indexType := "stack"
 	iconType := c.Query("icon")
-	user := getUser(c)
 
 	// Track event for telemetry
 	if enableTelemetry {
+		user := getUser(c)
+
 		err := trackEvent(analytics.Track{
 			Event:  eventTrackMap["list"],
 			UserId: user,
@@ -336,10 +337,11 @@ func serveDevfileIndex(c *gin.Context) {
 func serveDevfileIndexWithType(c *gin.Context) {
 	indexType := c.Param("type")
 	iconType := c.Query("icon")
-	user := getUser(c)
 
 	// Track event for telemetry
 	if enableTelemetry {
+		user := getUser(c)
+
 		err := trackEvent(analytics.Track{
 			Event:  eventTrackMap["list"],
 			UserId: user,
@@ -366,21 +368,6 @@ func serveHealthCheck(c *gin.Context) {
 // serveDevfile returns the devfile content
 func serveDevfile(c *gin.Context) {
 	name := c.Param("name")
-	user := getUser(c)
-
-	// Track event for telemetry
-	if enableTelemetry {
-		err := trackEvent(analytics.Track{
-			Event:  eventTrackMap["view"],
-			UserId: user,
-			Properties: analytics.NewProperties().
-				Set("name", name).
-				Set("registry", registry),
-		})
-		if err != nil {
-			log.Print(err)
-		}
-	}
 
 	var index []indexSchema.Schema
 	bytes, err := ioutil.ReadFile(indexPath)
@@ -403,7 +390,16 @@ func serveDevfile(c *gin.Context) {
 	}
 	for _, devfileIndex := range index {
 		if devfileIndex.Name == name {
-			bytes, err := pullStackFromRegistry(devfileIndex)
+			var bytes []byte
+			if devfileIndex.Type == indexSchema.StackDevfileType {
+				bytes, err = pullStackFromRegistry(devfileIndex)
+			} else {
+				// Retrieve the sample devfile stored under /registry/samples/<devfile>
+				sampleDevfilePath := path.Join(samplesPath, devfileIndex.Name, devfileName)
+				if _, err = os.Stat(sampleDevfilePath); err == nil {
+					bytes, err = ioutil.ReadFile(sampleDevfilePath)
+				}
+			}
 			if err != nil {
 				log.Print(err.Error())
 				c.JSON(http.StatusInternalServerError, gin.H{
@@ -411,6 +407,23 @@ func serveDevfile(c *gin.Context) {
 					"status": fmt.Sprintf("failed to pull the devfile of %s", name),
 				})
 				return
+			}
+
+			// Track event for telemetry
+			if enableTelemetry {
+				user := getUser(c)
+
+				err := trackEvent(analytics.Track{
+					Event:  eventTrackMap["view"],
+					UserId: user,
+					Properties: analytics.NewProperties().
+						Set("name", name).
+						Set("type", string(devfileIndex.Type)).
+						Set("registry", registry),
+				})
+				if err != nil {
+					log.Print(err)
+				}
 			}
 			c.Data(http.StatusOK, http.DetectContentType(bytes), bytes)
 			return
@@ -432,18 +445,27 @@ func ociServerProxy(c *gin.Context) {
 	proxy := httputil.NewSingleHostReverseProxy(remote)
 
 	// Set up the request to the proxy
-	// This is a good place to set up telemetry for requests to the OCI server (e.g. by parsing the path)
-	proxyPath := c.Param("proxyPath")
-	if proxyPath != "" {
-		name := strings.Split(proxyPath, "/")[2]
-		resource := strings.Split(proxyPath, "/")[3]
+	// Track event for telemetry
+	if enableTelemetry {
+		proxyPath := c.Param("proxyPath")
+		if proxyPath != "" {
+			var name string
+			var resource string
+			parts := strings.Split(proxyPath, "/")
+			if len(parts) == 5 {
+				name = parts[2]
+				resource = parts[3]
+			} else if len(parts) == 4 {
+				name = parts[1]
+				resource = parts[2]
+			}
 
-		// Track event for telemetry
-		if resource == "blobs" {
-			if enableTelemetry {
+			if resource == "blobs" {
+				user := getUser(c)
+
 				err := trackEvent(analytics.Track{
 					Event:  eventTrackMap["download"],
-					UserId: "test",
+					UserId: user,
 					Properties: analytics.NewProperties().
 						Set("name", name).
 						Set("registry", registry),
@@ -454,6 +476,7 @@ func ociServerProxy(c *gin.Context) {
 			}
 		}
 	}
+
 	proxy.Director = func(req *http.Request) {
 		req.Header.Add("X-Forwarded-Host", req.Host)
 		req.Header.Add("X-Origin-Host", remote.Host)
