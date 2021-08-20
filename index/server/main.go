@@ -313,22 +313,6 @@ func serveDevfileIndex(c *gin.Context) {
 	indexType := "stack"
 	iconType := c.Query("icon")
 
-	// Track event for telemetry
-	if enableTelemetry {
-		user := getUser(c)
-
-		err := trackEvent(analytics.Track{
-			Event:  eventTrackMap["list"],
-			UserId: user,
-			Properties: analytics.NewProperties().
-				Set("type", indexType).
-				Set("registry", registry),
-		})
-		if err != nil {
-			log.Print(err)
-		}
-	}
-
 	// Serve the index.json file
 	buildIndexAPIResponse(c, indexType, iconType)
 }
@@ -337,22 +321,6 @@ func serveDevfileIndex(c *gin.Context) {
 func serveDevfileIndexWithType(c *gin.Context) {
 	indexType := c.Param("type")
 	iconType := c.Query("icon")
-
-	// Track event for telemetry
-	if enableTelemetry {
-		user := getUser(c)
-
-		err := trackEvent(analytics.Track{
-			Event:  eventTrackMap["list"],
-			UserId: user,
-			Properties: analytics.NewProperties().
-				Set("type", indexType).
-				Set("registry", registry),
-		})
-		if err != nil {
-			log.Print(err)
-		}
-	}
 
 	// Serve the index with type
 	buildIndexAPIResponse(c, indexType, iconType)
@@ -422,7 +390,7 @@ func serveDevfile(c *gin.Context) {
 						Set("registry", registry),
 				})
 				if err != nil {
-					log.Print(err)
+					log.Println(err)
 				}
 			}
 			c.Data(http.StatusOK, http.DetectContentType(bytes), bytes)
@@ -452,10 +420,12 @@ func ociServerProxy(c *gin.Context) {
 			var name string
 			var resource string
 			parts := strings.Split(proxyPath, "/")
+			// Check proxyPath with API version - "/v2/devfile-catalog/nodejs/blobs/sha256:cc3bf36be550d38b701753da58034143da93ec387693f4ef98136e3e06e71fe1"
 			if len(parts) == 5 {
 				name = parts[2]
 				resource = parts[3]
 			} else if len(parts) == 4 {
+				// Check proxyPath without API version - "/devfile-catalog/java-quarkus/blobs/sha256:d913cab108c3bc1bd06ce61f1e0cdb6eea2222a7884378f7e656fa26249990b9"
 				name = parts[1]
 				resource = parts[2]
 			}
@@ -471,7 +441,7 @@ func ociServerProxy(c *gin.Context) {
 						Set("registry", registry),
 				})
 				if err != nil {
-					log.Print(err.Error())
+					log.Println(err.Error())
 				}
 			}
 		}
@@ -622,9 +592,26 @@ func buildIndexAPIResponse(c *gin.Context, indexType string, iconType string) {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"status": fmt.Sprintf("the icon type %s is not supported", iconType),
 			})
+			return
 		}
 	} else {
 		c.File(responseIndexPath)
+	}
+
+	// Track event for telemetry
+	if enableTelemetry {
+		user := getUser(c)
+
+		err := trackEvent(analytics.Track{
+			Event:  eventTrackMap["list"],
+			UserId: user,
+			Properties: analytics.NewProperties().
+				Set("type", indexType).
+				Set("registry", registry),
+		})
+		if err != nil {
+			log.Println(err)
+		}
 	}
 }
 
