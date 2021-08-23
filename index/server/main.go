@@ -420,14 +420,10 @@ func ociServerProxy(c *gin.Context) {
 			var name string
 			var resource string
 			parts := strings.Split(proxyPath, "/")
-			// Check proxyPath with API version - "/v2/devfile-catalog/nodejs/blobs/sha256:cc3bf36be550d38b701753da58034143da93ec387693f4ef98136e3e06e71fe1"
+			// Check proxyPath (e.g. /devfile-catalog/java-quarkus/blobs/sha256:d913cab108c3bc1bd06ce61f1e0cdb6eea2222a7884378f7e656fa26249990b9)
 			if len(parts) == 5 {
 				name = parts[2]
 				resource = parts[3]
-			} else if len(parts) == 4 {
-				// Check proxyPath without API version - "/devfile-catalog/java-quarkus/blobs/sha256:d913cab108c3bc1bd06ce61f1e0cdb6eea2222a7884378f7e656fa26249990b9"
-				name = parts[1]
-				resource = parts[2]
 			}
 
 			if resource == "blobs" {
