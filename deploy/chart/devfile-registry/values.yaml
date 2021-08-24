@@ -30,3 +30,7 @@ ociRegistry:
 persistence:
   enabled: false
   size: 1Gi
+
+telemetry:
+  enabled: false
+  registryName: "" 
