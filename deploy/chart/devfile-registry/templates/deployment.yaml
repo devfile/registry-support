@@ -92,7 +92,7 @@ spec:
           - name: DEVFILE_VIEWER_ROOT
             value: "/viewer"
           - name: ENABLE_TELEMETRY
-            value: {{ .Values.telemetry.enabled }}
+            value: {{ .Values.telemetry.enabled | quote }}
           - name: REGISTRY_NAME
             value: {{ .Values.telemetry.registryName }}
         volumeMounts:
