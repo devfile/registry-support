@@ -12,6 +12,8 @@ name: Next Dockerimage
 on:
   push:
     branches: [ main ]
+  repository_dispatch:
+    types: [build]
 
 jobs:
   indexServerBuild:
