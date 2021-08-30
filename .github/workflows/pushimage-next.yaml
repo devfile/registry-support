@@ -45,6 +45,7 @@ jobs:
           token: ${{ secrets.REPO_ACCESS_TOKEN }}
           repository: ${{ matrix.repo }}
           event-type: build
+          client-payload: '{"repo": "${{ github.event.repository.name }}", "sha": "${{ github.sha }}"}'
 
   ociRegistryBuild:
     runs-on: ubuntu-latest
