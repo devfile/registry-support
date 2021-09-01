@@ -159,6 +159,14 @@ func main() {
 		log.Fatalf("failed to generate %s: %v", stackIndexPath, err)
 	}
 
+	// Logs for telemetry configuration
+	if enableTelemetry {
+		log.Println("Telemetry is enabled")
+		log.Printf("The registry name for telemetry is %s\n", registry)
+	} else {
+		log.Println("Telemetry is not enabled")
+	}
+
 	// Start the server and serve requests and index.json
 	router := gin.Default()
 
