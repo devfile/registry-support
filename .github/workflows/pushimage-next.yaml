@@ -42,12 +42,20 @@ jobs:
       - name: Get the repository name and commit sha
         id: get_commit_info
         run: |
+          # Check if repository name is not set in the client payload
+          # If it's not set, the triggered commit came from this repo (registry-support)
+          # If it is set, the triggered commit came from registry-viewer
           if [ -z ${{ github.event.client_payload.repo }} ];
           then
             echo ::set-output name=repo::$(echo ${{ github.event.repository.name }})
           else
             echo ::set-output name=repo::$(echo ${{ github.event.client_payload.repo }})
           fi
+          
+          # Check if commit sha is not set in the client payload
+          # If it's not set, the triggered commit came from this repo (registry-support)
+          # If it is set, the triggered commit came from registry-viewer
+
           if [ -z ${{ github.event.client_payload.sha }} ];
           then
             echo ::set-output name=sha::$(echo ${{ github.sha }})
