@@ -39,13 +39,28 @@ jobs:
         repo: ['devfile/registry']
     runs-on: ubuntu-latest
     steps:
+      - name: Get the repository name and commit sha
+        id: get_commit_info
+        run: |
+          if [ -z ${{ github.event.client_payload.repo }} ];
+          then
+            echo ::set-output name=repo::$(echo ${{ github.event.repository.name }})
+          else
+            echo ::set-output name=repo::$(echo ${{ github.event.client_payload.repo }})
+          fi
+          if [ -z ${{ github.event.client_payload.sha }} ];
+          then
+            echo ::set-output name=sha::$(echo ${{ github.sha }})
+          else
+            echo ::set-output name=sha::$(echo ${{ github.event.client_payload.sha }})
+          fi
       - name: Repository dispatch
         uses: peter-evans/repository-dispatch@v1
         with:
           token: ${{ secrets.REPO_ACCESS_TOKEN }}
           repository: ${{ matrix.repo }}
           event-type: build
-          client-payload: '{"repo": "${{ github.event.repository.name }}", "sha": "${{ github.sha }}"}'
+          client-payload: '{"repo": "${{ steps.get_commit_info.outputs.REPO }}", "sha": "${{ steps.get_commit_info.outputs.SHA }}"}'
 
   ociRegistryBuild:
     runs-on: ubuntu-latest
