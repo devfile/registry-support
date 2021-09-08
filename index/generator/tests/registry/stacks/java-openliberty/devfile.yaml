@@ -22,6 +22,7 @@ metadata:
   displayName: "Open Liberty"
   language: "java"
   projectType: "docker"
+  provider: "Red Hat"
   alpha.build-dockerfile: "https://github.com/OpenLiberty/application-stack/releases/download/outer-loop-0.5.1/Dockerfile"
   alpha.deployment-manifest: "https://github.com/OpenLiberty/application-stack/releases/download/outer-loop-0.5.1/app-deploy.yaml"
 starterProjects:

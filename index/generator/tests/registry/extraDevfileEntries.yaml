@@ -17,6 +17,7 @@ samples:
     tags: ["Java", "Quarkus"]
     projectType: quarkus
     language: java
+    provider: Red Hat
     git:
       remotes:
         origin: https://github.com/elsony/devfile-sample-code-with-quarkus.git

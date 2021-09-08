@@ -67,6 +67,7 @@ links: map[string]string - Links related to the devfile
 resources: []string - The file resources that compose a devfile stack.
 starterProjects: string[] - The project templates that can be used in the devfile
 git: *git - The information of remote repositories
+provider: string - The devfile provider information
 */
 
 // Schema is the index file schema
@@ -87,6 +88,7 @@ type Schema struct {
 	Resources         []string               `yaml:"resources,omitempty" json:"resources,omitempty"`
 	StarterProjects   []string               `yaml:"starterProjects,omitempty" json:"starterProjects,omitempty"`
 	Git               *Git                   `yaml:"git,omitempty" json:"git,omitempty"`
+	Provider		  string				 `yaml:"provider,omitempty" json:"provider,omitempty"`
 }
 
 // DevfileType describes the type of devfile

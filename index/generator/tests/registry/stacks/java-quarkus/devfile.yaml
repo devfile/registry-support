@@ -8,6 +8,7 @@ metadata:
   tags: ["Java", "Quarkus"]
   projectType: "quarkus"
   language: "java"
+  provider: "Red Hat"
 starterProjects:
   - name: community
     zip:
