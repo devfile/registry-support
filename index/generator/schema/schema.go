@@ -89,6 +89,7 @@ type Schema struct {
 	StarterProjects   []string               `yaml:"starterProjects,omitempty" json:"starterProjects,omitempty"`
 	Git               *Git                   `yaml:"git,omitempty" json:"git,omitempty"`
 	Provider		  string				 `yaml:"provider,omitempty" json:"provider,omitempty"`
+	SupportUrl		  string				 `yaml:"supportUrl,omitempty" json:"supportUrl,omitempty"`
 }
 
 // DevfileType describes the type of devfile

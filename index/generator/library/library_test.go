@@ -18,6 +18,8 @@ func TestValidateIndexComponent(t *testing.T) {
 	gitEmptyErr := ".*git is empty.*"
 	multipleRemotesErr := ".*has multiple remotes.*"
 	noArchErr := ".*has no architecture.*"
+	noProviderErr := ".*has no provider.*"
+	noSupportUrlErr := ".*has no supportUrl.*"
 
 	tests := []struct {
 		name           string
@@ -81,6 +83,8 @@ func TestValidateIndexComponent(t *testing.T) {
 				Architectures: []string{
 					"amd64",
 				},
+				Provider: "Red Hat",
+				SupportUrl: "http://testurl/support.md",
 			},
 			schema.StackDevfileType,
 			nil,
@@ -127,6 +131,42 @@ func TestValidateIndexComponent(t *testing.T) {
 			},
 			schema.SampleDevfileType,
 			&noArchErr,
+		},
+		{
+			"Case 9: check for missing provider",
+			schema.Schema{
+				Name: "nodejs",
+				Links: map[string]string{
+					"self": "devfile-catalog/java-maven:latest",
+				},
+				Resources: []string{
+					"devfile.yaml",
+				},
+				Architectures: []string{
+					"amd64",
+				},
+				SupportUrl: "http://testurl/support.md",
+			},
+			schema.StackDevfileType,
+			&noProviderErr,
+		},
+		{
+			"Case 10: check for missing supportUrl",
+			schema.Schema{
+				Name: "nodejs",
+				Links: map[string]string{
+					"self": "devfile-catalog/java-maven:latest",
+				},
+				Resources: []string{
+					"devfile.yaml",
+				},
+				Architectures: []string{
+					"amd64",
+				},
+				Provider: "Red Hat",
+			},
+			schema.StackDevfileType,
+			&noSupportUrlErr,
 		},
 	}
 
