@@ -36,6 +36,7 @@ var (
 	destDir       string
 	devfileType   string
 	skipTLSVerify bool
+	user          string
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -81,9 +82,9 @@ func init() {
 			var err error
 
 			if allResources {
-				err = library.PullStackFromRegistry(registry, stack, destDir, skipTLSVerify)
+				err = library.PullStackFromRegistry(registry, stack, destDir, skipTLSVerify, user)
 			} else {
-				err = library.PullStackByMediaTypesFromRegistry(registry, stack, library.DevfileMediaTypeList, destDir, skipTLSVerify)
+				err = library.PullStackByMediaTypesFromRegistry(registry, stack, library.DevfileMediaTypeList, destDir, skipTLSVerify, user)
 			}
 			if err != nil {
 				fmt.Printf("Failed to pull %s from registry %s: %v\n", stack, registry, err)
@@ -93,6 +94,7 @@ func init() {
 	pullCmd.Flags().BoolVarP(&allResources, "all", "a", false, "pull all resources of the given stack")
 	pullCmd.Flags().StringVar(&destDir, "context", ".", "destination directory that stores stack resources")
 	pullCmd.Flags().BoolVar(&skipTLSVerify, "skip-tls-verify", false, "skip TLS verification")
+	pullCmd.Flags().StringVar(&user, "user", "", "consumer name")
 
 	var listCmd = &cobra.Command{
 		Use:   "list",
@@ -102,7 +104,7 @@ func init() {
 				fmt.Printf("Please specify the devfile type by using flag --type\n")
 				return
 			}
-			err := library.PrintRegistry(registryList, devfileType, skipTLSVerify)
+			err := library.PrintRegistry(registryList, devfileType, skipTLSVerify, user)
 			if err != nil {
 				fmt.Printf("Failed to list stacks of registry %s: %v\n", registryList, err)
 			}
@@ -110,6 +112,7 @@ func init() {
 	}
 	listCmd.Flags().StringVar(&devfileType, "type", "", "specify devfile type")
 	listCmd.Flags().BoolVar(&skipTLSVerify, "skip-tls-verify", false, "skip TLS verification")
+	listCmd.Flags().StringVar(&user, "user", "", "consumer name")
 
 	rootCmd.AddCommand(pullCmd, listCmd)
 }
