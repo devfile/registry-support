@@ -1,4 +1,4 @@
-schemaVersion: 2.0.0
+schemaVersion: 2.2.0
 metadata:
   name: java-quarkus
   version: 1.1.0
@@ -8,6 +8,7 @@ metadata:
   tags: ["Java", "Quarkus"]
   projectType: "quarkus"
   language: "java"
+  provider: "Red Hat"
 starterProjects:
   - name: community
     zip:

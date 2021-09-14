@@ -11,6 +11,7 @@
       ],
       "projectType": "maven",
       "language": "java",
+      "provider": "Red Hat",
       "links": {
         "self": "devfile-catalog/java-maven:latest"
       },
@@ -29,6 +30,7 @@
       "type": "stack",
       "projectType": "docker",
       "language": "java",
+      "provider": "Red Hat",
       "links": {
         "self": "devfile-catalog/java-openliberty:latest"
       },
@@ -51,6 +53,7 @@
       ],
       "projectType": "quarkus",
       "language": "java",
+      "provider": "Red Hat",
       "links": {
         "self": "devfile-catalog/java-quarkus:latest"
       },
@@ -288,6 +291,7 @@
       "icon": "https://raw.githubusercontent.com/elsony/devfile-sample-code-with-quarkus/main/.devfile/icon/quarkus.png",
       "projectType": "quarkus",
       "language": "java",
+      "provider": "Red Hat",
       "git": {
         "remotes": {
           "origin": "https://github.com/elsony/devfile-sample-code-with-quarkus.git"
