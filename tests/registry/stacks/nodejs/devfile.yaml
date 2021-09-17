@@ -7,6 +7,9 @@ metadata:
   tags: ["NodeJS", "Express", "ubi8"]
   projectType: "nodejs"
   language: "nodejs"
+  architectures:
+    - "amd64"
+    - "arm64"
 starterProjects:
   - name: nodejs-starter
     git:

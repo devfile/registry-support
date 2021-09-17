@@ -1,9 +1,52 @@
-package main
+package util
 
 import (
 	"os"
 	"testing"
 )
+
+func TestIsHtmlRequested(t *testing.T) {
+	tests := []struct {
+		name   string
+		header []string
+		want   bool
+	}{
+		{
+			name:   "Case 1: Empty header",
+			header: []string{},
+			want:   false,
+		},
+		{
+			name:   "Case 2: Single header, no html",
+			header: []string{"application/xml"},
+			want:   false,
+		},
+		{
+			name:   "Case 3: Single header, html",
+			header: []string{"application/xml,text/html"},
+			want:   true,
+		},
+		{
+			name:   "Case 4: Multiple headers, no html",
+			header: []string{"Header1", "Header2", "Header3"},
+			want:   false,
+		},
+		{
+			name:   "Case 5: Multiple headers, html",
+			header: []string{"Header1", "Header2", "Header3", "text/html"},
+			want:   true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			htmlRequested := IsHtmlRequested(test.header)
+			if htmlRequested != test.want {
+				t.Errorf("Got: %v, Expected: %v", htmlRequested, test.want)
+			}
+		})
+	}
+}
 
 func TestEncodeToBase64(t *testing.T) {
 	tests := []struct {
@@ -72,7 +115,7 @@ func TestEncodeIndexIconToBase64(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			gotErr := false
-			_, err := encodeIndexIconToBase64(test.indexPath, test.base64IndexPath)
+			_, err := EncodeIndexIconToBase64(test.indexPath, test.base64IndexPath)
 			if err != nil {
 				gotErr = true
 			}
@@ -97,95 +140,6 @@ func TestEncodeIndexIconToBase64(t *testing.T) {
 				if err != nil {
 					t.Errorf("Can't remove the temp base64 index: %s", test.base64IndexPath)
 				}
-			}
-		})
-	}
-}
-
-func TestIsHtmlRequested(t *testing.T) {
-	tests := []struct {
-		name   string
-		header []string
-		want   bool
-	}{
-		{
-			name:   "Case 1: Empty header",
-			header: []string{},
-			want:   false,
-		},
-		{
-			name:   "Case 2: Single header, no html",
-			header: []string{"application/xml"},
-			want:   false,
-		},
-		{
-			name:   "Case 3: Single header, html",
-			header: []string{"application/xml,text/html"},
-			want:   true,
-		},
-		{
-			name:   "Case 4: Multiple headers, no html",
-			header: []string{"Header1", "Header2", "Header3"},
-			want:   false,
-		},
-		{
-			name:   "Case 5: Multiple headers, html",
-			header: []string{"Header1", "Header2", "Header3", "text/html"},
-			want:   true,
-		},
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			htmlRequested := isHtmlRequested(test.header)
-			if htmlRequested != test.want {
-				t.Errorf("Got: %v, Expected: %v", htmlRequested, test.want)
-			}
-		})
-	}
-}
-
-func TestGetOptionalEnv(t *testing.T) {
-	os.Setenv("SET_BOOL", "true")
-	os.Setenv("SET_STRING", "test")
-
-	tests := []struct {
-		name         string
-		key          string
-		defaultValue interface{}
-		want         interface{}
-	}{
-		{
-			name:         "Test get SET_BOOL environment variable",
-			key:          "SET_BOOL",
-			defaultValue: false,
-			want:         true,
-		},
-		{
-			name:         "Test get unset bool environment variable",
-			key:          "UNSET_BOOL",
-			defaultValue: false,
-			want:         false,
-		},
-		{
-			name:         "Test get SET_STRING environment variable",
-			key:          "SET_STRING",
-			defaultValue: "anonymous",
-			want:         "test",
-		},
-		{
-			name:         "Test get unset string environment variable",
-			key:          "UNSET_STRING",
-			defaultValue: "anonymous",
-			want:         "anonymous",
-		},
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			value := getOptionalEnv(test.key, test.defaultValue)
-			if value != test.want {
-				t.Errorf("Got: %v, want: %v", value, test.want)
 			}
 		})
 	}

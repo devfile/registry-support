@@ -26,6 +26,7 @@ samples:
     icon: https://raw.githubusercontent.com/elsony/devfile-sample-java-springboot-basic/main/.devfile/icon/spring-logo.png
     tags: ["Java", "Spring"]
     projectType: springboot
+    architectures: ["amd64"]
     language: java
     git:
       remotes:
@@ -36,6 +37,7 @@ samples:
     icon: https://raw.githubusercontent.com/elsony/devfile-sample-python-basic/main/.devfile/icon/python.png
     tags: ["Python"]
     projectType: python
+    architectures: ["amd64", "arm64"]
     language: python
     git:
       remotes:
