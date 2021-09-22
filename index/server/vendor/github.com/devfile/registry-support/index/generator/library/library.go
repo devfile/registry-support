@@ -19,6 +19,33 @@ const (
 	extraDevfileEntries = "extraDevfileEntries.yaml"
 )
 
+// MissingArchError is an error if the architecture list is empty
+type MissingArchError struct {
+	devfile string
+}
+
+func (e *MissingArchError) Error() string {
+	return fmt.Sprintf("the %s devfile has no architecture(s) mentioned\n", e.devfile)
+}
+
+// MissingProviderError is an error if the provider field is missing
+type MissingProviderError struct {
+	devfile string
+}
+
+func (e *MissingProviderError) Error() string {
+	return fmt.Sprintf("the %s devfile has no provider mentioned\n", e.devfile)
+}
+
+// MissingSupportUrlError is an error if the supportUrl field is missing
+type MissingSupportUrlError struct {
+	devfile string
+}
+
+func (e *MissingSupportUrlError) Error() string {
+	return fmt.Sprintf("the %s devfile has no supportUrl mentioned\n", e.devfile)
+}
+
 // GenerateIndexStruct parses registry then generates index struct according to the schema
 func GenerateIndexStruct(registryDirPath string, force bool) ([]schema.Schema, error) {
 	// Parse devfile registry then populate index struct
@@ -66,10 +93,23 @@ func validateIndexComponent(indexComponent schema.Schema, componentType schema.D
 		if indexComponent.Resources == nil {
 			return fmt.Errorf("index component resources are empty")
 		}
+		if indexComponent.Provider == "" {
+			return &MissingProviderError{devfile: indexComponent.Name}
+		}
+		if indexComponent.SupportUrl == "" {
+			return &MissingSupportUrlError{devfile: indexComponent.Name}
+		}
 	} else if componentType == schema.SampleDevfileType {
 		if indexComponent.Git == nil {
 			return fmt.Errorf("index component git is empty")
 		}
+		if len(indexComponent.Git.Remotes) > 1 {
+			return fmt.Errorf("index component has multiple remotes")
+		}
+	}
+
+	if len(indexComponent.Architectures) == 0 {
+		return &MissingArchError{devfile: indexComponent.Name}
 	}
 
 	return nil
@@ -147,8 +187,14 @@ func parseDevfileRegistry(registryDirPath string, force bool) ([]schema.Schema, 
 		if !force {
 			// Index component validation
 			err := validateIndexComponent(indexComponent, schema.StackDevfileType)
-			if err != nil {
-				return nil, fmt.Errorf("%s index component is not valid: %v", devfileDir.Name(), err)
+			switch err.(type) {
+				case *MissingProviderError:
+				case *MissingSupportUrlError:
+				case *MissingArchError:
+					// log to the console as FYI if the devfile has no architectures/provider/supportUrl
+					fmt.Printf("%s", err.Error())
+				default:
+					return nil, fmt.Errorf("%s index component is not valid: %v", devfileDir.Name(), err)
 			}
 		}
 
@@ -165,6 +211,14 @@ func parseExtraDevfileEntries(registryDirPath string, force bool) ([]schema.Sche
 	if err != nil {
 		return nil, fmt.Errorf("failed to read %s: %v", extraDevfileEntriesPath, err)
 	}
+
+	// Only validate samples if they have been cached
+	samplesDir := filepath.Join(registryDirPath, "samples")
+	validateSamples := false
+	if _, err := os.Stat(samplesDir); !os.IsNotExist(err) {
+		validateSamples = true
+	}
+
 	var devfileEntries schema.ExtraDevfileEntries
 	err = yaml.Unmarshal(bytes, &devfileEntries)
 	if err != nil {
@@ -182,10 +236,34 @@ func parseExtraDevfileEntries(registryDirPath string, force bool) ([]schema.Sche
 			indexComponent := devfileEntry
 			indexComponent.Type = devfileType
 			if !force {
+
+				// If sample, validate devfile associated with sample as well
+				// Can't handle during registry build since we don't have access to devfile library/parser
+				if indexComponent.Type == schema.SampleDevfileType && validateSamples {
+					devfilePath := filepath.Join(samplesDir, devfileEntry.Name, "devfile.yaml")
+					_, err := os.Stat(filepath.Join(devfilePath))
+					if err != nil {
+						// This error shouldn't occur since we check for the devfile's existence during registry build, but check for it regardless
+						return nil, fmt.Errorf("%s devfile sample does not have a devfile.yaml: %v", indexComponent.Name, err)
+					}
+
+					// Validate the sample devfile
+					_, err = devfileParser.ParseAndValidate(devfilePath)
+					if err != nil {
+						return nil, fmt.Errorf("%s sample devfile is not valid: %v", devfileEntry.Name, err)
+					}
+				}
+
 				// Index component validation
 				err := validateIndexComponent(indexComponent, devfileType)
-				if err != nil {
-					return nil, fmt.Errorf("%s index component is not valid: %v", indexComponent.Name, err)
+				switch err.(type) {
+					case *MissingProviderError:
+					case *MissingSupportUrlError:
+					case *MissingArchError:
+						// log to the console as FYI if the devfile has no architectures/provider/supportUrl
+						fmt.Printf("%s", err.Error())
+					default:
+						return nil, fmt.Errorf("%s index component is not valid: %v", indexComponent.Name, err)
 				}
 			}
 			index = append(index, indexComponent)
