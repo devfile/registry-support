@@ -12,7 +12,7 @@ Devfile registry library is used for interacting with devfile registry, consumer
 
 ## How to use it
 1. Import devfile registry library
-```
+```go
 import (
     registryLibrary "github.com/devfile/registry-support/registry-library/library"
 )
@@ -20,26 +20,26 @@ import (
 2. Invoke devfile registry library
 
     a. Get the index of devfile registry for various devfile types
-    ```
-    registryIndex, err := registryLibrary.GetRegistryIndex(registry, StackDevfileType, SampleDevfileType)
+    ```go
+    registryIndex, err := registryLibrary.GetRegistryIndex(registry, false, "", StackDevfileType, SampleDevfileType)
 	if err != nil {
 		return err
 	}
     ```
     b. Get the indices of multiple devfile registries for various devfile types
-    ```
+    ```go
     registryList := GetMultipleRegistriesIndices(registryURLs, StackDevfileType)
     ```
     c. Download the stack devfile from devfile registry
-    ```
-	err := registryLibrary.PullStackByMediaTypesFromRegistry(registry, stack, registryLibrary.DevfileMediaTypeList, destDir)
+    ```go
+	err := registryLibrary.PullStackByMediaTypesFromRegistry(registry, stack, registryLibrary.DevfileMediaTypeList, destDir, false, "")
 	if err != nil {
 		return err
 	}
     ```
     d. Download the whole stack from devfile registry
-    ```
-    err := registryLibrary.PullStackFromRegistry(registry, stack, destDir)
+    ```go
+    err := registryLibrary.PullStackFromRegistry(registry, stack, destDir, false, "")
     if err != nil {
 		return err
 	}
