@@ -5,14 +5,14 @@ go 1.14
 require (
 	github.com/containerd/containerd v1.4.1
 	github.com/deislabs/oras v0.8.1
-	github.com/devfile/api/v2 v2.0.0-20210211160219-33a78aec06af
-	github.com/devfile/registry-support/index/generator v0.0.0-20210505173027-d06fe2bb3ee8
+	github.com/devfile/api/v2 v2.0.0-20210910153124-da620cd1a7a1
+	github.com/devfile/registry-support/index/generator v0.0.0-20210916150157-08b31e03fdf0
 	github.com/gin-gonic/gin v1.6.3
+	github.com/gorilla/mux v1.7.3 // indirect
 	github.com/opencontainers/image-spec v1.0.1
-	github.com/prometheus/client_golang v1.9.0
+	github.com/prometheus/client_golang v1.11.0
 	github.com/segmentio/backo-go v0.0.0-20200129164019-23eae7c10bd3 // indirect
 	github.com/xtgo/uuid v0.0.0-20140804021211-a0b114877d4c // indirect
 	gopkg.in/segmentio/analytics-go.v3 v3.1.0
-	gotest.tools/v3 v3.0.3 // indirect
-	k8s.io/apimachinery v0.19.4
+	k8s.io/apimachinery v0.21.3
 )
