@@ -27,6 +27,8 @@ samples:
     tags: ["Java", "Spring"]
     projectType: springboot
     architectures: ["amd64"]
+    provider: "Red Hat"
+    supportUrl: "http://testurl/support.md"
     language: java
     git:
       remotes:

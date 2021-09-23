@@ -93,12 +93,6 @@ func validateIndexComponent(indexComponent schema.Schema, componentType schema.D
 		if indexComponent.Resources == nil {
 			return fmt.Errorf("index component resources are empty")
 		}
-		if indexComponent.Provider == "" {
-			return &MissingProviderError{devfile: indexComponent.Name}
-		}
-		if indexComponent.SupportUrl == "" {
-			return &MissingSupportUrlError{devfile: indexComponent.Name}
-		}
 	} else if componentType == schema.SampleDevfileType {
 		if indexComponent.Git == nil {
 			return fmt.Errorf("index component git is empty")
@@ -108,6 +102,13 @@ func validateIndexComponent(indexComponent schema.Schema, componentType schema.D
 		}
 	}
 
+	// Fields to be validated for both stacks and samples
+	if indexComponent.Provider == "" {
+		return &MissingProviderError{devfile: indexComponent.Name}
+	}
+	if indexComponent.SupportUrl == "" {
+		return &MissingSupportUrlError{devfile: indexComponent.Name}
+	}
 	if len(indexComponent.Architectures) == 0 {
 		return &MissingArchError{devfile: indexComponent.Name}
 	}
@@ -176,6 +177,9 @@ func parseDevfileRegistry(registryDirPath string, force bool) ([]schema.Schema, 
 		// Get the files in the stack folder
 		stackFolder := filepath.Join(stackDirPath, devfileDir.Name())
 		stackFiles, err := ioutil.ReadDir(stackFolder)
+		if err != nil {
+			return index, err
+		}
 		for _, stackFile := range stackFiles {
 			// The registry build should have already packaged any folders and miscellaneous files into an archive.tar file
 			// But, add this check as a safeguard, as OCI doesn't support unarchived folders being pushed up.
@@ -188,13 +192,14 @@ func parseDevfileRegistry(registryDirPath string, force bool) ([]schema.Schema, 
 			// Index component validation
 			err := validateIndexComponent(indexComponent, schema.StackDevfileType)
 			switch err.(type) {
-				case *MissingProviderError:
-				case *MissingSupportUrlError:
-				case *MissingArchError:
-					// log to the console as FYI if the devfile has no architectures/provider/supportUrl
-					fmt.Printf("%s", err.Error())
-				default:
+			case *MissingProviderError, *MissingSupportUrlError, *MissingArchError:
+				// log to the console as FYI if the devfile has no architectures/provider/supportUrl
+				fmt.Printf("%s", err.Error())
+			default:
+				// only return error if we dont want to print
+				if err != nil {
 					return nil, fmt.Errorf("%s index component is not valid: %v", devfileDir.Name(), err)
+				}
 			}
 		}
 
@@ -257,13 +262,14 @@ func parseExtraDevfileEntries(registryDirPath string, force bool) ([]schema.Sche
 				// Index component validation
 				err := validateIndexComponent(indexComponent, devfileType)
 				switch err.(type) {
-					case *MissingProviderError:
-					case *MissingSupportUrlError:
-					case *MissingArchError:
-						// log to the console as FYI if the devfile has no architectures/provider/supportUrl
-						fmt.Printf("%s", err.Error())
-					default:
+				case *MissingProviderError, *MissingSupportUrlError, *MissingArchError:
+					// log to the console as FYI if the devfile has no architectures/provider/supportUrl
+					fmt.Printf("%s", err.Error())
+				default:
+					// only return error if we dont want to print
+					if err != nil {
 						return nil, fmt.Errorf("%s index component is not valid: %v", indexComponent.Name, err)
+					}
 				}
 			}
 			index = append(index, indexComponent)
