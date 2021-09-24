@@ -81,10 +81,15 @@ func init() {
 			stack := args[1]
 			var err error
 
+			options := library.RegistryOptions{
+				User:          user,
+				SkipTLSVerify: skipTLSVerify,
+			}
+
 			if allResources {
-				err = library.PullStackFromRegistry(registry, stack, destDir, skipTLSVerify, user)
+				err = library.PullStackFromRegistry(registry, stack, destDir, options)
 			} else {
-				err = library.PullStackByMediaTypesFromRegistry(registry, stack, library.DevfileMediaTypeList, destDir, skipTLSVerify, user)
+				err = library.PullStackByMediaTypesFromRegistry(registry, stack, library.DevfileMediaTypeList, destDir, options)
 			}
 			if err != nil {
 				fmt.Printf("Failed to pull %s from registry %s: %v\n", stack, registry, err)
@@ -104,7 +109,13 @@ func init() {
 				fmt.Printf("Please specify the devfile type by using flag --type\n")
 				return
 			}
-			err := library.PrintRegistry(registryList, devfileType, skipTLSVerify, user)
+
+			options := library.RegistryOptions{
+				User:          user,
+				SkipTLSVerify: skipTLSVerify,
+			}
+
+			err := library.PrintRegistry(registryList, devfileType, options)
 			if err != nil {
 				fmt.Printf("Failed to list stacks of registry %s: %v\n", registryList, err)
 			}
