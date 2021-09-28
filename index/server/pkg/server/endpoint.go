@@ -18,13 +18,6 @@ import (
 	"gopkg.in/segmentio/analytics-go.v3"
 )
 
-// queryParams is a struct that contains a list of query options for the registry API
-type queryParams struct {
-	indexType     string
-	iconType      string
-	architectures []string
-}
-
 // serveRootEndpoint sets up the handler for the root (/) endpoint on the server
 // If html is requested (i.e. from a web browser), the viewer is displayed, otherwise the devfile index is served.
 func serveRootEndpoint(c *gin.Context) {
@@ -48,27 +41,18 @@ func serveDevfileIndex(c *gin.Context) {
 		timer.ObserveDuration()
 	}()
 
-	params := queryParams{
-		indexType:     "stack",
-		iconType:      c.Query("icon"),
-		architectures: c.QueryArray("architectures"),
-	}
+	// append the devfile type, for endpoint /index without type
+	c.Params = append(c.Params, gin.Param{Key: "type", Value: string(indexSchema.StackDevfileType)})
 
 	// Serve the index.json file
-	buildIndexAPIResponse(c, params)
+	buildIndexAPIResponse(c)
 }
 
 // serveDevfileIndexWithType returns the index file content with specific devfile type
 func serveDevfileIndexWithType(c *gin.Context) {
 
-	params := queryParams{
-		indexType:     c.Param("type"),
-		iconType:      c.Query("icon"),
-		architectures: c.QueryArray("architectures"),
-	}
-
 	// Serve the index with type
-	buildIndexAPIResponse(c, params)
+	buildIndexAPIResponse(c)
 }
 
 // serveHealthCheck serves endpoint `/health` for registry health check
@@ -170,14 +154,18 @@ func serveUI(c *gin.Context) {
 }
 
 // buildIndexAPIResponse builds the response of the REST API of getting the devfile index
-func buildIndexAPIResponse(c *gin.Context, params queryParams) {
+func buildIndexAPIResponse(c *gin.Context) {
+
+	indexType := c.Param("type")
+	iconType := c.Query("icon")
+	archs := c.QueryArray("arch")
 
 	var bytes []byte
 	var responseIndexPath, responseBase64IndexPath string
 	isFiltered := false
 
 	// Load the appropriate index file name based on the devfile type
-	switch params.indexType {
+	switch indexType {
 	case string(indexSchema.StackDevfileType):
 		responseIndexPath = stackIndexPath
 		responseBase64IndexPath = stackBase64IndexPath
@@ -189,19 +177,19 @@ func buildIndexAPIResponse(c *gin.Context, params queryParams) {
 		responseBase64IndexPath = base64IndexPath
 	default:
 		c.JSON(http.StatusNotFound, gin.H{
-			"status": fmt.Sprintf("the devfile with %s type doesn't exist", params.indexType),
+			"status": fmt.Sprintf("the devfile with %s type doesn't exist", indexType),
 		})
 		return
 	}
 
 	// cache index with the encoded icon if required and save the encoded index location
-	if params.iconType != "" {
-		if params.iconType == encodeFormat {
+	if iconType != "" {
+		if iconType == encodeFormat {
 			if _, err := os.Stat(responseBase64IndexPath); os.IsNotExist(err) {
 				_, err := util.EncodeIndexIconToBase64(responseIndexPath, responseBase64IndexPath)
 				if err != nil {
 					c.JSON(http.StatusInternalServerError, gin.H{
-						"status": fmt.Sprintf("failed to encode %s icons to base64 format: %v", params.indexType, err),
+						"status": fmt.Sprintf("failed to encode %s icons to base64 format: %v", indexType, err),
 					})
 					return
 				}
@@ -210,14 +198,14 @@ func buildIndexAPIResponse(c *gin.Context, params queryParams) {
 			responseIndexPath = responseBase64IndexPath
 		} else {
 			c.JSON(http.StatusBadRequest, gin.H{
-				"status": fmt.Sprintf("the icon type %s is not supported", params.iconType),
+				"status": fmt.Sprintf("the icon type %s is not supported", iconType),
 			})
 			return
 		}
 	}
 
-	// Filter the index if architectures has been requested
-	if len(params.architectures) > 0 {
+	// Filter the index if archs has been requested
+	if len(archs) > 0 {
 		isFiltered = true
 		index, err := util.ReadIndexPath(responseIndexPath)
 		if err != nil {
@@ -226,7 +214,7 @@ func buildIndexAPIResponse(c *gin.Context, params queryParams) {
 			})
 			return
 		}
-		index = util.FilterDevfileArchitectures(index, params.architectures)
+		index = util.FilterDevfileArchitectures(index, archs)
 
 		bytes, err = json.MarshalIndent(&index, "", "  ")
 		if err != nil {
@@ -252,7 +240,7 @@ func buildIndexAPIResponse(c *gin.Context, params queryParams) {
 			Event:  eventTrackMap["list"],
 			UserId: user,
 			Properties: analytics.NewProperties().
-				Set("type", params.indexType).
+				Set("type", indexType).
 				Set("registry", registry),
 		})
 		if err != nil {

@@ -4,8 +4,11 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
+	"os"
+	"strconv"
 	"strings"
 
 	indexLibrary "github.com/devfile/registry-support/index/generator/library"
@@ -112,4 +115,29 @@ func ReadIndexPath(indexPath string) ([]indexSchema.Schema, error) {
 	}
 
 	return index, nil
+}
+
+// GetOptionalEnv gets the optional environment variable
+func GetOptionalEnv(key string, defaultValue interface{}) interface{} {
+	if value, present := os.LookupEnv(key); present {
+		switch defaultValue.(type) {
+		case bool:
+			boolValue, err := strconv.ParseBool(value)
+			if err != nil {
+				log.Print(err)
+			}
+			return boolValue
+
+		case int:
+			intValue, err := strconv.Atoi(value)
+			if err != nil {
+				log.Print(err)
+			}
+			return intValue
+
+		default:
+			return value
+		}
+	}
+	return defaultValue
 }

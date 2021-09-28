@@ -7,8 +7,6 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
-	"os"
-	"strconv"
 	"strings"
 	"time"
 
@@ -23,29 +21,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"gopkg.in/segmentio/analytics-go.v3"
 	"k8s.io/apimachinery/pkg/util/wait"
-)
-
-const (
-	// Constants for resource names and media types
-	archiveMediaType       = "application/x-tar"
-	archiveName            = "archive.tar"
-	devfileName            = "devfile.yaml"
-	devfileNameHidden      = ".devfile.yaml"
-	devfileConfigMediaType = "application/vnd.devfileio.devfile.config.v2+json"
-	devfileMediaType       = "application/vnd.devfileio.devfile.layer.v1"
-	pngLogoMediaType       = "image/png"
-	pngLogoName            = "logo.png"
-	svgLogoMediaType       = "image/svg+xml"
-	svgLogoName            = "logo.svg"
-	vsxMediaType           = "application/vnd.devfileio.vsx.layer.v1.tar"
-	vsxName                = "vsx"
-
-	scheme          = "http"
-	registryService = "localhost:5000"
-	viewerService   = "localhost:3000"
-	encodeFormat    = "base64"
-	telemetryKey    = "6HBMiy5UxBtsbxXx7O4n0t0u4dt8IAR3"
-	defaultUser     = "anonymous"
 )
 
 var eventTrackMap = map[string]string{
@@ -63,25 +38,13 @@ var mediaTypeMapping = map[string]string{
 	archiveName:       archiveMediaType,
 }
 
-var (
-	stacksPath            = os.Getenv("DEVFILE_STACKS")
-	samplesPath           = os.Getenv("DEVFILE_SAMPLES")
-	indexPath             = os.Getenv("DEVFILE_INDEX")
-	base64IndexPath       = os.Getenv("DEVFILE_BASE64_INDEX")
-	sampleIndexPath       = os.Getenv("DEVFILE_SAMPLE_INDEX")
-	sampleBase64IndexPath = os.Getenv("DEVFILE_SAMPLE_BASE64_INDEX")
-	stackIndexPath        = os.Getenv("DEVFILE_STACK_INDEX")
-	stackBase64IndexPath  = os.Getenv("DEVFILE_STACK_BASE64_INDEX")
-	enableTelemetry       = getOptionalEnv("ENABLE_TELEMETRY", false).(bool)
-	registry              = getOptionalEnv("REGISTRY_NAME", "anonymous")
-	getIndexLatency       = prometheus.NewHistogramVec(
-		prometheus.HistogramOpts{
-			Name:    "index_http_request_duration_seconds",
-			Help:    "Latency of index request in seconds.",
-			Buckets: prometheus.LinearBuckets(0.5, 0.5, 10),
-		},
-		[]string{"status"},
-	)
+var getIndexLatency = prometheus.NewHistogramVec(
+	prometheus.HistogramOpts{
+		Name:    "index_http_request_duration_seconds",
+		Help:    "Latency of index request in seconds.",
+		Buckets: prometheus.LinearBuckets(0.5, 0.5, 10),
+	},
+	[]string{"status"},
 )
 
 func ServeRegistry() {
@@ -255,29 +218,4 @@ func getUser(c *gin.Context) string {
 		user = c.Request.Header["User"][0]
 	}
 	return user
-}
-
-// getOptionalEnv gets the optional environment variable
-func getOptionalEnv(key string, defaultValue interface{}) interface{} {
-	if value, present := os.LookupEnv(key); present {
-		switch defaultValue.(type) {
-		case bool:
-			boolValue, err := strconv.ParseBool(value)
-			if err != nil {
-				log.Print(err)
-			}
-			return boolValue
-
-		case int:
-			intValue, err := strconv.Atoi(value)
-			if err != nil {
-				log.Print(err)
-			}
-			return intValue
-
-		default:
-			return value
-		}
-	}
-	return defaultValue
 }

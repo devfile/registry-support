@@ -1,6 +1,8 @@
 package util
 
-import indexSchema "github.com/devfile/registry-support/index/generator/schema"
+import (
+	indexSchema "github.com/devfile/registry-support/index/generator/schema"
+)
 
 // FilterDevfileArchitectures filters devfiles based on architectures
 func FilterDevfileArchitectures(index []indexSchema.Schema, archs []string) []indexSchema.Schema {
@@ -21,9 +23,9 @@ func FilterDevfileArchitectures(index []indexSchema.Schema, archs []string) []in
 				}
 			}
 
-			filterIn = filterIn && isArchPresent
-			if !filterIn {
+			if !isArchPresent {
 				// if one of the arch requested is not present, no need to search for the others
+				filterIn = false
 				break
 			}
 		}
