@@ -205,7 +205,11 @@ func PullStackByMediaTypesFromRegistry(registry string, stack string, allowedMed
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: skipTLSVerify},
 		},
 	}
-	resolver := docker.NewResolver(docker.ResolverOptions{PlainHTTP: plainHTTP, Client: httpClient})
+	headers := make(http.Header)
+	if user != "" {
+		headers.Add("User", user)
+	}
+	resolver := docker.NewResolver(docker.ResolverOptions{Headers: headers, PlainHTTP: plainHTTP, Client: httpClient})
 	ref := path.Join(urlObj.Host, stackIndex.Links["self"])
 	fileStore := content.NewFileStore(destDir)
 	defer fileStore.Close()
