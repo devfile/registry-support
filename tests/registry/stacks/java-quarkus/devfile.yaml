@@ -8,6 +8,8 @@ metadata:
   tags: ["Java", "Quarkus"]
   projectType: "quarkus"
   language: "java"
+  architectures:
+    - "amd64"
 starterProjects:
   - name: community
     zip:

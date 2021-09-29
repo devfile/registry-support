@@ -83,7 +83,7 @@ func TestValidateIndexComponent(t *testing.T) {
 				Architectures: []string{
 					"amd64",
 				},
-				Provider: "Red Hat",
+				Provider:   "Red Hat",
 				SupportUrl: "http://testurl/support.md",
 			},
 			schema.StackDevfileType,
@@ -98,6 +98,8 @@ func TestValidateIndexComponent(t *testing.T) {
 						"origin": "https://github.com/redhat-developer/devfile-sample",
 					},
 				},
+				SupportUrl: "http://testurl/support.md",
+				Provider:   "Red Hat",
 				Architectures: []string{
 					"amd64",
 				},
@@ -128,6 +130,8 @@ func TestValidateIndexComponent(t *testing.T) {
 						"origin": "https://github.com/redhat-developer/devfile-sample",
 					},
 				},
+				SupportUrl: "http://testurl/support.md",
+				Provider:   "Red Hat",
 			},
 			schema.SampleDevfileType,
 			&noArchErr,

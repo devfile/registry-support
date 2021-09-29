@@ -103,6 +103,48 @@ var _ = ginkgo.Describe("[Verify index server is working properly]", func() {
 		gomega.Expect(hasStacks && hasSamples).To(gomega.BeTrue())
 	})
 
+	ginkgo.It("/index/all?icon=base64 endpoint should return stacks and samples with encoded icon", func() {
+		registryIndex := util.GetRegistryIndex(config.Registry + "/index/all?icon=base64")
+
+		hasStacks := false
+		hasSamples := false
+
+		for _, index := range registryIndex {
+			if index.Type == indexSchema.SampleDevfileType {
+				hasSamples = true
+			}
+			if index.Type == indexSchema.StackDevfileType {
+				hasStacks = true
+			}
+			if index.Icon != "" {
+				gomega.Expect(index.Icon).To(gomega.HavePrefix("data:image"))
+			}
+		}
+		gomega.Expect(hasStacks && hasSamples).To(gomega.BeTrue())
+	})
+
+	ginkgo.It("/index/all?arch=amd64&arch=arm64 endpoint should return stacks and samples for arch amd64 and arm64", func() {
+		registryIndex := util.GetRegistryIndex(config.Registry + "/index/all?arch=amd64&arch=arm64")
+
+		hasStacks := false
+		hasSamples := false
+		for _, index := range registryIndex {
+			if index.Type == indexSchema.SampleDevfileType {
+				hasSamples = true
+			}
+			if index.Type == indexSchema.StackDevfileType {
+				hasStacks = true
+			}
+			if len(index.Architectures) != 0 {
+				gomega.Expect(index.Architectures).Should(gomega.ContainElements("amd64", "arm64"))
+			}
+		}
+
+		if len(registryIndex) > 0 {
+			gomega.Expect(hasStacks && hasSamples).To(gomega.BeTrue())
+		}
+	})
+
 	ginkgo.It("/devfiles/<devfile> endpoint should return a devfile for stacks", func() {
 		parserArgs := parser.ParserArgs{
 			URL: config.Registry + "/devfiles/nodejs",

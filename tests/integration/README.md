@@ -14,7 +14,7 @@ To build the test binary locally, run: `./build.sh`
 
 The recommended way to run the tests is in a container, simply run the following after building the image in the previous step:
 ```
-$ docker run --env REGISTRY=$REGISTRY devfile-registry-integration
+docker run --env REGISTRY=$REGISTRY devfile-registry-integration
 ```
 
 Where `$REGISTRY` is the hostname of the devfile registry that you wish to test against (such as https://registry.devfile.io or http://devfile-registry-default.10.101.108.46.nip.io)
