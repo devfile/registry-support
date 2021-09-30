@@ -21,25 +21,25 @@ import (
 
     a. Get the index of devfile registry for various devfile types
     ```go
-    registryIndex, err := registryLibrary.GetRegistryIndex(registry, false, "", StackDevfileType, SampleDevfileType)
+    registryIndex, err := registryLibrary.GetRegistryIndex(registryURL, false, telemetryClient, StackDevfileType)
 	if err != nil {
 		return err
 	}
     ```
     b. Get the indices of multiple devfile registries for various devfile types
     ```go
-    registryList := GetMultipleRegistriesIndices(registryURLs, StackDevfileType)
+    registryList := GetMultipleRegistryIndices(registryURLs, skipTLSVerify, telemetryClient, StackDevfileType)
     ```
     c. Download the stack devfile from devfile registry
     ```go
-	err := registryLibrary.PullStackByMediaTypesFromRegistry(registry, stack, registryLibrary.DevfileMediaTypeList, destDir, false, "")
+	err := registryLibrary.PullStackByMediaTypesFromRegistry(registry, stack, registryLibrary.DevfileMediaTypeList, destDir, skipTLSVerify, telemetryClient)
 	if err != nil {
 		return err
 	}
     ```
     d. Download the whole stack from devfile registry
     ```go
-    err := registryLibrary.PullStackFromRegistry(registry, stack, destDir, false, "")
+    err := registryLibrary.PullStackFromRegistry(registry, stack, destDir, skipTLSVerify, telemetryClient)
     if err != nil {
 		return err
 	}
