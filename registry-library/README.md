@@ -21,7 +21,7 @@ import (
 
     a. Get the index of devfile registry for various devfile types
     ```go
-    registryIndex, err := registryLibrary.GetRegistryIndex(registryURL, false, telemetryClient, StackDevfileType)
+    registryIndex, err := registryLibrary.GetRegistryIndex(registryURL, skipTLSVerify, telemetryClient, StackDevfileType)
 	if err != nil {
 		return err
 	}
