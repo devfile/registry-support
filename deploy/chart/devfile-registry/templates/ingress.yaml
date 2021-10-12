@@ -7,7 +7,7 @@
 # SPDX-License-Identifier: EPL-2.0
 #
 {{- if not .Values.global.isOpenShift }}
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: {{ template "devfileregistry.fullname" . }}
@@ -24,9 +24,12 @@ spec:
     http:
       paths:
       - path: /
+        pathType: ImplementationSpecific
         backend:
-          serviceName: {{ template "devfileregistry.fullname" . }}
-          servicePort: 8080
+          service:
+            name: {{ template "devfileregistry.fullname" . }}
+            port: 
+              number: 8080
 {{- if and .Values.global.tlsEnabled .Values.global.ingress.secretName }}
   tls:
   - hosts:
