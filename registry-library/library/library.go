@@ -92,26 +92,35 @@ func GetRegistryIndex(registryURL string, options RegistryOptions, devfileTypes 
 			getSample = true
 		}
 	}
+
+	var endpoint string
 	if getStack && getSample {
-		urlObj.Path = path.Join(urlObj.Path, "index", "all")
+		endpoint = path.Join("index", "all")
 	} else if getStack && !getSample {
-		urlObj.Path = path.Join(urlObj.Path, "index")
+		endpoint = "index"
 	} else if getSample && !getStack {
-		urlObj.Path = path.Join(urlObj.Path, "index", "sample")
+		endpoint = path.Join("index", "sample")
 	} else {
 		return registryIndex, nil
 	}
 
 	if !reflect.DeepEqual(options.Filter, RegistryFilter{}) {
-		urlObj.Path = urlObj.Path + "?"
+		endpoint = endpoint + "?"
 	}
 
 	if len(options.Filter.Architectures) > 0 {
 		for _, arch := range options.Filter.Architectures {
-			urlObj.Path = urlObj.Path + "architectures=" + arch + "&"
+			endpoint = endpoint + "arch=" + arch + "&"
 		}
-		urlObj.Path = strings.TrimSuffix(urlObj.Path, "&")
+		endpoint = strings.TrimSuffix(endpoint, "&")
 	}
+
+	endpointURL, err := url.Parse(endpoint)
+	if err != nil {
+		return nil, err
+	}
+
+	urlObj = urlObj.ResolveReference(endpointURL)
 
 	url := urlObj.String()
 	req, err := http.NewRequest("GET", url, nil)
@@ -229,8 +238,8 @@ func PullStackByMediaTypesFromRegistry(registry string, stack string, allowedMed
 		},
 	}
 	headers := make(http.Header)
-	if user != "" {
-		headers.Add("User", user)
+	if options.User != "" {
+		headers.Add("User", options.User)
 	}
 	resolver := docker.NewResolver(docker.ResolverOptions{Headers: headers, PlainHTTP: plainHTTP, Client: httpClient})
 	ref := path.Join(urlObj.Host, stackIndex.Links["self"])
