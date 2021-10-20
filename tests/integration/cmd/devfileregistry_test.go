@@ -15,6 +15,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"testing"
 
 	"github.com/devfile/registry-support/tests/integration/pkg/config"
@@ -42,6 +43,8 @@ var _ = ginkgo.SynchronizedBeforeSuite(func() []byte {
 	config.Registry = registry
 	config.RegistryList = registry + "," + "https://registry.devfile.io"
 	os.Setenv("REGISTRY_LIST", config.RegistryList)
+
+	config.IsTestRegistry, _ = strconv.ParseBool(os.Getenv("IS_TEST_REGISTRY"))
 
 	return nil
 }, func(data []byte) {})

@@ -14,3 +14,4 @@ package config
 
 var RegistryList string
 var Registry string
+var IsTestRegistry bool

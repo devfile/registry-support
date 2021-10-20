@@ -27,9 +27,12 @@ import (
 )
 
 const (
-	nodejsStack  = "nodejs"
-	quarkusStack = "java-quarkus"
-	nodejsSample = "nodejs-basic"
+	nodejsStack    = "nodejs"
+	javaMavenStack = "java-maven"
+	quarkusStack   = "java-quarkus"
+	nodejsSample   = "nodejs-basic"
+	quarkusSample  = "code-with-quarkus"
+	pythonSample   = "python-basic"
 )
 
 var (
@@ -66,6 +69,41 @@ var _ = ginkgo.Describe("[Verify registry library works with registry]", func() 
 		gomega.Expect(output).To(gomega.ContainSubstring(quarkusStack))
 		gomega.Expect(output).To(gomega.ContainSubstring(userDevfileRegistry))
 		gomega.Expect(output).To(gomega.ContainSubstring(publicDevfileRegistry))
+	})
+
+	ginkgo.It("should properly list devfile stacks for the given arch", func() {
+		if config.IsTestRegistry {
+			output := util.CmdShouldPass("registry-library", "list", "--type", "stack", "--arch", "amd64", "--arch", "arm64")
+			gomega.Expect(output).To(gomega.ContainSubstring(nodejsStack))
+			gomega.Expect(output).To(gomega.ContainSubstring(javaMavenStack))
+			gomega.Expect(output).To(gomega.ContainSubstring(userDevfileRegistry))
+		} else {
+			ginkgo.Skip("cannot guarantee test outside of test registry, skipping test")
+		}
+	})
+
+	ginkgo.It("should properly list devfile samples for the given arch", func() {
+		if config.IsTestRegistry {
+			output := util.CmdShouldPass("registry-library", "list", "--type", "sample", "--arch", "amd64", "--arch", "arm64")
+			gomega.Expect(output).To(gomega.ContainSubstring(nodejsSample))
+			gomega.Expect(output).To(gomega.ContainSubstring(quarkusSample))
+			gomega.Expect(output).To(gomega.ContainSubstring(pythonSample))
+			gomega.Expect(output).To(gomega.ContainSubstring(userDevfileRegistry))
+		} else {
+			ginkgo.Skip("cannot guarantee test outside of test registry, skipping test")
+		}
+	})
+
+	ginkgo.It("should properly list all devfiles for the given arch", func() {
+		if config.IsTestRegistry {
+			output := util.CmdShouldPass("registry-library", "list", "--type", "all", "--arch", "amd64", "--arch", "arm64", "--arch", "s390x")
+			gomega.Expect(output).To(gomega.ContainSubstring(javaMavenStack))
+			gomega.Expect(output).To(gomega.ContainSubstring(quarkusSample))
+			gomega.Expect(output).To(gomega.ContainSubstring(nodejsSample))
+			gomega.Expect(output).To(gomega.ContainSubstring(userDevfileRegistry))
+		} else {
+			ginkgo.Skip("cannot guarantee test outside of test registry, skipping test")
+		}
 	})
 
 	ginkgo.It("should properly retrieve devfile stacks", func() {

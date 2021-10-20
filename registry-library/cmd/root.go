@@ -37,6 +37,7 @@ var (
 	devfileType   string
 	skipTLSVerify bool
 	user          string
+	architectures []string
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -86,6 +87,10 @@ func init() {
 				SkipTLSVerify: skipTLSVerify,
 			}
 
+			if len(architectures) > 0 {
+				options.Filter.Architectures = architectures
+			}
+
 			if allResources {
 				err = library.PullStackFromRegistry(registry, stack, destDir, options)
 			} else {
@@ -97,6 +102,7 @@ func init() {
 		},
 	}
 	pullCmd.Flags().BoolVarP(&allResources, "all", "a", false, "pull all resources of the given stack")
+	pullCmd.Flags().StringArrayVar(&architectures, "arch", []string{}, "architecture filter; example: --arch amd64 --arch arm64")
 	pullCmd.Flags().StringVar(&destDir, "context", ".", "destination directory that stores stack resources")
 	pullCmd.Flags().BoolVar(&skipTLSVerify, "skip-tls-verify", false, "skip TLS verification")
 	pullCmd.Flags().StringVar(&user, "user", "", "consumer name")
@@ -115,6 +121,10 @@ func init() {
 				SkipTLSVerify: skipTLSVerify,
 			}
 
+			if len(architectures) > 0 {
+				options.Filter.Architectures = architectures
+			}
+
 			err := library.PrintRegistry(registryList, devfileType, options)
 			if err != nil {
 				fmt.Printf("Failed to list stacks of registry %s: %v\n", registryList, err)
@@ -122,6 +132,7 @@ func init() {
 		},
 	}
 	listCmd.Flags().StringVar(&devfileType, "type", "", "specify devfile type")
+	listCmd.Flags().StringArrayVar(&architectures, "arch", []string{}, "architecture filter; example: --arch amd64 --arch arm64")
 	listCmd.Flags().BoolVar(&skipTLSVerify, "skip-tls-verify", false, "skip TLS verification")
 	listCmd.Flags().StringVar(&user, "user", "", "consumer name")
 
