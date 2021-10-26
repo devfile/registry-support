@@ -45,7 +45,7 @@ github.com/deislabs/oras/pkg/artifact
 github.com/deislabs/oras/pkg/content
 github.com/deislabs/oras/pkg/context
 github.com/deislabs/oras/pkg/oras
-# github.com/devfile/registry-support/index/generator v0.0.0-20210916150157-08b31e03fdf0
+# github.com/devfile/registry-support/index/generator v0.0.0-20211012185733-0a73f866043f
 ## explicit
 github.com/devfile/registry-support/index/generator/schema
 # github.com/fsnotify/fsnotify v1.4.9

@@ -41,4 +41,4 @@ export REGISTRY=http://$(kubectl get ingress devfile-registry -o jsonpath="{.spe
 # Run the integration tests
 cd tests/integration
 ./docker-build.sh
-docker run --env REGISTRY=$REGISTRY devfile-registry-integration
+docker run --env REGISTRY=$REGISTRY --env IS_TEST_REGISTRY=true devfile-registry-integration
