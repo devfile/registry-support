@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"github.com/devfile/registry-support/index/server/pkg/util"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -107,7 +108,7 @@ func ServeRegistry() {
 	if err != nil {
 		log.Fatalf("failed to generate %s: %v", sampleIndexPath, err)
 	}
-	indexLibrary.CreateIndexFile(stackIndex, stackIndexPath)
+	err = indexLibrary.CreateIndexFile(stackIndex, stackIndexPath)
 	if err != nil {
 		log.Fatalf("failed to generate %s: %v", stackIndexPath, err)
 	}
@@ -172,11 +173,12 @@ func ociServerProxy(c *gin.Context) {
 			}
 
 			if resource == "blobs" {
-				user := getUser(c)
+				user := util.GetUser(c)
 
-				err := trackEvent(analytics.Track{
-					Event:  eventTrackMap["download"],
-					UserId: user,
+				err := util.TrackEvent(analytics.Track{
+					Event:   eventTrackMap["download"],
+					UserId:  user,
+					Context: util.SetContext(c),
 					Properties: analytics.NewProperties().
 						Set("name", name).
 						Set("registry", registry),
@@ -196,26 +198,4 @@ func ociServerProxy(c *gin.Context) {
 	}
 
 	proxy.ServeHTTP(c.Writer, c.Request)
-}
-
-// trackEvent tracks event for telemetry
-func trackEvent(event analytics.Message) error {
-	// Initialize client for telemetry
-	client := analytics.New(telemetryKey)
-	defer client.Close()
-
-	err := client.Enqueue(event)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-// getUser gets the user
-func getUser(c *gin.Context) string {
-	user := defaultUser
-	if len(c.Request.Header["User"]) != 0 {
-		user = c.Request.Header["User"][0]
-	}
-	return user
 }
