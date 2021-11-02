@@ -151,6 +151,10 @@ github.com/hashicorp/go-multierror
 github.com/imdario/mergo
 # github.com/json-iterator/go v1.1.11
 github.com/json-iterator/go
+# github.com/kylelemons/godebug v0.0.0-20170820004349-d65d576e9348
+## explicit
+github.com/kylelemons/godebug/diff
+github.com/kylelemons/godebug/pretty
 # github.com/leodido/go-urn v1.2.0
 github.com/leodido/go-urn
 # github.com/mattn/go-colorable v0.1.2
@@ -238,6 +242,11 @@ golang.org/x/sys/windows
 # golang.org/x/term v0.0.0-20210220032956-6a3ed077a48d
 golang.org/x/term
 # golang.org/x/text v0.3.6
+## explicit
+golang.org/x/text/internal/language
+golang.org/x/text/internal/language/compact
+golang.org/x/text/internal/tag
+golang.org/x/text/language
 golang.org/x/text/secure/bidirule
 golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
