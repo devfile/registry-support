@@ -25,8 +25,6 @@ const (
 	registryService = "localhost:5000"
 	viewerService   = "localhost:3000"
 	encodeFormat    = "base64"
-	telemetryKey    = "6HBMiy5UxBtsbxXx7O4n0t0u4dt8IAR3"
-	defaultUser     = "anonymous"
 )
 
 var (
