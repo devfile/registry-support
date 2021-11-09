@@ -259,14 +259,9 @@ func parseExtraDevfileEntries(registryDirPath string, force bool) ([]schema.Sche
 					}
 
 					// Validate the sample devfile
-					devfileObj, err := devfileParser.ParseAndValidate(devfilePath)
+					_, err = devfileParser.ParseAndValidate(devfilePath)
 					if err != nil {
 						return nil, fmt.Errorf("%s sample devfile is not valid: %v", devfileEntry.Name, err)
-					}
-
-					metadataErrors := checkForRequiredMetadata(devfileObj)
-					if metadataErrors != nil {
-						return nil, fmt.Errorf("%s sample devfile is not valid: %v", devfileEntry.Name, metadataErrors)
 					}
 				}
 

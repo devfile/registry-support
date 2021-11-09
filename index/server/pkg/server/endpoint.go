@@ -108,11 +108,12 @@ func serveDevfile(c *gin.Context) {
 
 			// Track event for telemetry
 			if enableTelemetry {
-				user := getUser(c)
+				user := util.GetUser(c)
 
-				err := trackEvent(analytics.Track{
-					Event:  eventTrackMap["view"],
-					UserId: user,
+				err := util.TrackEvent(analytics.Track{
+					Event:   eventTrackMap["view"],
+					UserId:  user,
+					Context: util.SetContext(c),
 					Properties: analytics.NewProperties().
 						Set("name", name).
 						Set("type", string(devfileIndex.Type)).
@@ -234,11 +235,12 @@ func buildIndexAPIResponse(c *gin.Context) {
 
 	// Track event for telemetry
 	if enableTelemetry {
-		user := getUser(c)
+		user := util.GetUser(c)
 
-		err := trackEvent(analytics.Track{
-			Event:  eventTrackMap["list"],
-			UserId: user,
+		err := util.TrackEvent(analytics.Track{
+			Event:   eventTrackMap["list"],
+			UserId:  user,
+			Context: util.SetContext(c),
 			Properties: analytics.NewProperties().
 				Set("type", indexType).
 				Set("registry", registry),
