@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 
 	devfileParser "github.com/devfile/library/pkg/devfile"
+	"github.com/devfile/library/pkg/devfile/parser"
 	"github.com/devfile/registry-support/index/generator/schema"
 	"gopkg.in/yaml.v2"
 )
@@ -148,9 +149,14 @@ func parseDevfileRegistry(registryDirPath string, force bool) ([]schema.Schema, 
 
 		if !force {
 			// Devfile validation
-			_, err := devfileParser.ParseAndValidate(devfilePath)
+			devfileObj, err := devfileParser.ParseAndValidate(devfilePath)
 			if err != nil {
 				return nil, fmt.Errorf("%s devfile is not valid: %v", devfileDir.Name(), err)
+			}
+
+			metadataErrors := checkForRequiredMetadata(devfileObj)
+			if metadataErrors != nil {
+				return nil, fmt.Errorf("%s devfile is not valid: %v", devfileDir.Name(), metadataErrors)
 			}
 		}
 
@@ -277,4 +283,25 @@ func parseExtraDevfileEntries(registryDirPath string, force bool) ([]schema.Sche
 	}
 
 	return index, nil
+}
+
+// checkForRequiredMetadata validates that a given devfile has the necessary metadata fields
+func checkForRequiredMetadata(devfileObj parser.DevfileObj) []error {
+	devfileMetadata := devfileObj.Data.GetMetadata()
+	var metadataErrors []error
+
+	if devfileMetadata.Name == "" {
+		metadataErrors = append(metadataErrors, fmt.Errorf("metadata.name is not set"))
+	}
+	if devfileMetadata.DisplayName == "" {
+		metadataErrors = append(metadataErrors, fmt.Errorf("metadata.displayName is not set"))
+	}
+	if devfileMetadata.Language == "" {
+		metadataErrors = append(metadataErrors, fmt.Errorf("metadata.language is not set"))
+	}
+	if devfileMetadata.ProjectType == "" {
+		metadataErrors = append(metadataErrors, fmt.Errorf("metadata.projectType is not set"))
+	}
+
+	return metadataErrors
 }

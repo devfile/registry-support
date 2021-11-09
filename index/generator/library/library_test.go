@@ -2,10 +2,15 @@ package library
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"reflect"
 	"testing"
 
+	"github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2"
+	devfilepkg "github.com/devfile/api/v2/pkg/devfile"
+	"github.com/devfile/library/pkg/devfile/parser"
+	v2 "github.com/devfile/library/pkg/devfile/parser/data/v2"
 	"github.com/devfile/registry-support/index/generator/schema"
 	"github.com/stretchr/testify/assert"
 )
@@ -256,4 +261,89 @@ func TestGenerateIndexStruct(t *testing.T) {
 			t.Errorf("Want index %v, got index %v", wantIndex, gotIndex)
 		}
 	})
+}
+
+func TestCheckForRequiredMetadata(t *testing.T) {
+	noNameError := fmt.Errorf("metadata.name is not set")
+	noDisplayNameError := fmt.Errorf("metadata.displayName is not set")
+	noLanguageError := fmt.Errorf("metadata.language is not set")
+	noProjectTypeError := fmt.Errorf("metadata.projectType is not set")
+
+	tests := []struct {
+		name       string
+		devfileObj parser.DevfileObj
+		wantErr    []error
+	}{
+		{
+			name: "No missing metadata",
+			devfileObj: parser.DevfileObj{
+				Data: &v2.DevfileV2{
+					Devfile: v1alpha2.Devfile{
+						DevfileHeader: devfilepkg.DevfileHeader{
+							Metadata: devfilepkg.DevfileMetadata{
+								Name:        "java-maven",
+								DisplayName: "Java Maven Stack",
+								Language:    "Java",
+								ProjectType: "Maven",
+							},
+						},
+					},
+				},
+			},
+			wantErr: nil,
+		},
+		{
+			name: "Simple devfile, missing name",
+			devfileObj: parser.DevfileObj{
+				Data: &v2.DevfileV2{
+					Devfile: v1alpha2.Devfile{
+						DevfileHeader: devfilepkg.DevfileHeader{
+							Metadata: devfilepkg.DevfileMetadata{
+								DisplayName: "Java Maven Stack",
+								Language:    "Java",
+								ProjectType: "Maven",
+							},
+						},
+					},
+				},
+			},
+			wantErr: []error{noNameError},
+		},
+		{
+			name: "Simple devfile, missing language and project",
+			devfileObj: parser.DevfileObj{
+				Data: &v2.DevfileV2{
+					Devfile: v1alpha2.Devfile{
+						DevfileHeader: devfilepkg.DevfileHeader{
+							Metadata: devfilepkg.DevfileMetadata{
+								Name:        "java-maven",
+								DisplayName: "Java Maven Stack",
+							},
+						},
+					},
+				},
+			},
+			wantErr: []error{noLanguageError, noProjectTypeError},
+		},
+		{
+			name: "Devfile, no metadata set",
+			devfileObj: parser.DevfileObj{
+				Data: &v2.DevfileV2{
+					Devfile: v1alpha2.Devfile{
+						DevfileHeader: devfilepkg.DevfileHeader{
+							Metadata: devfilepkg.DevfileMetadata{},
+						},
+					},
+				},
+			},
+			wantErr: []error{noNameError, noDisplayNameError, noLanguageError, noProjectTypeError},
+		},
+	}
+
+	for _, tt := range tests {
+		metadataValidateErr := checkForRequiredMetadata(tt.devfileObj)
+		if !reflect.DeepEqual(tt.wantErr, metadataValidateErr) {
+			t.Errorf("TestCheckForRequiredMetadata Error: Want %v, got %v", tt.wantErr, metadataValidateErr)
+		}
+	}
 }

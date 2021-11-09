@@ -1,9 +1,14 @@
-schemaVersion: 2.2.0
+schemaVersion: 2.0.0
 metadata:
   name: nodejs
-  version: 1.0.0
+  version: 1.0.1
+  displayName: Node.js Runtime
+  description: Stack with Node.js 14
+  tags: ["NodeJS", "Express", "ubi8"]
+  projectType: "nodejs"
+  language: "nodejs"
   attributes:
-    alpha.build-context: src
+    alpha.build-context: .
     alpha.build-dockerfile: Dockerfile
 components:
   - name: buildguidance
@@ -17,7 +22,7 @@ components:
           targetPort: 3001
   - name: runtime
     container:
-      image: registry.access.redhat.com/ubi8/nodejs-12:1-45
+      image: registry.access.redhat.com/ubi8/nodejs-14:latest
       memoryLimit: 1024Mi
       mountSources: true
       sourceMapping: /project
@@ -29,7 +34,7 @@ commands:
     exec:
       component: runtime
       commandLine: npm install
-      workingDir: /project/src
+      workingDir: /project
       group:
         kind: build
         isDefault: true
@@ -37,7 +42,7 @@ commands:
     exec:
       component: runtime
       commandLine: npm start
-      workingDir: /project/src
+      workingDir: /project
       group:
         kind: run
         isDefault: true
@@ -45,7 +50,7 @@ commands:
     exec:
       component: runtime
       commandLine: npm run debug
-      workingDir: /project/src
+      workingDir: /project
       group:
         kind: debug
         isDefault: true
@@ -53,7 +58,7 @@ commands:
     exec:
       component: runtime
       commandLine: npm test
-      workingDir: /project/src
+      workingDir: /project
       group:
         kind: test
         isDefault: true
