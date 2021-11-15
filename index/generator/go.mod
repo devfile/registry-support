@@ -3,7 +3,8 @@ module github.com/devfile/registry-support/index/generator
 go 1.14
 
 require (
-	github.com/devfile/library v1.1.1-0.20210910214722-7c5ff63711ec
+	github.com/devfile/api/v2 v2.0.0-20211021164004-dabee4e633ed
+	github.com/devfile/library v1.2.1-0.20211104222135-49d635cb492f // indirect
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/spf13/cobra v1.1.1
 	github.com/spf13/viper v1.7.1
