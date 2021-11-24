@@ -10,6 +10,7 @@ import (
 	"testing"
 )
 
+//TestGetUser also tests GetClient indirectly
 func TestGetUser(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -35,6 +36,17 @@ func TestGetUser(t *testing.T) {
 				},
 			},
 			want: defaultUser,
+		},
+		{
+			name: "User header is unset, client is set",
+			context: &gin.Context{
+				Request: &http.Request{
+					Header: http.Header{
+						"Client": {"testclient"},
+					},
+				},
+			},
+			want: "testclient",
 		},
 		{
 			name: "Multiple users set",
@@ -155,6 +167,55 @@ func TestSetContext(t *testing.T) {
 			want: &analytics.Context{
 				Location: analytics.LocationInfo{
 					Country: "",
+				},
+				IP: net.IPv4(0, 0, 0, 0),
+			},
+		},
+		{
+			name: "Accept-Language is unset, valid locale is set",
+			context: &gin.Context{
+				Request: &http.Request{
+					Header: http.Header{
+						"Locale": {"de_DE"},
+					},
+				},
+			},
+			want: &analytics.Context{
+				Location: analytics.LocationInfo{
+					Country: "DE",
+				},
+				IP: net.IPv4(0, 0, 0, 0),
+			},
+		},
+		{
+			name: "Accept-Language is unset, invalid locale is set",
+			context: &gin.Context{
+				Request: &http.Request{
+					Header: http.Header{
+						"Locale": {"invalid"},
+					},
+				},
+			},
+			want: &analytics.Context{
+				Location: analytics.LocationInfo{
+					Country: "",
+				},
+				IP: net.IPv4(0, 0, 0, 0),
+			},
+		},
+		{
+			name: "Accept-Language and Locale are set",
+			context: &gin.Context{
+				Request: &http.Request{
+					Header: http.Header{
+						"Accept-Language": {"en_FR"},
+						"Locale":          {"de_DE"},
+					},
+				},
+			},
+			want: &analytics.Context{
+				Location: analytics.LocationInfo{
+					Country: "FR",
 				},
 				IP: net.IPv4(0, 0, 0, 0),
 			},

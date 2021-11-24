@@ -109,6 +109,7 @@ func serveDevfile(c *gin.Context) {
 			// Track event for telemetry
 			if enableTelemetry {
 				user := util.GetUser(c)
+				client := util.GetClient(c)
 
 				err := util.TrackEvent(analytics.Track{
 					Event:   eventTrackMap["view"],
@@ -117,7 +118,8 @@ func serveDevfile(c *gin.Context) {
 					Properties: analytics.NewProperties().
 						Set("name", name).
 						Set("type", string(devfileIndex.Type)).
-						Set("registry", registry),
+						Set("registry", registry).
+						Set("client", client),
 				})
 				if err != nil {
 					log.Println(err)
@@ -236,14 +238,15 @@ func buildIndexAPIResponse(c *gin.Context) {
 	// Track event for telemetry
 	if enableTelemetry {
 		user := util.GetUser(c)
-
+		client := util.GetClient(c)
 		err := util.TrackEvent(analytics.Track{
 			Event:   eventTrackMap["list"],
 			UserId:  user,
 			Context: util.SetContext(c),
 			Properties: analytics.NewProperties().
 				Set("type", indexType).
-				Set("registry", registry),
+				Set("registry", registry).
+				Set("client", client),
 		})
 		if err != nil {
 			log.Println(err)
