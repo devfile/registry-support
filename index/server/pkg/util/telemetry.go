@@ -9,8 +9,7 @@ import (
 )
 
 const (
-	//telemetryKey = "6HBMiy5UxBtsbxXx7O4n0t0u4dt8IAR3"
-	telemetryKey = "dbDFeUPm6eGFRwerWGAL0NAw5heZpL1N"
+	telemetryKey = "6HBMiy5UxBtsbxXx7O4n0t0u4dt8IAR3"
 	defaultUser  = "devfile-registry"
 )
 
