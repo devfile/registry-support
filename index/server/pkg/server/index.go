@@ -174,6 +174,7 @@ func ociServerProxy(c *gin.Context) {
 
 			if resource == "blobs" {
 				user := util.GetUser(c)
+				client := util.GetClient(c)
 
 				err := util.TrackEvent(analytics.Track{
 					Event:   eventTrackMap["download"],
@@ -181,7 +182,8 @@ func ociServerProxy(c *gin.Context) {
 					Context: util.SetContext(c),
 					Properties: analytics.NewProperties().
 						Set("name", name).
-						Set("registry", registry),
+						Set("registry", registry).
+						Set("client", client),
 				})
 				if err != nil {
 					log.Println(err.Error())

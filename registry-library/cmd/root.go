@@ -83,7 +83,9 @@ func init() {
 			var err error
 
 			options := library.RegistryOptions{
-				User:          user,
+				Telemetry: library.TelemetryData{
+					User: "user",
+				},
 				SkipTLSVerify: skipTLSVerify,
 			}
 
@@ -117,7 +119,9 @@ func init() {
 			}
 
 			options := library.RegistryOptions{
-				User:          user,
+				Telemetry: library.TelemetryData{
+					User: "user",
+				},
 				SkipTLSVerify: skipTLSVerify,
 			}
 
