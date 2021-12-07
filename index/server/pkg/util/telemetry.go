@@ -11,6 +11,7 @@ import (
 const (
 	telemetryKey = "6HBMiy5UxBtsbxXx7O4n0t0u4dt8IAR3"
 	defaultUser  = "devfile-registry"
+	viewerId     = "registry-viewer"
 )
 
 //TrackEvent tracks event for telemetry
@@ -92,4 +93,14 @@ func getRegion(c *gin.Context) string {
 		return defaultRegion
 	}
 
+}
+
+//IsRegistryViewerEvent determines if the event is coming from the registry viewer client
+func IsRegistryViewerEvent(c *gin.Context) bool {
+	client := GetClient(c)
+	if client == viewerId {
+		return true
+	}
+
+	return false
 }

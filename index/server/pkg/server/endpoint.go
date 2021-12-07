@@ -106,8 +106,9 @@ func serveDevfile(c *gin.Context) {
 				return
 			}
 
-			// Track event for telemetry
-			if enableTelemetry {
+			// Track event for telemetry.  Ignore events from the registry-viewer since those are tracked on the client side
+			if enableTelemetry && !util.IsRegistryViewerEvent(c) {
+
 				user := util.GetUser(c)
 				client := util.GetClient(c)
 
@@ -235,8 +236,8 @@ func buildIndexAPIResponse(c *gin.Context) {
 		c.File(responseIndexPath)
 	}
 
-	// Track event for telemetry
-	if enableTelemetry {
+	// Track event for telemetry.  Ignore events from the registry-viewer since those are tracked on the client side
+	if enableTelemetry && !util.IsRegistryViewerEvent(c) {
 		user := util.GetUser(c)
 		client := util.GetClient(c)
 		err := util.TrackEvent(analytics.Track{
