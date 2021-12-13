@@ -30,12 +30,12 @@ import (
 	"text/tabwriter"
 	"time"
 
-	orasctx "github.com/deislabs/oras/pkg/context"
+	orasctx "oras.land/oras-go/pkg/context"
 
 	"github.com/containerd/containerd/remotes/docker"
-	"github.com/deislabs/oras/pkg/content"
-	"github.com/deislabs/oras/pkg/oras"
 	indexSchema "github.com/devfile/registry-support/index/generator/schema"
+	"oras.land/oras-go/pkg/content"
+	"oras.land/oras-go/pkg/oras"
 )
 
 const (
@@ -252,11 +252,12 @@ func PullStackByMediaTypesFromRegistry(registry string, stack string, allowedMed
 
 	resolver := docker.NewResolver(docker.ResolverOptions{Headers: headers, PlainHTTP: plainHTTP, Client: httpClient})
 	ref := path.Join(urlObj.Host, stackIndex.Links["self"])
-	fileStore := content.NewFileStore(destDir)
+	fileStore := content.NewFile(destDir)
 	defer fileStore.Close()
 
 	// Pull stack from registry and save it to disk
-	_, _, err = oras.Pull(ctx, resolver, ref, fileStore, oras.WithAllowedMediaTypes(allowedMediaTypes))
+	registryStore := content.Registry{Resolver: resolver}
+	_, err = oras.Copy(ctx, registryStore, ref, fileStore, "", oras.WithAllowedMediaTypes(allowedMediaTypes))
 	if err != nil {
 		return fmt.Errorf("failed to pull stack %s from %s with allowed media types %v: %v", stack, ref, allowedMediaTypes, err)
 	}
