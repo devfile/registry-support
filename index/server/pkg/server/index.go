@@ -172,7 +172,8 @@ func ociServerProxy(c *gin.Context) {
 				resource = parts[3]
 			}
 
-			if resource == "blobs" {
+			//Ignore events from the registry-viewer since those are tracked on the client side
+			if resource == "blobs" && !util.IsRegistryViewerEvent(c) {
 				user := util.GetUser(c)
 				client := util.GetClient(c)
 

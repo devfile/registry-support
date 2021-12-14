@@ -231,3 +231,65 @@ func TestSetContext(t *testing.T) {
 		})
 	}
 }
+
+func TestIsRegistryViewerEvent(t *testing.T) {
+	tests := []struct {
+		name    string
+		context *gin.Context
+		want    bool
+	}{
+		{
+			name: "Test registry-viewer event",
+			context: &gin.Context{
+				Request: &http.Request{
+					Header: http.Header{
+						"Client": {"registry-viewer"},
+					},
+				},
+			},
+			want: true,
+		},
+		{
+			name: "Test non registry-viewer event",
+			context: &gin.Context{
+				Request: &http.Request{
+					Header: http.Header{
+						"Client": {"odo"},
+					},
+				},
+			},
+			want: false,
+		},
+		{
+			name: "Test unset client header",
+			context: &gin.Context{
+				Request: &http.Request{
+					Header: http.Header{
+						"User": {"registry-viewer"},
+					},
+				},
+			},
+			want: false,
+		},
+		{
+			name: "Test case-sensitivity",
+			context: &gin.Context{
+				Request: &http.Request{
+					Header: http.Header{
+						"Client": {"REGISTRY-viewer"},
+					},
+				},
+			},
+			want: false,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got := IsRegistryViewerEvent(test.context)
+			if got != test.want {
+				t.Errorf("Got: %v, Expected: %v", got, test.want)
+			}
+		})
+	}
+}
