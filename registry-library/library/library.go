@@ -30,12 +30,12 @@ import (
 	"text/tabwriter"
 	"time"
 
-	orasctx "github.com/deislabs/oras/pkg/context"
+	orasctx "oras.land/oras-go/pkg/context"
 
 	"github.com/containerd/containerd/remotes/docker"
-	"github.com/deislabs/oras/pkg/content"
-	"github.com/deislabs/oras/pkg/oras"
 	indexSchema "github.com/devfile/registry-support/index/generator/schema"
+	"oras.land/oras-go/pkg/content"
+	"oras.land/oras-go/pkg/oras"
 )
 
 const (
