@@ -50,6 +50,8 @@ func serveDevfileIndex(c *gin.Context) {
 
 // serveDevfileIndexWithType returns the index file content with specific devfile type
 func serveDevfileIndexWithType(c *gin.Context) {
+	// Set headers
+	c.Header("Access-Control-Allow-Origin", "*")
 
 	// Serve the index with type
 	buildIndexAPIResponse(c)
