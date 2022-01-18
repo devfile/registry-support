@@ -50,8 +50,6 @@ func serveDevfileIndex(c *gin.Context) {
 
 // serveDevfileIndexWithType returns the index file content with specific devfile type
 func serveDevfileIndexWithType(c *gin.Context) {
-	// Set headers
-	c.Header("Access-Control-Allow-Origin", "*")
 
 	// Serve the index with type
 	buildIndexAPIResponse(c)
@@ -169,6 +167,9 @@ func buildIndexAPIResponse(c *gin.Context) {
 	var bytes []byte
 	var responseIndexPath, responseBase64IndexPath string
 	isFiltered := false
+
+	// Sets Access-Control-Allow-Origin response header to allow cross origin requests
+	c.Header("Access-Control-Allow-Origin", "*")
 
 	// Load the appropriate index file name based on the devfile type
 	switch indexType {
