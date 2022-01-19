@@ -243,7 +243,18 @@ func TestIsRegistryViewerEvent(t *testing.T) {
 			context: &gin.Context{
 				Request: &http.Request{
 					Header: http.Header{
-						"Client": {"registry-viewer"},
+						"Client": {viewerId},
+					},
+				},
+			},
+			want: true,
+		},
+		{
+			name: "Test openshift-console event",
+			context: &gin.Context{
+				Request: &http.Request{
+					Header: http.Header{
+						"Client": {consoleId},
 					},
 				},
 			},
@@ -265,7 +276,7 @@ func TestIsRegistryViewerEvent(t *testing.T) {
 			context: &gin.Context{
 				Request: &http.Request{
 					Header: http.Header{
-						"User": {"registry-viewer"},
+						"User": {viewerId},
 					},
 				},
 			},
@@ -286,7 +297,7 @@ func TestIsRegistryViewerEvent(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			got := IsRegistryViewerEvent(test.context)
+			got := IsWebClient(test.context)
 			if got != test.want {
 				t.Errorf("Got: %v, Expected: %v", got, test.want)
 			}
