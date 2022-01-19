@@ -168,6 +168,9 @@ func buildIndexAPIResponse(c *gin.Context) {
 	var responseIndexPath, responseBase64IndexPath string
 	isFiltered := false
 
+	// Sets Access-Control-Allow-Origin response header to allow cross origin requests
+	c.Header("Access-Control-Allow-Origin", "*")
+
 	// Load the appropriate index file name based on the devfile type
 	switch indexType {
 	case string(indexSchema.StackDevfileType):
