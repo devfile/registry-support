@@ -12,6 +12,7 @@ const (
 	telemetryKey = "6HBMiy5UxBtsbxXx7O4n0t0u4dt8IAR3"
 	defaultUser  = "devfile-registry"
 	viewerId     = "registry-viewer"
+	consoleId    = "openshift-console"
 )
 
 //TrackEvent tracks event for telemetry
@@ -95,10 +96,10 @@ func getRegion(c *gin.Context) string {
 
 }
 
-//IsRegistryViewerEvent determines if the event is coming from the registry viewer client
-func IsRegistryViewerEvent(c *gin.Context) bool {
+//IsWebClient determines if the event is coming from the registry viewer or DevConsole client.
+func IsWebClient(c *gin.Context) bool {
 	client := GetClient(c)
-	if client == viewerId {
+	if client == viewerId || client == consoleId {
 		return true
 	}
 
