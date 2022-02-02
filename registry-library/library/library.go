@@ -39,8 +39,7 @@ import (
 )
 
 const (
-	// Devfile media types
-	DevfileConfigMediaType  = "application/vnd.devfileio.devfile.config.v2+json"
+	// Supported Devfile media types
 	DevfileMediaType        = "application/vnd.devfileio.devfile.layer.v1"
 	DevfileVSXMediaType     = "application/vnd.devfileio.vsx.layer.v1.tar"
 	DevfileSVGLogoMediaType = "image/svg+xml"
@@ -63,28 +62,33 @@ type Registry struct {
 }
 
 //TelemetryData structure to pass in client telemetry information
+// The User and Locale fields should be passed in by clients if telemetry opt-in is enabled
+// the generic Client name will be passed in regardless of opt-in/out choice.  The value
+// will be assigned to the UserId field for opt-outs
 type TelemetryData struct {
-	// The User and Locale fields will be passed in by the clients if telemetry opt-in is enabled
-	User   string
+	// User is a generated UUID or generic client name
+	User string
+	// Locale is the OS or browser locale
 	Locale string
-	// the generic client name will be passed in regardless of opt-in/out choice.  The value
-	// will be assigned to the UserId field for opt-outs
+	//Client is a generic name that describes the client
 	Client string
 }
 
 type RegistryOptions struct {
+	// SkipTLSVerify is false by default which is the recommended setting for a devfile registry deployed in production.  SkipTLSVerify should only be set to true
+	// if you are testing a devfile registry that is set up with self-signed certificates in a pre-production environment.
 	SkipTLSVerify bool
-	Telemetry     TelemetryData
-	Filter        RegistryFilter
+	// Telemetry allows clients to send telemetry data to the community Devfile Registry
+	Telemetry TelemetryData
+	// Filter allows clients to specify which architectures they want to filter their devfiles on
+	Filter RegistryFilter
 }
 
 type RegistryFilter struct {
 	Architectures []string
 }
 
-// GetRegistryIndex returns the list of stacks and/or samples, more specifically
-// it gets the stacks and/or samples content of the index of the specified registry
-// for listing the stacks and/or samples
+// GetRegistryIndex returns the list of index schema structured stacks and/or samples from a specified devfile registry.
 func GetRegistryIndex(registryURL string, options RegistryOptions, devfileTypes ...indexSchema.DevfileType) ([]indexSchema.Schema, error) {
 	var registryIndex []indexSchema.Schema
 
@@ -162,7 +166,7 @@ func GetRegistryIndex(registryURL string, options RegistryOptions, devfileTypes 
 	return registryIndex, nil
 }
 
-// GetMultipleRegistryIndices returns returns the list of stacks and/or samples of multiple registries
+// GetMultipleRegistryIndices returns the list of stacks and/or samples from multiple registries
 func GetMultipleRegistryIndices(registryURLs []string, options RegistryOptions, devfileTypes ...indexSchema.DevfileType) []Registry {
 	registryList := make([]Registry, len(registryURLs))
 	registryContentsChannel := make(chan []indexSchema.Schema)
@@ -210,7 +214,7 @@ func PrintRegistry(registryURLs string, devfileType string, options RegistryOpti
 	return nil
 }
 
-// PullStackByMediaTypesFromRegistry pulls stack from registry with allowed media types to the destination directory
+// PullStackByMediaTypesFromRegistry pulls a specified stack with allowed media types from a given registry URL to the destination directory
 func PullStackByMediaTypesFromRegistry(registry string, stack string, allowedMediaTypes []string, destDir string, options RegistryOptions) error {
 	// Get the registry index
 	registryIndex, err := GetRegistryIndex(registry, options, indexSchema.StackDevfileType)
@@ -278,7 +282,7 @@ func PullStackByMediaTypesFromRegistry(registry string, stack string, allowedMed
 	return nil
 }
 
-// PullStackFromRegistry pulls stack from registry with all stack resources (all media types) to the destination directory
+// PullStackFromRegistry pulls a specified stack with all devfile supported media types from a registry URL to the destination directory
 func PullStackFromRegistry(registry string, stack string, destDir string, options RegistryOptions) error {
 	return PullStackByMediaTypesFromRegistry(registry, stack, DevfileAllMediaTypesList, destDir, options)
 }
