@@ -33,4 +33,4 @@ persistence:
 
 telemetry:
   enabled: "false"
-  registryName: "anonymous" 
+  registryName: "devfile-registry"

@@ -37,5 +37,5 @@ var (
 	stackIndexPath        = os.Getenv("DEVFILE_STACK_INDEX")
 	stackBase64IndexPath  = os.Getenv("DEVFILE_STACK_BASE64_INDEX")
 	enableTelemetry       = util.GetOptionalEnv("ENABLE_TELEMETRY", false).(bool)
-	registry              = util.GetOptionalEnv("REGISTRY_NAME", "anonymous")
+	registry              = util.GetOptionalEnv("REGISTRY_NAME", "devfile-registry")
 )

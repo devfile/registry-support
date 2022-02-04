@@ -25,7 +25,7 @@ import (
 	"github.com/onsi/gomega"
 )
 
-// Integration/e2e test logic based on https://github.com/devfile/devworkspace-operator/tree/master/test/e2e
+// Integration/e2e test logic based on https://github.com/devfile/devworkspace-operator/tree/main/test/e2e
 
 //Create Constant file
 const (
@@ -41,7 +41,7 @@ var _ = ginkgo.SynchronizedBeforeSuite(func() []byte {
 		registry = "https://registry.devfile.io"
 	}
 	config.Registry = registry
-	config.RegistryList = registry + "," + "https://registry.devfile.io"
+	config.RegistryList = registry + "," + "https://registry.stage.devfile.io"
 	os.Setenv("REGISTRY_LIST", config.RegistryList)
 
 	config.IsTestRegistry, _ = strconv.ParseBool(os.Getenv("IS_TEST_REGISTRY"))
