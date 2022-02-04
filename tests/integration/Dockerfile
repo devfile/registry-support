@@ -18,4 +18,4 @@ RUN cd /registry-test/registry-library && ./build.sh && cp /registry-test/regist
 # Build the test binary
 RUN /registry-test/build.sh
 
-CMD /registry-test/devfileregistry-integration
+CMD /registry-test/devfile-registry-integration
