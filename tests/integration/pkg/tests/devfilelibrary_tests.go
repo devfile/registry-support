@@ -45,7 +45,7 @@ var _ = ginkgo.BeforeEach(func() {
 	publicDevfileRegistry = strings.Split(config.RegistryList, ",")[1]
 })
 
-// Integration/e2e test logic based on https://github.com/devfile/registry-operator/tree/master/test/integration
+// Integration/e2e test logic based on https://github.com/devfile/registry-operator/tree/main/tests/integration
 // Tests use the CLI version of the registry-library to test.
 // Note: Requires adding the CLI to the system path before running these tests
 var _ = ginkgo.Describe("[Verify registry library works with registry]", func() {

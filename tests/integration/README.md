@@ -31,4 +31,6 @@ To run the tests locally, you must make sure that the CLI version of the `regist
 2. Run the `build.sh` script in that folder
 3. Run `cp registry-library /usr/local/bin/registry-library` to add it to your system path
 
-Then, to run the tests, navigate back to the `tests/integration` folder and run `export REGISTRY=$REGISTRY ./devfile-registry-integration` to run the tests, where `$REGISTRY` is the hostname of the devfile registry that you wish to test against (such as https://registry.devfile.io or http://devfile-registry-default.10.101.108.46.nip.io).
+Then, to run the tests, navigate back to the `tests/integration` folder and run:
+1. `export REGISTRY=$REGISTRY` where `$REGISTRY` is the hostname of the devfile registry that you wish to test against (such as https://registry.stage.devfile.io or http://devfile-registry-default.10.101.108.46.nip.io).
+2. `./devfile-registry-integration` to run the tests 
