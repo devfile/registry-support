@@ -4,7 +4,7 @@
 # This can be useful if developing components within this repository (such as the index server or build tools)
 # and want to test all of the components together
 
-set -eu
+set -eux
 #set the docker alias if necessary
 . setenv.sh
 
