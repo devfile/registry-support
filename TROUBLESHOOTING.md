@@ -1,4 +1,4 @@
-# Troubelshooting the Devfile Registry
+# Troubleshooting the Devfile Registry
 
 ## Collecting Logs
 
