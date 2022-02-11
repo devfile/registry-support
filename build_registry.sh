@@ -6,10 +6,10 @@
 
 set -eux
 #set the docker alias if necessary
-. setenv.sh
+. ./setenv.sh
 
 # Build the index server base image
-. index/server/build.sh
+. ./index/server/build.sh
 
 # Build the test devfile registry image
 docker build -t devfile-index:latest -f .ci/Dockerfile .
