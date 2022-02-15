@@ -90,6 +90,7 @@ type Schema struct {
 	Git               *Git                   `yaml:"git,omitempty" json:"git,omitempty"`
 	Provider          string                 `yaml:"provider,omitempty" json:"provider,omitempty"`
 	SupportUrl        string                 `yaml:"supportUrl,omitempty" json:"supportUrl,omitempty"`
+	Versions          []Version              `yaml:"versions,omitempty" json:"versions,omitempty"`
 }
 
 // DevfileType describes the type of devfile
@@ -112,15 +113,42 @@ type StarterProject struct {
 type Devfile struct {
 	Meta            Schema           `yaml:"metadata,omitempty" json:"metadata,omitempty"`
 	StarterProjects []StarterProject `yaml:"starterProjects,omitempty" json:"starterProjects,omitempty"`
+	SchemaVersion   string			  `yaml:"schemaversion,omitempty" json:"schemaversion,omitempty"`
 }
 
 // Git stores the information of remote repositories
 type Git struct {
-	Remotes map[string]string `yaml:"remotes,omitempty" json:"remotes,omitempty"`
+	Remotes 	map[string]string 		`yaml:"remotes,omitempty" json:"remotes,omitempty"`
+	Url			string                 	`yaml:"url,omitempty" json:"url,omitempty"`
+	RemoteName  string 					`yaml:"remoteName,omitempty" json:"remoteName,omitempty"`
+	SubDir		string                 	`yaml:"subDir,omitempty" json:"subDir,omitempty"`
+	Revision	string                 	`yaml:"revision,omitempty" json:"revision,omitempty"`
 }
 
 // ExtraDevfileEntries is the extraDevfileEntries structure that is used by index component
 type ExtraDevfileEntries struct {
 	Samples []Schema `yaml:"samples,omitempty" json:"samples,omitempty"`
 	Stacks  []Schema `yaml:"stacks,omitempty" json:"stacks,omitempty"`
+}
+
+type StackInfo struct {
+	Name              string                 `yaml:"name,omitempty" json:"name,omitempty"`
+	DisplayName       string                 `yaml:"displayName,omitempty" json:"displayName,omitempty"`
+	Description       string                 `yaml:"description,omitempty" json:"description,omitempty"`
+	Icon              string                 `yaml:"icon,omitempty" json:"icon,omitempty"`
+	Versions          []Version              `yaml:"versions,omitempty" json:"versions,omitempty"`
+}
+
+type Version struct {
+	Version			  string				 `yaml:"version,omitempty" json:"version,omitempty"`
+	SchemaVersion	  string				 `yaml:"schemaVersion,omitempty" json:"schemaVersion,omitempty"`
+	Default			  bool					 `yaml:"default,omitempty" json:"default,omitempty"`
+	Git				  *Git                	 `yaml:"git,omitempty" json:"git,omitempty"`
+	Description       string                 `yaml:"description,omitempty" json:"description,omitempty"`
+	Tags              []string               `yaml:"tags,omitempty" json:"tags,omitempty"`
+	Architectures     []string               `yaml:"architectures,omitempty" json:"architectures,omitempty"`
+	Icon              string                 `yaml:"icon,omitempty" json:"icon,omitempty"`
+	Links             map[string]string      `yaml:"links,omitempty" json:"links,omitempty"`
+	Resources         []string               `yaml:"resources,omitempty" json:"resources,omitempty"`
+	StarterProjects   []string               `yaml:"starterProjects,omitempty" json:"starterProjects,omitempty"`
 }
