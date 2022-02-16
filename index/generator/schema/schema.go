@@ -113,7 +113,7 @@ type StarterProject struct {
 type Devfile struct {
 	Meta            Schema           `yaml:"metadata,omitempty" json:"metadata,omitempty"`
 	StarterProjects []StarterProject `yaml:"starterProjects,omitempty" json:"starterProjects,omitempty"`
-	SchemaVersion   string			  `yaml:"schemaversion,omitempty" json:"schemaversion,omitempty"`
+	SchemaVersion   string			  `yaml:"schemaVersion,omitempty" json:"schemaVersion,omitempty"`
 }
 
 // Git stores the information of remote repositories

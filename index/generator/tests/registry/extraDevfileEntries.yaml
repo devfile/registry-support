@@ -7,9 +7,20 @@ samples:
     tags: ["NodeJS", "Express"]
     projectType: nodejs
     language: nodejs
-    git:
-      remotes:
-        origin: https://github.com/redhat-developer/devfile-sample
+    versions:
+      - version: 1.0.0
+        schemaVersion: 2.0.0
+        description: nodejs with devfile v2.0.0
+        git:
+          remotes:
+            origin: https://github.com/redhat-developer/devfile-sample
+      - version: 1.0.1
+        schemaVersion: 2.2.0
+        default: true
+        description: nodejs with devfile v2.2.0
+        git:
+          remotes:
+            origin: https://github.com/nodeshift-starters/devfile-sample
   - name: code-with-quarkus
     displayName: Basic Quarkus
     description: A simple Hello World Java application using Quarkus
@@ -18,6 +29,11 @@ samples:
     projectType: quarkus
     language: java
     provider: Red Hat
-    git:
-      remotes:
-        origin: https://github.com/elsony/devfile-sample-code-with-quarkus.git
+    versions:
+      - version: 1.1.0
+        schemaVersion: 2.0.0
+        default: true
+        description: java quarkus with devfile v2.0.0
+        git:
+          remotes:
+            origin: https://github.com/elsony/devfile-sample-code-with-quarkus.git

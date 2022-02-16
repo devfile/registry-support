@@ -89,18 +89,66 @@ func validateIndexComponent(indexComponent schema.Schema, componentType schema.D
 		if indexComponent.Name == "" {
 			return fmt.Errorf("index component name is not initialized")
 		}
-		if indexComponent.Links == nil {
-			return fmt.Errorf("index component links are empty")
-		}
-		if indexComponent.Resources == nil {
-			return fmt.Errorf("index component resources are empty")
+		if indexComponent.Versions == nil || len(indexComponent.Versions) == 0 {
+			return fmt.Errorf("index component versions list is empty")
+		} else {
+			defaultFound := false
+			for _, version := range indexComponent.Versions {
+				if version.Version == "" {
+					return fmt.Errorf("index component versions list contains an entry with no version specified")
+				}
+				if version.SchemaVersion == "" {
+					return fmt.Errorf("index component version %s: schema version is empty", version.Version)
+				}
+				if version.Links == nil || len(version.Links) == 0 {
+					return fmt.Errorf("index component version %s: links are empty", version.Version)
+				}
+				if version.Resources == nil || len(version.Resources) == 0  {
+					return fmt.Errorf("index component version %s: resources are empty", version.Version)
+				}
+				if version.Default {
+					if !defaultFound {
+						defaultFound = true
+					} else {
+						return fmt.Errorf("index component has multiple default versions")
+					}
+				}
+			}
+			if !defaultFound {
+				return fmt.Errorf("index component has no default version defined")
+			}
 		}
 	} else if componentType == schema.SampleDevfileType {
-		if indexComponent.Git == nil {
-			return fmt.Errorf("index component git is empty")
-		}
-		if len(indexComponent.Git.Remotes) > 1 {
-			return fmt.Errorf("index component has multiple remotes")
+		if 	indexComponent.Versions != nil && len(indexComponent.Versions) > 0 {
+			defaultFound := false
+			for _, version := range indexComponent.Versions {
+				if version.Version == "" {
+					return fmt.Errorf("index component versions list contains an entry with no version specified")
+				}
+				if version.SchemaVersion == "" {
+					return fmt.Errorf("index component version %s: schema version is empty", version.Version)
+				}
+				if version.Git == nil {
+					return fmt.Errorf("index component version %s: git is empty", version.Version)
+				}
+				if version.Default {
+					if !defaultFound {
+						defaultFound = true
+					} else {
+						return fmt.Errorf("index component has multiple default versions")
+					}
+				}
+			}
+			if !defaultFound {
+				return fmt.Errorf("index component has no default version defined")
+			}
+		} else {
+			if indexComponent.Git == nil {
+				return fmt.Errorf("index component git is empty")
+			}
+			if len(indexComponent.Git.Remotes) > 1 {
+				return fmt.Errorf("index component has multiple remotes")
+			}
 		}
 	}
 
@@ -165,19 +213,23 @@ func parseDevfileRegistry(registryDirPath string, force bool) ([]schema.Schema, 
 				}
 			}
 
-			for i, versionComponent:= range indexComponent.Versions {
+			i:= 0
+			for i < len(indexComponent.Versions) {
+				versionComponent := indexComponent.Versions[i]
 				if versionComponent.Git != nil {
-					
+					// Todo: implement Git reference support, get stack content from remote repository and store in OCI registry
+					fmt.Printf("stack: %v, version:%v, Git reference is currently not supported", stackFolderDir.Name(), versionComponent.Version)
+					indexComponent.Versions = append(indexComponent.Versions[:i], indexComponent.Versions[i+1:]...)
+					continue
 				}
-				if versionComponent.Git == nil {
-					stackVersonDirPath := filepath.Join(stackFolderPath, versionComponent.Version)
+				stackVersonDirPath := filepath.Join(stackFolderPath, versionComponent.Version)
 
-					err := parseStackDevfile(stackVersonDirPath, stackFolderDir.Name(), force, &versionComponent, &indexComponent)
-					if err != nil {
-						return nil, err
-					}
-					indexComponent.Versions[i] = versionComponent
+				err := parseStackDevfile(stackVersonDirPath, stackFolderDir.Name(), force, &versionComponent, &indexComponent)
+				if err != nil {
+					return nil, err
 				}
+				indexComponent.Versions[i] = versionComponent
+				i++
 			}
 		} else { // if stack.yaml not exist, old stack repo struct, directly lookfor & parse devfile.yaml
 			versionComponent := schema.Version{}
@@ -190,77 +242,20 @@ func parseDevfileRegistry(registryDirPath string, force bool) ([]schema.Schema, 
 		}
 		indexComponent.Type = schema.StackDevfileType
 
-		//// Allow devfile.yaml or .devfile.yaml
-		//devfilePath := filepath.Join(stackDirPath, stackFolderDir.Name(), devfile)
-		//devfileHiddenPath := filepath.Join(stackDirPath, stackFolderDir.Name(), devfileHidden)
-		//if fileExists(devfilePath) && fileExists(devfileHiddenPath) {
-		//	return nil, fmt.Errorf("both %s and %s exist", devfilePath, devfileHiddenPath)
-		//}
-		//if fileExists(devfileHiddenPath) {
-		//	devfilePath = devfileHiddenPath
-		//}
-		//
-		//if !force {
-		//	// Devfile validation
-		//	devfileObj,_, err := devfileParser.ParseDevfileAndValidate(parser.ParserArgs{Path: devfilePath})
-		//	if err != nil {
-		//		return nil, fmt.Errorf("%s devfile is not valid: %v", stackFolderDir.Name(), err)
-		//	}
-		//
-		//	metadataErrors := checkForRequiredMetadata(devfileObj)
-		//	if metadataErrors != nil {
-		//		return nil, fmt.Errorf("%s devfile is not valid: %v", stackFolderDir.Name(), metadataErrors)
-		//	}
-		//}
-		//
-		//bytes, err := ioutil.ReadFile(devfilePath)
-		//if err != nil {
-		//	return nil, fmt.Errorf("failed to read %s: %v", devfilePath, err)
-		//}
-		//var devfile schema.Devfile
-		//err = yaml.Unmarshal(bytes, &devfile)
-		//if err != nil {
-		//	return nil, fmt.Errorf("failed to unmarshal %s data: %v", devfilePath, err)
-		//}
-		//indexComponent := devfile.Meta
-		//if indexComponent.Links == nil {
-		//	indexComponent.Links = make(map[string]string)
-		//}
-		//indexComponent.Links["self"] = fmt.Sprintf("%s/%s:%s", "devfile-catalog", indexComponent.Name, "latest")
-		//indexComponent.Type = schema.StackDevfileType
-		//
-		//for _, starterProject := range devfile.StarterProjects {
-		//	indexComponent.StarterProjects = append(indexComponent.StarterProjects, starterProject.Name)
-		//}
-		//
-		//// Get the files in the stack folder
-		//stackFolder := filepath.Join(stackDirPath, stackFolderDir.Name())
-		//stackFiles, err := ioutil.ReadDir(stackFolder)
-		//if err != nil {
-		//	return index, err
-		//}
-		//for _, stackFile := range stackFiles {
-		//	// The registry build should have already packaged any folders and miscellaneous files into an archive.tar file
-		//	// But, add this check as a safeguard, as OCI doesn't support unarchived folders being pushed up.
-		//	if !stackFile.IsDir() {
-		//		indexComponent.Resources = append(indexComponent.Resources, stackFile.Name())
-		//	}
-		//}
-		//
-		//if !force {
-		//	// Index component validation
-		//	err := validateIndexComponent(indexComponent, schema.StackDevfileType)
-		//	switch err.(type) {
-		//	case *MissingProviderError, *MissingSupportUrlError, *MissingArchError:
-		//		// log to the console as FYI if the devfile has no architectures/provider/supportUrl
-		//		fmt.Printf("%s", err.Error())
-		//	default:
-		//		// only return error if we dont want to print
-		//		if err != nil {
-		//			return nil, fmt.Errorf("%s index component is not valid: %v", stackFolderDir.Name(), err)
-		//		}
-		//	}
-		//}
+		if !force {
+			// Index component validation
+			err := validateIndexComponent(indexComponent, schema.StackDevfileType)
+			switch err.(type) {
+			case *MissingProviderError, *MissingSupportUrlError, *MissingArchError:
+				// log to the console as FYI if the devfile has no architectures/provider/supportUrl
+				fmt.Printf("%s", err.Error())
+			default:
+				// only return error if we dont want to print
+				if err != nil {
+					return nil, fmt.Errorf("%s index component is not valid: %v", stackFolderDir.Name(), err)
+				}
+			}
+		}
 
 		index = append(index, indexComponent)
 	}
@@ -378,21 +373,6 @@ func parseStackDevfile(devfileDirPath string, stackName string, force bool, vers
 			versionComponent.Resources = append(versionComponent.Resources, stackFile.Name())
 		}
 	}
-
-	//if !force {
-	//	// Index component validation
-	//	err := validateIndexComponent(versionComponent, schema.StackDevfileType)
-	//	switch err.(type) {
-	//	case *MissingProviderError, *MissingSupportUrlError, *MissingArchError:
-	//		// log to the console as FYI if the devfile has no architectures/provider/supportUrl
-	//		fmt.Printf("%s", err.Error())
-	//	default:
-	//		// only return error if we dont want to print
-	//		if err != nil {
-	//			return schema.Version{}, fmt.Errorf("%s index component is not valid: %v", stackFolder, err)
-	//		}
-	//	}
-	//}
 	return nil
 }
 
@@ -428,21 +408,38 @@ func parseExtraDevfileEntries(registryDirPath string, force bool) ([]schema.Sche
 			indexComponent := devfileEntry
 			indexComponent.Type = devfileType
 			if !force {
-
 				// If sample, validate devfile associated with sample as well
 				// Can't handle during registry build since we don't have access to devfile library/parser
 				if indexComponent.Type == schema.SampleDevfileType && validateSamples {
-					devfilePath := filepath.Join(samplesDir, devfileEntry.Name, "devfile.yaml")
-					_, err := os.Stat(filepath.Join(devfilePath))
-					if err != nil {
-						// This error shouldn't occur since we check for the devfile's existence during registry build, but check for it regardless
-						return nil, fmt.Errorf("%s devfile sample does not have a devfile.yaml: %v", indexComponent.Name, err)
-					}
+					if indexComponent.Versions != nil && len(indexComponent.Versions) > 0 {
+						for _, version := range indexComponent.Versions{
+							sampleVersonDirPath := filepath.Join(samplesDir, devfileEntry.Name, version.Version)
+							devfilePath := filepath.Join(sampleVersonDirPath, "devfile.yaml")
+							_, err := os.Stat(filepath.Join(devfilePath))
+							if err != nil {
+								// This error shouldn't occur since we check for the devfile's existence during registry build, but check for it regardless
+								return nil, fmt.Errorf("%s devfile sample does not have a devfile.yaml: %v", indexComponent.Name, err)
+							}
 
-					// Validate the sample devfile
-					_, err = devfileParser.ParseAndValidate(devfilePath)
-					if err != nil {
-						return nil, fmt.Errorf("%s sample devfile is not valid: %v", devfileEntry.Name, err)
+							// Validate the sample devfile
+							_, _, err = devfileParser.ParseDevfileAndValidate(parser.ParserArgs{Path: devfilePath})
+							if err != nil {
+								return nil, fmt.Errorf("%s sample devfile is not valid: %v", devfileEntry.Name, err)
+							}
+						}
+					} else {
+						devfilePath := filepath.Join(samplesDir, devfileEntry.Name, "devfile.yaml")
+						_, err := os.Stat(filepath.Join(devfilePath))
+						if err != nil {
+							// This error shouldn't occur since we check for the devfile's existence during registry build, but check for it regardless
+							return nil, fmt.Errorf("%s devfile sample does not have a devfile.yaml: %v", indexComponent.Name, err)
+						}
+
+						// Validate the sample devfile
+						_, _, err = devfileParser.ParseDevfileAndValidate(parser.ParserArgs{Path: devfilePath})
+						if err != nil {
+							return nil, fmt.Errorf("%s sample devfile is not valid: %v", devfileEntry.Name, err)
+						}
 					}
 				}
 
