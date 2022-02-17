@@ -97,10 +97,14 @@ func ServeRegistry() {
 			stackIndex = append(stackIndex, devfileIndex)
 		}
 
-		if len(devfileIndex.Resources) != 0 {
-			err := pushStackToRegistry(devfileIndex)
-			if err != nil {
-				log.Fatal(err.Error())
+		if devfileIndex.Versions != nil && len(devfileIndex.Versions) != 0{
+			for _, versionComponent := range devfileIndex.Versions {
+				if len(versionComponent.Resources) != 0 {
+					err := pushStackToRegistry(versionComponent, devfileIndex.Name)
+					if err != nil {
+						log.Fatal(err.Error())
+					}
+				}
 			}
 		}
 	}

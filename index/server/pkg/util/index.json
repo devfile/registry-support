@@ -1,0 +1,307 @@
+[
+  {
+    "name": "go",
+    "version": "1.1.0",
+    "displayName": "Go Runtime",
+    "description": "Stack with the latest Go version",
+    "type": "stack",
+    "tags": [
+      "Go"
+    ],
+    "icon": "https://raw.githubusercontent.com/devfile-samples/devfile-stack-icons/main/golang.svg",
+    "projectType": "go",
+    "language": "go",
+    "links": {
+      "self": "devfile-catalog/go:1.1.0"
+    },
+    "resources": [
+      "devfile.yaml"
+    ],
+    "starterProjects": [
+      "go-starter"
+    ],
+    "provider": "Red Hat"
+  },
+  {
+    "name": "java-maven",
+    "version": "1.1.0",
+    "displayName": "Maven Java",
+    "description": "Upstream Maven and OpenJDK 11",
+    "type": "stack",
+    "tags": [
+      "Java",
+      "Maven"
+    ],
+    "projectType": "maven",
+    "language": "java",
+    "links": {
+      "self": "devfile-catalog/java-maven:1.1.0"
+    },
+    "resources": [
+      "devfile.yaml"
+    ],
+    "starterProjects": [
+      "springbootproject"
+    ],
+    "provider": "Red Hat"
+  },
+  {
+    "name": "java-openliberty",
+    "version": "0.5.0",
+    "displayName": "Open Liberty",
+    "description": "Java application stack using Open Liberty runtime",
+    "type": "stack",
+    "projectType": "docker",
+    "language": "java",
+    "links": {
+      "self": "devfile-catalog/java-openliberty:0.5.0"
+    },
+    "resources": [
+      "devfile.yaml"
+    ],
+    "starterProjects": [
+      "user-app"
+    ],
+    "provider": "Red Hat"
+  },
+  {
+    "name": "java-quarkus",
+    "version": "1.1.0",
+    "displayName": "Quarkus Java",
+    "description": "Upstream Quarkus with Java+GraalVM",
+    "type": "stack",
+    "tags": [
+      "Java",
+      "Quarkus"
+    ],
+    "projectType": "quarkus",
+    "language": "java",
+    "links": {
+      "self": "devfile-catalog/java-quarkus:1.1.0"
+    },
+    "resources": [
+      "devfile.yaml"
+    ],
+    "starterProjects": [
+      "community",
+      "redhat-product"
+    ],
+    "provider": "Red Hat"
+  },
+  {
+    "name": "java-springboot",
+    "version": "1.1.0",
+    "displayName": "Spring Boot®",
+    "description": "Spring Boot® using Java",
+    "type": "stack",
+    "tags": [
+      "Java",
+      "Spring"
+    ],
+    "icon": "https://www.eclipse.org/che/images/logo-eclipseche.svg",
+    "projectType": "spring",
+    "language": "java",
+    "links": {
+      "self": "devfile-catalog/java-springboot:1.1.0"
+    },
+    "resources": [
+      "devfile.yaml"
+    ],
+    "starterProjects": [
+      "springbootproject"
+    ]
+  },
+  {
+    "name": "java-vertx",
+    "version": "1.1.0",
+    "displayName": "Vert.x Java",
+    "description": "Upstream Vert.x using Java",
+    "type": "stack",
+    "tags": [
+      "Java",
+      "Vert.x"
+    ],
+    "projectType": "vertx",
+    "language": "java",
+    "links": {
+      "self": "devfile-catalog/java-vertx:1.1.0"
+    },
+    "resources": [
+      "devfile.yaml"
+    ],
+    "starterProjects": [
+      "vertx-http-example",
+      "vertx-istio-circuit-breaker-booster",
+      "vertx-istio-routing-booster",
+      "vertx-secured-http-example-redhat",
+      "vertx-crud-example-redhat",
+      "vertx-istio-security-booster",
+      "vertx-crud-example",
+      "vertx-circuit-breaker-example",
+      "vertx-configmap-example",
+      "vertx-circuit-breaker-example-redhat",
+      "vertx-cache-example-redhat",
+      "vertx-cache-example",
+      "vertx-secured-http-example",
+      "vertx-health-checks-example-redhat",
+      "vertx-http-example-redhat",
+      "vertx-health-checks-example",
+      "vertx-configmap-example-redhat",
+      "vertx-messaging-work-queue-booster",
+      "vertx-istio-distributed-tracing-booster"
+    ]
+  },
+  {
+    "name": "java-wildfly",
+    "version": "1.0.0",
+    "displayName": "WildFly Java",
+    "description": "Upstream WildFly",
+    "type": "stack",
+    "tags": [
+      "Java",
+      "WildFly"
+    ],
+    "projectType": "wildfly",
+    "language": "java",
+    "links": {
+      "self": "devfile-catalog/java-wildfly:1.0.0"
+    },
+    "resources": [
+      "devfile.yaml"
+    ],
+    "starterProjects": [
+      "microprofile-config",
+      "microprofile-fault-tolerance",
+      "microprofile-health",
+      "microprofile-jwt",
+      "microprofile-metrics",
+      "microprofile-openapi",
+      "microprofile-opentracing",
+      "microprofile-rest-client"
+    ]
+  },
+  {
+    "name": "java-wildfly-bootable-jar",
+    "version": "1.0.0",
+    "displayName": "WildFly Bootable Jar",
+    "description": "Java stack with WildFly in bootable Jar mode, OpenJDK 11 and Maven 3.5",
+    "type": "stack",
+    "tags": [
+      "RHEL8",
+      "Java",
+      "OpenJDK",
+      "Maven",
+      "WildFly",
+      "Microprofile",
+      "WildFly Bootable"
+    ],
+    "projectType": "WildFly",
+    "language": "java",
+    "links": {
+      "self": "devfile-catalog/java-wildfly-bootable-jar:1.0.0"
+    },
+    "resources": [
+      "devfile.yaml"
+    ],
+    "starterProjects": [
+      "microprofile-config",
+      "microprofile-fault-tolerance",
+      "microprofile-health",
+      "microprofile-jwt",
+      "microprofile-metrics",
+      "microprofile-openapi",
+      "microprofile-opentracing",
+      "microprofile-rest-client"
+    ]
+  },
+  {
+    "name": "nodejs",
+    "version": "1.0.0",
+    "displayName": "NodeJS Runtime",
+    "description": "Stack with NodeJS 12",
+    "type": "stack",
+    "tags": [
+      "NodeJS",
+      "Express",
+      "ubi8"
+    ],
+    "projectType": "nodejs",
+    "language": "nodejs",
+    "links": {
+      "self": "devfile-catalog/nodejs:1.0.0"
+    },
+    "resources": [
+      "archive.tar",
+      "devfile.yaml"
+    ],
+    "starterProjects": [
+      "nodejs-starter"
+    ]
+  },
+  {
+    "name": "python",
+    "version": "1.0.0",
+    "displayName": "Python",
+    "description": "Python Stack with Python 3.7",
+    "type": "stack",
+    "tags": [
+      "Python",
+      "pip"
+    ],
+    "projectType": "python",
+    "language": "python",
+    "links": {
+      "self": "devfile-catalog/python:1.0.0"
+    },
+    "resources": [
+      "devfile.yaml"
+    ],
+    "starterProjects": [
+      "python-example"
+    ]
+  },
+  {
+    "name": "python-django",
+    "version": "1.0.0",
+    "displayName": "Django",
+    "description": "Python3.7 with Django",
+    "type": "stack",
+    "tags": [
+      "Python",
+      "pip",
+      "Django"
+    ],
+    "projectType": "django",
+    "language": "python",
+    "links": {
+      "self": "devfile-catalog/python-django:1.0.0"
+    },
+    "resources": [
+      "devfile.yaml"
+    ],
+    "starterProjects": [
+      "django-example"
+    ]
+  },
+  {
+    "name": "nodejs-basic",
+    "version": "1.0.1",
+    "displayName": "Basic NodeJS",
+    "description": "A simple Hello World application",
+    "type": "sample",
+    "icon": "nodejsIcon.svg",
+    "projectType": "nodejs",
+    "language": "nodejs"
+  },
+  {
+    "name": "code-with-quarkus",
+    "version": "1.1.0",
+    "displayName": "Basic Quarkus",
+    "description": "A simple Hello World Java application using Quarkus",
+    "type": "sample",
+    "icon": "https://raw.githubusercontent.com/elsony/devfile-sample-code-with-quarkus/main/.devfile/icon/quarkus.png",
+    "projectType": "quarkus",
+    "language": "java",
+    "provider": "Red Hat"
+  }
+]

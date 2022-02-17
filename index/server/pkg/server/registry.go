@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"os"
 	"path"
 	"path/filepath"
 
@@ -18,11 +19,11 @@ import (
 )
 
 // pushStackToRegistry pushes the given devfile stack to the OCI registry
-func pushStackToRegistry(devfileIndex indexSchema.Schema) error {
+func pushStackToRegistry(versionComponent indexSchema.Version, stackName string) error {
 	// Load the devfile into memory and set up the pushing resource (file name, file content, media type, ref)
 	memoryStore := content.NewMemoryStore()
 	pushContents := []ocispec.Descriptor{}
-	for _, resource := range devfileIndex.Resources {
+	for _, resource := range versionComponent.Resources {
 		if resource == "meta.yaml" {
 			// Some registries may still have the meta.yaml in it, but we don't need it, so skip pushing it up
 			continue
@@ -47,8 +48,12 @@ func pushStackToRegistry(devfileIndex indexSchema.Schema) error {
 			}
 		}
 
+		resourcePath := filepath.Join(stacksPath, stackName, versionComponent.Version, resource)
 		// Load the resource into memory and add to the push contents
-		resourceContent, err := ioutil.ReadFile(filepath.Join(stacksPath, devfileIndex.Name, resource))
+		if _, err := os.Stat(resourcePath); os.IsNotExist(err) {
+			resourcePath = filepath.Join(stacksPath, stackName, resource)
+		}
+		resourceContent, err := ioutil.ReadFile(resourcePath)
 		if err != nil {
 			return err
 		}
@@ -58,23 +63,23 @@ func pushStackToRegistry(devfileIndex indexSchema.Schema) error {
 
 	}
 
-	ref := path.Join(registryService, "/", devfileIndex.Links["self"])
+	ref := path.Join(registryService, "/", versionComponent.Links["self"])
 
 	ctx := context.Background()
 	resolver := docker.NewResolver(docker.ResolverOptions{PlainHTTP: true})
-	log.Printf("Pushing %s to %s...\n", devfileIndex.Name, ref)
+	log.Printf("Pushing %s version %s to %s...\n", stackName, versionComponent.Version, ref)
 	desc, err := oras.Push(ctx, resolver, ref, memoryStore, pushContents, oras.WithConfigMediaType(devfileConfigMediaType))
 	if err != nil {
-		return fmt.Errorf("failed to push %s to %s: %v", devfileIndex.Name, ref, err)
+		return fmt.Errorf("failed to push %s version %s to %s: %v", stackName, versionComponent.Version, ref, err)
 	}
 	log.Printf("Pushed to %s with digest %s\n", ref, desc.Digest)
 	return nil
 }
 
 // pullStackFromRegistry pulls the given devfile stack from the OCI registry
-func pullStackFromRegistry(devfileIndex indexSchema.Schema) ([]byte, error) {
+func pullStackFromRegistry(versionComponent indexSchema.Version) ([]byte, error) {
 	// Pull the devfile from registry and save to disk
-	ref := path.Join(registryService, "/", devfileIndex.Links["self"])
+	ref := path.Join(registryService, "/", versionComponent.Links["self"])
 
 	ctx := context.Background()
 	resolver := docker.NewResolver(docker.ResolverOptions{PlainHTTP: true})
@@ -84,7 +89,7 @@ func pullStackFromRegistry(devfileIndex indexSchema.Schema) ([]byte, error) {
 	allowedMediaTypes := []string{devfileMediaType}
 
 	var devfile string
-	for _, resource := range devfileIndex.Resources {
+	for _, resource := range versionComponent.Resources {
 		if resource == devfileName {
 			devfile = devfileName
 			break

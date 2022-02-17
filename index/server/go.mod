@@ -5,7 +5,7 @@ go 1.14
 require (
 	github.com/containerd/containerd v1.4.1
 	github.com/deislabs/oras v0.8.1
-	github.com/devfile/api/v2 v2.0.0-20210910153124-da620cd1a7a1
+	github.com/devfile/api/v2 v2.0.0-20211021164004-dabee4e633ed
 	github.com/devfile/registry-support/index/generator v0.0.0-20210916150157-08b31e03fdf0
 	github.com/gin-gonic/gin v1.6.3
 	github.com/gorilla/mux v1.7.3 // indirect
@@ -18,3 +18,5 @@ require (
 	gopkg.in/segmentio/analytics-go.v3 v3.1.0
 	k8s.io/apimachinery v0.21.3
 )
+
+replace github.com/devfile/registry-support/index/generator => github.com/yangcao77/registry-support/index/generator v0.0.0-20220217155801-d70e41e91aee

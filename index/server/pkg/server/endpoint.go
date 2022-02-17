@@ -87,23 +87,38 @@ func serveDevfile(c *gin.Context) {
 	}
 	for _, devfileIndex := range index {
 		if devfileIndex.Name == name {
+			var sampleDevfilePath string
 			var bytes []byte
-			if devfileIndex.Type == indexSchema.StackDevfileType {
-				bytes, err = pullStackFromRegistry(devfileIndex)
+			if devfileIndex.Type == indexSchema.SampleDevfileType {
+				if devfileIndex.Versions == nil || len(devfileIndex.Versions) == 0 {
+					sampleDevfilePath = path.Join(samplesPath, devfileIndex.Name, devfileName)
+				}
 			} else {
-				// Retrieve the sample devfile stored under /registry/samples/<devfile>
-				sampleDevfilePath := path.Join(samplesPath, devfileIndex.Name, devfileName)
+				for _, version := range devfileIndex.Versions {
+					if !version.Default {
+						continue
+					}
+					if devfileIndex.Type == indexSchema.StackDevfileType {
+						bytes, err = pullStackFromRegistry(version)
+					} else {
+						// Retrieve the sample devfile stored under /registry/samples/<devfile>
+						sampleDevfilePath = path.Join(samplesPath, devfileIndex.Name, version.Version, devfileName)
+					}
+					break
+				}
+			}
+			if sampleDevfilePath != "" {
 				if _, err = os.Stat(sampleDevfilePath); err == nil {
 					bytes, err = ioutil.ReadFile(sampleDevfilePath)
 				}
-			}
-			if err != nil {
-				log.Print(err.Error())
-				c.JSON(http.StatusInternalServerError, gin.H{
-					"error":  err.Error(),
-					"status": fmt.Sprintf("failed to pull the devfile of %s", name),
-				})
-				return
+				if err != nil {
+					log.Print(err.Error())
+					c.JSON(http.StatusInternalServerError, gin.H{
+						"error":  err.Error(),
+						"status": fmt.Sprintf("failed to pull the devfile of %s", name),
+					})
+					return
+				}
 			}
 
 			// Track event for telemetry.  Ignore events from the registry-viewer and DevConsole since those are tracked on the client side
@@ -166,7 +181,7 @@ func buildIndexAPIResponse(c *gin.Context) {
 
 	var bytes []byte
 	var responseIndexPath, responseBase64IndexPath string
-	isFiltered := false
+	// isFiltered := false
 
 	// Sets Access-Control-Allow-Origin response header to allow cross origin requests
 	c.Header("Access-Control-Allow-Origin", "*")
@@ -210,34 +225,33 @@ func buildIndexAPIResponse(c *gin.Context) {
 			return
 		}
 	}
-
+	index, err := util.ReadIndexPath(responseIndexPath)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"status": fmt.Sprintf("failed to read the devfile index: %v", err),
+		})
+		return
+	}
+	index = util.ConvertToOldIndexFormat(index)
 	// Filter the index if archs has been requested
 	if len(archs) > 0 {
-		isFiltered = true
-		index, err := util.ReadIndexPath(responseIndexPath)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"status": fmt.Sprintf("failed to read the devfile index: %v", err),
-			})
-			return
-		}
+		// isFiltered = true
 		index = util.FilterDevfileArchitectures(index, archs)
-
-		bytes, err = json.MarshalIndent(&index, "", "  ")
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"status": fmt.Sprintf("failed to serialize index data: %v", err),
-			})
-			return
-		}
 	}
-
+	bytes, err = json.MarshalIndent(&index, "", "  ")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"status": fmt.Sprintf("failed to serialize index data: %v", err),
+		})
+		return
+	}
+	c.Data(http.StatusOK, http.DetectContentType(bytes), bytes)
 	// serve either the filtered index or the unfiltered index
-	if isFiltered {
-		c.Data(http.StatusOK, http.DetectContentType(bytes), bytes)
-	} else {
-		c.File(responseIndexPath)
-	}
+	//if isFiltered {
+	//	c.Data(http.StatusOK, http.DetectContentType(bytes), bytes)
+	//} else {
+	//	c.File(responseIndexPath)
+	//}
 
 	// Track event for telemetry.  Ignore events from the registry-viewer and DevConsole since those are tracked on the client side
 	if enableTelemetry && !util.IsWebClient(c) {
