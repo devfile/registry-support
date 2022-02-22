@@ -138,5 +138,5 @@ check_params
 build_registry
 if [ $? -ne 0 ]; then
   echo "Error building the devfile registry"
-  #cleanup_and_exit 1
+  cleanup_and_exit 1
 fi

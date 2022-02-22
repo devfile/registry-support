@@ -181,7 +181,6 @@ func buildIndexAPIResponse(c *gin.Context) {
 
 	var bytes []byte
 	var responseIndexPath, responseBase64IndexPath string
-	// isFiltered := false
 
 	// Sets Access-Control-Allow-Origin response header to allow cross origin requests
 	c.Header("Access-Control-Allow-Origin", "*")
@@ -235,7 +234,6 @@ func buildIndexAPIResponse(c *gin.Context) {
 	index = util.ConvertToOldIndexFormat(index)
 	// Filter the index if archs has been requested
 	if len(archs) > 0 {
-		// isFiltered = true
 		index = util.FilterDevfileArchitectures(index, archs)
 	}
 	bytes, err = json.MarshalIndent(&index, "", "  ")
@@ -246,12 +244,6 @@ func buildIndexAPIResponse(c *gin.Context) {
 		return
 	}
 	c.Data(http.StatusOK, http.DetectContentType(bytes), bytes)
-	// serve either the filtered index or the unfiltered index
-	//if isFiltered {
-	//	c.Data(http.StatusOK, http.DetectContentType(bytes), bytes)
-	//} else {
-	//	c.File(responseIndexPath)
-	//}
 
 	// Track event for telemetry.  Ignore events from the registry-viewer and DevConsole since those are tracked on the client side
 	if enableTelemetry && !util.IsWebClient(c) {
