@@ -2,10 +2,10 @@ package util
 
 import (
 	"encoding/json"
-	indexLibrary "github.com/devfile/registry-support/index/generator/library"
 	"github.com/devfile/registry-support/index/generator/schema"
 	"io/ioutil"
 	"os"
+	"reflect"
 	"testing"
 )
 
@@ -197,25 +197,32 @@ func TestGetOptionalEnv(t *testing.T) {
 
 
 func TestConvertToOldIndexFormat(t *testing.T) {
-	inputIndexFilePath := "../../../generator/index.json"
-	// wantIndexFilePath := "../tests/registry/index_main.json"
+	const inputIndexFilePath = "../../tests/resources/newIndexStruct.json"
+	const wantIndexFilePath = "../../tests/resources/oldIndexStruct.json"
 	bytes,err := ioutil.ReadFile(inputIndexFilePath)
-	// bytes, err := ioutil.ReadFile(wantIndexFilePath)
 	if err != nil {
-		t.Errorf("Failed to read index.json: %v", err)
+		t.Errorf("Failed to read newIndexStruct.json: %v", err)
+	}
+	expected, err := ioutil.ReadFile(wantIndexFilePath)
+	if err != nil {
+		t.Errorf("Failed to oldIndexStruct.json: %v", err)
 	}
 	var inputIndex []schema.Schema
 	err = json.Unmarshal(bytes, &inputIndex)
 	if err != nil {
-		t.Errorf("Failed to unmarshal inputIndex.json")
+		t.Errorf("Failed to unmarshal inputIndex json")
+	}
+	var wantIndex []schema.Schema
+	err = json.Unmarshal(expected, &wantIndex)
+	if err != nil {
+		t.Errorf("Failed to unmarshal wantIndex json")
 	}
 
 	t.Run("Test generate index", func(t *testing.T) {
 		gotIndex:= ConvertToOldIndexFormat(inputIndex)
 
-		//if !reflect.DeepEqual(wantIndex, gotIndex) {
-		//	t.Errorf("Want index %v, got index %v", wantIndex, gotIndex)
-		//}
-		indexLibrary.CreateIndexFile(gotIndex, "./index.json")
+		if !reflect.DeepEqual(wantIndex, gotIndex) {
+			t.Errorf("Want index %v, got index %v", wantIndex, gotIndex)
+		}
 	})
 }

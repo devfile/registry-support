@@ -89,8 +89,8 @@ func serveDevfile(c *gin.Context) {
 		if devfileIndex.Name == name {
 			var sampleDevfilePath string
 			var bytes []byte
-			if devfileIndex.Type == indexSchema.SampleDevfileType {
-				if devfileIndex.Versions == nil || len(devfileIndex.Versions) == 0 {
+			if devfileIndex.Versions == nil || len(devfileIndex.Versions) == 0 {
+				if devfileIndex.Type == indexSchema.SampleDevfileType {
 					sampleDevfilePath = path.Join(samplesPath, devfileIndex.Name, devfileName)
 				}
 			} else {

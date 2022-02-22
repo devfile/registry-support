@@ -155,8 +155,12 @@ func ConvertToOldIndexFormat(schemaList []indexSchema.Schema) []indexSchema.Sche
 			if !versionComponent.Default {
 				continue
 			}
-			oldSchema.Tags = versionComponent.Tags
-			oldSchema.Architectures = versionComponent.Architectures
+			if versionComponent.Tags != nil && len(versionComponent.Tags) > 0 {
+				oldSchema.Tags = versionComponent.Tags
+			}
+			if versionComponent.Architectures != nil && len(versionComponent.Architectures) > 0 {
+				oldSchema.Architectures = versionComponent.Architectures
+			}
 			if schema.Type == indexSchema.SampleDevfileType {
 				oldSchema.Git = versionComponent.Git
 			} else {

@@ -72,7 +72,7 @@ github.com/devfile/library/pkg/devfile/parser/data/v2/common
 github.com/devfile/library/pkg/devfile/validate
 github.com/devfile/library/pkg/testingutil/filesystem
 github.com/devfile/library/pkg/util
-# github.com/devfile/registry-support/index/generator v0.0.0-20210916150157-08b31e03fdf0 => github.com/yangcao77/registry-support/index/generator v0.0.0-20220217155801-d70e41e91aee
+# github.com/devfile/registry-support/index/generator v0.0.0-20220222194908-7a90a4214f3e
 ## explicit
 github.com/devfile/registry-support/index/generator/library
 github.com/devfile/registry-support/index/generator/schema
@@ -444,4 +444,3 @@ sigs.k8s.io/controller-runtime/pkg/scheme
 sigs.k8s.io/structured-merge-diff/v4/value
 # sigs.k8s.io/yaml v1.2.0
 sigs.k8s.io/yaml
-# github.com/devfile/registry-support/index/generator => github.com/yangcao77/registry-support/index/generator v0.0.0-20220217155801-d70e41e91aee

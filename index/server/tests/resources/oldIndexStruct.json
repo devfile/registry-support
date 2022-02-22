@@ -1,0 +1,178 @@
+[
+  {
+    "name": "go",
+    "version": "1.1.0",
+    "displayName": "Go Runtime",
+    "description": "Stack with the latest Go version",
+    "type": "stack",
+    "tags": [
+      "Go"
+    ],
+    "icon": "https://raw.githubusercontent.com/devfile-samples/devfile-stack-icons/main/golang.svg",
+    "projectType": "go",
+    "language": "go",
+    "links": {
+      "self": "devfile-catalog/go:1.1.0"
+    },
+    "resources": [
+      "devfile.yaml"
+    ],
+    "starterProjects": [
+      "go-starter"
+    ],
+    "provider": "Red Hat"
+  },
+  {
+    "name": "java-maven",
+    "version": "1.1.0",
+    "displayName": "Maven Java",
+    "description": "Upstream Maven and OpenJDK 11",
+    "type": "stack",
+    "tags": [
+      "Java",
+      "Maven"
+    ],
+    "architectures": [
+      "amd64",
+      "arm64",
+      "s390x"
+    ],
+    "projectType": "maven",
+    "language": "java",
+    "links": {
+      "self": "devfile-catalog/java-maven:1.1.0"
+    },
+    "resources": [
+      "devfile.yaml"
+    ],
+    "starterProjects": [
+      "springbootproject"
+    ]
+  },
+  {
+    "name": "java-quarkus",
+    "version": "1.1.0",
+    "displayName": "Quarkus Java",
+    "description": "Quarkus with Java",
+    "type": "stack",
+    "tags": [
+      "Java",
+      "Quarkus"
+    ],
+    "architectures": [
+      "amd64"
+    ],
+    "projectType": "quarkus",
+    "language": "java",
+    "links": {
+      "self": "devfile-catalog/java-quarkus:1.1.0"
+    },
+    "resources": [
+      "devfile.yaml"
+    ],
+    "starterProjects": [
+      "community",
+      "redhat-product"
+    ]
+  },
+  {
+    "name": "nodejs",
+    "version": "1.0.0",
+    "displayName": "NodeJS Runtime",
+    "description": "Stack with NodeJS 12",
+    "type": "stack",
+    "tags": [
+      "NodeJS",
+      "Express",
+      "ubi8"
+    ],
+    "architectures": [
+      "amd64",
+      "arm64"
+    ],
+    "projectType": "nodejs",
+    "language": "nodejs",
+    "links": {
+      "self": "devfile-catalog/nodejs:1.0.0"
+    },
+    "resources": [
+      "devfile.yaml"
+    ],
+    "starterProjects": [
+      "nodejs-starter"
+    ],
+    "provider": "Red Hat",
+    "supportUrl": "http://testurl/support.md"
+  },
+  {
+    "name": "nodejs-basic",
+    "displayName": "Basic Node.js",
+    "description": "A simple Hello World Node.js application",
+    "type": "sample",
+    "tags": [
+      "NodeJS",
+      "Express"
+    ],
+    "icon": "https://nodejs.org/static/images/logos/nodejs-new-pantone-black.svg",
+    "projectType": "nodejs",
+    "language": "nodejs",
+    "git": {
+      "remotes": {
+        "origin": "https://github.com/nodeshift-starters/devfile-sample.git"
+      }
+    }
+  },
+  {
+    "name": "code-with-quarkus",
+    "displayName": "Basic Quarkus",
+    "description": "A simple Hello World Java application using Quarkus",
+    "type": "sample",
+    "tags": [
+      "Java",
+      "Quarkus"
+    ],
+    "icon": "https://design.jboss.org/quarkus/logo/final/SVG/quarkus_icon_rgb_default.svg",
+    "projectType": "quarkus",
+    "language": "java",
+    "git": {
+      "remotes": {
+        "origin": "https://github.com/devfile-samples/devfile-sample-code-with-quarkus.git"
+      }
+    }
+  },
+  {
+    "name": "java-springboot-basic",
+    "displayName": "Basic Spring Boot",
+    "description": "A simple Hello World Java Spring Boot application using Maven",
+    "type": "sample",
+    "tags": [
+      "Java",
+      "Spring"
+    ],
+    "icon": "https://spring.io/images/projects/spring-edf462fec682b9d48cf628eaf9e19521.svg",
+    "projectType": "springboot",
+    "language": "java",
+    "git": {
+      "remotes": {
+        "origin": "https://github.com/devfile-samples/devfile-sample-java-springboot-basic.git"
+      }
+    }
+  },
+  {
+    "name": "python-basic",
+    "displayName": "Basic Python",
+    "description": "A simple Hello World application using Python",
+    "type": "sample",
+    "tags": [
+      "Python"
+    ],
+    "icon": "https://www.python.org/static/community_logos/python-logo-generic.svg",
+    "projectType": "python",
+    "language": "python",
+    "git": {
+      "remotes": {
+        "origin": "https://github.com/devfile-samples/devfile-sample-python-basic.git"
+      }
+    }
+  }
+]
