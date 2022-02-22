@@ -3,6 +3,8 @@
 This folder contains the integration tests for the OCI-based Devfile Registry. The tests can be run against either a remote devfile registry (such as https://registry.stage.devfile.io), or a local devfile registry running your machine (such as in Minikube, or Docker Desktop).
 
 ## Build
+If you want to run the build scripts with Podman, set the environment variable
+`export USE_PODMAN=true`
 
 The integration tests can be built to either run in a Docker container, or locally on your machine.
 

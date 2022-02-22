@@ -1,5 +1,7 @@
 #!/bin/sh
 
+#set the docker alias if necessary
+. ../../setenv.sh
 # Get the registry-library
 cp -rf ../../registry-library ./
 

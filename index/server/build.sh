@@ -1,7 +1,7 @@
-#!/bin/sh
+#!/bin/bash
 
 # Build the index container for the registry
-buildfolder="$(realpath $(dirname $0))"
+buildfolder="$(realpath $(dirname ${BASH_SOURCE[0]}))"
 
 # Clone the registry-support repo
 if [ -d $buildfolder/registry-viewer ]; then
