@@ -163,6 +163,10 @@ type Devfile struct {
 // Git stores the information of remote repositories
 type Git struct {
 	Remotes 	map[string]string 		`yaml:"remotes,omitempty" json:"remotes,omitempty"`
+	Url			string                 	`yaml:"url,omitempty" json:"url,omitempty"`
+	RemoteName  string 					`yaml:"remoteName,omitempty" json:"remoteName,omitempty"`
+	SubDir		string                 	`yaml:"subDir,omitempty" json:"subDir,omitempty"`
+	Revision	string                 	`yaml:"revision,omitempty" json:"revision,omitempty"`
 }
 
 // ExtraDevfileEntries is the extraDevfileEntries structure that is used by index component
