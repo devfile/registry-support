@@ -19,8 +19,8 @@ function cache_sample() {
     # Git clone the sample project
     gitRepository="$(yq e '(.samples[] | select(.name == "'${sampleName}'")' $devfileEntriesFile | yq e '(.git.remotes.origin)' -)"
     if [[ $gitRepository == "null" ]]; then
-        for version in $(yq e '(.samples[] | select(.name == "'${sampleName}'")' $devfileEntriesFile | yq e '(.versions[].version)'); do
-          gitRepository="$(yq e '(.samples[] | select(.name == "'${sampleName}'")' $devfileEntriesFile | yq e '(.versions[] | select(.version == "'${version}'")' | yq e '.git.remotes.origin' )"
+        for version in $(yq e '(.samples[] | select(.name == "'${sampleName}'")' $devfileEntriesFile | yq e '(.versions[].version)' -); do
+          gitRepository="$(yq e '(.samples[] | select(.name == "'${sampleName}'")' $devfileEntriesFile | yq e '(.versions[] | select(.version == "'${version}'")' -| yq e '.git.remotes.origin' -)"
           git clone "$gitRepository" "$sampleDir/$version"
           mkdir $outputDir/$version
           cache_devfile $sampleDir/$version $outputDir/$version $sampleName

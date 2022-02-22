@@ -66,11 +66,11 @@ build_registry() {
   cd "$OLDPWD"
 
   # Generate the tar archive
-  for stackDir in $outputFolder/stacks/*/
+  for stackDir in $outputFolder/stacks/*
   do
     cd $stackDir
     if [[ -f "stack.yaml" ]]; then
-      for versionDir in $stackDir/*/
+      for versionDir in $stackDir/*
       do
         cd $versionDir
         tar_files_and_cleanup
