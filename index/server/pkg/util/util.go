@@ -175,3 +175,10 @@ func ConvertToOldIndexFormat(schemaList []indexSchema.Schema) []indexSchema.Sche
 	}
 	return oldSchemaList
 }
+
+func IsTelemetryEnabled() bool {
+	if len(telemetryKey) > 0 {
+		return true
+	}
+	return false
+}

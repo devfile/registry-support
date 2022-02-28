@@ -9,11 +9,12 @@ import (
 )
 
 const (
-	telemetryKey = "6HBMiy5UxBtsbxXx7O4n0t0u4dt8IAR3"
-	defaultUser  = "devfile-registry"
-	viewerId     = "registry-viewer"
-	consoleId    = "openshift-console"
+	defaultUser = "devfile-registry"
+	viewerId    = "registry-viewer"
+	consoleId   = "openshift-console"
 )
+
+var telemetryKey = GetOptionalEnv("TELEMETRY_KEY", "").(string)
 
 //TrackEvent tracks event for telemetry
 func TrackEvent(event analytics.Message) error {

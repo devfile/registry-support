@@ -91,10 +91,10 @@ spec:
         env:
           - name: DEVFILE_VIEWER_ROOT
             value: "/viewer"
-          - name: ENABLE_TELEMETRY
-            value: {{ .Values.telemetry.enabled | quote }}
           - name: REGISTRY_NAME
             value: {{ .Values.telemetry.registryName }}
+          - name: TELEMETRY_KEY
+            value: {{ .Values.telemetry.key }}
         volumeMounts:
         - name: viewer-config
           mountPath: "/app/config"
