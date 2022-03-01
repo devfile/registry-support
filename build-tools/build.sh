@@ -10,6 +10,7 @@
 
 
 buildToolsFolder="$(dirname "$0")"
+buildToolsDir="$PWD"
 generatorFolder=$buildToolsFolder/../index/generator
 
 display_usage() { 
@@ -20,6 +21,22 @@ display_usage() {
 cleanup_and_exit() {
   rm -rf $outputFolder
   exit $1
+}
+
+tar_files_and_cleanup() {
+  # Find the files to add to the tar archive
+  tarFiles=$(find . \( -not -name 'devfile.yaml' \
+    -a -not -name "meta.yaml" \
+    -a -not -name "*.vsx" \
+    -a -not -name "." \
+    -a -not -name "logo.svg" \
+    -a -not -name "logo.png" \) -maxdepth 1)
+
+  # There are files that need to be pulled into a tar archive
+  if [[ ! -z $tarFiles ]]; then
+    tar -czvf archive.tar $tarFiles > /dev/null
+    rm -rf $tarFiles
+  fi
 }
 
 # build_registry <registry-folder> <output>
@@ -41,29 +58,26 @@ build_registry() {
     echo "Failed to build index-generator tool"
     return 1
   fi
-  echo "Successfully built the index-generator tool\n"
+  echo "Successfully built the index-generator tool"
 
   cd "$OLDPWD"
 
   # Generate the tar archive
-  for stackDir in $outputFolder/stacks/*/
+  for stackDir in $outputFolder/stacks/*
   do
     cd $stackDir
-    # Find the files to add to the tar archive
-    tarFiles=$(find . \( -not -name 'devfile.yaml' \
-      -a -not -name "meta.yaml" \
-      -a -not -name "*.vsx" \
-      -a -not -name "." \
-      -a -not -name "logo.svg" \
-      -a -not -name "logo.png" \) -maxdepth 1)
-
-    # There are files that need to be pulled into a tar archive
-    if [[ ! -z $tarFiles ]]; then
-      tar -czvf archive.tar $tarFiles > /dev/null
-      rm -rf $tarFiles
+    if [[ -f "stack.yaml" ]]; then
+      for versionDir in $stackDir/*
+      do
+        cd $versionDir
+        tar_files_and_cleanup
+      done
+    else
+      tar_files_and_cleanup
     fi
     cd "$OLDPWD"
   done
+  cd "$buildToolsDir"
 
   # Cache any devfile samples if needed
   if [ -f $registryRepository/extraDevfileEntries.yaml ]; then
@@ -82,7 +96,7 @@ build_registry() {
     echo "Failed to build the devfile registry index"
     return 1
   fi
-  echo "Successfully built the devfile registry index\n"
+  echo "Successfully built the devfile registry index"
 }
 
 # check_params validates that the arguments passed into the script are valid

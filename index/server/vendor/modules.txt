@@ -50,7 +50,7 @@ github.com/davecgh/go-spew/spew
 github.com/deislabs/oras/pkg/artifact
 github.com/deislabs/oras/pkg/content
 github.com/deislabs/oras/pkg/oras
-# github.com/devfile/api/v2 v2.0.0-20210910153124-da620cd1a7a1
+# github.com/devfile/api/v2 v2.0.0-20211021164004-dabee4e633ed
 ## explicit
 github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
 github.com/devfile/api/v2/pkg/attributes
@@ -59,7 +59,7 @@ github.com/devfile/api/v2/pkg/utils/overriding
 github.com/devfile/api/v2/pkg/utils/unions
 github.com/devfile/api/v2/pkg/validation
 github.com/devfile/api/v2/pkg/validation/variables
-# github.com/devfile/library v1.1.1-0.20210910214722-7c5ff63711ec
+# github.com/devfile/library v1.2.1-0.20211104222135-49d635cb492f
 github.com/devfile/library/pkg/devfile
 github.com/devfile/library/pkg/devfile/parser
 github.com/devfile/library/pkg/devfile/parser/context
@@ -72,7 +72,7 @@ github.com/devfile/library/pkg/devfile/parser/data/v2/common
 github.com/devfile/library/pkg/devfile/validate
 github.com/devfile/library/pkg/testingutil/filesystem
 github.com/devfile/library/pkg/util
-# github.com/devfile/registry-support/index/generator v0.0.0-20210916150157-08b31e03fdf0
+# github.com/devfile/registry-support/index/generator v0.0.0-20220222194908-7a90a4214f3e
 ## explicit
 github.com/devfile/registry-support/index/generator/library
 github.com/devfile/registry-support/index/generator/schema

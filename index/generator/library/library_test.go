@@ -25,6 +25,11 @@ func TestValidateIndexComponent(t *testing.T) {
 	noArchErr := ".*has no architecture.*"
 	noProviderErr := ".*has no provider.*"
 	noSupportUrlErr := ".*has no supportUrl.*"
+	versionsEmptyErr := ".*versions list is empty.*"
+	noDefaultVersionErr := ".*has no default version.*"
+	noVersionErr := ".*no version specified.*"
+	schemaVersionEmptyErr := ".*schema version is empty.*"
+	multipleVersionErr := ".*has multiple default versions.*"
 
 	tests := []struct {
 		name           string
@@ -49,8 +54,14 @@ func TestValidateIndexComponent(t *testing.T) {
 			"Case 2: test index component links are empty for stack component",
 			schema.Schema{
 				Name: "nodejs",
-				Resources: []string{
-					"devfile.yaml",
+				Versions: []schema.Version{
+					{
+						Version: "1.0.0",
+						SchemaVersion: "2.0.0",
+						Resources: []string{
+							"devfile.yaml",
+						},
+					},
 				},
 			},
 			schema.StackDevfileType,
@@ -60,8 +71,14 @@ func TestValidateIndexComponent(t *testing.T) {
 			"Case 3: test index component resources are empty for stack component",
 			schema.Schema{
 				Name: "nodejs",
-				Links: map[string]string{
-					"self": "devfile-catalog/java-maven:latest",
+				Versions: []schema.Version{
+					{
+						Version: "1.0.0",
+						SchemaVersion: "2.0.0",
+						Links: map[string]string{
+							"self": "devfile-catalog/java-maven:latest",
+						},
+					},
 				},
 			},
 			schema.StackDevfileType,
@@ -79,23 +96,40 @@ func TestValidateIndexComponent(t *testing.T) {
 			"Case 5: test happy path for for stack component",
 			schema.Schema{
 				Name: "nodejs",
-				Links: map[string]string{
-					"self": "devfile-catalog/java-maven:latest",
-				},
-				Resources: []string{
-					"devfile.yaml",
-				},
 				Architectures: []string{
 					"amd64",
 				},
 				Provider:   "Red Hat",
 				SupportUrl: "http://testurl/support.md",
+				Versions: []schema.Version{
+					{
+						Version: "1.0.0",
+						SchemaVersion: "2.0.0",
+						Default: true,
+						Links: map[string]string{
+						"self": "devfile-catalog/java-maven:1.0.0",
+						},
+						Resources: []string{
+							"devfile.yaml",
+						},
+					},
+					{
+						Version: "1.1.0",
+						SchemaVersion: "2.1.0",
+						Links: map[string]string{
+							"self": "devfile-catalog/java-maven:2.1.0",
+						},
+						Resources: []string{
+							"devfile.yaml",
+						},
+					},
+				},
 			},
 			schema.StackDevfileType,
 			nil,
 		},
 		{
-			"Case 6: test happy path for for sample component",
+			"Case 6: test happy path for for sample component with old struct",
 			schema.Schema{
 				Name: "nodejs",
 				Git: &schema.Git{
@@ -145,11 +179,18 @@ func TestValidateIndexComponent(t *testing.T) {
 			"Case 9: check for missing provider",
 			schema.Schema{
 				Name: "nodejs",
-				Links: map[string]string{
-					"self": "devfile-catalog/java-maven:latest",
-				},
-				Resources: []string{
-					"devfile.yaml",
+				Versions: []schema.Version{
+					{
+						Version: "1.0.0",
+						SchemaVersion: "2.0.0",
+						Default: true,
+						Links: map[string]string{
+							"self": "devfile-catalog/java-maven:latest",
+						},
+						Resources: []string{
+							"devfile.yaml",
+						},
+					},
 				},
 				Architectures: []string{
 					"amd64",
@@ -163,11 +204,18 @@ func TestValidateIndexComponent(t *testing.T) {
 			"Case 10: check for missing supportUrl",
 			schema.Schema{
 				Name: "nodejs",
-				Links: map[string]string{
-					"self": "devfile-catalog/java-maven:latest",
-				},
-				Resources: []string{
-					"devfile.yaml",
+				Versions: []schema.Version{
+					{
+						Version: "1.0.0",
+						SchemaVersion: "2.0.0",
+						Default: true,
+						Links: map[string]string{
+							"self": "devfile-catalog/java-maven:latest",
+						},
+						Resources: []string{
+							"devfile.yaml",
+						},
+					},
 				},
 				Architectures: []string{
 					"amd64",
@@ -176,6 +224,244 @@ func TestValidateIndexComponent(t *testing.T) {
 			},
 			schema.StackDevfileType,
 			&noSupportUrlErr,
+		},
+		{
+			"Case 11: empty version list",
+			schema.Schema{
+				Name: "nodejs",
+				Versions: []schema.Version{},
+			},
+			schema.StackDevfileType,
+			&versionsEmptyErr,
+		},
+		{
+			"Case 12: test stack component missing default version",
+			schema.Schema{
+				Name: "nodejs",
+				Architectures: []string{
+					"amd64",
+				},
+				Provider:   "Red Hat",
+				SupportUrl: "http://testurl/support.md",
+				Versions: []schema.Version{
+					{
+						Version: "1.0.0",
+						SchemaVersion: "2.0.0",
+						Links: map[string]string{
+							"self": "devfile-catalog/java-maven:latest",
+						},
+						Resources: []string{
+							"devfile.yaml",
+						},
+					},
+				},
+			},
+			schema.StackDevfileType,
+			&noDefaultVersionErr,
+		},
+		{
+			"Case 13: test stack component missing version",
+			schema.Schema{
+				Name: "nodejs",
+				Versions: []schema.Version{
+					{
+						SchemaVersion: "2.0.0",
+						Links: map[string]string{
+							"self": "devfile-catalog/java-maven:latest",
+						},
+						Resources: []string{
+							"devfile.yaml",
+						},
+					},
+				},
+			},
+			schema.StackDevfileType,
+			&noVersionErr,
+		},
+		{
+			"Case 14: test stack component missing schema version",
+			schema.Schema{
+				Name: "nodejs",
+				Versions: []schema.Version{
+					{
+						Version: "1.0.0",
+						Links: map[string]string{
+							"self": "devfile-catalog/java-maven:latest",
+						},
+						Resources: []string{
+							"devfile.yaml",
+						},
+					},
+				},
+			},
+			schema.StackDevfileType,
+			&schemaVersionEmptyErr,
+		},
+		{
+			"Case 15: test stack component multiple default version",
+			schema.Schema{
+				Name: "nodejs",
+				Architectures: []string{
+					"amd64",
+				},
+				Provider:   "Red Hat",
+				SupportUrl: "http://testurl/support.md",
+				Versions: []schema.Version{
+					{
+						Version: "1.0.0",
+						SchemaVersion: "2.0.0",
+						Default: true,
+						Links: map[string]string{
+							"self": "devfile-catalog/java-maven:1.0.0",
+						},
+						Resources: []string{
+							"devfile.yaml",
+						},
+					},
+					{
+						Version: "1.1.0",
+						SchemaVersion: "2.1.0",
+						Default: true,
+						Links: map[string]string{
+							"self": "devfile-catalog/java-maven:1.1.0",
+						},
+						Resources: []string{
+							"devfile.yaml",
+						},
+					},
+				},
+			},
+			schema.StackDevfileType,
+			&multipleVersionErr,
+		},
+		{
+			"Case 16: test happy path for for sample component with new struct",
+			schema.Schema{
+				Name: "nodejs",
+				Versions: []schema.Version{
+					{
+						Version: "1.0.0",
+						SchemaVersion: "2.0.0",
+						Default: true,
+						Git: &schema.Git{
+							Remotes: map[string]string{
+								"origin": "https://github.com/redhat-developer/devfile-sample/nodejs",
+							},
+						},
+					},
+					{
+						Version: "1.1.0",
+						SchemaVersion: "2.1.0",
+						Git: &schema.Git{
+							Remotes: map[string]string{
+								"origin": "https://github.com/redhat-developer/devfile-sample/nodejs-2.1.0",
+							},
+						},
+					},
+				},
+				SupportUrl: "http://testurl/support.md",
+				Provider:   "Red Hat",
+				Architectures: []string{
+					"amd64",
+				},
+			},
+			schema.SampleDevfileType,
+			nil,
+		},
+		{
+			"Case 17: test sample component missing default version",
+			schema.Schema{
+				Name: "nodejs",
+				Architectures: []string{
+					"amd64",
+				},
+				Provider:   "Red Hat",
+				SupportUrl: "http://testurl/support.md",
+				Versions: []schema.Version{
+					{
+						Version: "1.0.0",
+						SchemaVersion: "2.0.0",
+						Git: &schema.Git{
+							Remotes: map[string]string{
+								"origin": "https://github.com/redhat-developer/devfile-sample/nodejs",
+							},
+						},
+					},
+				},
+			},
+			schema.SampleDevfileType,
+			&noDefaultVersionErr,
+		},
+		{
+			"Case 18: test sample component missing version",
+			schema.Schema{
+				Name: "nodejs",
+				Versions: []schema.Version{
+					{
+						SchemaVersion: "2.0.0",
+						Git: &schema.Git{
+							Remotes: map[string]string{
+								"origin": "https://github.com/redhat-developer/devfile-sample/nodejs",
+							},
+						},
+					},
+				},
+			},
+			schema.SampleDevfileType,
+			&noVersionErr,
+		},
+		{
+			"Case 19: test sample component missing schema version",
+			schema.Schema{
+				Name: "nodejs",
+				Versions: []schema.Version{
+					{
+						Version: "1.0.0",
+						Git: &schema.Git{
+							Remotes: map[string]string{
+								"origin": "https://github.com/redhat-developer/devfile-sample/nodejs",
+							},
+						},
+					},
+				},
+			},
+			schema.SampleDevfileType,
+			&schemaVersionEmptyErr,
+		},
+		{
+			"Case 20: test sample component multiple default version",
+			schema.Schema{
+				Name: "nodejs",
+				Architectures: []string{
+					"amd64",
+				},
+				Provider:   "Red Hat",
+				SupportUrl: "http://testurl/support.md",
+				Versions: []schema.Version{
+					{
+						Version: "1.0.0",
+						SchemaVersion: "2.0.0",
+						Default: true,
+						Git: &schema.Git{
+							Remotes: map[string]string{
+								"origin": "https://github.com/redhat-developer/devfile-sample/nodejs",
+							},
+						},
+					},
+					{
+						Version: "1.1.0",
+						SchemaVersion: "2.1.0",
+						Default: true,
+						Git: &schema.Git{
+							Remotes: map[string]string{
+								"origin": "https://github.com/redhat-developer/devfile-sample/nodejs-2.1.0",
+							},
+						},
+					},
+				},
+			},
+			schema.SampleDevfileType,
+			&multipleVersionErr,
 		},
 	}
 

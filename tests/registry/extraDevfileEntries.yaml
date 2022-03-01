@@ -7,9 +7,14 @@ samples:
     tags: ["NodeJS", "Express"]
     projectType: nodejs
     language: nodejs
-    git:
-      remotes:
-        origin: https://github.com/nodeshift-starters/devfile-sample.git
+    versions:
+      - version: 1.1.0
+        schemaVersion: 2.2.0
+        default: true
+        description: nodejs with devfile v2.2.0
+        git:
+          remotes:
+            origin: https://github.com/nodeshift-starters/devfile-sample.git
   - name: code-with-quarkus
     displayName: Basic Quarkus
     description: A simple Hello World Java application using Quarkus
@@ -17,9 +22,20 @@ samples:
     tags: ["Java", "Quarkus"]
     projectType: quarkus
     language: java
-    git:
-      remotes:
-        origin: https://github.com/devfile-samples/devfile-sample-code-with-quarkus.git
+    versions:
+      - version: 1.1.0
+        schemaVersion: 2.2.0
+        default: true
+        description: java quarkus with devfile v2.2.0
+        git:
+          remotes:
+            origin: https://github.com/devfile-samples/devfile-sample-code-with-quarkus.git
+      - version: 1.0.0
+        schemaVersion: 2.0.0
+        description: java quarkus with devfile v2.0.0
+        git:
+          remotes:
+            origin: https://github.com/elsony/devfile-sample-code-with-quarkus.git
   - name: java-springboot-basic
     displayName: Basic Spring Boot
     description: A simple Hello World Java Spring Boot application using Maven

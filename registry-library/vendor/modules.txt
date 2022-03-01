@@ -46,7 +46,7 @@ github.com/containerd/containerd/remotes/docker/schema1
 github.com/containerd/containerd/remotes/errors
 github.com/containerd/containerd/sys
 github.com/containerd/containerd/version
-# github.com/devfile/registry-support/index/generator v0.0.0-20211012185733-0a73f866043f
+# github.com/devfile/registry-support/index/generator v0.0.0-20220222194908-7a90a4214f3e
 ## explicit
 github.com/devfile/registry-support/index/generator/schema
 # github.com/fsnotify/fsnotify v1.4.9

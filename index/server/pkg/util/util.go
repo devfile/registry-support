@@ -141,3 +141,37 @@ func GetOptionalEnv(key string, defaultValue interface{}) interface{} {
 	}
 	return defaultValue
 }
+
+func ConvertToOldIndexFormat(schemaList []indexSchema.Schema) []indexSchema.Schema {
+	var oldSchemaList []indexSchema.Schema
+	for _, schema := range schemaList {
+		oldSchema := schema
+		oldSchema.Versions = nil
+		if (schema.Versions == nil || len(schema.Versions) == 0) && schema.Type == indexSchema.SampleDevfileType {
+			oldSchemaList = append(oldSchemaList, oldSchema)
+			continue
+		}
+		for _, versionComponent := range schema.Versions {
+			if !versionComponent.Default {
+				continue
+			}
+			if versionComponent.Tags != nil && len(versionComponent.Tags) > 0 {
+				oldSchema.Tags = versionComponent.Tags
+			}
+			if versionComponent.Architectures != nil && len(versionComponent.Architectures) > 0 {
+				oldSchema.Architectures = versionComponent.Architectures
+			}
+			if schema.Type == indexSchema.SampleDevfileType {
+				oldSchema.Git = versionComponent.Git
+			} else {
+				oldSchema.Links = versionComponent.Links
+				oldSchema.Resources = versionComponent.Resources
+				oldSchema.StarterProjects = versionComponent.StarterProjects
+				oldSchema.Version = versionComponent.Version
+			}
+			oldSchemaList = append(oldSchemaList, oldSchema)
+			break
+		}
+	}
+	return oldSchemaList
+}

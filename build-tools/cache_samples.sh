@@ -14,10 +14,21 @@ function cache_sample() {
     local sampleName="$1"
     local outputDir="$2"
     tempDir=$(mktemp -d)
+    sampleDir=$tempDir/$sampleName
 
     # Git clone the sample project
-    local gitRepository="$(yq e '(.samples[] | select(.name == "'${sampleName}'")' $devfileEntriesFile | yq e '(.git.remotes.origin)' -)"
-    git clone "$gitRepository" "$tempDir/$sampleName"
+    gitRepository="$(yq e '(.samples[] | select(.name == "'${sampleName}'")' $devfileEntriesFile | yq e '(.git.remotes.origin)' -)"
+    if [[ $gitRepository == "null" ]]; then
+        for version in $(yq e '(.samples[] | select(.name == "'${sampleName}'")' $devfileEntriesFile | yq e '(.versions[].version)' -); do
+          gitRepository="$(yq e '(.samples[] | select(.name == "'${sampleName}'")' $devfileEntriesFile | yq e '(.versions[] | select(.version == "'${version}'")' -| yq e '.git.remotes.origin' -)"
+          git clone "$gitRepository" "$sampleDir/$version"
+          mkdir $outputDir/$version
+          cache_devfile $sampleDir/$version $outputDir/$version $sampleName
+        done
+    else
+      git clone "$gitRepository" "$sampleDir"
+      cache_devfile $sampleDir $outputDir/ $sampleName
+    fi
 
     # Cache the icon for the sample
     local iconPath="$(yq e '(.samples[] | select(.name == "'${sampleName}'")' $devfileEntriesFile | yq e '(.icon)' -)"
@@ -30,26 +41,30 @@ function cache_sample() {
           echo "The specified icon does not exist for sample $sampleName"
           exit 1
         fi
-        cp $tempDir/$sampleName/$iconPath $outputDir/
+        cp $sampleDir/$iconPath $outputDir/
       fi
     fi
 
-    # Cache the devfile for the sample
-    if [[ -f "$tempDir/$sampleName/devfile.yaml" ]]; then
-      cp $tempDir/$sampleName/devfile.yaml $outputDir/
-    elif [[ -f "$tempDir/$sampleName/.devfile/devfile.yaml" ]]; then
-      cp $tempDir/$sampleName/.devfile/devfile.yaml $outputDir/
-    else
-      echo "A devfile for sample $sampleName could not be found."
-      echo "Please ensure a devfile exists in the root of the repository or under .devfile/"
-      exit 1
-    fi
-
-    
     # Archive the sample project
     (cd $tempDir && zip -r sampleName.zip $sampleName/)
     cp $tempDir/sampleName.zip $outputDir/
     
+}
+
+function cache_devfile() {
+    local srcDir="$1"
+    local outputDir="$2"
+    local sampleName="$3"
+    # Cache the devfile for the sample
+    if [[ -f "$srcDir/devfile.yaml" ]]; then
+      cp $srcDir/devfile.yaml $outputDir/
+    elif [[ -f "$srcDir/.devfile/devfile.yaml" ]]; then
+      cp $srcDir/.devfile/devfile.yaml $outputDir/
+    else
+      echo "A devfile for sample $sampleName, version $(basename $srcDir) could not be found."
+      echo "Please ensure a devfile exists in the root of the repository or under .devfile/"
+      exit 1
+    fi
 }
 
 devfileEntriesFile=$1
