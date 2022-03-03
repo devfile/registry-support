@@ -5,10 +5,10 @@ import (
 )
 
 // FilterDevfileArchitectures filters devfiles based on architectures
-func FilterDevfileArchitectures(index []indexSchema.Schema, archs []string) []indexSchema.Schema {
+func FilterDevfileArchitectures(index []indexSchema.Schema, archs []string, v1Index bool) []indexSchema.Schema {
 	for i := 0; i < len(index); i++ {
 		if len(index[i].Architectures) == 0 {
-			// If a devfile has no architectures mentioned, then it supports all architectures
+			// If a stack has no architectures mentioned, then it supports all architectures
 			continue
 		}
 
@@ -36,6 +36,43 @@ func FilterDevfileArchitectures(index []indexSchema.Schema, archs []string) []in
 
 			// decrement counter, since we shifted the array
 			i--
+			continue
+		}
+
+		// go through each version's architecture if multi-version stack is supported
+		if !v1Index {
+			for versionIndex := 0; versionIndex < len(index[i].Versions); versionIndex++ {
+				versionArchs := index[i].Versions[versionIndex].Architectures
+				if len(versionArchs) == 0 {
+					// If a devfile has no architectures mentioned, then it supports all architectures
+					continue
+				}
+				archInVersion := true
+				for _, requestedArch := range archs {
+					archPresentInVersion := false
+					for _, versionArch := range versionArchs{
+						if requestedArch == versionArch {
+							archPresentInVersion = true
+							break
+						}
+					}
+					if !archPresentInVersion {
+						// if one of the arch requested is not present, no need to search for the others
+						archInVersion = false
+						break
+					}
+				}
+
+				if !archInVersion {
+					// if an arch requested is not present in a devfile, filter it out
+					index[i].Versions = append(index[i].Versions[:versionIndex], index[i].Versions[versionIndex+1:]...)
+
+					// decrement counter, since we shifted the array
+					versionIndex--
+					continue
+				}
+
+			}
 		}
 	}
 

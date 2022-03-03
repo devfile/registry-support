@@ -26,12 +26,21 @@ func serveRootEndpoint(c *gin.Context) {
 	if util.IsHtmlRequested(acceptHeader) {
 		c.Redirect(http.StatusFound, "/viewer")
 	} else {
-		serveDevfileIndex(c)
+		serveDevfileIndex(c, true)
 	}
 }
 
+func serveDevfileIndexV1(c *gin.Context) {
+	serveDevfileIndex(c, true)
+}
+
+func serveDevfileIndexV2(c *gin.Context) {
+	serveDevfileIndex(c, false)
+}
+
+
 // serveDevfileIndex serves the index.json file located in the container at `serveDevfileIndex`
-func serveDevfileIndex(c *gin.Context) {
+func serveDevfileIndex(c *gin.Context, wantV1Index bool) {
 	// Start the counter for the request
 	var status string
 	timer := prometheus.NewTimer(prometheus.ObserverFunc(func(v float64) {
@@ -45,14 +54,23 @@ func serveDevfileIndex(c *gin.Context) {
 	c.Params = append(c.Params, gin.Param{Key: "type", Value: string(indexSchema.StackDevfileType)})
 
 	// Serve the index.json file
-	buildIndexAPIResponse(c)
+	buildIndexAPIResponse(c, wantV1Index)
 }
 
-// serveDevfileIndexWithType returns the index file content with specific devfile type
-func serveDevfileIndexWithType(c *gin.Context) {
+func serveDevfileIndexV1WithType(c *gin.Context) {
 
 	// Serve the index with type
-	buildIndexAPIResponse(c)
+	buildIndexAPIResponse(c, true)
+}
+
+func serveDevfileIndexV2WithType(c *gin.Context) {
+
+	// Serve the index with type
+	buildIndexAPIResponse(c, false)
+}
+
+func serveDevfileIndexV2WithName(c *gin.Context) {
+	name := c.Param("name")
 }
 
 // serveHealthCheck serves endpoint `/health` for registry health check
@@ -62,9 +80,13 @@ func serveHealthCheck(c *gin.Context) {
 	})
 }
 
-// serveDevfile returns the devfile content
-func serveDevfile(c *gin.Context) {
+func serveDevfileWithVersion(c *gin.Context) {
 	name := c.Param("name")
+	version := c.Param("version")
+	wantDefault := false
+	if version == "default" {
+		wantDefault = true
+	}
 
 	var index []indexSchema.Schema
 	bytes, err := ioutil.ReadFile(indexPath)
@@ -94,17 +116,26 @@ func serveDevfile(c *gin.Context) {
 					sampleDevfilePath = path.Join(samplesPath, devfileIndex.Name, devfileName)
 				}
 			} else {
-				for _, version := range devfileIndex.Versions {
-					if !version.Default {
+				versionFound := false
+				for _, versionElement := range devfileIndex.Versions {
+					if (wantDefault && !versionElement.Default) || (!wantDefault && versionElement.Version != version) {
 						continue
 					}
+					versionFound = true
 					if devfileIndex.Type == indexSchema.StackDevfileType {
-						bytes, err = pullStackFromRegistry(version)
+						bytes, err = pullStackFromRegistry(versionElement)
 					} else {
 						// Retrieve the sample devfile stored under /registry/samples/<devfile>
-						sampleDevfilePath = path.Join(samplesPath, devfileIndex.Name, version.Version, devfileName)
+						sampleDevfilePath = path.Join(samplesPath, devfileIndex.Name, versionElement.Version, devfileName)
 					}
 					break
+				}
+				if !versionFound {
+					c.JSON(http.StatusInternalServerError, gin.H{
+						"error":  err.Error(),
+						"status": fmt.Sprintf("version: %s not found in stack %s", version, name),
+					})
+					return
 				}
 			}
 			if sampleDevfilePath != "" {
@@ -151,6 +182,13 @@ func serveDevfile(c *gin.Context) {
 	})
 }
 
+// serveDevfile returns the devfile content
+func serveDevfile(c *gin.Context) {
+	// append the stack version, for endpoint /devfiles/name without version
+	c.Params = append(c.Params, gin.Param{Key: "version", Value: "default"})
+	serveDevfileWithVersion(c)
+}
+
 func serveUI(c *gin.Context) {
 	remote, err := url.Parse(scheme + "://" + viewerService + "/viewer/")
 	if err != nil {
@@ -173,7 +211,7 @@ func serveUI(c *gin.Context) {
 }
 
 // buildIndexAPIResponse builds the response of the REST API of getting the devfile index
-func buildIndexAPIResponse(c *gin.Context) {
+func buildIndexAPIResponse(c *gin.Context, wantV1Index bool) {
 
 	indexType := c.Param("type")
 	iconType := c.Query("icon")
@@ -231,10 +269,12 @@ func buildIndexAPIResponse(c *gin.Context) {
 		})
 		return
 	}
-	index = util.ConvertToOldIndexFormat(index)
+	if wantV1Index {
+		index = util.ConvertToOldIndexFormat(index)
+	}
 	// Filter the index if archs has been requested
 	if len(archs) > 0 {
-		index = util.FilterDevfileArchitectures(index, archs)
+		index = util.FilterDevfileArchitectures(index, archs, wantV1Index)
 	}
 	bytes, err = json.MarshalIndent(&index, "", "  ")
 	if err != nil {

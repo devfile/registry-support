@@ -130,10 +130,16 @@ func ServeRegistry() {
 
 	// Registry REST APIs
 	router.GET("/", serveRootEndpoint)
-	router.GET("/index", serveDevfileIndex)
-	router.GET("/index/:type", serveDevfileIndexWithType)
+	router.GET("/index", serveDevfileIndexV1)
+	router.GET("/index/:type", serveDevfileIndexV1WithType)
 	router.GET("/health", serveHealthCheck)
 	router.GET("/devfiles/:name", serveDevfile)
+	router.GET("/devfiles/:name/:version", serveDevfileWithVersion)
+
+	// Registry REST APIs for index v2
+	router.GET("/v2/index", serveDevfileIndexV2)
+	router.GET("/v2/index/:type", serveDevfileIndexV2WithType)
+	router.GET("/v2/index/:name", serveDevfileIndexV2WithName)
 
 	// Set up a simple proxy for /v2 endpoints
 	// Only allow HEAD and GET requests
