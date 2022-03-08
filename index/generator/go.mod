@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/devfile/api/v2 v2.0.0-20220117162434-6e6e6a8bc14c
-	github.com/devfile/library v1.2.1-0.20220217161036-0f5995513e92
+	github.com/devfile/library v1.2.1-0.20220308191614-f0f7e11b17de
 	github.com/go-git/go-git/v5 v5.4.2
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/spf13/cobra v1.2.1
