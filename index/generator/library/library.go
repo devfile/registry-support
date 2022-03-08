@@ -234,8 +234,8 @@ func parseDevfileRegistry(registryDirPath string, force bool) ([]schema.Schema, 
 
 			for _, version := range indexComponent.Versions {
 				// if a particular version supports all architectures, the top architecture List should be empty (support all) as well
-				if len(version.Architectures) == 0 {
-					indexComponent.Architectures = []string{}
+				if version.Architectures == nil || len(version.Architectures) == 0 {
+					indexComponent.Architectures = nil
 					break
 				}
 			}
