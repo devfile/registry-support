@@ -128,11 +128,6 @@ func ServeRegistry() {
 	// Start the server and serve requests and index.json
 	router := gin.Default()
 
-	// Set up a simple proxy for /v2 endpoints
-	// Only allow HEAD and GET requests
-	router.HEAD("/v2/*proxyPath", ociServerProxy)
-	router.GET("/v2/*proxyPath", ociServerProxy)
-
 	// Registry REST APIs
 	router.GET("/", serveRootEndpoint)
 	router.GET("/index", serveDevfileIndexV1)
@@ -144,6 +139,11 @@ func ServeRegistry() {
 	// Registry REST APIs for index v2
 	router.GET("/v2index", serveDevfileIndexV2)
 	router.GET("/v2index/:type", serveDevfileIndexV2WithType)
+
+	// Set up a simple proxy for /v2 endpoints
+	// Only allow HEAD and GET requests
+	router.HEAD("/v2/*proxyPath", ociServerProxy)
+	router.GET("/v2/*proxyPath", ociServerProxy)
 
 	// Set up routes for the registry viewer
 	router.GET("/viewer", serveUI)

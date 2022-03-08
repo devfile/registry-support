@@ -160,6 +160,7 @@ func serveDevfileWithVersion(c *gin.Context) {
 								"error":  err.Error(),
 								"status": fmt.Sprintf("failed to parse the stack version %s for stack %s", latestVersion, name),
 							})
+							return
 						}
 						current, err := versionpkg.NewVersion(versionElement.Version)
 						if err != nil {
@@ -168,6 +169,7 @@ func serveDevfileWithVersion(c *gin.Context) {
 								"error":  err.Error(),
 								"status": fmt.Sprintf("failed to parse the stack version %s for stack %s", versionElement.Version, name),
 							})
+							return
 						}
 						if current.GreaterThan(latest) {
 							latestVersion = versionElement.Version
