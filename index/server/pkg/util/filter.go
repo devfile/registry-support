@@ -1,7 +1,10 @@
 package util
 
 import (
+	"fmt"
 	indexSchema "github.com/devfile/registry-support/index/generator/schema"
+	versionpkg "github.com/hashicorp/go-version"
+	"strings"
 )
 
 // FilterDevfileArchitectures filters devfiles based on architectures
@@ -50,7 +53,7 @@ func FilterDevfileArchitectures(index []indexSchema.Schema, archs []string, v1In
 				archInVersion := true
 				for _, requestedArch := range archs {
 					archPresentInVersion := false
-					for _, versionArch := range versionArchs{
+					for _, versionArch := range versionArchs {
 						if requestedArch == versionArch {
 							archPresentInVersion = true
 							break
@@ -69,7 +72,6 @@ func FilterDevfileArchitectures(index []indexSchema.Schema, archs []string, v1In
 
 					// decrement counter, since we shifted the array
 					versionIndex--
-					continue
 				}
 
 			}
@@ -77,4 +79,54 @@ func FilterDevfileArchitectures(index []indexSchema.Schema, archs []string, v1In
 	}
 
 	return index
+}
+
+// FilterDevfileSchemaVersion filters devfiles based on schema version
+func FilterDevfileSchemaVersion(index []indexSchema.Schema, minSchemaVersion string, maxSchemaVersion string) ([]indexSchema.Schema, error) {
+	for i := 0; i < len(index); i++ {
+		for versionIndex := 0; versionIndex < len(index[i].Versions); versionIndex++ {
+			currectSchemaVersion := index[i].Versions[versionIndex].SchemaVersion
+			schemaVersionWithoutServiceVersion := currectSchemaVersion[:strings.LastIndex(currectSchemaVersion, ".")]
+			curVersion, err := versionpkg.NewVersion(schemaVersionWithoutServiceVersion)
+			if err != nil {
+				return nil, fmt.Errorf("failed to parse schemaVersion %s for stack: %s, version %s. Error: %v", currectSchemaVersion, index[i].Name, index[i].Versions[versionIndex].Version, err)
+			}
+
+			versionInRange := true
+			if minSchemaVersion != "" {
+				minVersion, err := versionpkg.NewVersion(minSchemaVersion)
+				if err != nil {
+					return nil, fmt.Errorf("failed to parse minSchemaVersion %s. Error: %v", minSchemaVersion, err)
+				}
+				if minVersion.GreaterThan(curVersion) {
+					versionInRange = false
+				}
+			}
+			if versionInRange && maxSchemaVersion != "" {
+				maxVersion, err := versionpkg.NewVersion(maxSchemaVersion)
+				if err != nil {
+					return nil, fmt.Errorf("failed to parse maxSchemaVersion %s. Error: %v", maxSchemaVersion, err)
+				}
+				if maxVersion.LessThan(curVersion) {
+					versionInRange = false
+				}
+			}
+			if !versionInRange {
+				// if schemaVersion is not in requested range, filter it out
+				index[i].Versions = append(index[i].Versions[:versionIndex], index[i].Versions[versionIndex+1:]...)
+
+				// decrement counter, since we shifted the array
+				versionIndex--
+			}
+		}
+		if len(index[i].Versions) == 0 {
+			// if versions list is empty after filter, remove this index
+			index = append(index[:i], index[i+1:]...)
+
+			// decrement counter, since we shifted the array
+			i--
+		}
+	}
+
+	return index, nil
 }

@@ -56,7 +56,7 @@ func TestValidateIndexComponent(t *testing.T) {
 				Name: "nodejs",
 				Versions: []schema.Version{
 					{
-						Version: "1.0.0",
+						Version:       "1.0.0",
 						SchemaVersion: "2.0.0",
 						Resources: []string{
 							"devfile.yaml",
@@ -73,7 +73,7 @@ func TestValidateIndexComponent(t *testing.T) {
 				Name: "nodejs",
 				Versions: []schema.Version{
 					{
-						Version: "1.0.0",
+						Version:       "1.0.0",
 						SchemaVersion: "2.0.0",
 						Links: map[string]string{
 							"self": "devfile-catalog/java-maven:latest",
@@ -103,18 +103,18 @@ func TestValidateIndexComponent(t *testing.T) {
 				SupportUrl: "http://testurl/support.md",
 				Versions: []schema.Version{
 					{
-						Version: "1.0.0",
+						Version:       "1.0.0",
 						SchemaVersion: "2.0.0",
-						Default: true,
+						Default:       true,
 						Links: map[string]string{
-						"self": "devfile-catalog/java-maven:1.0.0",
+							"self": "devfile-catalog/java-maven:1.0.0",
 						},
 						Resources: []string{
 							"devfile.yaml",
 						},
 					},
 					{
-						Version: "1.1.0",
+						Version:       "1.1.0",
 						SchemaVersion: "2.1.0",
 						Links: map[string]string{
 							"self": "devfile-catalog/java-maven:2.1.0",
@@ -181,9 +181,9 @@ func TestValidateIndexComponent(t *testing.T) {
 				Name: "nodejs",
 				Versions: []schema.Version{
 					{
-						Version: "1.0.0",
+						Version:       "1.0.0",
 						SchemaVersion: "2.0.0",
-						Default: true,
+						Default:       true,
 						Links: map[string]string{
 							"self": "devfile-catalog/java-maven:latest",
 						},
@@ -206,9 +206,9 @@ func TestValidateIndexComponent(t *testing.T) {
 				Name: "nodejs",
 				Versions: []schema.Version{
 					{
-						Version: "1.0.0",
+						Version:       "1.0.0",
 						SchemaVersion: "2.0.0",
-						Default: true,
+						Default:       true,
 						Links: map[string]string{
 							"self": "devfile-catalog/java-maven:latest",
 						},
@@ -228,7 +228,7 @@ func TestValidateIndexComponent(t *testing.T) {
 		{
 			"Case 11: empty version list",
 			schema.Schema{
-				Name: "nodejs",
+				Name:     "nodejs",
 				Versions: []schema.Version{},
 			},
 			schema.StackDevfileType,
@@ -245,7 +245,7 @@ func TestValidateIndexComponent(t *testing.T) {
 				SupportUrl: "http://testurl/support.md",
 				Versions: []schema.Version{
 					{
-						Version: "1.0.0",
+						Version:       "1.0.0",
 						SchemaVersion: "2.0.0",
 						Links: map[string]string{
 							"self": "devfile-catalog/java-maven:latest",
@@ -308,9 +308,9 @@ func TestValidateIndexComponent(t *testing.T) {
 				SupportUrl: "http://testurl/support.md",
 				Versions: []schema.Version{
 					{
-						Version: "1.0.0",
+						Version:       "1.0.0",
 						SchemaVersion: "2.0.0",
-						Default: true,
+						Default:       true,
 						Links: map[string]string{
 							"self": "devfile-catalog/java-maven:1.0.0",
 						},
@@ -319,9 +319,9 @@ func TestValidateIndexComponent(t *testing.T) {
 						},
 					},
 					{
-						Version: "1.1.0",
+						Version:       "1.1.0",
 						SchemaVersion: "2.1.0",
-						Default: true,
+						Default:       true,
 						Links: map[string]string{
 							"self": "devfile-catalog/java-maven:1.1.0",
 						},
@@ -340,9 +340,9 @@ func TestValidateIndexComponent(t *testing.T) {
 				Name: "nodejs",
 				Versions: []schema.Version{
 					{
-						Version: "1.0.0",
+						Version:       "1.0.0",
 						SchemaVersion: "2.0.0",
-						Default: true,
+						Default:       true,
 						Git: &schema.Git{
 							Remotes: map[string]string{
 								"origin": "https://github.com/redhat-developer/devfile-sample/nodejs",
@@ -350,7 +350,7 @@ func TestValidateIndexComponent(t *testing.T) {
 						},
 					},
 					{
-						Version: "1.1.0",
+						Version:       "1.1.0",
 						SchemaVersion: "2.1.0",
 						Git: &schema.Git{
 							Remotes: map[string]string{
@@ -379,7 +379,7 @@ func TestValidateIndexComponent(t *testing.T) {
 				SupportUrl: "http://testurl/support.md",
 				Versions: []schema.Version{
 					{
-						Version: "1.0.0",
+						Version:       "1.0.0",
 						SchemaVersion: "2.0.0",
 						Git: &schema.Git{
 							Remotes: map[string]string{
@@ -439,9 +439,9 @@ func TestValidateIndexComponent(t *testing.T) {
 				SupportUrl: "http://testurl/support.md",
 				Versions: []schema.Version{
 					{
-						Version: "1.0.0",
+						Version:       "1.0.0",
 						SchemaVersion: "2.0.0",
-						Default: true,
+						Default:       true,
 						Git: &schema.Git{
 							Remotes: map[string]string{
 								"origin": "https://github.com/redhat-developer/devfile-sample/nodejs",
@@ -449,9 +449,9 @@ func TestValidateIndexComponent(t *testing.T) {
 						},
 					},
 					{
-						Version: "1.1.0",
+						Version:       "1.1.0",
 						SchemaVersion: "2.1.0",
-						Default: true,
+						Default:       true,
 						Git: &schema.Git{
 							Remotes: map[string]string{
 								"origin": "https://github.com/redhat-developer/devfile-sample/nodejs-2.1.0",

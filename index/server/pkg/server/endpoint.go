@@ -10,10 +10,12 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"regexp"
 
 	indexSchema "github.com/devfile/registry-support/index/generator/schema"
 	"github.com/devfile/registry-support/index/server/pkg/util"
 	"github.com/gin-gonic/gin"
+	versionpkg "github.com/hashicorp/go-version"
 	"github.com/prometheus/client_golang/prometheus"
 	"gopkg.in/segmentio/analytics-go.v3"
 )
@@ -37,7 +39,6 @@ func serveDevfileIndexV1(c *gin.Context) {
 func serveDevfileIndexV2(c *gin.Context) {
 	serveDevfileIndex(c, false)
 }
-
 
 // serveDevfileIndex serves the index.json file located in the container at `serveDevfileIndex`
 func serveDevfileIndex(c *gin.Context, wantV1Index bool) {
@@ -69,10 +70,6 @@ func serveDevfileIndexV2WithType(c *gin.Context) {
 	buildIndexAPIResponse(c, false)
 }
 
-func serveDevfileIndexV2WithName(c *gin.Context) {
-	name := c.Param("name")
-}
-
 // serveHealthCheck serves endpoint `/health` for registry health check
 func serveHealthCheck(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
@@ -83,10 +80,6 @@ func serveHealthCheck(c *gin.Context) {
 func serveDevfileWithVersion(c *gin.Context) {
 	name := c.Param("name")
 	version := c.Param("version")
-	wantDefault := false
-	if version == "default" {
-		wantDefault = true
-	}
 
 	var index []indexSchema.Schema
 	bytes, err := ioutil.ReadFile(indexPath)
@@ -116,21 +109,48 @@ func serveDevfileWithVersion(c *gin.Context) {
 					sampleDevfilePath = path.Join(samplesPath, devfileIndex.Name, devfileName)
 				}
 			} else {
-				versionFound := false
+				// versionFound := false
+				versionMap := make(map[string]indexSchema.Version)
+				var latestVersion string
 				for _, versionElement := range devfileIndex.Versions {
-					if (wantDefault && !versionElement.Default) || (!wantDefault && versionElement.Version != version) {
-						continue
+					versionMap[versionElement.Version] = versionElement
+					if versionElement.Default {
+						versionMap["default"] = versionElement
 					}
-					versionFound = true
+					if latestVersion != "" {
+						latest, err := versionpkg.NewVersion(latestVersion)
+						if err != nil {
+							log.Print(err.Error())
+							c.JSON(http.StatusInternalServerError, gin.H{
+								"error":  err.Error(),
+								"status": fmt.Sprintf("failed to parse the stack version %s for stack %s", latestVersion, name),
+							})
+						}
+						current, err := versionpkg.NewVersion(versionElement.Version)
+						if err != nil {
+							log.Print(err.Error())
+							c.JSON(http.StatusInternalServerError, gin.H{
+								"error":  err.Error(),
+								"status": fmt.Sprintf("failed to parse the stack version %s for stack %s", versionElement.Version, name),
+							})
+						}
+						if current.GreaterThan(latest) {
+							latestVersion = versionElement.Version
+						}
+					} else {
+						latestVersion = versionElement.Version
+					}
+				}
+				versionMap["latest"] = versionMap[latestVersion]
+
+				if foundVersion, ok := versionMap[version]; ok {
 					if devfileIndex.Type == indexSchema.StackDevfileType {
-						bytes, err = pullStackFromRegistry(versionElement)
+						bytes, err = pullStackFromRegistry(foundVersion)
 					} else {
 						// Retrieve the sample devfile stored under /registry/samples/<devfile>
-						sampleDevfilePath = path.Join(samplesPath, devfileIndex.Name, versionElement.Version, devfileName)
+						sampleDevfilePath = path.Join(samplesPath, devfileIndex.Name, foundVersion.Version, devfileName)
 					}
-					break
-				}
-				if !versionFound {
+				} else {
 					c.JSON(http.StatusInternalServerError, gin.H{
 						"error":  err.Error(),
 						"status": fmt.Sprintf("version: %s not found in stack %s", version, name),
@@ -271,6 +291,37 @@ func buildIndexAPIResponse(c *gin.Context, wantV1Index bool) {
 	}
 	if wantV1Index {
 		index = util.ConvertToOldIndexFormat(index)
+	} else {
+		minSchemaVersion := c.Query("minSchemaVersion")
+		maxSchemaVersion := c.Query("maxSchemaVersion")
+		// check if schema version filters are in valid format.
+		// should only include major and minor version. e.g. 2.1
+		if minSchemaVersion != "" {
+			matched, err := regexp.MatchString(`^([2-9])\.([0-9]+)$`, minSchemaVersion)
+			if !matched || err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"status": fmt.Sprintf("minSchemaVersion %s is not valid, should only include major and minor version. %v", minSchemaVersion, err),
+				})
+				return
+			}
+		}
+		if maxSchemaVersion != "" {
+			matched, err := regexp.MatchString(`^([2-9])\.([0-9]+)$`, maxSchemaVersion)
+			if !matched || err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"status": fmt.Sprintf("maxSchemaVersion %s is not valid, should only include major and minor version. %v", maxSchemaVersion, err),
+				})
+				return
+			}
+		}
+
+		index, err = util.FilterDevfileSchemaVersion(index, minSchemaVersion, maxSchemaVersion)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"status": fmt.Sprintf("failed to apply schema version filter: %v", err),
+			})
+			return
+		}
 	}
 	// Filter the index if archs has been requested
 	if len(archs) > 0 {

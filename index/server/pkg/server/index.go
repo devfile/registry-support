@@ -97,7 +97,7 @@ func ServeRegistry() {
 			stackIndex = append(stackIndex, devfileIndex)
 		}
 
-		if devfileIndex.Versions != nil && len(devfileIndex.Versions) != 0{
+		if devfileIndex.Versions != nil && len(devfileIndex.Versions) != 0 {
 			for _, versionComponent := range devfileIndex.Versions {
 				if len(versionComponent.Resources) != 0 {
 					err := pushStackToRegistry(versionComponent, devfileIndex.Name)
@@ -137,9 +137,8 @@ func ServeRegistry() {
 	router.GET("/devfiles/:name/:version", serveDevfileWithVersion)
 
 	// Registry REST APIs for index v2
-	router.GET("/v2/index", serveDevfileIndexV2)
-	router.GET("/v2/index/:type", serveDevfileIndexV2WithType)
-	router.GET("/v2/index/:name", serveDevfileIndexV2WithName)
+	router.GET("/v2index", serveDevfileIndexV2)
+	router.GET("/v2index/:type", serveDevfileIndexV2WithType)
 
 	// Set up a simple proxy for /v2 endpoints
 	// Only allow HEAD and GET requests
