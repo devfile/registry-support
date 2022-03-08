@@ -77,3 +77,4 @@ The following fields can be configured in the Helm chart, either via the `values
 | `ociRegistry.memoryLimit`              | Memory for oci registry container               | `256Mi` |
 | `persistence.enabled`                  | Enable persistent storage for the registry      | `true` |
 | `persistence.size`                     | The size of the persistent volume (if-enabled)  | `1Gi` |
+| `telemetry.key`                        | The write key for the Segment instance          | **MUST BE SET BY USER**  |

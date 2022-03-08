@@ -32,5 +32,4 @@ persistence:
   size: 1Gi
 
 telemetry:
-  enabled: "false"
   registryName: "devfile-registry"
