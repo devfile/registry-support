@@ -1,6 +1,10 @@
 package toml
 
-import "fmt"
+import (
+	"fmt"
+	"strconv"
+	"unicode"
+)
 
 // Define tokens
 type tokenType int
@@ -30,9 +34,7 @@ const (
 	tokenRightParen
 	tokenDoubleLeftBracket
 	tokenDoubleRightBracket
-	tokenLocalDate
-	tokenLocalTime
-	tokenTimeOffset
+	tokenDate
 	tokenKeyGroup
 	tokenKeyGroupArray
 	tokenComma
@@ -66,9 +68,7 @@ var tokenTypeNames = []string{
 	")",
 	"]]",
 	"[[",
-	"LocalDate",
-	"LocalTime",
-	"TimeOffset",
+	"Date",
 	"KeyGroup",
 	"KeyGroupArray",
 	",",
@@ -95,6 +95,14 @@ func (tt tokenType) String() string {
 	return "Unknown"
 }
 
+func (t token) Int() int {
+	if result, err := strconv.Atoi(t.val); err != nil {
+		panic(err)
+	} else {
+		return result
+	}
+}
+
 func (t token) String() string {
 	switch t.typ {
 	case tokenEOF:
@@ -111,7 +119,7 @@ func isSpace(r rune) bool {
 }
 
 func isAlphanumeric(r rune) bool {
-	return 'a' <= r && r <= 'z' || 'A' <= r && r <= 'Z' || r == '_'
+	return unicode.IsLetter(r) || r == '_'
 }
 
 func isKeyChar(r rune) bool {
@@ -126,7 +134,7 @@ func isKeyStartChar(r rune) bool {
 }
 
 func isDigit(r rune) bool {
-	return '0' <= r && r <= '9'
+	return unicode.IsNumber(r)
 }
 
 func isHexDigit(r rune) bool {

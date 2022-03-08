@@ -9,9 +9,12 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 )
+
+var dateRegexp *regexp.Regexp
 
 // Define state functions
 type tomlLexStateFn func() tomlLexStateFn
@@ -23,7 +26,7 @@ type tomlLexer struct {
 	currentTokenStart int
 	currentTokenStop  int
 	tokens            []token
-	brackets          []rune
+	depth             int
 	line              int
 	col               int
 	endbufferLine     int
@@ -120,8 +123,6 @@ func (l *tomlLexer) lexVoid() tomlLexStateFn {
 	for {
 		next := l.peek()
 		switch next {
-		case '}': // after '{'
-			return l.lexRightCurlyBrace
 		case '[':
 			return l.lexTableKey
 		case '#':
@@ -137,6 +138,10 @@ func (l *tomlLexer) lexVoid() tomlLexStateFn {
 
 		if isSpace(next) {
 			l.skip()
+		}
+
+		if l.depth > 0 {
+			return l.lexRvalue
 		}
 
 		if isKeyStartChar(next) {
@@ -162,8 +167,10 @@ func (l *tomlLexer) lexRvalue() tomlLexStateFn {
 		case '=':
 			return l.lexEqual
 		case '[':
+			l.depth++
 			return l.lexLeftBracket
 		case ']':
+			l.depth--
 			return l.lexRightBracket
 		case '{':
 			return l.lexLeftCurlyBrace
@@ -181,10 +188,12 @@ func (l *tomlLexer) lexRvalue() tomlLexStateFn {
 			fallthrough
 		case '\n':
 			l.skip()
-			if len(l.brackets) > 0 && l.brackets[len(l.brackets)-1] == '[' {
-				return l.lexRvalue
+			if l.depth == 0 {
+				return l.lexVoid
 			}
-			return l.lexVoid
+			return l.lexRvalue
+		case '_':
+			return l.errorf("cannot start number with underscore")
 		}
 
 		if l.follow("true") {
@@ -213,12 +222,19 @@ func (l *tomlLexer) lexRvalue() tomlLexStateFn {
 			break
 		}
 
-		if next == '+' || next == '-' {
+		possibleDate := l.peekString(35)
+		dateMatch := dateRegexp.FindString(possibleDate)
+		if dateMatch != "" {
+			l.fastForward(len(dateMatch))
+			return l.lexDate
+		}
+
+		if next == '+' || next == '-' || isDigit(next) {
 			return l.lexNumber
 		}
 
-		if isDigit(next) {
-			return l.lexDateTimeOrNumber
+		if isAlphanumeric(next) {
+			return l.lexKey
 		}
 
 		return l.errorf("no value can start with %c", next)
@@ -228,288 +244,21 @@ func (l *tomlLexer) lexRvalue() tomlLexStateFn {
 	return nil
 }
 
-func (l *tomlLexer) lexDateTimeOrNumber() tomlLexStateFn {
-	// Could be either a date/time, or a digit.
-	// The options for date/times are:
-	//   YYYY-... => date or date-time
-	//   HH:... => time
-	// Anything else should be a number.
-
-	lookAhead := l.peekString(5)
-	if len(lookAhead) < 3 {
-		return l.lexNumber()
-	}
-
-	for idx, r := range lookAhead {
-		if !isDigit(r) {
-			if idx == 2 && r == ':' {
-				return l.lexDateTimeOrTime()
-			}
-			if idx == 4 && r == '-' {
-				return l.lexDateTimeOrTime()
-			}
-			return l.lexNumber()
-		}
-	}
-	return l.lexNumber()
-}
-
 func (l *tomlLexer) lexLeftCurlyBrace() tomlLexStateFn {
 	l.next()
 	l.emit(tokenLeftCurlyBrace)
-	l.brackets = append(l.brackets, '{')
-	return l.lexVoid
+	return l.lexRvalue
 }
 
 func (l *tomlLexer) lexRightCurlyBrace() tomlLexStateFn {
 	l.next()
 	l.emit(tokenRightCurlyBrace)
-	if len(l.brackets) == 0 || l.brackets[len(l.brackets)-1] != '{' {
-		return l.errorf("cannot have '}' here")
-	}
-	l.brackets = l.brackets[:len(l.brackets)-1]
 	return l.lexRvalue
 }
 
-func (l *tomlLexer) lexDateTimeOrTime() tomlLexStateFn {
-	// Example matches:
-	// 1979-05-27T07:32:00Z
-	// 1979-05-27T00:32:00-07:00
-	// 1979-05-27T00:32:00.999999-07:00
-	// 1979-05-27 07:32:00Z
-	// 1979-05-27 00:32:00-07:00
-	// 1979-05-27 00:32:00.999999-07:00
-	// 1979-05-27T07:32:00
-	// 1979-05-27T00:32:00.999999
-	// 1979-05-27 07:32:00
-	// 1979-05-27 00:32:00.999999
-	// 1979-05-27
-	// 07:32:00
-	// 00:32:00.999999
-
-	// we already know those two are digits
-	l.next()
-	l.next()
-
-	// Got 2 digits. At that point it could be either a time or a date(-time).
-
-	r := l.next()
-	if r == ':' {
-		return l.lexTime()
-	}
-
-	return l.lexDateTime()
-}
-
-func (l *tomlLexer) lexDateTime() tomlLexStateFn {
-	// This state accepts an offset date-time, a local date-time, or a local date.
-	//
-	//   v--- cursor
-	// 1979-05-27T07:32:00Z
-	// 1979-05-27T00:32:00-07:00
-	// 1979-05-27T00:32:00.999999-07:00
-	// 1979-05-27 07:32:00Z
-	// 1979-05-27 00:32:00-07:00
-	// 1979-05-27 00:32:00.999999-07:00
-	// 1979-05-27T07:32:00
-	// 1979-05-27T00:32:00.999999
-	// 1979-05-27 07:32:00
-	// 1979-05-27 00:32:00.999999
-	// 1979-05-27
-
-	// date
-
-	// already checked by lexRvalue
-	l.next() // digit
-	l.next() // -
-
-	for i := 0; i < 2; i++ {
-		r := l.next()
-		if !isDigit(r) {
-			return l.errorf("invalid month digit in date: %c", r)
-		}
-	}
-
-	r := l.next()
-	if r != '-' {
-		return l.errorf("expected - to separate month of a date, not %c", r)
-	}
-
-	for i := 0; i < 2; i++ {
-		r := l.next()
-		if !isDigit(r) {
-			return l.errorf("invalid day digit in date: %c", r)
-		}
-	}
-
-	l.emit(tokenLocalDate)
-
-	r = l.peek()
-
-	if r == eof {
-
-		return l.lexRvalue
-	}
-
-	if r != ' ' && r != 'T' {
-		return l.errorf("incorrect date/time separation character: %c", r)
-	}
-
-	if r == ' ' {
-		lookAhead := l.peekString(3)[1:]
-		if len(lookAhead) < 2 {
-			return l.lexRvalue
-		}
-		for _, r := range lookAhead {
-			if !isDigit(r) {
-				return l.lexRvalue
-			}
-		}
-	}
-
-	l.skip() // skip the T or ' '
-
-	// time
-
-	for i := 0; i < 2; i++ {
-		r := l.next()
-		if !isDigit(r) {
-			return l.errorf("invalid hour digit in time: %c", r)
-		}
-	}
-
-	r = l.next()
-	if r != ':' {
-		return l.errorf("time hour/minute separator should be :, not %c", r)
-	}
-
-	for i := 0; i < 2; i++ {
-		r := l.next()
-		if !isDigit(r) {
-			return l.errorf("invalid minute digit in time: %c", r)
-		}
-	}
-
-	r = l.next()
-	if r != ':' {
-		return l.errorf("time minute/second separator should be :, not %c", r)
-	}
-
-	for i := 0; i < 2; i++ {
-		r := l.next()
-		if !isDigit(r) {
-			return l.errorf("invalid second digit in time: %c", r)
-		}
-	}
-
-	r = l.peek()
-	if r == '.' {
-		l.next()
-		r := l.next()
-		if !isDigit(r) {
-			return l.errorf("expected at least one digit in time's fraction, not %c", r)
-		}
-
-		for {
-			r := l.peek()
-			if !isDigit(r) {
-				break
-			}
-			l.next()
-		}
-	}
-
-	l.emit(tokenLocalTime)
-
-	return l.lexTimeOffset
-
-}
-
-func (l *tomlLexer) lexTimeOffset() tomlLexStateFn {
-	// potential offset
-
-	// Z
-	// -07:00
-	// +07:00
-	// nothing
-
-	r := l.peek()
-
-	if r == 'Z' {
-		l.next()
-		l.emit(tokenTimeOffset)
-	} else if r == '+' || r == '-' {
-		l.next()
-
-		for i := 0; i < 2; i++ {
-			r := l.next()
-			if !isDigit(r) {
-				return l.errorf("invalid hour digit in time offset: %c", r)
-			}
-		}
-
-		r = l.next()
-		if r != ':' {
-			return l.errorf("time offset hour/minute separator should be :, not %c", r)
-		}
-
-		for i := 0; i < 2; i++ {
-			r := l.next()
-			if !isDigit(r) {
-				return l.errorf("invalid minute digit in time offset: %c", r)
-			}
-		}
-
-		l.emit(tokenTimeOffset)
-	}
-
+func (l *tomlLexer) lexDate() tomlLexStateFn {
+	l.emit(tokenDate)
 	return l.lexRvalue
-}
-
-func (l *tomlLexer) lexTime() tomlLexStateFn {
-	//   v--- cursor
-	// 07:32:00
-	// 00:32:00.999999
-
-	for i := 0; i < 2; i++ {
-		r := l.next()
-		if !isDigit(r) {
-			return l.errorf("invalid minute digit in time: %c", r)
-		}
-	}
-
-	r := l.next()
-	if r != ':' {
-		return l.errorf("time minute/second separator should be :, not %c", r)
-	}
-
-	for i := 0; i < 2; i++ {
-		r := l.next()
-		if !isDigit(r) {
-			return l.errorf("invalid second digit in time: %c", r)
-		}
-	}
-
-	r = l.peek()
-	if r == '.' {
-		l.next()
-		r := l.next()
-		if !isDigit(r) {
-			return l.errorf("expected at least one digit in time's fraction, not %c", r)
-		}
-
-		for {
-			r := l.peek()
-			if !isDigit(r) {
-				break
-			}
-			l.next()
-		}
-	}
-
-	l.emit(tokenLocalTime)
-	return l.lexRvalue
-
 }
 
 func (l *tomlLexer) lexTrue() tomlLexStateFn {
@@ -545,16 +294,13 @@ func (l *tomlLexer) lexEqual() tomlLexStateFn {
 func (l *tomlLexer) lexComma() tomlLexStateFn {
 	l.next()
 	l.emit(tokenComma)
-	if len(l.brackets) > 0 && l.brackets[len(l.brackets)-1] == '{' {
-		return l.lexVoid
-	}
 	return l.lexRvalue
 }
 
 // Parse the key and emits its value without escape sequences.
 // bare keys, basic string keys and literal string keys are supported.
 func (l *tomlLexer) lexKey() tomlLexStateFn {
-	var sb strings.Builder
+	growingString := ""
 
 	for r := l.peek(); isKeyChar(r) || r == '\n' || r == '\r'; r = l.peek() {
 		if r == '"' {
@@ -563,9 +309,7 @@ func (l *tomlLexer) lexKey() tomlLexStateFn {
 			if err != nil {
 				return l.errorf(err.Error())
 			}
-			sb.WriteString("\"")
-			sb.WriteString(str)
-			sb.WriteString("\"")
+			growingString += str
 			l.next()
 			continue
 		} else if r == '\'' {
@@ -574,45 +318,20 @@ func (l *tomlLexer) lexKey() tomlLexStateFn {
 			if err != nil {
 				return l.errorf(err.Error())
 			}
-			sb.WriteString("'")
-			sb.WriteString(str)
-			sb.WriteString("'")
+			growingString += str
 			l.next()
 			continue
 		} else if r == '\n' {
 			return l.errorf("keys cannot contain new lines")
 		} else if isSpace(r) {
-			var str strings.Builder
-			str.WriteString(" ")
-
-			// skip trailing whitespace
-			l.next()
-			for r = l.peek(); isSpace(r); r = l.peek() {
-				str.WriteRune(r)
-				l.next()
-			}
-			// break loop if not a dot
-			if r != '.' {
-				break
-			}
-			str.WriteString(".")
-			// skip trailing whitespace after dot
-			l.next()
-			for r = l.peek(); isSpace(r); r = l.peek() {
-				str.WriteRune(r)
-				l.next()
-			}
-			sb.WriteString(str.String())
-			continue
-		} else if r == '.' {
-			// skip
+			break
 		} else if !isValidBareChar(r) {
 			return l.errorf("keys cannot contain %c character", r)
 		}
-		sb.WriteRune(r)
+		growingString += string(r)
 		l.next()
 	}
-	l.emitWithValue(tokenKey, sb.String())
+	l.emitWithValue(tokenKey, growingString)
 	return l.lexVoid
 }
 
@@ -632,12 +351,11 @@ func (l *tomlLexer) lexComment(previousState tomlLexStateFn) tomlLexStateFn {
 func (l *tomlLexer) lexLeftBracket() tomlLexStateFn {
 	l.next()
 	l.emit(tokenLeftBracket)
-	l.brackets = append(l.brackets, '[')
 	return l.lexRvalue
 }
 
 func (l *tomlLexer) lexLiteralStringAsString(terminator string, discardLeadingNewLine bool) (string, error) {
-	var sb strings.Builder
+	growingString := ""
 
 	if discardLeadingNewLine {
 		if l.follow("\r\n") {
@@ -651,14 +369,14 @@ func (l *tomlLexer) lexLiteralStringAsString(terminator string, discardLeadingNe
 	// find end of string
 	for {
 		if l.follow(terminator) {
-			return sb.String(), nil
+			return growingString, nil
 		}
 
 		next := l.peek()
 		if next == eof {
 			break
 		}
-		sb.WriteRune(l.next())
+		growingString += string(l.next())
 	}
 
 	return "", errors.New("unclosed string")
@@ -692,7 +410,7 @@ func (l *tomlLexer) lexLiteralString() tomlLexStateFn {
 // Terminator is the substring indicating the end of the token.
 // The resulting string does not include the terminator.
 func (l *tomlLexer) lexStringAsString(terminator string, discardLeadingNewLine, acceptNewLines bool) (string, error) {
-	var sb strings.Builder
+	growingString := ""
 
 	if discardLeadingNewLine {
 		if l.follow("\r\n") {
@@ -705,7 +423,7 @@ func (l *tomlLexer) lexStringAsString(terminator string, discardLeadingNewLine, 
 
 	for {
 		if l.follow(terminator) {
-			return sb.String(), nil
+			return growingString, nil
 		}
 
 		if l.follow("\\") {
@@ -723,72 +441,72 @@ func (l *tomlLexer) lexStringAsString(terminator string, discardLeadingNewLine, 
 					l.next()
 				}
 			case '"':
-				sb.WriteString("\"")
+				growingString += "\""
 				l.next()
 			case 'n':
-				sb.WriteString("\n")
+				growingString += "\n"
 				l.next()
 			case 'b':
-				sb.WriteString("\b")
+				growingString += "\b"
 				l.next()
 			case 'f':
-				sb.WriteString("\f")
+				growingString += "\f"
 				l.next()
 			case '/':
-				sb.WriteString("/")
+				growingString += "/"
 				l.next()
 			case 't':
-				sb.WriteString("\t")
+				growingString += "\t"
 				l.next()
 			case 'r':
-				sb.WriteString("\r")
+				growingString += "\r"
 				l.next()
 			case '\\':
-				sb.WriteString("\\")
+				growingString += "\\"
 				l.next()
 			case 'u':
 				l.next()
-				var code strings.Builder
+				code := ""
 				for i := 0; i < 4; i++ {
 					c := l.peek()
 					if !isHexDigit(c) {
 						return "", errors.New("unfinished unicode escape")
 					}
 					l.next()
-					code.WriteRune(c)
+					code = code + string(c)
 				}
-				intcode, err := strconv.ParseInt(code.String(), 16, 32)
+				intcode, err := strconv.ParseInt(code, 16, 32)
 				if err != nil {
-					return "", errors.New("invalid unicode escape: \\u" + code.String())
+					return "", errors.New("invalid unicode escape: \\u" + code)
 				}
-				sb.WriteRune(rune(intcode))
+				growingString += string(rune(intcode))
 			case 'U':
 				l.next()
-				var code strings.Builder
+				code := ""
 				for i := 0; i < 8; i++ {
 					c := l.peek()
 					if !isHexDigit(c) {
 						return "", errors.New("unfinished unicode escape")
 					}
 					l.next()
-					code.WriteRune(c)
+					code = code + string(c)
 				}
-				intcode, err := strconv.ParseInt(code.String(), 16, 64)
+				intcode, err := strconv.ParseInt(code, 16, 64)
 				if err != nil {
-					return "", errors.New("invalid unicode escape: \\U" + code.String())
+					return "", errors.New("invalid unicode escape: \\U" + code)
 				}
-				sb.WriteRune(rune(intcode))
+				growingString += string(rune(intcode))
 			default:
 				return "", errors.New("invalid escape sequence: \\" + string(l.peek()))
 			}
 		} else {
 			r := l.peek()
 
-			if 0x00 <= r && r <= 0x1F && r != '\t' && !(acceptNewLines && (r == '\n' || r == '\r')) {
+			if 0x00 <= r && r <= 0x1F && !(acceptNewLines && (r == '\n' || r == '\r')) {
 				return "", fmt.Errorf("unescaped control character %U", r)
 			}
 			l.next()
-			sb.WriteRune(r)
+			growingString += string(r)
 		}
 
 		if l.peek() == eof {
@@ -815,6 +533,7 @@ func (l *tomlLexer) lexString() tomlLexStateFn {
 	}
 
 	str, err := l.lexStringAsString(terminator, discardLeadingNewLine, acceptNewLines)
+
 	if err != nil {
 		return l.errorf(err.Error())
 	}
@@ -886,10 +605,6 @@ func (l *tomlLexer) lexInsideTableKey() tomlLexStateFn {
 func (l *tomlLexer) lexRightBracket() tomlLexStateFn {
 	l.next()
 	l.emit(tokenRightBracket)
-	if len(l.brackets) == 0 || l.brackets[len(l.brackets)-1] != '[' {
-		return l.errorf("cannot have ']' here")
-	}
-	l.brackets = l.brackets[:len(l.brackets)-1]
 	return l.lexRvalue
 }
 
@@ -1013,6 +728,10 @@ func (l *tomlLexer) run() {
 	for state := l.lexVoid; state != nil; {
 		state = state()
 	}
+}
+
+func init() {
+	dateRegexp = regexp.MustCompile(`^\d{1,4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,9})?(Z|[+-]\d{2}:\d{2})`)
 }
 
 // Entry point

@@ -186,22 +186,25 @@ func (f *UnionFile) Readdir(c int) (ofi []os.FileInfo, err error) {
 		}
 		f.files = append(f.files, merged...)
 	}
-	files := f.files[f.off:]
 
-	if c <= 0 {
-		return files, nil
+	if c <= 0 && len(f.files) == 0 {
+		return f.files, nil
 	}
 
-	if len(files) == 0 {
+	if f.off >= len(f.files) {
 		return nil, io.EOF
 	}
 
-	if c > len(files) {
-		c = len(files)
+	if c <= 0 {
+		return f.files[f.off:], nil
+	}
+
+	if c > len(f.files) {
+		c = len(f.files)
 	}
 
 	defer func() { f.off += c }()
-	return files[:c], nil
+	return f.files[f.off:c], nil
 }
 
 func (f *UnionFile) Readdirnames(c int) ([]string, error) {
@@ -268,7 +271,13 @@ func (f *UnionFile) WriteString(s string) (n int, err error) {
 	return 0, BADFD
 }
 
-func copyFile(base Fs, layer Fs, name string, bfh File) error {
+func copyToLayer(base Fs, layer Fs, name string) error {
+	bfh, err := base.Open(name)
+	if err != nil {
+		return err
+	}
+	defer bfh.Close()
+
 	// First make sure the directory exists
 	exists, err := Exists(layer, filepath.Dir(name))
 	if err != nil {
@@ -308,24 +317,4 @@ func copyFile(base Fs, layer Fs, name string, bfh File) error {
 		return err
 	}
 	return layer.Chtimes(name, bfi.ModTime(), bfi.ModTime())
-}
-
-func copyToLayer(base Fs, layer Fs, name string) error {
-	bfh, err := base.Open(name)
-	if err != nil {
-		return err
-	}
-	defer bfh.Close()
-
-	return copyFile(base, layer, name, bfh)
-}
-
-func copyFileToLayer(base Fs, layer Fs, name string, flag int, perm os.FileMode) error {
-	bfh, err := base.OpenFile(name, flag, perm)
-	if err != nil {
-		return err
-	}
-	defer bfh.Close()
-
-	return copyFile(base, layer, name, bfh)
 }

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math"
 	"reflect"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -76,10 +77,8 @@ func (p *tomlParser) parseStart() tomlParserStateFn {
 		return p.parseAssign
 	case tokenEOF:
 		return nil
-	case tokenError:
-		p.raiseError(tok, "parsing error: %s", tok.String())
 	default:
-		p.raiseError(tok, "unexpected token %s", tok.typ)
+		p.raiseError(tok, "unexpected token")
 	}
 	return nil
 }
@@ -157,11 +156,6 @@ func (p *tomlParser) parseGroup() tomlParserStateFn {
 	if err := p.tree.createSubTree(keys, startToken.Position); err != nil {
 		p.raiseError(key, "%s", err)
 	}
-	destTree := p.tree.GetPath(keys)
-	if target, ok := destTree.(*Tree); ok && target != nil && target.inline {
-		p.raiseError(key, "could not re-define exist inline table or its sub-table : %s",
-			strings.Join(keys, "."))
-	}
 	p.assume(tokenRightBracket)
 	p.currentTable = keys
 	return p.parseStart
@@ -171,11 +165,6 @@ func (p *tomlParser) parseAssign() tomlParserStateFn {
 	key := p.getToken()
 	p.assume(tokenEqual)
 
-	parsedKey, err := parseKey(key.val)
-	if err != nil {
-		p.raiseError(key, "invalid key: %s", err.Error())
-	}
-
 	value := p.parseRvalue()
 	var tableKey []string
 	if len(p.currentTable) > 0 {
@@ -184,9 +173,6 @@ func (p *tomlParser) parseAssign() tomlParserStateFn {
 		tableKey = []string{}
 	}
 
-	prefixKey := parsedKey[0 : len(parsedKey)-1]
-	tableKey = append(tableKey, prefixKey...)
-
 	// find the table to assign, looking out for arrays of tables
 	var targetNode *Tree
 	switch node := p.tree.GetPath(tableKey).(type) {
@@ -194,24 +180,17 @@ func (p *tomlParser) parseAssign() tomlParserStateFn {
 		targetNode = node[len(node)-1]
 	case *Tree:
 		targetNode = node
-	case nil:
-		// create intermediate
-		if err := p.tree.createSubTree(tableKey, key.Position); err != nil {
-			p.raiseError(key, "could not create intermediate group: %s", err)
-		}
-		targetNode = p.tree.GetPath(tableKey).(*Tree)
 	default:
 		p.raiseError(key, "Unknown table type for path: %s",
 			strings.Join(tableKey, "."))
 	}
 
-	if targetNode.inline {
-		p.raiseError(key, "could not add key or sub-table to exist inline table or its sub-table : %s",
-			strings.Join(tableKey, "."))
-	}
-
 	// assign value to the found table
-	keyVal := parsedKey[len(parsedKey)-1]
+	keyVals := []string{key.val}
+	if len(keyVals) != 1 {
+		p.raiseError(key, "Invalid key")
+	}
+	keyVal := keyVals[0]
 	localKey := []string{keyVal}
 	finalKey := append(tableKey, keyVal)
 	if targetNode.GetPath(localKey) != nil {
@@ -230,38 +209,19 @@ func (p *tomlParser) parseAssign() tomlParserStateFn {
 	return p.parseStart
 }
 
-var errInvalidUnderscore = errors.New("invalid use of _ in number")
+var numberUnderscoreInvalidRegexp *regexp.Regexp
+var hexNumberUnderscoreInvalidRegexp *regexp.Regexp
 
 func numberContainsInvalidUnderscore(value string) error {
-	// For large numbers, you may use underscores between digits to enhance
-	// readability. Each underscore must be surrounded by at least one digit on
-	// each side.
-
-	hasBefore := false
-	for idx, r := range value {
-		if r == '_' {
-			if !hasBefore || idx+1 >= len(value) {
-				// can't end with an underscore
-				return errInvalidUnderscore
-			}
-		}
-		hasBefore = isDigit(r)
+	if numberUnderscoreInvalidRegexp.MatchString(value) {
+		return errors.New("invalid use of _ in number")
 	}
 	return nil
 }
 
-var errInvalidUnderscoreHex = errors.New("invalid use of _ in hex number")
-
 func hexNumberContainsInvalidUnderscore(value string) error {
-	hasBefore := false
-	for idx, r := range value {
-		if r == '_' {
-			if !hasBefore || idx+1 >= len(value) {
-				// can't end with an underscore
-				return errInvalidUnderscoreHex
-			}
-		}
-		hasBefore = isHexDigit(r)
+	if hexNumberUnderscoreInvalidRegexp.MatchString(value) {
+		return errors.New("invalid use of _ in hex number")
 	}
 	return nil
 }
@@ -340,44 +300,8 @@ func (p *tomlParser) parseRvalue() interface{} {
 			p.raiseError(tok, "%s", err)
 		}
 		return val
-	case tokenLocalTime:
-		val, err := ParseLocalTime(tok.val)
-		if err != nil {
-			p.raiseError(tok, "%s", err)
-		}
-		return val
-	case tokenLocalDate:
-		// a local date may be followed by:
-		// * nothing: this is a local date
-		// * a local time: this is a local date-time
-
-		next := p.peek()
-		if next == nil || next.typ != tokenLocalTime {
-			val, err := ParseLocalDate(tok.val)
-			if err != nil {
-				p.raiseError(tok, "%s", err)
-			}
-			return val
-		}
-
-		localDate := tok
-		localTime := p.getToken()
-
-		next = p.peek()
-		if next == nil || next.typ != tokenTimeOffset {
-			v := localDate.val + "T" + localTime.val
-			val, err := ParseLocalDateTime(v)
-			if err != nil {
-				p.raiseError(tok, "%s", err)
-			}
-			return val
-		}
-
-		offset := p.getToken()
-
-		layout := time.RFC3339Nano
-		v := localDate.val + "T" + localTime.val + offset.val
-		val, err := time.ParseInLocation(layout, v, time.UTC)
+	case tokenDate:
+		val, err := time.ParseInLocation(time.RFC3339Nano, tok.val, time.UTC)
 		if err != nil {
 			p.raiseError(tok, "%s", err)
 		}
@@ -390,9 +314,9 @@ func (p *tomlParser) parseRvalue() interface{} {
 		p.raiseError(tok, "cannot have multiple equals for the same key")
 	case tokenError:
 		p.raiseError(tok, "%s", tok)
-	default:
-		panic(fmt.Errorf("unhandled token: %v", tok))
 	}
+
+	p.raiseError(tok, "never reached")
 
 	return nil
 }
@@ -414,21 +338,18 @@ Loop:
 		case tokenRightCurlyBrace:
 			p.getToken()
 			break Loop
-		case tokenKey, tokenInteger, tokenString:
+		case tokenKey:
 			if !tokenIsComma(previous) && previous != nil {
 				p.raiseError(follow, "comma expected between fields in inline table")
 			}
 			key := p.getToken()
 			p.assume(tokenEqual)
-
-			parsedKey, err := parseKey(key.val)
-			if err != nil {
-				p.raiseError(key, "invalid key: %s", err)
-			}
-
 			value := p.parseRvalue()
-			tree.SetPath(parsedKey, value)
+			tree.Set(key.val, value)
 		case tokenComma:
+			if previous == nil {
+				p.raiseError(follow, "inline table cannot start with a comma")
+			}
 			if tokenIsComma(previous) {
 				p.raiseError(follow, "need field between two commas in inline table")
 			}
@@ -441,13 +362,12 @@ Loop:
 	if tokenIsComma(previous) {
 		p.raiseError(previous, "trailing comma at the end of inline table")
 	}
-	tree.inline = true
 	return tree
 }
 
 func (p *tomlParser) parseArray() interface{} {
 	var array []interface{}
-	arrayType := reflect.TypeOf(newTree())
+	arrayType := reflect.TypeOf(nil)
 	for {
 		follow := p.peek()
 		if follow == nil || follow.typ == tokenEOF {
@@ -458,8 +378,11 @@ func (p *tomlParser) parseArray() interface{} {
 			break
 		}
 		val := p.parseRvalue()
+		if arrayType == nil {
+			arrayType = reflect.TypeOf(val)
+		}
 		if reflect.TypeOf(val) != arrayType {
-			arrayType = nil
+			p.raiseError(follow, "mixed types in array")
 		}
 		array = append(array, val)
 		follow = p.peek()
@@ -472,12 +395,6 @@ func (p *tomlParser) parseArray() interface{} {
 		if follow.typ == tokenComma {
 			p.getToken()
 		}
-	}
-
-	// if the array is a mixed-type array or its length is 0,
-	// don't convert it to a table array
-	if len(array) <= 0 {
-		arrayType = nil
 	}
 	// An array of Trees is actually an array of inline
 	// tables, which is a shorthand for a table array. If the
@@ -505,4 +422,9 @@ func parseToml(flow []token) *Tree {
 	}
 	parser.run()
 	return result
+}
+
+func init() {
+	numberUnderscoreInvalidRegexp = regexp.MustCompile(`([^\d]_|_[^\d])|_$|^_`)
+	hexNumberUnderscoreInvalidRegexp = regexp.MustCompile(`(^0x_)|([^\da-f]_|_[^\da-f])|_$|^_`)
 }
