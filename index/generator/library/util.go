@@ -309,27 +309,33 @@ func cleanDir(originalPath string, leaveBehindFiles map[string]bool, fs filesyst
 }
 
 // ZipDir creates a zip file from a given directory specified by the src argument into a zip archive
-// specified by the *dst* argument
+// specified by the *dst* argument, uses default filesystem
 func ZipDir(src string, dst string) error {
-	zipFile, err := os.Create(dst)
+	return zipDir(src, dst, filesystem.DefaultFs{})
+}
+
+// zipDir creates a zip file from a given directory specified by the src argument into a zip archive
+// specified by the *dst* argument, takes a filesystem to use
+func zipDir(src string, dst string, fs filesystem.Filesystem) error {
+	zipFile, err := fs.Create(dst)
 	if err != nil {
 		return err
 	}
 
 	writer := zip.NewWriter(zipFile)
-	zipper := createZipper(writer, src)
+	zipper := createZipper(writer, src, fs)
 	defer writer.Close()
 
-	return filepath.Walk(src, zipper)
+	return fs.Walk(src, zipper)
 }
 
 // createZipper creates walk function to populate a zip file with the given writer argument
-func createZipper(writer *zip.Writer, root string) filepath.WalkFunc {
+func createZipper(writer *zip.Writer, root string, fs filesystem.Filesystem) filepath.WalkFunc {
 	return func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		} else if !info.IsDir() {
-			srcFile, err := os.Open(path)
+			srcFile, err := fs.Open(path)
 			if err != nil {
 				return err
 			}
