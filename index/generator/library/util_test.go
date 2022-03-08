@@ -9,7 +9,6 @@ import (
 	"testing"
 
 	"github.com/devfile/registry-support/index/generator/schema"
-	"github.com/stretchr/testify/assert"
 )
 
 const (
@@ -136,22 +135,6 @@ func TestDownloadStackFromGit(t *testing.T) {
 			}
 		})
 	}
-}
-
-func TestGetSubDir(t *testing.T) {
-	assert.Fail(t, "Not Implemented.")
-}
-
-func TestCopyFileWithFs(t *testing.T) {
-	assert.Fail(t, "Not Implemented.")
-}
-
-func TestCopyDirWithFS(t *testing.T) {
-	assert.Fail(t, "Not Implemented.")
-}
-
-func TestCleanDir(t *testing.T) {
-	assert.Fail(t, "Not Implemented.")
 }
 
 func TestZipDir(t *testing.T) {
