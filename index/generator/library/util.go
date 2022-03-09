@@ -120,15 +120,29 @@ func DownloadStackFromZipUrl(zipUrl string, subDir string, path string) ([]byte,
 	unzipDst := filepath.Join(path, subDir)
 	zipDst := fmt.Sprintf("%s.zip", path)
 
-	// Download from given url and unzip to given path. Just unzip subDir when
-	// specified, if error return empty bytes.
-	if err := dfutil.GetAndExtractZip(zipUrl, unzipDst, subDir); err != nil {
-		return []byte{}, err
-	}
+	// If subDir is specified extraction and rezipping after download is required,
+	// else just download and return original zip file
+	if subDir != "" {
+		// Download from given url and unzip subDir to given path, if error
+		// return empty bytes.
+		if err := dfutil.GetAndExtractZip(zipUrl, unzipDst, subDir); err != nil {
+			return []byte{}, err
+		}
 
-	// Zip directory containing unzipped content
-	if err := ZipDir(unzipDst, zipDst); err != nil {
-		return []byte{}, err
+		// Zip directory containing unzipped content
+		if err := ZipDir(unzipDst, zipDst); err != nil {
+			return []byte{}, err
+		}
+	} else {
+		params := dfutil.DownloadParams{
+			Request: dfutil.HTTPRequestParams{
+				URL: zipUrl,
+			},
+			Filepath: zipDst,
+		}
+		if err := dfutil.DownloadFile(params); err != nil {
+			return []byte{}, err
+		}
 	}
 
 	// Read bytes from response and return, error will be nil if successful
