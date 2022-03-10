@@ -18,8 +18,8 @@ import (
 	"github.com/go-git/go-git/v5/plumbing"
 )
 
-// DownloadRemoteStack downloads the stack version outside of the registry repo
-func DownloadRemoteStack(git *schema.Git, path string, verbose bool) (err error) {
+// CloneRemoteStack downloads the stack version outside of the registry repo
+func CloneRemoteStack(git *schema.Git, path string, verbose bool) (err error) {
 
 	// convert revision to referenceName type, ref name could be a branch or tag
 	// if revision is not specified it would be the default branch of the project
@@ -105,7 +105,7 @@ func DownloadStackFromGit(git *schema.Git, path string, verbose bool) ([]byte, e
 
 	// Download from given git url. Downloaded result contains subDir
 	// when specified, if error return empty bytes.
-	if err := DownloadRemoteStack(git, path, verbose); err != nil {
+	if err := CloneRemoteStack(git, path, verbose); err != nil {
 		return []byte{}, err
 	}
 

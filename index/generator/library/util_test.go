@@ -15,7 +15,7 @@ const (
 	zipType string = "application/zip"
 )
 
-func TestDownloadRemoteStack(t *testing.T) {
+func TestCloneRemoteStack(t *testing.T) {
 	tests := []struct {
 		name string
 		git  *schema.Git
@@ -35,7 +35,7 @@ func TestDownloadRemoteStack(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			hiddenGitPath := filepath.Join(tt.path, ".git")
 
-			if err := DownloadRemoteStack(tt.git, tt.path, false); err != nil {
+			if err := CloneRemoteStack(tt.git, tt.path, false); err != nil {
 				t.Errorf("Git download to bytes failed: %v", err)
 			}
 
