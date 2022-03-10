@@ -17,9 +17,10 @@ const (
 
 func TestCloneRemoteStack(t *testing.T) {
 	tests := []struct {
-		name string
-		git  *schema.Git
-		path string
+		name    string
+		git     *schema.Git
+		path    string
+		wantErr error
 	}{
 		{
 			"Case 1: Maven Java (Without subDir)",
@@ -28,6 +29,7 @@ func TestCloneRemoteStack(t *testing.T) {
 				RemoteName: "origin",
 			},
 			filepath.Join(os.TempDir(), "springboot-ex"),
+			nil,
 		},
 	}
 
@@ -35,13 +37,13 @@ func TestCloneRemoteStack(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			hiddenGitPath := filepath.Join(tt.path, ".git")
 
-			if err := CloneRemoteStack(tt.git, tt.path, false); err != nil {
-				t.Errorf("Git download to bytes failed: %v", err)
+			if gotErr := CloneRemoteStack(tt.git, tt.path, false); gotErr != nil && gotErr != tt.wantErr {
+				t.Errorf("Git download to bytes failed: %v", gotErr)
 			}
 
-			if _, err := os.Stat(tt.path); os.IsNotExist(err) {
+			if _, gotErr := os.Stat(tt.path); os.IsNotExist(gotErr) && gotErr != tt.wantErr {
 				t.Errorf("%s does not exist but is suppose to", tt.path)
-			} else if _, err := os.Stat(hiddenGitPath); os.IsExist(err) {
+			} else if _, gotErr := os.Stat(hiddenGitPath); os.IsExist(gotErr) && gotErr != tt.wantErr {
 				t.Errorf(".git exist but isn't suppose to within %s", tt.path)
 			}
 
