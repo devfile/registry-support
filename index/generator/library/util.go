@@ -18,7 +18,9 @@ import (
 	"github.com/go-git/go-git/v5/plumbing"
 )
 
-// CloneRemoteStack downloads the stack version outside of the registry repo
+// CloneRemoteStack downloads the stack version from a git repo outside of the registry by
+// cloning then removing the local .git folder. When git.SubDir is set, fetches specified
+// subdirectory only.
 func CloneRemoteStack(git *schema.Git, path string, verbose bool) (err error) {
 
 	// convert revision to referenceName type, ref name could be a branch or tag
@@ -99,7 +101,9 @@ func CloneRemoteStack(git *schema.Git, path string, verbose bool) (err error) {
 
 }
 
-// DownloadStackFromGit downloads the stack from a git repo
+// DownloadStackFromGit downloads the stack from a git repo then adds folder contents into a zip archive,
+// returns byte array of zip file and error if occurs otherwise is nil. If git.SubDir is set, then
+// zip file will contain contents of the specified subdirectory instead of the whole downloaded git repo.
 func DownloadStackFromGit(git *schema.Git, path string, verbose bool) ([]byte, error) {
 	zipPath := fmt.Sprintf("%s.zip", path)
 
