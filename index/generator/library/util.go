@@ -70,7 +70,10 @@ func DownloadRemoteStack(git *schema.Git, path string, verbose bool) (err error)
 		// try again to consider revision as tag name
 		cloneOptions.ReferenceName = plumbing.NewTagReferenceName(revision)
 		// remove if any .git folder downloaded in above try
-		_ = os.RemoveAll(filepath.Join(path, ".git"))
+		if err = os.RemoveAll(filepath.Join(path, ".git")); err != nil {
+			return err
+		}
+
 		_, err = gitpkg.PlainClone(path, false, cloneOptions)
 		if err != nil {
 			return err
