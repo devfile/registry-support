@@ -31,9 +31,7 @@ func CloneRemoteStack(git *schema.Git, path string, verbose bool) (err error) {
 	if plumbing.IsHash(revision) {
 		// Specifying commit in the reference name is not supported by the go-git library
 		// while doing git.PlainClone()
-		fmt.Printf("Specifying commit in 'revision' is not yet supported.")
-		// overriding revision to empty as we do not support this
-		revision = ""
+		return fmt.Errorf("specifying commit in 'revision' is not yet supported")
 	}
 
 	if revision != "" {
