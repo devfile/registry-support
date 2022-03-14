@@ -17,10 +17,11 @@ const (
 
 func TestCloneRemoteStack(t *testing.T) {
 	tests := []struct {
-		name    string
-		git     *schema.Git
-		path    string
-		wantErr error
+		name       string
+		git        *schema.Git
+		path       string
+		wantErr    bool
+		wantErrStr string
 	}{
 		{
 			"Case 1: Maven Java (Without subDir)",
@@ -29,7 +30,51 @@ func TestCloneRemoteStack(t *testing.T) {
 				RemoteName: "origin",
 			},
 			filepath.Join(os.TempDir(), "springboot-ex"),
-			nil,
+			false,
+			"",
+		},
+		{
+			"Case 2: Maven Java (With subDir)",
+			&schema.Git{
+				Url:        "https://github.com/odo-devfiles/springboot-ex.git",
+				RemoteName: "origin",
+				SubDir:     "src/main",
+			},
+			filepath.Join(os.TempDir(), "springboot-ex"),
+			false,
+			"",
+		},
+		{
+			"Case 3: Maven Java - Cloning with Hash Revision",
+			&schema.Git{
+				Url:        "https://github.com/odo-devfiles/springboot-ex.git",
+				RemoteName: "origin",
+				Revision:   "694e96286ffdc3a9990d0041637d32cecba38181",
+			},
+			filepath.Join(os.TempDir(), "springboot-ex"),
+			true,
+			"specifying commit in 'revision' is not yet supported",
+		},
+		{
+			"Case 4: Cloning a non-existant repo",
+			&schema.Git{
+				Url:        "https://github.com/odo-devfiles/nonexist.git",
+				RemoteName: "origin",
+			},
+			filepath.Join(os.TempDir(), "nonexist"),
+			true,
+			"",
+		},
+		{
+			"Case 5: Maven Java - Cloning with Invalid Revision",
+			&schema.Git{
+				Url:        "https://github.com/odo-devfiles/springboot-ex.git",
+				RemoteName: "origin",
+				Revision:   "invalid",
+			},
+			filepath.Join(os.TempDir(), "springboot-ex"),
+			true,
+			"couldn't find remote ref \"refs/tags/invalid\"",
 		},
 	}
 
@@ -37,13 +82,16 @@ func TestCloneRemoteStack(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			hiddenGitPath := filepath.Join(tt.path, ".git")
 
-			if gotErr := CloneRemoteStack(tt.git, tt.path, false); gotErr != nil && gotErr != tt.wantErr {
-				t.Errorf("Git download to bytes failed: %v", gotErr)
+			if gotErr := CloneRemoteStack(tt.git, tt.path, false); gotErr != nil {
+				if !tt.wantErr || (tt.wantErrStr != "" && gotErr.Error() != tt.wantErrStr) {
+					t.Errorf("Git download to bytes failed: %v", gotErr)
+				}
+				return
 			}
 
-			if _, gotErr := os.Stat(tt.path); os.IsNotExist(gotErr) && gotErr != tt.wantErr {
+			if _, gotErr := os.Stat(tt.path); os.IsNotExist(gotErr) {
 				t.Errorf("%s does not exist but is suppose to", tt.path)
-			} else if _, gotErr := os.Stat(hiddenGitPath); os.IsExist(gotErr) && gotErr != tt.wantErr {
+			} else if _, gotErr := os.Stat(hiddenGitPath); os.IsExist(gotErr) {
 				t.Errorf(".git exist but isn't suppose to within %s", tt.path)
 			}
 
