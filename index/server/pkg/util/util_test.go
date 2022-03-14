@@ -195,11 +195,10 @@ func TestGetOptionalEnv(t *testing.T) {
 	}
 }
 
-
 func TestConvertToOldIndexFormat(t *testing.T) {
 	const inputIndexFilePath = "../../tests/resources/newIndexStruct.json"
 	const wantIndexFilePath = "../../tests/resources/oldIndexStruct.json"
-	bytes,err := ioutil.ReadFile(inputIndexFilePath)
+	bytes, err := ioutil.ReadFile(inputIndexFilePath)
 	if err != nil {
 		t.Errorf("Failed to read newIndexStruct.json: %v", err)
 	}
@@ -219,7 +218,7 @@ func TestConvertToOldIndexFormat(t *testing.T) {
 	}
 
 	t.Run("Test generate index", func(t *testing.T) {
-		gotIndex:= ConvertToOldIndexFormat(inputIndex)
+		gotIndex := ConvertToOldIndexFormat(inputIndex)
 
 		if !reflect.DeepEqual(wantIndex, gotIndex) {
 			t.Errorf("Want index %v, got index %v", wantIndex, gotIndex)
