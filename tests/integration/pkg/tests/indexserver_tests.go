@@ -145,6 +145,91 @@ var _ = ginkgo.Describe("[Verify index server is working properly]", func() {
 		}
 	})
 
+	// v2index tests
+	ginkgo.It("/v2index endpoint should return list of stacks", func() {
+		registryIndex := util.GetRegistryIndex(config.Registry + "/v2index")
+		for _, index := range registryIndex {
+			gomega.Expect(index.Type).To(gomega.Equal(indexSchema.StackDevfileType))
+		}
+	})
+
+	ginkgo.It("/v2index/sample endpoint should return list of samples", func() {
+		registryIndex := util.GetRegistryIndex(config.Registry + "/v2index/sample")
+		for _, index := range registryIndex {
+			gomega.Expect(index.Type).To(gomega.Equal(indexSchema.SampleDevfileType))
+		}
+	})
+
+	ginkgo.It("/v2index/all endpoint should return stacks and samples", func() {
+		registryIndex := util.GetRegistryIndex(config.Registry + "/v2index/all")
+
+		hasStacks := false
+		hasSamples := false
+		for _, index := range registryIndex {
+			if index.Type == indexSchema.SampleDevfileType {
+				hasSamples = true
+			}
+			if index.Type == indexSchema.StackDevfileType {
+				hasStacks = true
+			}
+		}
+		gomega.Expect(hasStacks && hasSamples).To(gomega.BeTrue())
+	})
+
+	ginkgo.It("/v2index/all?icon=base64 endpoint should return stacks and samples with encoded icon", func() {
+		registryIndex := util.GetRegistryIndex(config.Registry + "/v2index/all?icon=base64")
+
+		hasStacks := false
+		hasSamples := false
+
+		for _, index := range registryIndex {
+			if index.Type == indexSchema.SampleDevfileType {
+				hasSamples = true
+			}
+			if index.Type == indexSchema.StackDevfileType {
+				hasStacks = true
+			}
+			if index.Icon != "" {
+				gomega.Expect(index.Icon).To(gomega.HavePrefix("data:image"))
+			}
+		}
+		gomega.Expect(hasStacks && hasSamples).To(gomega.BeTrue())
+	})
+
+	ginkgo.It("/v2index/all?arch=amd64&arch=arm64 endpoint should return stacks and samples for arch amd64 and arm64", func() {
+		registryIndex := util.GetRegistryIndex(config.Registry + "/v2index/all?arch=amd64&arch=arm64")
+
+		hasStacks := false
+		hasSamples := false
+		for _, index := range registryIndex {
+			if index.Type == indexSchema.SampleDevfileType {
+				hasSamples = true
+			}
+			if index.Type == indexSchema.StackDevfileType {
+				hasStacks = true
+			}
+			if len(index.Architectures) != 0 {
+				gomega.Expect(index.Architectures).Should(gomega.ContainElements("amd64", "arm64"))
+			}
+		}
+
+		if len(registryIndex) > 0 {
+			gomega.Expect(hasStacks && hasSamples).To(gomega.BeTrue())
+		}
+	})
+
+	ginkgo.It("/v2index?arch=amd64&arch=arm64 endpoint should return stacks for devfile schema version 2.1.x", func() {
+		registryIndex := util.GetRegistryIndex(config.Registry + "/v2index/all?minSchemaVersion=2.1&maxSchemaVersion=2.1")
+
+		for _, index := range registryIndex {
+			if len(index.Versions) != 0 {
+				for _, version := range index.Versions{
+					gomega.Expect(version.SchemaVersion).Should(gomega.HavePrefix("2.1"))
+				}
+			}
+		}
+	})
+
 	ginkgo.It("/devfiles/<devfile> endpoint should return a devfile for stacks", func() {
 		parserArgs := parser.ParserArgs{
 			URL: config.Registry + "/devfiles/nodejs",
@@ -165,5 +250,21 @@ var _ = ginkgo.Describe("[Verify index server is working properly]", func() {
 		resp, err := http.Get(config.Registry + "/devfiles/fake-stack")
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		gomega.Expect(resp.StatusCode).To(gomega.Equal(http.StatusNotFound))
+	})
+
+	ginkgo.It("/devfiles/<devfile>/<version> endpoint should return a devfile for stacks", func() {
+		parserArgs := parser.ParserArgs{
+			URL: config.Registry + "/devfiles/nodejs/latest",
+		}
+		_, _, err := devfilePkg.ParseDevfileAndValidate(parserArgs)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+	})
+
+	ginkgo.It("/devfiles/<devfile>/<version> endpoint should return a devfile for samples", func() {
+		parserArgs := parser.ParserArgs{
+			URL: config.Registry + "/devfiles/code-with-quarkus/latest",
+		}
+		_, _, err := devfilePkg.ParseDevfileAndValidate(parserArgs)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	})
 })

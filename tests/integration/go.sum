@@ -94,6 +94,8 @@ github.com/devfile/library v1.2.1-0.20211104222135-49d635cb492f h1:kKsBWkFiD7tSI
 github.com/devfile/library v1.2.1-0.20211104222135-49d635cb492f/go.mod h1:uFZZdTuRqA68FVe/JoJHP92CgINyQkyWnM2Qyiim+50=
 github.com/devfile/registry-support/index/generator v0.0.0-20210916150157-08b31e03fdf0 h1:F2OkuW0ASrSz5d06tJxWfweUNYTnsOCyiGTEORisokE=
 github.com/devfile/registry-support/index/generator v0.0.0-20210916150157-08b31e03fdf0/go.mod h1:bLGagbW2SFn7jo5+kUPlCMehIGqWkRtLKc5O0OyJMJM=
+github.com/devfile/registry-support/index/generator v0.0.0-20220307220734-a663cf6ec75f h1:Tkh+4RGwHU19BQRNz0Gyso0ncduOFzl2df0bfpEdmQc=
+github.com/devfile/registry-support/index/generator v0.0.0-20220307220734-a663cf6ec75f/go.mod h1:iRPBxs+ZjfLEduVXpCCIOzdD2588Zv9OCs/CcXMcCCY=
 github.com/dgrijalva/jwt-go v3.2.0+incompatible/go.mod h1:E3ru+11k8xSBh+hMPgOLZmtrrCbhqsmaPHjLKYnJCaQ=
 github.com/dgryski/go-sip13 v0.0.0-20181026042036-e10d5fee7954/go.mod h1:vAd38F8PWV+bWy6jNmig1y/TA+kYO4g3RSRF0IAv0no=
 github.com/docker/spdystream v0.0.0-20160310174837-449fdfce4d96/go.mod h1:Qh8CwZgvJUkLughtfhJv5dyTYa91l1fOUCrgjqmcifM=

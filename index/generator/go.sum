@@ -84,12 +84,8 @@ github.com/creack/pty v1.1.11/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/devfile/api/v2 v2.0.0-20210917193329-089a48011460 h1:cmd+3poyUwevcWchYdvE02YT1nQU4SJpA5/wrdLrpWE=
-github.com/devfile/api/v2 v2.0.0-20210917193329-089a48011460/go.mod h1:kLX/nW93gigOHXK3NLeJL2fSS/sgEe+OHu8bo3aoOi4=
 github.com/devfile/api/v2 v2.0.0-20211021164004-dabee4e633ed h1:OXF9l+MlJrirXAqKN6EZUVaHB0FKm7nh0EjpktwnBig=
 github.com/devfile/api/v2 v2.0.0-20211021164004-dabee4e633ed/go.mod h1:d99eTN6QxgzihOOFyOZA+VpUyD4Q1pYRYHZ/ci9J96Q=
-github.com/devfile/library v1.2.0 h1:OT1Irwg5EZhlCpsAFkjIzd3bqyzbLG0JmFPMHeE1e7M=
-github.com/devfile/library v1.2.0/go.mod h1:gyiQS+ZImnM4/d+wFUl3gJmIozOSXMenl0WX8cx4zu4=
 github.com/devfile/library v1.2.1-0.20211104222135-49d635cb492f h1:kKsBWkFiD7tSIpzwfmz7TH89U1U3yRxSJ9UPOo2OH1s=
 github.com/devfile/library v1.2.1-0.20211104222135-49d635cb492f/go.mod h1:uFZZdTuRqA68FVe/JoJHP92CgINyQkyWnM2Qyiim+50=
 github.com/dgrijalva/jwt-go v3.2.0+incompatible/go.mod h1:E3ru+11k8xSBh+hMPgOLZmtrrCbhqsmaPHjLKYnJCaQ=

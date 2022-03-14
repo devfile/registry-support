@@ -18,7 +18,7 @@ const (
 	devfile             = "devfile.yaml"
 	devfileHidden       = ".devfile.yaml"
 	extraDevfileEntries = "extraDevfileEntries.yaml"
-	stackYaml			= "stack.yaml"
+	stackYaml           = "stack.yaml"
 )
 
 // MissingArchError is an error if the architecture list is empty
@@ -103,7 +103,7 @@ func validateIndexComponent(indexComponent schema.Schema, componentType schema.D
 				if version.Links == nil || len(version.Links) == 0 {
 					return fmt.Errorf("index component version %s: links are empty", version.Version)
 				}
-				if version.Resources == nil || len(version.Resources) == 0  {
+				if version.Resources == nil || len(version.Resources) == 0 {
 					return fmt.Errorf("index component version %s: resources are empty", version.Version)
 				}
 				if version.Default {
@@ -119,7 +119,7 @@ func validateIndexComponent(indexComponent schema.Schema, componentType schema.D
 			}
 		}
 	} else if componentType == schema.SampleDevfileType {
-		if 	indexComponent.Versions != nil && len(indexComponent.Versions) > 0 {
+		if indexComponent.Versions != nil && len(indexComponent.Versions) > 0 {
 			defaultFound := false
 			for _, version := range indexComponent.Versions {
 				if version.Version == "" {
@@ -176,8 +176,8 @@ func fileExists(filepath string) bool {
 
 func dirExists(dirpath string) error {
 	dir, err := os.Stat(dirpath)
-	if os.IsNotExist(err){
-		return fmt.Errorf("path: %s does not exist: %w",dirpath, err)
+	if os.IsNotExist(err) {
+		return fmt.Errorf("path: %s does not exist: %w", dirpath, err)
 	}
 	if !dir.IsDir() {
 		return fmt.Errorf("%s is not a directory", dirpath)
@@ -213,7 +213,7 @@ func parseDevfileRegistry(registryDirPath string, force bool) ([]schema.Schema, 
 				}
 			}
 
-			i:= 0
+			i := 0
 			for i < len(indexComponent.Versions) {
 				versionComponent := indexComponent.Versions[i]
 				if versionComponent.Git != nil {
@@ -230,6 +230,14 @@ func parseDevfileRegistry(registryDirPath string, force bool) ([]schema.Schema, 
 				}
 				indexComponent.Versions[i] = versionComponent
 				i++
+			}
+
+			for _, version := range indexComponent.Versions {
+				// if a particular version supports all architectures, the top architecture List should be empty (support all) as well
+				if version.Architectures == nil || len(version.Architectures) == 0 {
+					indexComponent.Architectures = nil
+					break
+				}
 			}
 		} else { // if stack.yaml not exist, old stack repo struct, directly lookfor & parse devfile.yaml
 			versionComponent := schema.Version{}
@@ -276,7 +284,7 @@ func parseStackDevfile(devfileDirPath string, stackName string, force bool, vers
 
 	if !force {
 		// Devfile validation
-		devfileObj,_, err := devfileParser.ParseDevfileAndValidate(parser.ParserArgs{Path: devfilePath})
+		devfileObj, _, err := devfileParser.ParseDevfileAndValidate(parser.ParserArgs{Path: devfilePath})
 		if err != nil {
 			return fmt.Errorf("%s devfile is not valid: %v", devfileDirPath, err)
 		}
@@ -291,7 +299,6 @@ func parseStackDevfile(devfileDirPath string, stackName string, force bool, vers
 	if err != nil {
 		return fmt.Errorf("failed to read %s: %v", devfilePath, err)
 	}
-
 
 	var devfile schema.Devfile
 	err = yaml.Unmarshal(bytes, &devfile)
@@ -412,7 +419,7 @@ func parseExtraDevfileEntries(registryDirPath string, force bool) ([]schema.Sche
 				// Can't handle during registry build since we don't have access to devfile library/parser
 				if indexComponent.Type == schema.SampleDevfileType && validateSamples {
 					if indexComponent.Versions != nil && len(indexComponent.Versions) > 0 {
-						for _, version := range indexComponent.Versions{
+						for _, version := range indexComponent.Versions {
 							sampleVersonDirPath := filepath.Join(samplesDir, devfileEntry.Name, version.Version)
 							devfilePath := filepath.Join(sampleVersonDirPath, "devfile.yaml")
 							_, err := os.Stat(filepath.Join(devfilePath))
@@ -497,7 +504,7 @@ func checkForRequiredMetadata(devfileObj parser.DevfileObj) []error {
 	return metadataErrors
 }
 
-func validateStackInfo (stackInfo schema.Schema, stackfolderDir string) []error {
+func validateStackInfo(stackInfo schema.Schema, stackfolderDir string) []error {
 	var errors []error
 
 	if stackInfo.Name == "" {
@@ -536,7 +543,6 @@ func validateStackInfo (stackInfo schema.Schema, stackfolderDir string) []error 
 
 	return errors
 }
-
 
 // In checks if the value is in the array
 func inArray(arr []string, value string) bool {

@@ -29,7 +29,7 @@ import (
 
 var _ = ginkgo.Describe("[Verify oci registry is working properly]", func() {
 	ginkgo.It("/v2 endpoint should be available", func() {
-		resp, err := http.Get(config.Registry + "/v2")
+		resp, err := http.Get(config.Registry + "/v2/")
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		gomega.Expect(resp.StatusCode).To(gomega.Equal(http.StatusOK))
 	})

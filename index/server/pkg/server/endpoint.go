@@ -10,10 +10,12 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"regexp"
 
 	indexSchema "github.com/devfile/registry-support/index/generator/schema"
 	"github.com/devfile/registry-support/index/server/pkg/util"
 	"github.com/gin-gonic/gin"
+	versionpkg "github.com/hashicorp/go-version"
 	"github.com/prometheus/client_golang/prometheus"
 	"gopkg.in/segmentio/analytics-go.v3"
 )
@@ -26,12 +28,20 @@ func serveRootEndpoint(c *gin.Context) {
 	if util.IsHtmlRequested(acceptHeader) {
 		c.Redirect(http.StatusFound, "/viewer")
 	} else {
-		serveDevfileIndex(c)
+		serveDevfileIndex(c, true)
 	}
 }
 
+func serveDevfileIndexV1(c *gin.Context) {
+	serveDevfileIndex(c, true)
+}
+
+func serveDevfileIndexV2(c *gin.Context) {
+	serveDevfileIndex(c, false)
+}
+
 // serveDevfileIndex serves the index.json file located in the container at `serveDevfileIndex`
-func serveDevfileIndex(c *gin.Context) {
+func serveDevfileIndex(c *gin.Context, wantV1Index bool) {
 	// Start the counter for the request
 	var status string
 	timer := prometheus.NewTimer(prometheus.ObserverFunc(func(v float64) {
@@ -45,14 +55,19 @@ func serveDevfileIndex(c *gin.Context) {
 	c.Params = append(c.Params, gin.Param{Key: "type", Value: string(indexSchema.StackDevfileType)})
 
 	// Serve the index.json file
-	buildIndexAPIResponse(c)
+	buildIndexAPIResponse(c, wantV1Index)
 }
 
-// serveDevfileIndexWithType returns the index file content with specific devfile type
-func serveDevfileIndexWithType(c *gin.Context) {
+func serveDevfileIndexV1WithType(c *gin.Context) {
 
 	// Serve the index with type
-	buildIndexAPIResponse(c)
+	buildIndexAPIResponse(c, true)
+}
+
+func serveDevfileIndexV2WithType(c *gin.Context) {
+
+	// Serve the index with type
+	buildIndexAPIResponse(c, false)
 }
 
 // serveHealthCheck serves endpoint `/health` for registry health check
@@ -62,9 +77,9 @@ func serveHealthCheck(c *gin.Context) {
 	})
 }
 
-// serveDevfile returns the devfile content
-func serveDevfile(c *gin.Context) {
+func serveDevfileWithVersion(c *gin.Context) {
 	name := c.Param("name")
+	version := c.Param("version")
 
 	var index []indexSchema.Schema
 	bytes, err := ioutil.ReadFile(indexPath)
@@ -85,6 +100,41 @@ func serveDevfile(c *gin.Context) {
 		})
 		return
 	}
+
+	// minSchemaVersion and maxSchemaVersion will only be applied if looking for latest stack version
+	if version == "latest" {
+		minSchemaVersion := c.Query("minSchemaVersion")
+		maxSchemaVersion := c.Query("maxSchemaVersion")
+		// check if schema version filters are in valid format.
+		// should only include major and minor version. e.g. 2.1
+		if minSchemaVersion != "" {
+			matched, err := regexp.MatchString(`^([2-9])\.([0-9]+)$`, minSchemaVersion)
+			if !matched || err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"status": fmt.Sprintf("minSchemaVersion %s is not valid, should only include major and minor version. %v", minSchemaVersion, err),
+				})
+				return
+			}
+		}
+		if maxSchemaVersion != "" {
+			matched, err := regexp.MatchString(`^([2-9])\.([0-9]+)$`, maxSchemaVersion)
+			if !matched || err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"status": fmt.Sprintf("maxSchemaVersion %s is not valid, should only include major and minor version. %v", maxSchemaVersion, err),
+				})
+				return
+			}
+		}
+
+		index, err = util.FilterDevfileSchemaVersion(index, minSchemaVersion, maxSchemaVersion)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"status": fmt.Sprintf("failed to apply schema version filter: %v", err),
+			})
+			return
+		}
+	}
+
 	for _, devfileIndex := range index {
 		if devfileIndex.Name == name {
 			var sampleDevfilePath string
@@ -94,17 +144,55 @@ func serveDevfile(c *gin.Context) {
 					sampleDevfilePath = path.Join(samplesPath, devfileIndex.Name, devfileName)
 				}
 			} else {
-				for _, version := range devfileIndex.Versions {
-					if !version.Default {
-						continue
+				// versionFound := false
+				versionMap := make(map[string]indexSchema.Version)
+				var latestVersion string
+				for _, versionElement := range devfileIndex.Versions {
+					versionMap[versionElement.Version] = versionElement
+					if versionElement.Default {
+						versionMap["default"] = versionElement
 					}
+					if latestVersion != "" {
+						latest, err := versionpkg.NewVersion(latestVersion)
+						if err != nil {
+							log.Print(err.Error())
+							c.JSON(http.StatusInternalServerError, gin.H{
+								"error":  err.Error(),
+								"status": fmt.Sprintf("failed to parse the stack version %s for stack %s", latestVersion, name),
+							})
+							return
+						}
+						current, err := versionpkg.NewVersion(versionElement.Version)
+						if err != nil {
+							log.Print(err.Error())
+							c.JSON(http.StatusInternalServerError, gin.H{
+								"error":  err.Error(),
+								"status": fmt.Sprintf("failed to parse the stack version %s for stack %s", versionElement.Version, name),
+							})
+							return
+						}
+						if current.GreaterThan(latest) {
+							latestVersion = versionElement.Version
+						}
+					} else {
+						latestVersion = versionElement.Version
+					}
+				}
+				versionMap["latest"] = versionMap[latestVersion]
+
+				if foundVersion, ok := versionMap[version]; ok {
 					if devfileIndex.Type == indexSchema.StackDevfileType {
-						bytes, err = pullStackFromRegistry(version)
+						bytes, err = pullStackFromRegistry(foundVersion)
 					} else {
 						// Retrieve the sample devfile stored under /registry/samples/<devfile>
-						sampleDevfilePath = path.Join(samplesPath, devfileIndex.Name, version.Version, devfileName)
+						sampleDevfilePath = path.Join(samplesPath, devfileIndex.Name, foundVersion.Version, devfileName)
 					}
-					break
+				} else {
+					c.JSON(http.StatusInternalServerError, gin.H{
+						"error":  err.Error(),
+						"status": fmt.Sprintf("version: %s not found in stack %s", version, name),
+					})
+					return
 				}
 			}
 			if sampleDevfilePath != "" {
@@ -151,6 +239,13 @@ func serveDevfile(c *gin.Context) {
 	})
 }
 
+// serveDevfile returns the devfile content
+func serveDevfile(c *gin.Context) {
+	// append the stack version, for endpoint /devfiles/name without version
+	c.Params = append(c.Params, gin.Param{Key: "version", Value: "default"})
+	serveDevfileWithVersion(c)
+}
+
 func serveUI(c *gin.Context) {
 	remote, err := url.Parse(scheme + "://" + viewerService + "/viewer/")
 	if err != nil {
@@ -173,7 +268,7 @@ func serveUI(c *gin.Context) {
 }
 
 // buildIndexAPIResponse builds the response of the REST API of getting the devfile index
-func buildIndexAPIResponse(c *gin.Context) {
+func buildIndexAPIResponse(c *gin.Context, wantV1Index bool) {
 
 	indexType := c.Param("type")
 	iconType := c.Query("icon")
@@ -231,10 +326,43 @@ func buildIndexAPIResponse(c *gin.Context) {
 		})
 		return
 	}
-	index = util.ConvertToOldIndexFormat(index)
+	if wantV1Index {
+		index = util.ConvertToOldIndexFormat(index)
+	} else {
+		minSchemaVersion := c.Query("minSchemaVersion")
+		maxSchemaVersion := c.Query("maxSchemaVersion")
+		// check if schema version filters are in valid format.
+		// should only include major and minor version. e.g. 2.1
+		if minSchemaVersion != "" {
+			matched, err := regexp.MatchString(`^([2-9])\.([0-9]+)$`, minSchemaVersion)
+			if !matched || err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"status": fmt.Sprintf("minSchemaVersion %s is not valid, should only include major and minor version. %v", minSchemaVersion, err),
+				})
+				return
+			}
+		}
+		if maxSchemaVersion != "" {
+			matched, err := regexp.MatchString(`^([2-9])\.([0-9]+)$`, maxSchemaVersion)
+			if !matched || err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"status": fmt.Sprintf("maxSchemaVersion %s is not valid, should only include major and minor version. %v", maxSchemaVersion, err),
+				})
+				return
+			}
+		}
+
+		index, err = util.FilterDevfileSchemaVersion(index, minSchemaVersion, maxSchemaVersion)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"status": fmt.Sprintf("failed to apply schema version filter: %v", err),
+			})
+			return
+		}
+	}
 	// Filter the index if archs has been requested
 	if len(archs) > 0 {
-		index = util.FilterDevfileArchitectures(index, archs)
+		index = util.FilterDevfileArchitectures(index, archs, wantV1Index)
 	}
 	bytes, err = json.MarshalIndent(&index, "", "  ")
 	if err != nil {

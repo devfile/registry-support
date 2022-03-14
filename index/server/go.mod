@@ -9,6 +9,7 @@ require (
 	github.com/devfile/registry-support/index/generator v0.0.0-20220222194908-7a90a4214f3e
 	github.com/gin-gonic/gin v1.6.3
 	github.com/gorilla/mux v1.7.3 // indirect
+	github.com/hashicorp/go-version v1.4.0
 	github.com/kylelemons/godebug v0.0.0-20170820004349-d65d576e9348
 	github.com/opencontainers/image-spec v1.0.1
 	github.com/prometheus/client_golang v1.11.0
