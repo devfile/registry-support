@@ -82,10 +82,21 @@ type RegistryOptions struct {
 	Telemetry TelemetryData
 	// Filter allows clients to specify which architectures they want to filter their devfiles on
 	Filter RegistryFilter
+	// NewIndexSchema is false by default, which calls GET /index and returns index of default version of each stack using the old index schema struct.
+	// If specified to true, calls GET /v2index and returns the new Index schema with multi-version support
+	NewIndexSchema bool
 }
 
 type RegistryFilter struct {
 	Architectures []string
+	// minSchemaVersion is set to filter devfile index equal and above a particular devfile schema version (inclusive)
+	// only major version and minor version are required. e.g. 2.1, 2.2 ect. service version should not be provided.
+	// will only be applied if `NewIndexSchema=true`
+	minSchemaVersion string
+	// maxSchemaVersion is set to filter devfile index equal and below a particular devfile schema version (inclusive)
+	// only major version and minor version are required. e.g. 2.1, 2.2 ect. service version should not be provided.
+	// will only be applied if `NewIndexSchema=true`
+	maxSchemaVersion string
 }
 
 // GetRegistryIndex returns the list of index schema structured stacks and/or samples from a specified devfile registry.
@@ -108,12 +119,16 @@ func GetRegistryIndex(registryURL string, options RegistryOptions, devfileTypes 
 	}
 
 	var endpoint string
+	indexEndpoint := "index"
+	if options.NewIndexSchema {
+		indexEndpoint = "v2index"
+	}
 	if getStack && getSample {
-		endpoint = path.Join("index", "all")
+		endpoint = path.Join(indexEndpoint, "all")
 	} else if getStack && !getSample {
-		endpoint = "index"
+		endpoint = indexEndpoint
 	} else if getSample && !getStack {
-		endpoint = path.Join("index", "sample")
+		endpoint = path.Join(indexEndpoint, "sample")
 	} else {
 		return registryIndex, nil
 	}
@@ -125,6 +140,16 @@ func GetRegistryIndex(registryURL string, options RegistryOptions, devfileTypes 
 	if len(options.Filter.Architectures) > 0 {
 		for _, arch := range options.Filter.Architectures {
 			endpoint = endpoint + "arch=" + arch + "&"
+		}
+		endpoint = strings.TrimSuffix(endpoint, "&")
+	}
+
+	if options.NewIndexSchema && (options.Filter.maxSchemaVersion!= "" || options.Filter.minSchemaVersion != "") {
+		if options.Filter.maxSchemaVersion!= "" {
+			endpoint = endpoint + "maxSchemaVersion=" + options.Filter.maxSchemaVersion+ "&"
+		}
+		if options.Filter.minSchemaVersion!= "" {
+			endpoint = endpoint + "minSchemaVersion=" + options.Filter.minSchemaVersion+ "&"
 		}
 		endpoint = strings.TrimSuffix(endpoint, "&")
 	}
