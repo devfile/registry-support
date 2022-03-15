@@ -188,6 +188,49 @@ func TestDownloadStackFromGit(t *testing.T) {
 			false,
 			"",
 		},
+		{
+			"Case 2: Maven Java (With subDir)",
+			&schema.Git{
+				Url:        "https://github.com/odo-devfiles/springboot-ex.git",
+				RemoteName: "origin",
+				SubDir:     "src/main",
+			},
+			filepath.Join(os.TempDir(), "springboot-ex-main"),
+			false,
+			"",
+		},
+		{
+			"Case 3: Maven Java - Cloning with Hash Revision",
+			&schema.Git{
+				Url:        "https://github.com/odo-devfiles/springboot-ex.git",
+				RemoteName: "origin",
+				Revision:   "694e96286ffdc3a9990d0041637d32cecba38181",
+			},
+			filepath.Join(os.TempDir(), "springboot-ex"),
+			true,
+			"specifying commit in 'revision' is not yet supported",
+		},
+		{
+			"Case 4: Cloning a non-existant repo",
+			&schema.Git{
+				Url:        "https://github.com/odo-devfiles/nonexist.git",
+				RemoteName: "origin",
+			},
+			filepath.Join(os.TempDir(), "nonexist"),
+			true,
+			"",
+		},
+		{
+			"Case 5: Maven Java - Cloning with Invalid Revision",
+			&schema.Git{
+				Url:        "https://github.com/odo-devfiles/springboot-ex.git",
+				RemoteName: "origin",
+				Revision:   "invalid",
+			},
+			filepath.Join(os.TempDir(), "springboot-ex"),
+			true,
+			"couldn't find remote ref \"refs/tags/invalid\"",
+		},
 	}
 
 	for _, tt := range tests {
