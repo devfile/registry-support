@@ -120,14 +120,30 @@ func DownloadStackFromGit(git *schema.Git, path string, verbose bool) ([]byte, e
 	return ioutil.ReadFile(zipPath)
 }
 
-// DownloadStackFromZipUrl downloads the zip file containing the stack at a given url
+// DownloadStackFromZipUrl downloads the zip file containing the stack at a given url, uses default filesystem
 func DownloadStackFromZipUrl(zipUrl string, subDir string, path string) ([]byte, error) {
-	unzipDst := filepath.Join(path, subDir)
+	return downloadStackFromZipUrl(zipUrl, subDir, path, filesystem.DefaultFs{})
+}
+
+// downloadStackFromZipUrl downloads the zip file containing the stack at a given url
+func downloadStackFromZipUrl(zipUrl string, subDir string, path string, fs filesystem.Filesystem) ([]byte, error) {
 	zipDst := fmt.Sprintf("%s.zip", path)
+
+	// Create path if does not exist
+	if err := fs.MkdirAll(path, os.ModePerm); err != nil {
+		return []byte{}, err
+	}
 
 	// If subDir is specified extraction and rezipping after download is required,
 	// else just download and return original zip file
 	if subDir != "" {
+		unzipDst := filepath.Join(path, subDir)
+
+		// Create unzip destination if does not exist
+		if err := fs.MkdirAll(unzipDst, os.ModePerm); err != nil {
+			return []byte{}, err
+		}
+
 		// Download from given url and unzip subDir to given path, if error
 		// return empty bytes.
 		if err := dfutil.GetAndExtractZip(zipUrl, unzipDst, subDir); err != nil {
