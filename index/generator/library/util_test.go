@@ -119,6 +119,26 @@ func TestDownloadStackFromZipUrl(t *testing.T) {
 			false,
 			"",
 		},
+		{
+			"Case 2: Java Quarkus (With subDir)",
+			map[string]string{
+				"Name":   "quarkus",
+				"ZipUrl": "https://code.quarkus.io/d?e=io.quarkus%3Aquarkus-resteasy&e=io.quarkus%3Aquarkus-micrometer&e=io.quarkus%3Aquarkus-smallrye-health&e=io.quarkus%3Aquarkus-openshift&cn=devfile",
+				"SubDir": "code-with-quarkus",
+			},
+			false,
+			"",
+		},
+		{
+			"Case 3: Download error",
+			map[string]string{
+				"Name":   "quarkus",
+				"ZipUrl": "https://code.quarkus.io/d?e=io.quarkus",
+				"SubDir": "",
+			},
+			true,
+			"failed to retrieve https://code.quarkus.io/d?e=io.quarkus, 400: Bad Request",
+		},
 	}
 
 	for _, tt := range tests {
