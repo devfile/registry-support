@@ -104,8 +104,10 @@ func TestCloneRemoteStack(t *testing.T) {
 
 func TestDownloadStackFromZipUrl(t *testing.T) {
 	tests := []struct {
-		name   string
-		params map[string]string
+		name       string
+		params     map[string]string
+		wantErr    bool
+		wantErrStr string
 	}{
 		{
 			"Case 1: Java Quarkus (Without subDir)",
@@ -114,6 +116,8 @@ func TestDownloadStackFromZipUrl(t *testing.T) {
 				"ZipUrl": "https://code.quarkus.io/d?e=io.quarkus%3Aquarkus-resteasy&e=io.quarkus%3Aquarkus-micrometer&e=io.quarkus%3Aquarkus-smallrye-health&e=io.quarkus%3Aquarkus-openshift&cn=devfile",
 				"SubDir": "",
 			},
+			false,
+			"",
 		},
 	}
 
