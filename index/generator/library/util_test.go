@@ -124,7 +124,7 @@ func TestDownloadStackFromZipUrl(t *testing.T) {
 			map[string]string{
 				"Name":   "quarkus",
 				"ZipUrl": "https://code.quarkus.io/d?e=io.quarkus%3Aquarkus-resteasy&e=io.quarkus%3Aquarkus-micrometer&e=io.quarkus%3Aquarkus-smallrye-health&e=io.quarkus%3Aquarkus-openshift&cn=devfile",
-				"SubDir": "code-with-quarkus",
+				"SubDir": "src",
 			},
 			false,
 			"",
