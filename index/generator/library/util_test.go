@@ -172,9 +172,11 @@ func TestDownloadStackFromZipUrl(t *testing.T) {
 
 func TestDownloadStackFromGit(t *testing.T) {
 	tests := []struct {
-		name string
-		git  *schema.Git
-		path string
+		name       string
+		git        *schema.Git
+		path       string
+		wantErr    bool
+		wantErrStr string
 	}{
 		{
 			"Case 1: Maven Java (Without subDir)",
@@ -183,6 +185,8 @@ func TestDownloadStackFromGit(t *testing.T) {
 				RemoteName: "origin",
 			},
 			filepath.Join(os.TempDir(), "springboot-ex"),
+			false,
+			"",
 		},
 	}
 
@@ -193,7 +197,10 @@ func TestDownloadStackFromGit(t *testing.T) {
 			bytes, err := DownloadStackFromGit(tt.git, tt.path, false)
 
 			if err != nil {
-				t.Errorf("Git download to bytes failed: %v", err)
+				if !tt.wantErr || (tt.wantErrStr != "" && err.Error() != tt.wantErrStr) {
+					t.Errorf("Git download to bytes failed: %v", err)
+				}
+				return
 			} else if _, err := os.Stat(hiddenGitPath); os.IsExist(err) {
 				t.Errorf(".git exist but isn't suppose to within %s", hiddenGitPath)
 			}
