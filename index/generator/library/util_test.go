@@ -128,7 +128,10 @@ func TestDownloadStackFromZipUrl(t *testing.T) {
 			bytes, err := DownloadStackFromZipUrl(tt.params["ZipUrl"], tt.params["SubDir"], path)
 
 			if err != nil {
-				t.Errorf("Zip download to bytes failed: %v", err)
+				if !tt.wantErr || (tt.wantErrStr != "" && err.Error() != tt.wantErrStr) {
+					t.Errorf("Zip download to bytes failed: %v", err)
+				}
+				return
 			}
 
 			resultantType := http.DetectContentType(bytes)
