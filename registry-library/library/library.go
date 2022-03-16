@@ -34,6 +34,7 @@ import (
 
 	"github.com/containerd/containerd/remotes/docker"
 	indexSchema "github.com/devfile/registry-support/index/generator/schema"
+	versionpkg "github.com/hashicorp/go-version"
 	"oras.land/oras-go/pkg/content"
 	"oras.land/oras-go/pkg/oras"
 )
@@ -89,14 +90,14 @@ type RegistryOptions struct {
 
 type RegistryFilter struct {
 	Architectures []string
-	// minSchemaVersion is set to filter devfile index equal and above a particular devfile schema version (inclusive)
+	// MinSchemaVersion is set to filter devfile index equal and above a particular devfile schema version (inclusive)
 	// only major version and minor version are required. e.g. 2.1, 2.2 ect. service version should not be provided.
 	// will only be applied if `NewIndexSchema=true`
-	minSchemaVersion string
-	// maxSchemaVersion is set to filter devfile index equal and below a particular devfile schema version (inclusive)
+	MinSchemaVersion string
+	// MaxSchemaVersion is set to filter devfile index equal and below a particular devfile schema version (inclusive)
 	// only major version and minor version are required. e.g. 2.1, 2.2 ect. service version should not be provided.
 	// will only be applied if `NewIndexSchema=true`
-	maxSchemaVersion string
+	MaxSchemaVersion string
 }
 
 // GetRegistryIndex returns the list of index schema structured stacks and/or samples from a specified devfile registry.
@@ -144,12 +145,12 @@ func GetRegistryIndex(registryURL string, options RegistryOptions, devfileTypes 
 		endpoint = strings.TrimSuffix(endpoint, "&")
 	}
 
-	if options.NewIndexSchema && (options.Filter.maxSchemaVersion!= "" || options.Filter.minSchemaVersion != "") {
-		if options.Filter.maxSchemaVersion!= "" {
-			endpoint = endpoint + "maxSchemaVersion=" + options.Filter.maxSchemaVersion+ "&"
+	if options.NewIndexSchema && (options.Filter.MaxSchemaVersion != "" || options.Filter.MinSchemaVersion != "") {
+		if options.Filter.MinSchemaVersion != "" {
+			endpoint = endpoint + "minSchemaVersion=" + options.Filter.MinSchemaVersion + "&"
 		}
-		if options.Filter.minSchemaVersion!= "" {
-			endpoint = endpoint + "minSchemaVersion=" + options.Filter.minSchemaVersion+ "&"
+		if options.Filter.MaxSchemaVersion != "" {
+			endpoint = endpoint + "maxSchemaVersion=" + options.Filter.MaxSchemaVersion + "&"
 		}
 		endpoint = strings.TrimSuffix(endpoint, "&")
 	}
@@ -241,6 +242,12 @@ func PrintRegistry(registryURLs string, devfileType string, options RegistryOpti
 
 // PullStackByMediaTypesFromRegistry pulls a specified stack with allowed media types from a given registry URL to the destination directory
 func PullStackByMediaTypesFromRegistry(registry string, stack string, allowedMediaTypes []string, destDir string, options RegistryOptions) error {
+	var requestVersion string
+	if strings.Contains(stack, ":") {
+		stackWithVersion := strings.Split(stack, ":")
+		stack = stackWithVersion[0]
+		requestVersion = stackWithVersion[1]
+	}
 	// Get the registry index
 	registryIndex, err := GetRegistryIndex(registry, options, indexSchema.StackDevfileType)
 	if err != nil {
@@ -259,6 +266,38 @@ func PullStackByMediaTypesFromRegistry(registry string, stack string, allowedMed
 	}
 	if !exist {
 		return fmt.Errorf("stack %s does not exist in the registry %s", stack, registry)
+	}
+	var stackLink string
+
+	if options.NewIndexSchema {
+		latestVersionIndex := 0
+		latest, err := versionpkg.NewVersion(stackIndex.Versions[latestVersionIndex].Version)
+		if err != nil {
+			return fmt.Errorf("failed to parse the stack version %s for stack %s", stackIndex.Versions[latestVersionIndex].Version, stack)
+		}
+		for index, version := range stackIndex.Versions {
+			if (requestVersion == "" && version.Default) || (version.Version == requestVersion) {
+				stackLink = version.Links["self"]
+				break
+			} else if requestVersion == "latest" {
+				current, err := versionpkg.NewVersion(version.Version)
+				if err != nil {
+					return fmt.Errorf("failed to parse the stack version %s for stack %s", version.Version, stack)
+				}
+				if current.GreaterThan(latest) {
+					latestVersionIndex = index
+					latest = current
+				}
+			}
+		}
+		if requestVersion == "latest" {
+			stackLink = stackIndex.Versions[latestVersionIndex].Links["self"]
+		}
+		if stackLink == "" {
+			return fmt.Errorf("the requested verion %s for stack %s does not exist in the registry %s", requestVersion, stack, registry)
+		}
+	} else {
+		stackLink = stackIndex.Links["self"]
 	}
 
 	// Pull stack initialization
@@ -280,7 +319,7 @@ func PullStackByMediaTypesFromRegistry(registry string, stack string, allowedMed
 	setHeaders(&headers, options)
 
 	resolver := docker.NewResolver(docker.ResolverOptions{Headers: headers, PlainHTTP: plainHTTP, Client: httpClient})
-	ref := path.Join(urlObj.Host, stackIndex.Links["self"])
+	ref := path.Join(urlObj.Host, stackLink)
 	fileStore := content.NewFileStore(destDir)
 	defer fileStore.Close()
 

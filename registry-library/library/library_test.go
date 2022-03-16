@@ -24,12 +24,42 @@ func TestGetRegistryIndex(t *testing.T) {
 		},
 	}
 
+	schemaVersionFilteredIndex := []indexSchema.Schema{
+		{
+			Name: "indexSchema2.1",
+			Versions: []indexSchema.Version{
+				{
+					Version:       "1.0.0",
+					SchemaVersion: "2.1.0",
+				},
+			},
+		},
+		{
+			Name: "indexSchema2.2",
+			Versions: []indexSchema.Version{
+				{
+					Version:       "1.1.0",
+					SchemaVersion: "2.2.0",
+				},
+			},
+		},
+	}
+
 	sampleFilteredIndex := []indexSchema.Schema{
 		{
 			Name: "sampleindex1",
 		},
 		{
 			Name: "sampleindex2",
+		},
+	}
+
+	sampleFilteredV2Index := []indexSchema.Schema{
+		{
+			Name: "samplev2index1",
+		},
+		{
+			Name: "samplev2index2",
 		},
 	}
 
@@ -42,12 +72,30 @@ func TestGetRegistryIndex(t *testing.T) {
 		},
 	}
 
+	stackFilteredV2Index := []indexSchema.Schema{
+		{
+			Name: "stackv2index1",
+		},
+		{
+			Name: "stackv2index2",
+		},
+	}
+
 	notFilteredIndex := []indexSchema.Schema{
 		{
 			Name: "index1",
 		},
 		{
 			Name: "index2",
+		},
+	}
+
+	notFilteredV2Index := []indexSchema.Schema{
+		{
+			Name: "v2index1",
+		},
+		{
+			Name: "v2index2",
 		},
 	}
 
@@ -59,12 +107,20 @@ func TestGetRegistryIndex(t *testing.T) {
 
 		if strings.Contains(r.URL.String(), "arch=amd64&arch=arm64") {
 			data = archFilteredIndex
+		} else if strings.Contains(r.URL.String(), "minSchemaVersion=2.1&maxSchemaVersion=2.2") {
+			data = schemaVersionFilteredIndex
 		} else if r.URL.Path == "/index/sample" {
 			data = sampleFilteredIndex
+		} else if r.URL.Path == "/v2index/sample" {
+			data = sampleFilteredV2Index
 		} else if r.URL.Path == "/index/stack" || r.URL.Path == "/index" {
 			data = stackFilteredIndex
+		} else if r.URL.Path == "/v2index/stack" || r.URL.Path == "/v2index" {
+			data = stackFilteredV2Index
 		} else if r.URL.Path == "/index/all" {
 			data = notFilteredIndex
+		} else if r.URL.Path == "/v2index/all" {
+			data = notFilteredV2Index
 		}
 
 		bytes, err := json.MarshalIndent(&data, "", "  ")
@@ -102,6 +158,18 @@ func TestGetRegistryIndex(t *testing.T) {
 		wantErr      bool
 	}{
 		{
+			name: "Get Devfile Schema Filtered Index",
+			url:  "http://" + serverIP,
+			options: RegistryOptions{
+				NewIndexSchema: true,
+				Filter: RegistryFilter{
+					MinSchemaVersion: "2.1",
+					MaxSchemaVersion: "2.2",
+				},
+			},
+			wantSchemas: schemaVersionFilteredIndex,
+		},
+		{
 			name: "Get Arch Filtered Index",
 			url:  "http://" + serverIP,
 			options: RegistryOptions{
@@ -119,16 +187,43 @@ func TestGetRegistryIndex(t *testing.T) {
 			wantSchemas:  sampleFilteredIndex,
 		},
 		{
+			name: "Get Sample Filtered V2 Index",
+			url:  "http://" + serverIP,
+			options: RegistryOptions{
+				NewIndexSchema: true,
+			},
+			devfileTypes: []indexSchema.DevfileType{indexSchema.SampleDevfileType},
+			wantSchemas:  sampleFilteredV2Index,
+		},
+		{
 			name:         "Get Stack Filtered Index",
 			url:          "http://" + serverIP,
 			devfileTypes: []indexSchema.DevfileType{indexSchema.StackDevfileType},
 			wantSchemas:  stackFilteredIndex,
 		},
 		{
+			name: "Get Stack Filtered V2 Index",
+			url:  "http://" + serverIP,
+			options: RegistryOptions{
+				NewIndexSchema: true,
+			},
+			devfileTypes: []indexSchema.DevfileType{indexSchema.StackDevfileType},
+			wantSchemas:  stackFilteredV2Index,
+		},
+		{
 			name:         "Get all of the Indexes",
 			url:          "http://" + serverIP,
 			devfileTypes: []indexSchema.DevfileType{indexSchema.StackDevfileType, indexSchema.SampleDevfileType},
 			wantSchemas:  notFilteredIndex,
+		},
+		{
+			name: "Get all of the V2 Indexes",
+			url:  "http://" + serverIP,
+			options: RegistryOptions{
+				NewIndexSchema: true,
+			},
+			devfileTypes: []indexSchema.DevfileType{indexSchema.StackDevfileType, indexSchema.SampleDevfileType},
+			wantSchemas:  notFilteredV2Index,
 		},
 		{
 			name:    "Not a URL",
