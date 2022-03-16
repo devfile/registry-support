@@ -1,8 +1,11 @@
 package server
 
 import (
+	"archive/zip"
 	"encoding/json"
 	"fmt"
+	"io"
+	"io/fs"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -10,8 +13,14 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"path/filepath"
 	"regexp"
+	"strings"
 
+	"github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2"
+	"github.com/devfile/library/pkg/devfile/parser"
+	"github.com/devfile/library/pkg/devfile/parser/data/v2/common"
+	"github.com/devfile/registry-support/index/generator/schema"
 	indexSchema "github.com/devfile/registry-support/index/generator/schema"
 	"github.com/devfile/registry-support/index/server/pkg/util"
 	"github.com/gin-gonic/gin"
@@ -21,7 +30,7 @@ import (
 )
 
 // serveRootEndpoint sets up the handler for the root (/) endpoint on the server
-// If html is requested (i.e. from a web browser), the viewer is displayed, otherwise the devfile index is served.
+// If html is requested (i.e. from a web browser), the viewer is displayed, oth erwise the devfile index is served.
 func serveRootEndpoint(c *gin.Context) {
 	// Determine if text/html was requested by the client
 	acceptHeader := c.Request.Header.Values("Accept")
@@ -246,6 +255,169 @@ func serveDevfile(c *gin.Context) {
 	serveDevfileWithVersion(c)
 }
 
+// serveDevfileStarterProject returns the starter project content for the devfile
+func serveDevfileStarterProject(c *gin.Context) {
+	devfileName := c.Param("name")
+	starterProjectName := c.Param("starterProjectName")
+	devfileBytes, devfileIndexSchema := fetchDevfile(c, devfileName)
+
+	if len(devfileBytes) == 0 {
+		// fetchDevfile was unsuccessful (error or not found)
+		return
+	} else {
+		content, err := parser.ParseFromData(devfileBytes)
+		filterOptions := common.DevfileOptions{
+			FilterByName: starterProjectName,
+		}
+		var starterProjects []v1alpha2.StarterProject
+		var downloadBytes []byte
+
+		if err != nil {
+			log.Print(err.Error())
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error":  err.Error(),
+				"status": fmt.Sprintf("failed to parse the devfile of %s", devfileName),
+			})
+			return
+		}
+		starterProjects, err = content.Data.GetStarterProjects(filterOptions)
+
+		if err != nil {
+			log.Print(err.Error())
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error":  err.Error(),
+				"status": fmt.Sprintf("problem in reading starter project %s of devfile %s", starterProjectName, devfileName),
+			})
+			return
+		} else if len(starterProjects) == 0 {
+			c.JSON(http.StatusNotFound, gin.H{
+				"status": fmt.Sprintf("the starter project named %s does not exist in the devfile of %s", starterProjectName, devfileName),
+			})
+			return
+		}
+
+		if starterProject := starterProjects[0]; starterProject.Git != nil {
+			downloadTmpLoc := path.Join("/tmp", starterProjectName)
+			gitScheme := schema.Git{
+				Remotes:    starterProject.Git.Remotes,
+				RemoteName: "origin",
+				SubDir:     starterProject.SubDir,
+			}
+
+			if starterProject.Git.CheckoutFrom != nil {
+				gitScheme.RemoteName = starterProject.Git.CheckoutFrom.Remote
+				gitScheme.Revision = starterProject.Git.CheckoutFrom.Revision
+			}
+
+			gitScheme.Url = gitScheme.Remotes[gitScheme.RemoteName]
+
+			if err := library.downloadRemoteStack(&gitScheme, downloadTmpLoc, false); err != nil {
+				log.Print(err.Error())
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"error": err.Error(),
+					"status": fmt.Sprintf("Problem with downloading starter project %s from location: %s",
+						starterProjectName, gitScheme.Url),
+				})
+				return
+			}
+
+			zipFile, err := os.Create(fmt.Sprintf("%s.zip", downloadTmpLoc))
+			if err != nil {
+				log.Print(err.Error())
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"error": err.Error(),
+					"status": fmt.Sprintf("Problem with creating starter project %s zip archive for download",
+						starterProjectName),
+				})
+				return
+			}
+			defer zipFile.Close()
+
+			zipWriter := zip.NewWriter(zipFile)
+			defer zipWriter.Close()
+
+			err = filepath.Walk(downloadTmpLoc, func(currPath string, info fs.FileInfo, err error) error {
+				if err != nil {
+					return err
+				} else if !info.IsDir() {
+					srcFile, err := os.Open(currPath)
+					if err != nil {
+						return err
+					}
+					defer srcFile.Close()
+
+					dstFile, err := zipWriter.Create(path.Join(".", strings.Split(currPath, downloadTmpLoc)[1]))
+					if err != nil {
+						return err
+					}
+
+					if _, err := io.Copy(dstFile, srcFile); err != nil {
+						return err
+					}
+				}
+
+				return nil
+			})
+			if err != nil {
+				log.Print(err.Error())
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"error": err.Error(),
+					"status": fmt.Sprintf("Problem with populating starter project %s zip archive for download, see error for details",
+						starterProjectName),
+				})
+				return
+			}
+
+			_, err = zipFile.Read(downloadBytes)
+			if err != nil {
+				log.Print(err.Error())
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"error": err.Error(),
+					"status": fmt.Sprintf("Problem with reading starter project %s zip archive for download",
+						starterProjectName),
+				})
+				return
+			}
+		} else if starterProject.Zip != nil {
+			client := http.Client{
+				CheckRedirect: func(req *http.Request, via []*http.Request) error {
+					req.URL.Opaque = req.URL.Path
+					return nil
+				},
+			}
+
+			resp, err := client.Get(starterProject.Zip.Location)
+			if err != nil {
+				log.Print(err.Error())
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"error": err.Error(),
+					"status": fmt.Sprintf("Problem with downloading starter project %s from location: %s",
+						starterProjectName, starterProject.Zip.Location),
+				})
+				return
+			}
+			defer resp.Body.Close()
+
+			downloadBytes, err = ioutil.ReadAll(resp.Body)
+			if err != nil {
+				log.Print(err.Error())
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"error":  err.Error(),
+					"status": fmt.Sprintf("Problem with reading downloaded starter %s", starterProjectName),
+				})
+				return
+			}
+		} else {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"status": fmt.Sprintf("Starter project %s has no source to download from", starterProjectName),
+			})
+			return
+		}
+
+		c.Data(http.StatusAccepted, "application/zip", downloadBytes)
+	}
+}
+
 func serveUI(c *gin.Context) {
 	remote, err := url.Parse(scheme + "://" + viewerService + "/viewer/")
 	if err != nil {
@@ -390,4 +562,60 @@ func buildIndexAPIResponse(c *gin.Context, wantV1Index bool) {
 			log.Println(err)
 		}
 	}
+}
+
+// fetchDevfile retrieves a specified devfile stored under /registry/**/<devfileName>
+func fetchDevfile(c *gin.Context, devfileName string) ([]byte, indexSchema.Schema) {
+	var index []indexSchema.Schema
+	bytes, err := ioutil.ReadFile(indexPath)
+	if err != nil {
+		log.Print(err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":  err.Error(),
+			"status": fmt.Sprintf("failed to pull the devfile of %s", devfileName),
+		})
+		return make([]byte, 0), indexSchema.Schema{}
+	}
+	err = json.Unmarshal(bytes, &index)
+	if err != nil {
+		log.Print(err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":  err.Error(),
+			"status": fmt.Sprintf("failed to pull the devfile of %s", devfileName),
+		})
+		return make([]byte, 0), indexSchema.Schema{}
+	}
+
+	// Reuse 'bytes' for devfile bytes, assign empty
+	bytes = make([]byte, 0)
+	for _, devfileIndex := range index {
+		if devfileIndex.Name == devfileName {
+			var bytes []byte
+			if devfileIndex.Type == indexSchema.StackDevfileType {
+				bytes, err = pullStackFromRegistry(devfileIndex)
+			} else {
+				// Retrieve the sample devfile stored under /registry/samples/<devfile>
+				sampleDevfilePath := path.Join(samplesPath, devfileIndex.Name, devfileName)
+				if _, err = os.Stat(sampleDevfilePath); err == nil {
+					bytes, err = ioutil.ReadFile(sampleDevfilePath)
+				}
+			}
+			if err != nil {
+				log.Print(err.Error())
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"error":  err.Error(),
+					"status": fmt.Sprintf("failed to pull the devfile of %s", devfileName),
+				})
+				return make([]byte, 0), devfileIndex
+			}
+
+			return bytes, devfileIndex
+		}
+	}
+
+	c.JSON(http.StatusNotFound, gin.H{
+		"status": fmt.Sprintf("the devfile of %s didn't exist", devfileName),
+	})
+
+	return bytes, indexSchema.Schema{}
 }

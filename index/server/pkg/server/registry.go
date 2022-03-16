@@ -13,9 +13,9 @@ import (
 	indexSchema "github.com/devfile/registry-support/index/generator/schema"
 
 	"github.com/containerd/containerd/remotes/docker"
-	"github.com/deislabs/oras/pkg/content"
-	"github.com/deislabs/oras/pkg/oras"
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
+	"oras.land/oras-go/pkg/content"
+	"oras.land/oras-go/pkg/oras"
 )
 
 // pushStackToRegistry pushes the given devfile stack to the OCI registry

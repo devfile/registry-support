@@ -2,7 +2,6 @@ package server
 
 import (
 	"encoding/json"
-	"github.com/devfile/registry-support/index/server/pkg/util"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -10,6 +9,8 @@ import (
 	"net/url"
 	"strings"
 	"time"
+
+	"github.com/devfile/registry-support/index/server/pkg/util"
 
 	"github.com/prometheus/client_golang/prometheus"
 
@@ -135,6 +136,7 @@ func ServeRegistry() {
 	router.GET("/health", serveHealthCheck)
 	router.GET("/devfiles/:name", serveDevfile)
 	router.GET("/devfiles/:name/:version", serveDevfileWithVersion)
+	router.GET("/devfiles/:name/starterProjects/:starterProjectName", serveDevfileStarterProject)
 
 	// Registry REST APIs for index v2
 	router.GET("/v2index", serveDevfileIndexV2)
