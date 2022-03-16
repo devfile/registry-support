@@ -265,22 +265,22 @@ var _ = ginkgo.Describe("[Verify index server is working properly]", func() {
 	})
 
 	ginkgo.It("/devfiles/<devfile>/<version> endpoint should return a devfile for stacks", func() {
+		parserArgs := parser.ParserArgs{
+			URL: config.Registry + "/devfiles/nodejs/latest",
+		}
+		_, _, err := devfilePkg.ParseDevfileAndValidate(parserArgs)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+	})
+
+	ginkgo.It("/devfiles/<devfile>/<version> endpoint should return a devfile for samples", func() {
 		if config.IsTestRegistry {
 			parserArgs := parser.ParserArgs{
-				URL: config.Registry + "/devfiles/nodejs/latest",
+				URL: config.Registry + "/devfiles/code-with-quarkus/latest",
 			}
 			_, _, err := devfilePkg.ParseDevfileAndValidate(parserArgs)
 			gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		} else {
 			ginkgo.Skip("cannot guarantee test outside of test registry, skipping test")
 		}
-	})
-
-	ginkgo.It("/devfiles/<devfile>/<version> endpoint should return a devfile for samples", func() {
-		parserArgs := parser.ParserArgs{
-			URL: config.Registry + "/devfiles/code-with-quarkus/latest",
-		}
-		_, _, err := devfilePkg.ParseDevfileAndValidate(parserArgs)
-		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	})
 })
