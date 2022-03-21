@@ -256,7 +256,7 @@ func serveDevfileStarterProject(c *gin.Context) {
 	devfileName := c.Param("name")
 	starterProjectName := c.Param("starterProjectName")
 	downloadTmpLoc := path.Join("/tmp", starterProjectName)
-	devfileBytes, devfileIndexSchema := fetchDevfile(c, devfileName, "default")
+	devfileBytes, _ := fetchDevfile(c, devfileName, "default") // TODO: add devfileIndexSchema when telemetry is migrated
 
 	if len(devfileBytes) == 0 {
 		// fetchDevfile was unsuccessful (error or not found)
