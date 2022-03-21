@@ -31,11 +31,7 @@ github.com/devfile/api/v2/pkg/utils/overriding
 github.com/devfile/api/v2/pkg/utils/unions
 github.com/devfile/api/v2/pkg/validation
 github.com/devfile/api/v2/pkg/validation/variables
-<<<<<<< HEAD
 # github.com/devfile/library v1.2.1-0.20220308191614-f0f7e11b17de
-=======
-# github.com/devfile/library v1.2.1-0.20220215173721-fc8a5b4f2768
->>>>>>> addDownloadStarterProject
 ## explicit
 github.com/devfile/library/pkg/devfile
 github.com/devfile/library/pkg/devfile/parser

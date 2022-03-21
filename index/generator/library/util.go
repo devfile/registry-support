@@ -1,19 +1,12 @@
 package library
 
 import (
-<<<<<<< HEAD
 	"archive/zip"
 	"fmt"
-=======
-	"github.com/devfile/registry-support/index/generator/schema"
-	gitpkg "github.com/go-git/go-git/v5"
-	"github.com/go-git/go-git/v5/plumbing"
->>>>>>> addDownloadStarterProject
 	"io"
 	"io/ioutil"
 	"os"
 	"os/signal"
-<<<<<<< HEAD
 	"path/filepath"
 	"strings"
 	"syscall"
@@ -29,17 +22,6 @@ import (
 // cloning then removing the local .git folder. When git.SubDir is set, fetches specified
 // subdirectory only.
 func CloneRemoteStack(git *schema.Git, path string, verbose bool) (err error) {
-=======
-	"path"
-	"path/filepath"
-	"syscall"
-	"fmt"
-	"github.com/devfile/library/pkg/testingutil/filesystem"
-)
-
-// downloadRemoteStack downloads the stack version outside of the registry repo
-func downloadRemoteStack(git *schema.Git, path string, verbose bool) (err error) {
->>>>>>> addDownloadStarterProject
 
 	// convert revision to referenceName type, ref name could be a branch or tag
 	// if revision is not specified it would be the default branch of the project
@@ -49,13 +31,7 @@ func downloadRemoteStack(git *schema.Git, path string, verbose bool) (err error)
 	if plumbing.IsHash(revision) {
 		// Specifying commit in the reference name is not supported by the go-git library
 		// while doing git.PlainClone()
-<<<<<<< HEAD
 		return fmt.Errorf("specifying commit in 'revision' is not yet supported")
-=======
-		fmt.Printf("Specifying commit in 'revision' is not yet supported.")
-		// overriding revision to empty as we do not support this
-		revision = ""
->>>>>>> addDownloadStarterProject
 	}
 
 	if revision != "" {
@@ -63,10 +39,6 @@ func downloadRemoteStack(git *schema.Git, path string, verbose bool) (err error)
 		refName = plumbing.NewBranchReferenceName(revision)
 	}
 
-<<<<<<< HEAD
-=======
-
->>>>>>> addDownloadStarterProject
 	cloneOptions := &gitpkg.CloneOptions{
 		URL:           git.Url,
 		RemoteName:    git.RemoteName,
@@ -98,14 +70,10 @@ func downloadRemoteStack(git *schema.Git, path string, verbose bool) (err error)
 		// try again to consider revision as tag name
 		cloneOptions.ReferenceName = plumbing.NewTagReferenceName(revision)
 		// remove if any .git folder downloaded in above try
-<<<<<<< HEAD
 		if err = os.RemoveAll(filepath.Join(path, ".git")); err != nil {
 			return err
 		}
 
-=======
-		_ = os.RemoveAll(filepath.Join(path, ".git"))
->>>>>>> addDownloadStarterProject
 		_, err = gitpkg.PlainClone(path, false, cloneOptions)
 		if err != nil {
 			return err
@@ -131,7 +99,6 @@ func downloadRemoteStack(git *schema.Git, path string, verbose bool) (err error)
 
 }
 
-<<<<<<< HEAD
 // DownloadStackFromGit downloads the stack from a git repo then adds folder contents into a zip archive,
 // returns byte array of zip file and error if occurs otherwise is nil. If git.SubDir is set, then
 // zip file will contain contents of the specified subdirectory instead of the whole downloaded git repo.
@@ -203,8 +170,6 @@ func downloadStackFromZipUrl(zipUrl string, subDir string, path string, fs files
 	return ioutil.ReadFile(zipDst)
 }
 
-=======
->>>>>>> addDownloadStarterProject
 // GitSubDir handles subDir for git components using the default filesystem
 func GitSubDir(srcPath, destinationPath, subDir string) error {
 	return gitSubDir(srcPath, destinationPath, subDir, filesystem.DefaultFs{})
@@ -271,11 +236,7 @@ func gitSubDir(srcPath, destinationPath, subDir string, fs filesystem.Filesystem
 }
 
 // copyFileWithFs copies a single file from src to dst
-<<<<<<< HEAD
 func copyFileWithFs(src, unZipDst string, fs filesystem.Filesystem) error {
-=======
-func copyFileWithFs(src, dst string, fs filesystem.Filesystem) error {
->>>>>>> addDownloadStarterProject
 	var err error
 	var srcinfo os.FileInfo
 
@@ -289,11 +250,7 @@ func copyFileWithFs(src, dst string, fs filesystem.Filesystem) error {
 		}
 	}()
 
-<<<<<<< HEAD
 	dstfd, err := fs.Create(unZipDst)
-=======
-	dstfd, err := fs.Create(dst)
->>>>>>> addDownloadStarterProject
 	if err != nil {
 		return err
 	}
@@ -309,11 +266,7 @@ func copyFileWithFs(src, dst string, fs filesystem.Filesystem) error {
 	if srcinfo, err = fs.Stat(src); err != nil {
 		return err
 	}
-<<<<<<< HEAD
 	return fs.Chmod(unZipDst, srcinfo.Mode())
-=======
-	return fs.Chmod(dst, srcinfo.Mode())
->>>>>>> addDownloadStarterProject
 }
 
 // copyDirWithFS copies a whole directory recursively
@@ -334,13 +287,8 @@ func copyDirWithFS(src string, dst string, fs filesystem.Filesystem) error {
 		return err
 	}
 	for _, fd := range fds {
-<<<<<<< HEAD
 		srcfp := filepath.Join(src, fd.Name())
 		dstfp := filepath.Join(dst, fd.Name())
-=======
-		srcfp := path.Join(src, fd.Name())
-		dstfp := path.Join(dst, fd.Name())
->>>>>>> addDownloadStarterProject
 
 		if fd.IsDir() {
 			if err = copyDirWithFS(srcfp, dstfp, fs); err != nil {
@@ -393,7 +341,6 @@ func cleanDir(originalPath string, leaveBehindFiles map[string]bool, fs filesyst
 		}
 	}
 	return err
-<<<<<<< HEAD
 }
 
 // ZipDir creates a zip file from a given directory specified by the src argument into a zip archive
@@ -442,6 +389,3 @@ func createZipper(writer *zip.Writer, root string, fs filesystem.Filesystem) fil
 		return nil
 	}
 }
-=======
-}
->>>>>>> addDownloadStarterProject
