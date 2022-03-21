@@ -85,27 +85,30 @@ func serveHealthCheck(c *gin.Context) {
 func serveDevfileWithVersion(c *gin.Context) {
 	name := c.Param("name")
 	version := c.Param("version")
-	_, devfileIndex := fetchDevfile(c, name, version)
+	bytes, devfileIndex := fetchDevfile(c, name, version)
 
-	// Track event for telemetry.  Ignore events from the registry-viewer and DevConsole since those are tracked on the client side
-	if enableTelemetry && !util.IsWebClient(c) {
+	if len(bytes) != 0 {
+		// Track event for telemetry.  Ignore events from the registry-viewer and DevConsole since those are tracked on the client side
+		if enableTelemetry && !util.IsWebClient(c) {
 
-		user := util.GetUser(c)
-		client := util.GetClient(c)
+			user := util.GetUser(c)
+			client := util.GetClient(c)
 
-		err := util.TrackEvent(analytics.Track{
-			Event:   eventTrackMap["view"],
-			UserId:  user,
-			Context: util.SetContext(c),
-			Properties: analytics.NewProperties().
-				Set("name", name).
-				Set("type", string(devfileIndex.Type)).
-				Set("registry", registry).
-				Set("client", client),
-		})
-		if err != nil {
-			log.Println(err)
+			err := util.TrackEvent(analytics.Track{
+				Event:   eventTrackMap["view"],
+				UserId:  user,
+				Context: util.SetContext(c),
+				Properties: analytics.NewProperties().
+					Set("name", name).
+					Set("type", string(devfileIndex.Type)).
+					Set("registry", registry).
+					Set("client", client),
+			})
+			if err != nil {
+				log.Println(err)
+			}
 		}
+		c.Data(http.StatusOK, http.DetectContentType(bytes), bytes)
 	}
 }
 
@@ -484,7 +487,7 @@ func fetchDevfile(c *gin.Context, name string, version string) ([]byte, indexSch
 					return []byte{}, indexSchema.Schema{}
 				}
 			}
-			c.Data(http.StatusOK, http.DetectContentType(bytes), bytes)
+
 			return bytes, devfileIndex
 		}
 	}
