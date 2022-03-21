@@ -85,163 +85,28 @@ func serveHealthCheck(c *gin.Context) {
 func serveDevfileWithVersion(c *gin.Context) {
 	name := c.Param("name")
 	version := c.Param("version")
+	_, devfileIndex := fetchDevfile(c, name, version)
 
-	var index []indexSchema.Schema
-	bytes, err := ioutil.ReadFile(indexPath)
-	if err != nil {
-		log.Print(err.Error())
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error":  err.Error(),
-			"status": fmt.Sprintf("failed to pull the devfile of %s", name),
+	// Track event for telemetry.  Ignore events from the registry-viewer and DevConsole since those are tracked on the client side
+	if enableTelemetry && !util.IsWebClient(c) {
+
+		user := util.GetUser(c)
+		client := util.GetClient(c)
+
+		err := util.TrackEvent(analytics.Track{
+			Event:   eventTrackMap["view"],
+			UserId:  user,
+			Context: util.SetContext(c),
+			Properties: analytics.NewProperties().
+				Set("name", name).
+				Set("type", string(devfileIndex.Type)).
+				Set("registry", registry).
+				Set("client", client),
 		})
-		return
-	}
-	err = json.Unmarshal(bytes, &index)
-	if err != nil {
-		log.Print(err.Error())
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error":  err.Error(),
-			"status": fmt.Sprintf("failed to pull the devfile of %s", name),
-		})
-		return
-	}
-
-	// minSchemaVersion and maxSchemaVersion will only be applied if looking for latest stack version
-	if version == "latest" {
-		minSchemaVersion := c.Query("minSchemaVersion")
-		maxSchemaVersion := c.Query("maxSchemaVersion")
-		// check if schema version filters are in valid format.
-		// should only include major and minor version. e.g. 2.1
-		if minSchemaVersion != "" {
-			matched, err := regexp.MatchString(`^([2-9])\.([0-9]+)$`, minSchemaVersion)
-			if !matched || err != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{
-					"status": fmt.Sprintf("minSchemaVersion %s is not valid, should only include major and minor version. %v", minSchemaVersion, err),
-				})
-				return
-			}
-		}
-		if maxSchemaVersion != "" {
-			matched, err := regexp.MatchString(`^([2-9])\.([0-9]+)$`, maxSchemaVersion)
-			if !matched || err != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{
-					"status": fmt.Sprintf("maxSchemaVersion %s is not valid, should only include major and minor version. %v", maxSchemaVersion, err),
-				})
-				return
-			}
-		}
-
-		index, err = util.FilterDevfileSchemaVersion(index, minSchemaVersion, maxSchemaVersion)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"status": fmt.Sprintf("failed to apply schema version filter: %v", err),
-			})
-			return
+			log.Println(err)
 		}
 	}
-
-	for _, devfileIndex := range index {
-		if devfileIndex.Name == name {
-			var sampleDevfilePath string
-			var bytes []byte
-			if devfileIndex.Versions == nil || len(devfileIndex.Versions) == 0 {
-				if devfileIndex.Type == indexSchema.SampleDevfileType {
-					sampleDevfilePath = path.Join(samplesPath, devfileIndex.Name, devfileName)
-				}
-			} else {
-				// versionFound := false
-				versionMap := make(map[string]indexSchema.Version)
-				var latestVersion string
-				for _, versionElement := range devfileIndex.Versions {
-					versionMap[versionElement.Version] = versionElement
-					if versionElement.Default {
-						versionMap["default"] = versionElement
-					}
-					if latestVersion != "" {
-						latest, err := versionpkg.NewVersion(latestVersion)
-						if err != nil {
-							log.Print(err.Error())
-							c.JSON(http.StatusInternalServerError, gin.H{
-								"error":  err.Error(),
-								"status": fmt.Sprintf("failed to parse the stack version %s for stack %s", latestVersion, name),
-							})
-							return
-						}
-						current, err := versionpkg.NewVersion(versionElement.Version)
-						if err != nil {
-							log.Print(err.Error())
-							c.JSON(http.StatusInternalServerError, gin.H{
-								"error":  err.Error(),
-								"status": fmt.Sprintf("failed to parse the stack version %s for stack %s", versionElement.Version, name),
-							})
-							return
-						}
-						if current.GreaterThan(latest) {
-							latestVersion = versionElement.Version
-						}
-					} else {
-						latestVersion = versionElement.Version
-					}
-				}
-				versionMap["latest"] = versionMap[latestVersion]
-
-				if foundVersion, ok := versionMap[version]; ok {
-					if devfileIndex.Type == indexSchema.StackDevfileType {
-						bytes, err = pullStackFromRegistry(foundVersion)
-					} else {
-						// Retrieve the sample devfile stored under /registry/samples/<devfile>
-						sampleDevfilePath = path.Join(samplesPath, devfileIndex.Name, foundVersion.Version, devfileName)
-					}
-				} else {
-					c.JSON(http.StatusInternalServerError, gin.H{
-						"error":  err.Error(),
-						"status": fmt.Sprintf("version: %s not found in stack %s", version, name),
-					})
-					return
-				}
-			}
-			if sampleDevfilePath != "" {
-				if _, err = os.Stat(sampleDevfilePath); err == nil {
-					bytes, err = ioutil.ReadFile(sampleDevfilePath)
-				}
-				if err != nil {
-					log.Print(err.Error())
-					c.JSON(http.StatusInternalServerError, gin.H{
-						"error":  err.Error(),
-						"status": fmt.Sprintf("failed to pull the devfile of %s", name),
-					})
-					return
-				}
-			}
-
-			// Track event for telemetry.  Ignore events from the registry-viewer and DevConsole since those are tracked on the client side
-			if enableTelemetry && !util.IsWebClient(c) {
-
-				user := util.GetUser(c)
-				client := util.GetClient(c)
-
-				err := util.TrackEvent(analytics.Track{
-					Event:   eventTrackMap["view"],
-					UserId:  user,
-					Context: util.SetContext(c),
-					Properties: analytics.NewProperties().
-						Set("name", name).
-						Set("type", string(devfileIndex.Type)).
-						Set("registry", registry).
-						Set("client", client),
-				})
-				if err != nil {
-					log.Println(err)
-				}
-			}
-			c.Data(http.StatusOK, http.DetectContentType(bytes), bytes)
-			return
-		}
-	}
-
-	c.JSON(http.StatusNotFound, gin.H{
-		"status": fmt.Sprintf("the devfile of %s didn't exist", name),
-	})
 }
 
 // serveDevfile returns the devfile content
@@ -263,7 +128,7 @@ func serveDevfileStarterProjectWithVersion(c *gin.Context) {
 	version := c.Param("version")
 	starterProjectName := c.Param("starterProjectName")
 	downloadTmpLoc := path.Join("/tmp", starterProjectName)
-	devfileBytes, _ := fetchDevfile(c, devfileName, version) // TODO: add devfileIndexSchema when telemetry is migrated
+	devfileBytes, _ := fetchDevfile(c, devfileName, version) // TODO: add devfileIndex when telemetry is migrated
 
 	if len(devfileBytes) == 0 {
 		// fetchDevfile was unsuccessful (error or not found)
