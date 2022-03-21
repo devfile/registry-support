@@ -137,6 +137,7 @@ func ServeRegistry() {
 	router.GET("/devfiles/:name", serveDevfile)
 	router.GET("/devfiles/:name/:version", serveDevfileWithVersion)
 	router.GET("/devfiles/:name/starterProjects/:starterProjectName", serveDevfileStarterProject)
+	router.GET("/devfiles/:name/:version/starterProjects/:starterProjectName", serveDevfileStarterProjectWithVersion)
 
 	// Registry REST APIs for index v2
 	router.GET("/v2index", serveDevfileIndexV2)

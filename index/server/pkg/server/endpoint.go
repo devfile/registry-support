@@ -251,12 +251,19 @@ func serveDevfile(c *gin.Context) {
 	serveDevfileWithVersion(c)
 }
 
-// serveDevfileStarterProject returns the starter project content for the devfile
+// serveDevfileStarterProject returns the starter project content for the devfile using default version
 func serveDevfileStarterProject(c *gin.Context) {
+	c.Params = append(c.Params, gin.Param{Key: "version", Value: "default"})
+	serveDevfileStarterProjectWithVersion(c)
+}
+
+// serveDevfileStarterProject returns the starter project content for the devfile using specified version
+func serveDevfileStarterProjectWithVersion(c *gin.Context) {
 	devfileName := c.Param("name")
+	version := c.Param("version")
 	starterProjectName := c.Param("starterProjectName")
 	downloadTmpLoc := path.Join("/tmp", starterProjectName)
-	devfileBytes, _ := fetchDevfile(c, devfileName, "default") // TODO: add devfileIndexSchema when telemetry is migrated
+	devfileBytes, _ := fetchDevfile(c, devfileName, version) // TODO: add devfileIndexSchema when telemetry is migrated
 
 	if len(devfileBytes) == 0 {
 		// fetchDevfile was unsuccessful (error or not found)
@@ -277,8 +284,8 @@ func serveDevfileStarterProject(c *gin.Context) {
 			})
 			return
 		}
-		starterProjects, err = content.Data.GetStarterProjects(filterOptions)
 
+		starterProjects, err = content.Data.GetStarterProjects(filterOptions)
 		if err != nil {
 			log.Print(err.Error())
 			c.JSON(http.StatusInternalServerError, gin.H{
