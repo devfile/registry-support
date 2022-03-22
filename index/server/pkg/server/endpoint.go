@@ -144,7 +144,6 @@ func serveDevfileWithVersion(c *gin.Context) {
 					sampleDevfilePath = path.Join(samplesPath, devfileIndex.Name, devfileName)
 				}
 			} else {
-				// versionFound := false
 				versionMap := make(map[string]indexSchema.Version)
 				var latestVersion string
 				for _, versionElement := range devfileIndex.Versions {
@@ -188,7 +187,7 @@ func serveDevfileWithVersion(c *gin.Context) {
 						sampleDevfilePath = path.Join(samplesPath, devfileIndex.Name, foundVersion.Version, devfileName)
 					}
 				} else {
-					c.JSON(http.StatusInternalServerError, gin.H{
+					c.JSON(http.StatusNotFound, gin.H{
 						"error":  err.Error(),
 						"status": fmt.Sprintf("version: %s not found in stack %s", version, name),
 					})
