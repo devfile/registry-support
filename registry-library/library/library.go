@@ -134,33 +134,30 @@ func GetRegistryIndex(registryURL string, options RegistryOptions, devfileTypes 
 		return registryIndex, nil
 	}
 
-	if !reflect.DeepEqual(options.Filter, RegistryFilter{}) {
-		endpoint = endpoint + "?"
-	}
-
-	if len(options.Filter.Architectures) > 0 {
-		for _, arch := range options.Filter.Architectures {
-			endpoint = endpoint + "arch=" + arch + "&"
-		}
-		endpoint = strings.TrimSuffix(endpoint, "&")
-	}
-
-	if options.NewIndexSchema && (options.Filter.MaxSchemaVersion != "" || options.Filter.MinSchemaVersion != "") {
-		if options.Filter.MinSchemaVersion != "" {
-			endpoint = endpoint + "minSchemaVersion=" + options.Filter.MinSchemaVersion + "&"
-		}
-		if options.Filter.MaxSchemaVersion != "" {
-			endpoint = endpoint + "maxSchemaVersion=" + options.Filter.MaxSchemaVersion + "&"
-		}
-		endpoint = strings.TrimSuffix(endpoint, "&")
-	}
-
 	endpointURL, err := url.Parse(endpoint)
 	if err != nil {
 		return nil, err
 	}
-
 	urlObj = urlObj.ResolveReference(endpointURL)
+
+	if !reflect.DeepEqual(options.Filter, RegistryFilter{}) {
+		q := urlObj.Query()
+		if len(options.Filter.Architectures) > 0 {
+			for _, arch := range options.Filter.Architectures {
+				q.Add("arch", arch)
+			}
+		}
+
+		if options.NewIndexSchema && (options.Filter.MaxSchemaVersion != "" || options.Filter.MinSchemaVersion != "") {
+			if options.Filter.MinSchemaVersion != "" {
+				q.Add("minSchemaVersion", options.Filter.MinSchemaVersion)
+			}
+			if options.Filter.MaxSchemaVersion != "" {
+				q.Add("maxSchemaVersion", options.Filter.MaxSchemaVersion)
+			}
+		}
+		urlObj.RawQuery = q.Encode()
+	}
 
 	url := urlObj.String()
 	req, err := http.NewRequest("GET", url, nil)
