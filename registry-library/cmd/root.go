@@ -30,14 +30,15 @@ const (
 )
 
 var (
-	registryList  = os.Getenv("REGISTRY_LIST")
-	cfgFile       string
-	allResources  bool
-	destDir       string
-	devfileType   string
-	skipTLSVerify bool
-	user          string
-	architectures []string
+	registryList   = os.Getenv("REGISTRY_LIST")
+	cfgFile        string
+	allResources   bool
+	destDir        string
+	devfileType    string
+	skipTLSVerify  bool
+	newIndexSchema bool
+	user           string
+	architectures  []string
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -83,6 +84,7 @@ func init() {
 			var err error
 
 			options := library.RegistryOptions{
+				NewIndexSchema: newIndexSchema,
 				Telemetry: library.TelemetryData{
 					User: "user",
 				},
@@ -107,6 +109,7 @@ func init() {
 	pullCmd.Flags().StringArrayVar(&architectures, "arch", []string{}, "architecture filter; example: --arch amd64 --arch arm64")
 	pullCmd.Flags().StringVar(&destDir, "context", ".", "destination directory that stores stack resources")
 	pullCmd.Flags().BoolVar(&skipTLSVerify, "skip-tls-verify", false, "skip TLS verification")
+	pullCmd.Flags().BoolVar(&newIndexSchema, "new-index-schema", false, "pull new index schema")
 	pullCmd.Flags().StringVar(&user, "user", "", "consumer name")
 
 	var listCmd = &cobra.Command{
