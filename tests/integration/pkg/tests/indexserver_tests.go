@@ -289,8 +289,9 @@ var _ = ginkgo.Describe("[Verify index server is working properly]", func() {
 		var bytes []byte
 
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		defer resp.Body.Close()
 
-		_, err = resp.Body.Read(bytes)
+		bytes, err = ioutil.ReadAll(resp.Body)
 
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		gomega.Expect(resp.StatusCode).To(gomega.Equal(http.StatusAccepted))
@@ -305,8 +306,9 @@ var _ = ginkgo.Describe("[Verify index server is working properly]", func() {
 		var bytes []byte
 
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		defer resp.Body.Close()
 
-		_, err = resp.Body.Read(bytes)
+		bytes, err = ioutil.ReadAll(resp.Body)
 
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		gomega.Expect(resp.StatusCode).To(gomega.Equal(http.StatusAccepted))
