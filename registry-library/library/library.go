@@ -34,6 +34,7 @@ import (
 
 	"github.com/containerd/containerd/remotes/docker"
 	indexSchema "github.com/devfile/registry-support/index/generator/schema"
+	versionpkg "github.com/hashicorp/go-version"
 	"oras.land/oras-go/pkg/content"
 	"oras.land/oras-go/pkg/oras"
 )
@@ -82,10 +83,21 @@ type RegistryOptions struct {
 	Telemetry TelemetryData
 	// Filter allows clients to specify which architectures they want to filter their devfiles on
 	Filter RegistryFilter
+	// NewIndexSchema is false by default, which calls GET /index and returns index of default version of each stack using the old index schema struct.
+	// If specified to true, calls GET /v2index and returns the new Index schema with multi-version support
+	NewIndexSchema bool
 }
 
 type RegistryFilter struct {
 	Architectures []string
+	// MinSchemaVersion is set to filter devfile index equal and above a particular devfile schema version (inclusive)
+	// only major version and minor version are required. e.g. 2.1, 2.2 ect. service version should not be provided.
+	// will only be applied if `NewIndexSchema=true`
+	MinSchemaVersion string
+	// MaxSchemaVersion is set to filter devfile index equal and below a particular devfile schema version (inclusive)
+	// only major version and minor version are required. e.g. 2.1, 2.2 ect. service version should not be provided.
+	// will only be applied if `NewIndexSchema=true`
+	MaxSchemaVersion string
 }
 
 // GetRegistryIndex returns the list of index schema structured stacks and/or samples from a specified devfile registry.
@@ -108,33 +120,44 @@ func GetRegistryIndex(registryURL string, options RegistryOptions, devfileTypes 
 	}
 
 	var endpoint string
+	indexEndpoint := "index"
+	if options.NewIndexSchema {
+		indexEndpoint = "v2index"
+	}
 	if getStack && getSample {
-		endpoint = path.Join("index", "all")
+		endpoint = path.Join(indexEndpoint, "all")
 	} else if getStack && !getSample {
-		endpoint = "index"
+		endpoint = indexEndpoint
 	} else if getSample && !getStack {
-		endpoint = path.Join("index", "sample")
+		endpoint = path.Join(indexEndpoint, "sample")
 	} else {
 		return registryIndex, nil
-	}
-
-	if !reflect.DeepEqual(options.Filter, RegistryFilter{}) {
-		endpoint = endpoint + "?"
-	}
-
-	if len(options.Filter.Architectures) > 0 {
-		for _, arch := range options.Filter.Architectures {
-			endpoint = endpoint + "arch=" + arch + "&"
-		}
-		endpoint = strings.TrimSuffix(endpoint, "&")
 	}
 
 	endpointURL, err := url.Parse(endpoint)
 	if err != nil {
 		return nil, err
 	}
-
 	urlObj = urlObj.ResolveReference(endpointURL)
+
+	if !reflect.DeepEqual(options.Filter, RegistryFilter{}) {
+		q := urlObj.Query()
+		if len(options.Filter.Architectures) > 0 {
+			for _, arch := range options.Filter.Architectures {
+				q.Add("arch", arch)
+			}
+		}
+
+		if options.NewIndexSchema && (options.Filter.MaxSchemaVersion != "" || options.Filter.MinSchemaVersion != "") {
+			if options.Filter.MinSchemaVersion != "" {
+				q.Add("minSchemaVersion", options.Filter.MinSchemaVersion)
+			}
+			if options.Filter.MaxSchemaVersion != "" {
+				q.Add("maxSchemaVersion", options.Filter.MaxSchemaVersion)
+			}
+		}
+		urlObj.RawQuery = q.Encode()
+	}
 
 	url := urlObj.String()
 	req, err := http.NewRequest("GET", url, nil)
@@ -216,6 +239,12 @@ func PrintRegistry(registryURLs string, devfileType string, options RegistryOpti
 
 // PullStackByMediaTypesFromRegistry pulls a specified stack with allowed media types from a given registry URL to the destination directory
 func PullStackByMediaTypesFromRegistry(registry string, stack string, allowedMediaTypes []string, destDir string, options RegistryOptions) error {
+	var requestVersion string
+	if strings.Contains(stack, ":") {
+		stackWithVersion := strings.Split(stack, ":")
+		stack = stackWithVersion[0]
+		requestVersion = stackWithVersion[1]
+	}
 	// Get the registry index
 	registryIndex, err := GetRegistryIndex(registry, options, indexSchema.StackDevfileType)
 	if err != nil {
@@ -234,6 +263,38 @@ func PullStackByMediaTypesFromRegistry(registry string, stack string, allowedMed
 	}
 	if !exist {
 		return fmt.Errorf("stack %s does not exist in the registry %s", stack, registry)
+	}
+	var stackLink string
+
+	if options.NewIndexSchema {
+		latestVersionIndex := 0
+		latest, err := versionpkg.NewVersion(stackIndex.Versions[latestVersionIndex].Version)
+		if err != nil {
+			return fmt.Errorf("failed to parse the stack version %s for stack %s", stackIndex.Versions[latestVersionIndex].Version, stack)
+		}
+		for index, version := range stackIndex.Versions {
+			if (requestVersion == "" && version.Default) || (version.Version == requestVersion) {
+				stackLink = version.Links["self"]
+				break
+			} else if requestVersion == "latest" {
+				current, err := versionpkg.NewVersion(version.Version)
+				if err != nil {
+					return fmt.Errorf("failed to parse the stack version %s for stack %s", version.Version, stack)
+				}
+				if current.GreaterThan(latest) {
+					latestVersionIndex = index
+					latest = current
+				}
+			}
+		}
+		if requestVersion == "latest" {
+			stackLink = stackIndex.Versions[latestVersionIndex].Links["self"]
+		}
+		if stackLink == "" {
+			return fmt.Errorf("the requested verion %s for stack %s does not exist in the registry %s", requestVersion, stack, registry)
+		}
+	} else {
+		stackLink = stackIndex.Links["self"]
 	}
 
 	// Pull stack initialization
@@ -255,7 +316,7 @@ func PullStackByMediaTypesFromRegistry(registry string, stack string, allowedMed
 	setHeaders(&headers, options)
 
 	resolver := docker.NewResolver(docker.ResolverOptions{Headers: headers, PlainHTTP: plainHTTP, Client: httpClient})
-	ref := path.Join(urlObj.Host, stackIndex.Links["self"])
+	ref := path.Join(urlObj.Host, stackLink)
 	fileStore := content.NewFileStore(destDir)
 	defer fileStore.Close()
 
