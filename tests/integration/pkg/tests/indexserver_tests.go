@@ -293,7 +293,7 @@ var _ = ginkgo.Describe("[Verify index server is working properly]", func() {
 		_, err = resp.Body.Read(bytes)
 
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
-		gomega.Expect(resp.StatusCode).To(gomega.Equal(http.StatusOK))
+		gomega.Expect(resp.StatusCode).To(gomega.Equal(http.StatusAccepted))
 		gomega.Expect(bytes).To(gomega.Satisfy(func(file []byte) bool {
 			return http.DetectContentType(file) == "application/zip"
 		}))
@@ -308,7 +308,7 @@ var _ = ginkgo.Describe("[Verify index server is working properly]", func() {
 		_, err = resp.Body.Read(bytes)
 
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
-		gomega.Expect(resp.StatusCode).To(gomega.Equal(http.StatusOK))
+		gomega.Expect(resp.StatusCode).To(gomega.Equal(http.StatusAccepted))
 		gomega.Expect(bytes).To(gomega.Satisfy(func(file []byte) bool {
 			return http.DetectContentType(file) == "application/zip"
 		}))
