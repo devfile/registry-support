@@ -8,7 +8,7 @@ require (
 	github.com/devfile/api/v2 v2.0.0-20220117162434-6e6e6a8bc14c
 	github.com/devfile/library v1.2.1-0.20220308191614-f0f7e11b17de
 	github.com/devfile/registry-support/index/generator v0.0.0-20220316161530-f06d84c42b54
-	github.com/gin-gonic/gin v1.6.3
+	github.com/gin-gonic/gin v1.7.7
 	github.com/gorilla/mux v1.7.3 // indirect
 	github.com/hashicorp/go-version v1.4.0
 	github.com/kylelemons/godebug v0.0.0-20170820004349-d65d576e9348
