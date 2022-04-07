@@ -163,7 +163,7 @@ func serveDevfileStarterProjectWithVersion(c *gin.Context) {
 			return
 		} else if len(starterProjects) == 0 {
 			c.JSON(http.StatusNotFound, gin.H{
-				"status": fmt.Sprintf("the starter project named %s does not exist in the devfile of %s", starterProjectName, devfileName),
+				"status": fmt.Sprintf("the starter project named %s does not exist in the %s devfile", starterProjectName, devfileName),
 			})
 			return
 		}
