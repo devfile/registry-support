@@ -361,7 +361,9 @@ func buildIndexAPIResponse(c *gin.Context, wantV1Index bool) {
 	}
 }
 
-// fetchDevfile retrieves a specified devfile stored under /registry/**/<devfileName>
+// fetchDevfile retrieves a specified devfile by fetching stacks from the OCI
+// registry and samples from the `samplesPath` given by server. Also retrieves index
+// schema from `indexPath` given by server.
 func fetchDevfile(c *gin.Context, name string, version string) ([]byte, indexSchema.Schema) {
 	var index []indexSchema.Schema
 	bytes, err := ioutil.ReadFile(indexPath)
