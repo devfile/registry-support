@@ -26,7 +26,7 @@ import (
 )
 
 // serveRootEndpoint sets up the handler for the root (/) endpoint on the server
-// If html is requested (i.e. from a web browser), the viewer is displayed, oth erwise the devfile index is served.
+// If html is requested (i.e. from a web browser), the viewer is displayed, otherwise the devfile index is served.
 func serveRootEndpoint(c *gin.Context) {
 	// Determine if text/html was requested by the client
 	acceptHeader := c.Request.Header.Values("Accept")
