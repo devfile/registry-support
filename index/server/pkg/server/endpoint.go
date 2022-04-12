@@ -176,7 +176,9 @@ func serveDevfileStarterProjectWithVersion(c *gin.Context) {
 			}
 
 			if starterProject.Git.CheckoutFrom != nil {
-				gitScheme.RemoteName = starterProject.Git.CheckoutFrom.Remote
+				if starterProject.Git.CheckoutFrom.Remote != "" {
+					gitScheme.RemoteName = starterProject.Git.CheckoutFrom.Remote
+				}
 				gitScheme.Revision = starterProject.Git.CheckoutFrom.Revision
 			}
 
