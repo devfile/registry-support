@@ -24,7 +24,7 @@ The `registry-support` repository for the devfile registry is a mono-repo of sor
 - [Devfile Registry Helm Chart](./deploy/chart/devfile-registry) - Helm chart for deploying the devfile registry on to Kubernetes.
 - [Index Generator](./index/generator) - The index generator tool for generation index.json files from registry data
 - [Index Server](./index/server) - The index server, one of two servers that the devfile registry runs
-- [OCI Registry Server](./oci-registry) - 
+- [OCI Registry Server](./oci-registry) - The OCI registry server, the second of two servers that the devfile registry runs.
 
 Each of these individual components will have their own readme with instructions for consuming or developing the component, and it's recommended to consult them before development.
 
@@ -56,11 +56,11 @@ To run these tests, consult the integration test's [readme](./tests/integration)
 Signed-off-by: First Lastname <email@email.com>
 ```
 
-You can easily add this footer to your commits by adding `-s` when running `git commit`.When you think the code is ready for review, create a pull request and link the issue associated with it.
+You can easily add this footer to your commits by adding `-s` when running `git commit`. When you think the code is ready for review, create a pull request and link the issue associated with it.
 
 Owners of the repository will watch out for and review new PRs. 
 
-By default for each change in the PR, GitHub Actions and OpenShift CI will run checks against your changes (linting, unit testing, and integration tests)
+By default for each change in the PR, GitHub Actions and OpenShift CI will run checks against your changes (linting, unit testing, and integration tests).
 
 If comments have been given in a review, they have to be addressed before merging.
 
@@ -69,4 +69,4 @@ After addressing review comments, don’t forget to add a comment in the PR afte
 
 # Contact us
 
-If you have questions, please visit us on `#devfile` on the [Kubernetes Slack](https://slack.k8s.io).
+If you have questions, please visit us on `#devfile` in the [Kubernetes Slack](https://slack.k8s.io).
