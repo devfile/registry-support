@@ -16,7 +16,6 @@ import (
 	"github.com/devfile/library/pkg/devfile/parser"
 	"github.com/devfile/library/pkg/devfile/parser/data/v2/common"
 	libutil "github.com/devfile/registry-support/index/generator/library"
-	"github.com/devfile/registry-support/index/generator/schema"
 	indexSchema "github.com/devfile/registry-support/index/generator/schema"
 	"github.com/devfile/registry-support/index/server/pkg/util"
 	"github.com/gin-gonic/gin"
@@ -174,7 +173,7 @@ func serveDevfileStarterProjectWithVersion(c *gin.Context) {
 		}
 
 		if starterProject := starterProjects[0]; starterProject.Git != nil {
-			gitScheme := schema.Git{
+			gitScheme := indexSchema.Git{
 				Remotes:    starterProject.Git.Remotes,
 				RemoteName: "origin",
 				SubDir:     starterProject.SubDir,
@@ -489,6 +488,13 @@ func fetchDevfile(c *gin.Context, name string, version string) ([]byte, indexSch
 				if foundVersion, ok := versionMap[version]; ok {
 					if devfileIndex.Type == indexSchema.StackDevfileType {
 						bytes, err = pullStackFromRegistry(foundVersion)
+						if err != nil {
+							c.JSON(http.StatusInternalServerError, gin.H{
+								"error":  err.Error(),
+								"status": fmt.Sprintf("Problem pulling version %s from OCI Registry", foundVersion.Version),
+							})
+							return []byte{}, indexSchema.Schema{}
+						}
 					} else {
 						// Retrieve the sample devfile stored under /registry/samples/<devfile>
 						sampleDevfilePath = path.Join(samplesPath, devfileIndex.Name, foundVersion.Version, devfileName)
