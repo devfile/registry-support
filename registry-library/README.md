@@ -59,7 +59,18 @@ Supported devfile media types can be found in the latest version of [library.go]
         return err
     }
     ```
-2. Download a stack with all supported media types from the devfile registry
+   
+2. Download a stack devfile with a given version and media type from the devfile registry
+    ```go
+    stack := "java-springboot:1.0.0" // java-springboot is stack name, 1.0.0 is stack version
+    destDir := "."
+    err := registryLibrary.PullStackByMediaTypesFromRegistry(registryURL, stack, registryLibrary.DevfileMediaTypeList, destDir, options)
+    if err != nil {
+        return err
+    }
+    ```
+   
+3. Download a stack with all supported media types from the devfile registry
     ```go
     err := registryLibrary.PullStackFromRegistry(registryURL, stack, destDir, options)
     if err != nil {
@@ -91,6 +102,23 @@ Supported devfile media types can be found in the latest version of [library.go]
             Locale: "en_US" // set the OS or browser locale
             Client: "client-name" //the name of the client
         }
-} 
-
+    } 
+   ```
+4. Get v2index with versions information from the Devfile Registry
+    ```go
+    options := registryLibrary.RegistryOptions{
+         NewIndexSchema: true
+    }
+   ```
+5. Filter Devfiles based the min and max devfile schema version provided
+    ```go
+    options := registryLibrary.RegistryOptions{
+    	NewIndexSchema: true,
+        Filter: registryLibrary.RegistryFilter{
+             // devfile schema version range is [2.1, 2.2], inclusive
+             MinSchemaVersion: "2.1",
+             MaxSchemaVersion: "2.2"
+        },
+    }
+    ```
 
