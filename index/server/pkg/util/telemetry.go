@@ -100,7 +100,8 @@ func getRegion(c *gin.Context) string {
 //IsWebClient determines if the event is coming from the registry viewer or DevConsole client.
 func IsWebClient(c *gin.Context) bool {
 	client := GetClient(c)
-	if client == viewerId || client == consoleId {
+	userId := GetUser(c)
+	if client == viewerId || userId == consoleId {
 		return true
 	}
 
