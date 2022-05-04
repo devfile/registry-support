@@ -47,6 +47,8 @@ const (
 	DevfilePNGLogoMediaType = "image/png"
 	DevfileArchiveMediaType = "application/x-tar"
 
+	OwnersFile = "OWNERS"
+
 	httpRequestTimeout    = 30 * time.Second // httpRequestTimeout configures timeout of all HTTP requests
 	responseHeaderTimeout = 30 * time.Second // responseHeaderTimeout is the timeout to retrieve the server's response headers
 )
@@ -54,6 +56,7 @@ const (
 var (
 	DevfileMediaTypeList     = []string{DevfileMediaType}
 	DevfileAllMediaTypesList = []string{DevfileMediaType, DevfilePNGLogoMediaType, DevfileSVGLogoMediaType, DevfileVSXMediaType, DevfileArchiveMediaType}
+	ExcludedFiles            = []string{OwnersFile}
 )
 
 type Registry struct {
@@ -330,7 +333,7 @@ func PullStackByMediaTypesFromRegistry(registry string, stack string, allowedMed
 	// Decompress archive.tar
 	archivePath := filepath.Join(destDir, "archive.tar")
 	if _, err := os.Stat(archivePath); err == nil {
-		err := decompress(destDir, archivePath, []string{"OWNERS"})
+		err := decompress(destDir, archivePath, ExcludedFiles)
 		if err != nil {
 			return err
 		}
