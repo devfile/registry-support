@@ -47,6 +47,8 @@ const (
 	DevfilePNGLogoMediaType = "image/png"
 	DevfileArchiveMediaType = "application/x-tar"
 
+	OwnersFile = "OWNERS"
+
 	httpRequestTimeout    = 30 * time.Second // httpRequestTimeout configures timeout of all HTTP requests
 	responseHeaderTimeout = 30 * time.Second // responseHeaderTimeout is the timeout to retrieve the server's response headers
 )
@@ -54,6 +56,7 @@ const (
 var (
 	DevfileMediaTypeList     = []string{DevfileMediaType}
 	DevfileAllMediaTypesList = []string{DevfileMediaType, DevfilePNGLogoMediaType, DevfileSVGLogoMediaType, DevfileVSXMediaType, DevfileArchiveMediaType}
+	ExcludedFiles            = []string{OwnersFile}
 )
 
 type Registry struct {
@@ -237,7 +240,8 @@ func PrintRegistry(registryURLs string, devfileType string, options RegistryOpti
 	return nil
 }
 
-// PullStackByMediaTypesFromRegistry pulls a specified stack with allowed media types from a given registry URL to the destination directory
+// PullStackByMediaTypesFromRegistry pulls a specified stack with allowed media types from a given registry URL to the destination directory.
+// OWNERS files present in the registry will be excluded
 func PullStackByMediaTypesFromRegistry(registry string, stack string, allowedMediaTypes []string, destDir string, options RegistryOptions) error {
 	var requestVersion string
 	if strings.Contains(stack, ":") {
@@ -329,7 +333,7 @@ func PullStackByMediaTypesFromRegistry(registry string, stack string, allowedMed
 	// Decompress archive.tar
 	archivePath := filepath.Join(destDir, "archive.tar")
 	if _, err := os.Stat(archivePath); err == nil {
-		err := decompress(destDir, archivePath)
+		err := decompress(destDir, archivePath, ExcludedFiles)
 		if err != nil {
 			return err
 		}
@@ -349,7 +353,7 @@ func PullStackFromRegistry(registry string, stack string, destDir string, option
 }
 
 // decompress extracts the archive file
-func decompress(targetDir string, tarFile string) error {
+func decompress(targetDir string, tarFile string, excludeFiles []string) error {
 	reader, err := os.Open(tarFile)
 	if err != nil {
 		return err
@@ -369,6 +373,9 @@ func decompress(targetDir string, tarFile string) error {
 			break
 		} else if err != nil {
 			return err
+		}
+		if isExcluded(header.Name, excludeFiles) {
+			continue
 		}
 
 		target := path.Join(targetDir, header.Name)
@@ -394,6 +401,16 @@ func decompress(targetDir string, tarFile string) error {
 	}
 
 	return nil
+}
+
+func isExcluded(name string, excludeFiles []string) bool {
+	basename := filepath.Base(name)
+	for _, excludeFile := range excludeFiles {
+		if basename == excludeFile {
+			return true
+		}
+	}
+	return false
 }
 
 //setHeaders sets the request headers
