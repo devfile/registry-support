@@ -237,7 +237,8 @@ func PrintRegistry(registryURLs string, devfileType string, options RegistryOpti
 	return nil
 }
 
-// PullStackByMediaTypesFromRegistry pulls a specified stack with allowed media types from a given registry URL to the destination directory
+// PullStackByMediaTypesFromRegistry pulls a specified stack with allowed media types from a given registry URL to the destination directory.
+// OWNERS files present in the registry will be excluded
 func PullStackByMediaTypesFromRegistry(registry string, stack string, allowedMediaTypes []string, destDir string, options RegistryOptions) error {
 	var requestVersion string
 	if strings.Contains(stack, ":") {
