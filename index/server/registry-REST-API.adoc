@@ -1991,3 +1991,98 @@ commands:
         kind: test
         isDefault: true
 ----
+
+== Download Starter Project from requested Devfile
+
+Fetches starter project specified in requested registry stack devfile with version's content and provides an archive (zip) file download as the HTTP response.
+
+Note: Only provides download as the response, not the devfile content.
+
+=== HTTP Request
+[source]
+----
+GET http://{registry host}/devfiles/{stack}/starterProjects/{starterProject}
+----
+
+=== Request Parameters
+
+[cols="1,1"]
+|===
+|Parameter|Description
+
+|Registry host
+|The URL/ingress that exposes registry service
+
+|Stack
+|Registry stack name
+
+|Starter Project
+|Starter project name in the stack devfile
+
+|===
+
+=== Request body
+The request body must be empty.
+
+=== Request example
+[source]
+----
+curl http://devfile-registry.192.168.1.1.nip.io/devfiles/nodejs/starterProjects/nodejs-starter -o nodejs-starter.zip
+----
+
+=== Response example
+[source]
+----
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100 14383    0 14383    0     0  13910      0 --:--:--  0:00:01 --:--:-- 13910
+----
+
+== Download Starter Project from requested Devfile with Version
+
+Fetches starter project specified in requested registry stack devfile's content and provides an archive (zip) file download as the HTTP response.
+
+Note: Only provides download as the response, not the devfile content.
+
+=== HTTP Request
+[source]
+----
+GET http://{registry host}/devfiles/{stack}/{version}/starterProjects/{starterProject}
+----
+
+=== Request Parameters
+
+[cols="1,1"]
+|===
+|Parameter|Description
+
+|Registry host
+|The URL/ingress that exposes registry service
+
+|Stack
+|Registry stack name
+
+|Version
+|Specific version of the stack, or `latest`
+
+|Starter Project
+|Starter project name in the stack devfile
+
+|===
+
+=== Request body
+The request body must be empty.
+
+=== Request example
+[source]
+----
+curl http://devfile-registry.192.168.1.1.nip.io/devfiles/nodejs/1.0.1/starterProjects/nodejs-starter -o nodejs-starter.zip
+----
+
+=== Response example
+[source]
+----
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100 14383    0 14383    0     0  13910      0 --:--:--  0:00:01 --:--:-- 13910
+----
