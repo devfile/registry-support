@@ -1,6 +1,37 @@
 = Registry REST API
 This documentation explains how to use registry REST API
 
+== Content Guide
+[cols="1,1"]
+|===
+|Get registry index|
+|/index
+|xref:Gets registry index of stack devfile type[stack devfile type]
+
+xref:Gets registry index of sample devfile type[sample devfile type]
+
+xref:Gets registry index of all devfile types[all devfile types]
+
+|/v2index
+|xref:Gets registry v2 index of stack devfile type[stack devfile type]
+
+xref:Gets registry v2 index of sample devfile type[sample devfile type]
+
+xref:Gets registry v2 index of all devfile types[all types]
+
+|Gets registry stack content|
+|/devfiles
+|xref:Gets registry stack devfile[]
+
+xref:Gets registry stack devfile with version[]
+
+|/devfiles/:stack/starterProjects
+|xref:Download Starter Project from requested Devfile[]
+
+xref:Download Starter Project from requested Devfile with Version[]
+
+|===
+
 == Gets registry index of stack devfile type
 Gets the registry index file content of stack devfile type from HTTP response
 
@@ -1833,8 +1864,8 @@ GET http://{registry host}/devfiles/{stack}
 
 === Request body
 The request body must be empty.
-=
-== Request example
+
+=== Request example
 ```
 curl http://devfile-registry.192.168.1.1.nip.io/devfiles/nodejs
 ```
@@ -1924,8 +1955,8 @@ GET http://{registry host}/devfiles/{stack}/{version}
 
 === Request body
 The request body must be empty.
-=
-== Request example
+
+=== Request example
 ```
 curl http://devfile-registry.192.168.1.1.nip.io/devfiles/nodejs/1.0.1
 ```
