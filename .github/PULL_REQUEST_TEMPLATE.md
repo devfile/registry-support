@@ -10,6 +10,8 @@ Fixes #?
 
 - [ ] Test (WIP) 
 
-- [ ] Documentation (WIP)
+Documentation (WIP)
+- [ ] Does the [REST API doc](../index/server/registry-REST-API.adoc) need to be updated with your changes?
+- [ ] Does the [registry library doc](../registry-library/README.md) need to be updated with your changes?
 
 **How to test changes / Special notes to the reviewer**:
