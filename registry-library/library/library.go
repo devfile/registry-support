@@ -321,11 +321,11 @@ func PullStackByMediaTypesFromRegistry(registry string, stack string, allowedMed
 
 	resolver := docker.NewResolver(docker.ResolverOptions{Headers: headers, PlainHTTP: plainHTTP, Client: httpClient})
 	ref := path.Join(urlObj.Host, stackLink)
-	fileStore := content.NewFileStore(destDir)
+	fileStore := content.NewFile(destDir)
 	defer fileStore.Close()
 
 	// Pull stack from registry and save it to disk
-	_, _, err = oras.Pull(ctx, resolver, ref, fileStore, oras.WithAllowedMediaTypes(allowedMediaTypes))
+	_, err = oras.Copy(ctx, resolver, ref, fileStore, ref, oras.WithAllowedMediaTypes(allowedMediaTypes))
 	if err != nil {
 		return fmt.Errorf("failed to pull stack %s from %s with allowed media types %v: %v", stack, ref, allowedMediaTypes, err)
 	}
