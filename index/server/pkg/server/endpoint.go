@@ -131,7 +131,12 @@ func serveDevfileStarterProjectWithVersion(c *gin.Context) {
 	version := c.Param("version")
 	starterProjectName := c.Param("starterProjectName")
 	downloadTmpLoc := path.Join("/tmp", starterProjectName)
+	offlineLoc := path.Join("/stacks", starterProjectName)
 	devfileBytes, _ := fetchDevfile(c, devfileName, version) // TODO: add devfileIndex when telemetry is migrated
+
+	if version != "default" {
+		offlineLoc = path.Join(offlineLoc, version)
+	}
 
 	if len(devfileBytes) == 0 {
 		// fetchDevfile was unsuccessful (error or not found)
@@ -194,14 +199,30 @@ func serveDevfileStarterProjectWithVersion(c *gin.Context) {
 				return
 			}
 		} else if starterProject.Zip != nil {
-			downloadBytes, err = libutil.DownloadStackFromZipUrl(starterProject.Zip.Location, starterProject.SubDir, downloadTmpLoc)
-			if err != nil {
-				log.Print(err.Error())
-				c.JSON(http.StatusInternalServerError, gin.H{
-					"error":  err.Error(),
-					"status": fmt.Sprintf("Problem with downloading starter project %s", starterProjectName),
-				})
-				return
+			if _, err = url.ParseRequestURI(starterProject.Zip.Location); err != nil {
+				localLoc := path.Join(offlineLoc, starterProject.Zip.Location)
+				log.Printf("zip location is not a valid http url: %v\nTrying local path %s..", err, localLoc)
+
+				downloadBytes, err = ioutil.ReadFile(localLoc)
+				if err != nil {
+					log.Print(err.Error())
+					c.JSON(http.StatusInternalServerError, gin.H{
+						"error": err.Error(),
+						"status": fmt.Sprintf("Problem with reading starter project %s at %s", starterProjectName,
+							localLoc),
+					})
+					return
+				}
+			} else {
+				downloadBytes, err = libutil.DownloadStackFromZipUrl(starterProject.Zip.Location, starterProject.SubDir, downloadTmpLoc)
+				if err != nil {
+					log.Print(err.Error())
+					c.JSON(http.StatusInternalServerError, gin.H{
+						"error":  err.Error(),
+						"status": fmt.Sprintf("Problem with downloading starter project %s", starterProjectName),
+					})
+					return
+				}
 			}
 		} else {
 			c.JSON(http.StatusBadRequest, gin.H{
