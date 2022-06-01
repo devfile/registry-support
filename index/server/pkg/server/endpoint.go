@@ -130,7 +130,7 @@ func serveDevfileStarterProjectWithVersion(c *gin.Context) {
 	version := c.Param("version")
 	starterProjectName := c.Param("starterProjectName")
 	downloadTmpLoc := path.Join("/tmp", starterProjectName)
-	offlineLoc := path.Join("/stacks", starterProjectName)
+	offlineLoc := path.Join("/registry/stacks", devfileName)
 	devfileBytes, _ := fetchDevfile(c, devfileName, version) // TODO: add devfileIndex when telemetry is migrated
 
 	if version != "default" {
