@@ -30,7 +30,8 @@ tar_files_and_cleanup() {
     -a -not -name "*.vsx" \
     -a -not -name "." \
     -a -not -name "logo.svg" \
-    -a -not -name "logo.png" \) -maxdepth 1)
+    -a -not -name "logo.png" \
+    -a -not -name "*.zip"\) -maxdepth 1)
 
   # There are files that need to be pulled into a tar archive
   if [[ ! -z $tarFiles ]]; then
