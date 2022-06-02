@@ -130,11 +130,11 @@ func serveDevfileStarterProjectWithVersion(c *gin.Context) {
 	version := c.Param("version")
 	starterProjectName := c.Param("starterProjectName")
 	downloadTmpLoc := path.Join("/tmp", starterProjectName)
-	offlineLoc := path.Join("/registry/stacks", devfileName)
+	stackLoc := path.Join(stacksPath, devfileName)
 	devfileBytes, _ := fetchDevfile(c, devfileName, version) // TODO: add devfileIndex when telemetry is migrated
 
 	if version != "default" {
-		offlineLoc = path.Join(offlineLoc, version)
+		stackLoc = path.Join(stackLoc, version)
 	}
 
 	if len(devfileBytes) == 0 {
@@ -199,7 +199,7 @@ func serveDevfileStarterProjectWithVersion(c *gin.Context) {
 			}
 		} else if starterProject.Zip != nil {
 			if _, err = url.ParseRequestURI(starterProject.Zip.Location); err != nil {
-				localLoc := path.Join(offlineLoc, starterProject.Zip.Location)
+				localLoc := path.Join(stackLoc, starterProject.Zip.Location)
 				log.Printf("zip location is not a valid http url: %v\nTrying local path %s..", err, localLoc)
 
 				downloadBytes, err = ioutil.ReadFile(localLoc)
