@@ -17,6 +17,9 @@ starterProjects:
         revision: main
       remotes:
         origin: https://github.com/devfile-samples/devfile-stack-go.git
+  - name: go-starter-offline
+    zip:
+      location: go-starter.zip
 components:
   - container:
       endpoints:
