@@ -49,19 +49,23 @@ do
         stack_devfile=$stack_root/devfile.yaml
         # Read version list for stack
         read -r -a versions <<< "$(ls ${STACKS_DIR}/${stack} | grep -e '[0-9].[0-9].[0-9]' | tr '\n' ' ')"
+        # If multi version stack
         if [[ ${#versions[@]} -gt 0 ]]
         then
             for version in ${versions[@]}
             do
                 stack_root=$STACKS_DIR/$stack/$version
                 stack_devfile=$stack_root/devfile.yaml
+                # If the specified starter project is found
                 if [ ! -z "$(yq e ".starterProjects[] | select(.name == \"${starter_project}\")" $stack_devfile)" ]
                 then
+                    # Starter project has a git remote
                     if [ "$(yq e ".starterProjects[] | select(.name == \"${starter_project}\").git" $stack_devfile)" != "null" ]
                     then
                         echo "Downloading ${starter_project} starter project in stack ${stack} version ${version}.."
                         download_git_starter_project $stack_root $starter_project
                         echo "Downloading ${starter_project} starter project in stack ${stack} version ${version}..done!"
+                    # Starter project has a zip remote
                     elif [ "$(yq e ".starterProjects[] | select(.name == \"${starter_project}\").zip" $stack_devfile)" != "null" ]
                     then
                         echo "Downloading ${starter_project} starter project in stack ${stack} version ${version}.."
@@ -70,13 +74,16 @@ do
                     fi
                 fi
             done
+        # If not multi version stack & the specified starter project is found
         elif [ ! -z "$(yq e ".starterProjects[] | select(.name == \"${starter_project}\")" $stack_devfile)" ]
         then
+            # Starter project has a git remote
             if [ "$(yq e ".starterProjects[] | select(.name == \"${starter_project}\").git" $stack_devfile)" != "null" ]
             then
                 echo "Downloading ${starter_project} starter project in stack ${stack}.."
                 download_git_starter_project $stack_root $starter_project
                 echo "Downloading ${starter_project} starter project in stack ${stack}..done!"
+            # Starter project has a zip remote
             elif [ "$(yq e ".starterProjects[] | select(.name == \"${starter_project}\").zip" $stack_devfile)" != "null" ]
             then
                 echo "Downloading ${starter_project} starter project in stack ${stack}.."
