@@ -1,9 +1,15 @@
 #!/bin/bash
 
+if [ -z "$@" ]
+then
+    echo "No starter projects specified."
+    exit 0
+fi
+
 # Path of stacks directory in the registry
 STACKS_DIR=/registry/stacks
 # List of starter projects to use offline
-OFFLINE_STARTER_PROJECTS=("go-starter")
+offline_starter_projects=( "$@" )
 
 # Downloads a starter project from a remote git repository and packages it as a zip archive
 # to be used as an offline resource.
@@ -35,7 +41,7 @@ download_zip_starter_project() {
 read -r -a stacks <<< "$(ls ${STACKS_DIR} | tr '\n' ' ')"
 
 echo "Downloading offline starter projects.."
-for starter_project in ${OFFLINE_STARTER_PROJECTS[@]}
+for starter_project in ${offline_starter_projects[@]}
 do
     for stack in ${stacks[@]}
     do
