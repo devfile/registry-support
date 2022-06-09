@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ -z "$@" ]
+if [[ -z "$@" ]]
 then
     echo "No starter projects specified."
     exit 0
@@ -16,13 +16,32 @@ offline_starter_projects=( "$@" )
 download_git_starter_project() {
     stack_root=$1
     name=$2
-    remote_url=$(yq e ".starterProjects[] | select(.name == \"${name}\").git.remotes.origin" $stack_root/devfile.yaml)
+    remote_name=$(yq e ".starterProjects[] | select(.name == \"${name}\").git.checkoutFrom.remote" $stack_root/devfile.yaml)
+    revision=$(yq e ".starterProjects[] | select(.name == \"${name}\").git.checkoutFrom.revision" $stack_root/devfile.yaml)
+    subDir=$(yq e ".starterProjects[] | select(.name == \"${name}\").subDir" $stack_root/devfile.yaml)
+
+    if [ "${remote_name}" == "null" ]
+    then
+        remote_url=$(yq e ".starterProjects[] | select(.name == \"${name}\").git.remotes.origin" $stack_root/devfile.yaml)
+    else
+        remote_url=$(yq e ".starterProjects[] | select(.name == \"${name}\").git.remotes.${remote_name}" $stack_root/devfile.yaml)
+    fi
 
     mkdir -p $stack_root/$name
 
     git clone $remote_url $stack_root/$name
 
-    cd $stack_root/$name && rm -rf ./.git && zip -q $stack_root/$name.zip * .[^.]* && cd -
+    if [ "${revision}" != "null" ]
+    then
+        cd $stack_root/$name && git checkout $revision && cd -
+    fi
+
+    if [ "${subDir}" != "null" ]
+    then
+        cd $stack_root/$name/$subDir && zip -q $stack_root/$name.zip * .[^.]* && cd -
+    else
+        cd $stack_root/$name && rm -rf ./.git && zip -q $stack_root/$name.zip * .[^.]* && cd -
+    fi
 
     rm -rf $stack_root/$name
 }
