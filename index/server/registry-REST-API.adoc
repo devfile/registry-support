@@ -2032,7 +2032,7 @@ Note: Only provides download as the response, not the devfile content.
 === HTTP Request
 [source]
 ----
-GET http://{registry host}/devfiles/{stack}/starterProjects/{starterProject}
+GET http://{registry host}/devfiles/{stack}/starter-projects/{starterProject}
 ----
 
 === Request Parameters
@@ -2058,7 +2058,7 @@ The request body must be empty.
 === Request example
 [source]
 ----
-curl http://devfile-registry.192.168.1.1.nip.io/devfiles/nodejs/starterProjects/nodejs-starter -o nodejs-starter.zip
+curl http://devfile-registry.192.168.1.1.nip.io/devfiles/nodejs/starter-projects/nodejs-starter -o nodejs-starter.zip
 ----
 
 === Response example
@@ -2078,7 +2078,7 @@ Note: Only provides download as the response, not the devfile content.
 === HTTP Request
 [source]
 ----
-GET http://{registry host}/devfiles/{stack}/{version}/starterProjects/{starterProject}
+GET http://{registry host}/devfiles/{stack}/{version}/starter-projects/{starterProject}
 ----
 
 === Request Parameters
@@ -2107,7 +2107,7 @@ The request body must be empty.
 === Request example
 [source]
 ----
-curl http://devfile-registry.192.168.1.1.nip.io/devfiles/nodejs/1.0.1/starterProjects/nodejs-starter -o nodejs-starter.zip
+curl http://devfile-registry.192.168.1.1.nip.io/devfiles/nodejs/1.0.1/starter-projects/nodejs-starter -o nodejs-starter.zip
 ----
 
 === Response example
