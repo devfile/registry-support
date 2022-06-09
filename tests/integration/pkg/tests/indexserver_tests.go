@@ -284,8 +284,8 @@ var _ = ginkgo.Describe("[Verify index server is working properly]", func() {
 		}
 	})
 
-	ginkgo.It("/devfiles/<devfile>/starterProjects/<starterProject> endpoint should return a zip archive for devfile starter project", func() {
-		resp, err := http.Get(config.Registry + "/devfiles/java-maven/starterProjects/springbootproject")
+	ginkgo.It("/devfiles/<devfile>/starter-projects/<starterProject> endpoint should return a zip archive for devfile starter project", func() {
+		resp, err := http.Get(config.Registry + "/devfiles/java-maven/starter-projects/springbootproject")
 		var bytes []byte
 
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
@@ -301,8 +301,8 @@ var _ = ginkgo.Describe("[Verify index server is working properly]", func() {
 		}))
 	})
 
-	ginkgo.It("/devfiles/<devfile>/<version>/starterProjects/<starterProject> endpoint should return a zip archive for devfile starter project", func() {
-		resp, err := http.Get(config.Registry + "/devfiles/java-maven/latest/starterProjects/springbootproject")
+	ginkgo.It("/devfiles/<devfile>/<version>/starter-projects/<starterProject> endpoint should return a zip archive for devfile starter project", func() {
+		resp, err := http.Get(config.Registry + "/devfiles/java-maven/latest/starter-projects/springbootproject")
 		var bytes []byte
 
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
@@ -318,15 +318,15 @@ var _ = ginkgo.Describe("[Verify index server is working properly]", func() {
 		}))
 	})
 
-	ginkgo.It("/devfiles/<devfile>/starterProjects/<starterProject> endpoint should return an error for a devfile that doesn't exist", func() {
-		resp, err := http.Get(config.Registry + "/devfiles/fake-stack/starterProjects/springbootproject")
+	ginkgo.It("/devfiles/<devfile>/starter-projects/<starterProject> endpoint should return an error for a devfile that doesn't exist", func() {
+		resp, err := http.Get(config.Registry + "/devfiles/fake-stack/starter-projects/springbootproject")
 
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		gomega.Expect(resp.StatusCode).To(gomega.Equal(http.StatusNotFound))
 	})
 
-	ginkgo.It("/devfiles/<devfile>/starterProjects/<starterProject> endpoint should return an error for a starter project that doesn't exist", func() {
-		resp, err := http.Get(config.Registry + "/devfiles/java-maven/starterProjects/fake-project")
+	ginkgo.It("/devfiles/<devfile>/starter-projects/<starterProject> endpoint should return an error for a starter project that doesn't exist", func() {
+		resp, err := http.Get(config.Registry + "/devfiles/java-maven/starter-projects/fake-project")
 
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		gomega.Expect(resp.StatusCode).To(gomega.Equal(http.StatusNotFound))
