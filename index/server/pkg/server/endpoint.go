@@ -133,7 +133,7 @@ func serveDevfileStarterProjectWithVersion(c *gin.Context) {
 	stackLoc := path.Join(stacksPath, devfileName)
 	devfileBytes, devfileIndex := fetchDevfile(c, devfileName, version)
 
-	if len(devfileIndex.Versions) != 0 {
+	if len(devfileIndex.Versions) > 1 {
 		versionMap, err := makeVersionMap(devfileIndex)
 		if err != nil {
 			log.Print(err.Error())
