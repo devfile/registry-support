@@ -12,6 +12,9 @@ metadata:
     - "arm64"
     - "s390x"
 starterProjects:
+  - name: springbootproject-offline
+    zip:
+      location: springbootproject.zip
   - name: springbootproject
     git:
       remotes:

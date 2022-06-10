@@ -352,6 +352,13 @@ var _ = ginkgo.Describe("[Verify index server is working properly]", func() {
 		}))
 	})
 
+	ginkgo.It("/devfiles/<devfile>/starter-projects/<starterProject> endpoint should return an error for an offline starter project file location that doesn't exist", func() {
+		resp, err := http.Get(config.Registry + "/devfiles/java-maven/starter-projects/springbootproject-offline")
+
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		gomega.Expect(resp.StatusCode).To(gomega.Equal(http.StatusInternalServerError))
+	})
+
 	ginkgo.It("/devfiles/<devfile>/starter-projects/<starterProject> endpoint should return an error for a devfile that doesn't exist", func() {
 		resp, err := http.Get(config.Registry + "/devfiles/fake-stack/starter-projects/springbootproject")
 
