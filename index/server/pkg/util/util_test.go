@@ -2,11 +2,13 @@ package util
 
 import (
 	"encoding/json"
-	"github.com/devfile/registry-support/index/generator/schema"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"reflect"
 	"testing"
+
+	indexSchema "github.com/devfile/registry-support/index/generator/schema"
 )
 
 func TestIsHtmlRequested(t *testing.T) {
@@ -206,12 +208,12 @@ func TestConvertToOldIndexFormat(t *testing.T) {
 	if err != nil {
 		t.Errorf("Failed to oldIndexStruct.json: %v", err)
 	}
-	var inputIndex []schema.Schema
+	var inputIndex []indexSchema.Schema
 	err = json.Unmarshal(bytes, &inputIndex)
 	if err != nil {
 		t.Errorf("Failed to unmarshal inputIndex json")
 	}
-	var wantIndex []schema.Schema
+	var wantIndex []indexSchema.Schema
 	err = json.Unmarshal(expected, &wantIndex)
 	if err != nil {
 		t.Errorf("Failed to unmarshal wantIndex json")
@@ -224,4 +226,65 @@ func TestConvertToOldIndexFormat(t *testing.T) {
 			t.Errorf("Want index %v, got index %v", wantIndex, gotIndex)
 		}
 	})
+}
+
+func TestMakeVersionMap(t *testing.T) {
+	devfileIndex := indexSchema.Schema{
+		Name:              "Test Devfile",
+		Version:           "2.2.0",
+		Attributes:        nil,
+		DisplayName:       "",
+		Description:       "",
+		Type:              "",
+		Tags:              []string{},
+		Architectures:     []string{},
+		Icon:              "",
+		GlobalMemoryLimit: "",
+		ProjectType:       "",
+		Language:          "",
+		Links:             map[string]string{},
+		Resources:         []string{},
+		StarterProjects:   []string{},
+		Git:               &indexSchema.Git{},
+		Provider:          "",
+		SupportUrl:        "",
+		Versions: []indexSchema.Version{
+			{
+				Version: "1.1.0",
+				Default: true,
+			},
+			{Version: "1.2.0"},
+		},
+	}
+	tests := []struct {
+		key     string
+		wantVal string
+	}{
+		{
+			key:     "default",
+			wantVal: "1.1.0",
+		},
+		{
+			key:     "latest",
+			wantVal: "1.2.0",
+		},
+		{
+			key:     "1.1.0",
+			wantVal: "1.1.0",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(fmt.Sprintf("Test generate version map with key %s", test.key), func(t *testing.T) {
+			versionMap, err := MakeVersionMap(devfileIndex)
+			if err != nil {
+				t.Errorf("Was not expecting error with MakeVersionMap: %v", err)
+			}
+
+			if !reflect.DeepEqual(test.wantVal, versionMap[test.key].Version) {
+				t.Errorf("Was expecting '%s' to map to '%s' not '%s'",
+					test.key, test.wantVal, versionMap[test.key].Version)
+			}
+		})
+	}
 }

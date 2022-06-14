@@ -19,7 +19,6 @@ import (
 	indexSchema "github.com/devfile/registry-support/index/generator/schema"
 	"github.com/devfile/registry-support/index/server/pkg/util"
 	"github.com/gin-gonic/gin"
-	versionpkg "github.com/hashicorp/go-version"
 	"github.com/prometheus/client_golang/prometheus"
 	"gopkg.in/segmentio/analytics-go.v3"
 )
@@ -134,7 +133,7 @@ func serveDevfileStarterProjectWithVersion(c *gin.Context) {
 	devfileBytes, devfileIndex := fetchDevfile(c, devfileName, version)
 
 	if len(devfileIndex.Versions) > 1 {
-		versionMap, err := makeVersionMap(devfileIndex)
+		versionMap, err := util.MakeVersionMap(devfileIndex)
 		if err != nil {
 			log.Print(err.Error())
 			c.JSON(http.StatusInternalServerError, gin.H{
@@ -393,35 +392,6 @@ func buildIndexAPIResponse(c *gin.Context, wantV1Index bool) {
 	}
 }
 
-// makeVersionMap creates a map of versions for a given devfile index schema.
-func makeVersionMap(devfileIndex indexSchema.Schema) (map[string]indexSchema.Version, error) {
-	versionMap := make(map[string]indexSchema.Version)
-	var latestVersion string
-	for _, versionElement := range devfileIndex.Versions {
-		versionMap[versionElement.Version] = versionElement
-		if versionElement.Default {
-			versionMap["default"] = versionElement
-		}
-		if latestVersion != "" {
-			latest, err := versionpkg.NewVersion(latestVersion)
-			if err != nil {
-				return map[string]indexSchema.Version{}, err
-			}
-			current, err := versionpkg.NewVersion(versionElement.Version)
-			if err != nil {
-				return map[string]indexSchema.Version{}, err
-			}
-			if current.GreaterThan(latest) {
-				latestVersion = versionElement.Version
-			}
-		} else {
-			latestVersion = versionElement.Version
-		}
-	}
-	versionMap["latest"] = versionMap[latestVersion]
-	return versionMap, nil
-}
-
 // fetchDevfile retrieves a specified devfile by fetching stacks from the OCI
 // registry and samples from the `samplesPath` given by server. Also retrieves index
 // schema from `indexPath` given by server.
@@ -489,7 +459,7 @@ func fetchDevfile(c *gin.Context, name string, version string) ([]byte, indexSch
 					sampleDevfilePath = path.Join(samplesPath, devfileIndex.Name, devfileName)
 				}
 			} else {
-				versionMap, err := makeVersionMap(devfileIndex)
+				versionMap, err := util.MakeVersionMap(devfileIndex)
 				if err != nil {
 					log.Print(err.Error())
 					c.JSON(http.StatusInternalServerError, gin.H{
