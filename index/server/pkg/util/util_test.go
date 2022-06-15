@@ -272,6 +272,14 @@ func TestMakeVersionMap(t *testing.T) {
 			key:     "1.1.0",
 			wantVal: "1.1.0",
 		},
+		{
+			key:     "",
+			wantVal: "",
+		},
+		{
+			key:     "1.3.0",
+			wantVal: "",
+		},
 	}
 
 	for _, test := range tests {
@@ -287,4 +295,37 @@ func TestMakeVersionMap(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestMakeVersionMapOnBadVersion(t *testing.T) {
+	devfileIndex := indexSchema.Schema{
+		Name:              "Test Devfile",
+		Version:           "2.2.0",
+		Attributes:        nil,
+		DisplayName:       "",
+		Description:       "",
+		Type:              "",
+		Tags:              []string{},
+		Architectures:     []string{},
+		Icon:              "",
+		GlobalMemoryLimit: "",
+		ProjectType:       "",
+		Language:          "",
+		Links:             map[string]string{},
+		Resources:         []string{},
+		StarterProjects:   []string{},
+		Git:               &indexSchema.Git{},
+		Provider:          "",
+		SupportUrl:        "",
+		Versions: []indexSchema.Version{
+			{Version: "fsdf-sf3v.-dfg"},
+			{Version: "erdgf-v.-dd-,.fdgg"},
+		},
+	}
+	t.Run("Test generate version map with bad versioning", func(t *testing.T) {
+		_, err := MakeVersionMap(devfileIndex)
+		if err == nil {
+			t.Error("Was expecting malformed version error with MakeVersionMap")
+		}
+	})
 }
