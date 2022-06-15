@@ -352,6 +352,23 @@ var _ = ginkgo.Describe("[Verify index server is working properly]", func() {
 		}))
 	})
 
+	ginkgo.It("/devfiles/<devfile>/starter-projects/<starterProject> endpoint should return an offline zip archive of a subdir for devfile starter project", func() {
+		resp, err := http.Get(config.Registry + "/devfiles/java-quarkus/starter-projects/community-offline")
+		var bytes []byte
+
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		defer resp.Body.Close()
+
+		bytes, err = ioutil.ReadAll(resp.Body)
+
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		gomega.Expect(resp.StatusCode).To(gomega.Equal(http.StatusAccepted))
+		gomega.Expect(bytes).ToNot(gomega.BeEmpty())
+		gomega.Expect(bytes).To(gomega.Satisfy(func(file []byte) bool {
+			return http.DetectContentType(file) == "application/zip"
+		}))
+	})
+
 	ginkgo.It("/devfiles/<devfile>/starter-projects/<starterProject> endpoint should return an error for an offline starter project file location that doesn't exist", func() {
 		resp, err := http.Get(config.Registry + "/devfiles/java-maven/starter-projects/springbootproject-offline")
 

@@ -11,6 +11,10 @@ metadata:
   architectures:
     - "amd64"
 starterProjects:
+  - name: community-offline
+    zip:
+      location: community-offline.zip
+    subDir: src/main/java/org/acme
   - name: community
     zip:
       location: https://code.quarkus.io/d?e=io.quarkus%3Aquarkus-resteasy&e=io.quarkus%3Aquarkus-micrometer&e=io.quarkus%3Aquarkus-smallrye-health&e=io.quarkus%3Aquarkus-openshift&cn=devfile

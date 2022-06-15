@@ -15,6 +15,7 @@ import (
 	"github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2"
 	"github.com/devfile/library/pkg/devfile/parser"
 	"github.com/devfile/library/pkg/devfile/parser/data/v2/common"
+	dfutil "github.com/devfile/library/pkg/util"
 	libutil "github.com/devfile/registry-support/index/generator/library"
 	indexSchema "github.com/devfile/registry-support/index/generator/schema"
 	"github.com/devfile/registry-support/index/server/pkg/util"
@@ -210,6 +211,54 @@ func serveDevfileStarterProjectWithVersion(c *gin.Context) {
 			if _, err = url.ParseRequestURI(starterProject.Zip.Location); err != nil {
 				localLoc := path.Join(stackLoc, starterProject.Zip.Location)
 				log.Printf("zip location is not a valid http url: %v\nTrying local path %s..", err, localLoc)
+
+				// If subdirectory is specified for starter project download then extract subdirectory
+				// and create new archive for download.
+				if starterProject.SubDir != "" {
+					downloadFilePath := fmt.Sprintf("%s.zip", downloadTmpLoc)
+
+					if _, err = os.Stat(downloadTmpLoc); os.IsExist(err) {
+						err = os.Remove(downloadTmpLoc)
+						if err != nil {
+							log.Print(err.Error())
+							c.JSON(http.StatusInternalServerError, gin.H{
+								"error": err.Error(),
+								"status": fmt.Sprintf("Problem removing existing temporary download directory '%s' for starter project %s",
+									downloadTmpLoc,
+									starterProjectName),
+							})
+							return
+						}
+					}
+
+					_, err = dfutil.Unzip(localLoc, downloadTmpLoc, starterProject.SubDir)
+					if err != nil {
+						log.Print(err.Error())
+						c.JSON(http.StatusInternalServerError, gin.H{
+							"error": err.Error(),
+							"status": fmt.Sprintf("Problem with reading subDir '%s' of starter project %s at %s",
+								starterProject.SubDir,
+								starterProjectName,
+								localLoc),
+						})
+						return
+					}
+
+					err = libutil.ZipDir(downloadTmpLoc, downloadFilePath)
+					if err != nil {
+						log.Print(err.Error())
+						c.JSON(http.StatusInternalServerError, gin.H{
+							"error": err.Error(),
+							"status": fmt.Sprintf("Problem with archiving subDir '%s' of starter project %s at %s",
+								starterProject.SubDir,
+								starterProjectName,
+								downloadFilePath),
+						})
+						return
+					}
+
+					localLoc = downloadFilePath
+				}
 
 				downloadBytes, err = ioutil.ReadFile(localLoc)
 				if err != nil {

@@ -22,7 +22,7 @@ COPY index/ /index
 COPY tests/registry /registry
 
 # Download offline starter projects
-RUN bash /build-tools/dl_starter_projects.sh go-starter
+RUN bash /build-tools/dl_starter_projects.sh go-starter community
 
 # Run the registry build tools
 RUN /build-tools/build.sh /registry /build
