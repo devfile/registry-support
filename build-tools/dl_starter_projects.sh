@@ -19,6 +19,7 @@ download_git_starter_project() {
     remote_name=$(yq e ".starterProjects[] | select(.name == \"${name}\").git.checkoutFrom.remote" $stack_root/devfile.yaml)
     revision=$(yq e ".starterProjects[] | select(.name == \"${name}\").git.checkoutFrom.revision" $stack_root/devfile.yaml)
     subDir=$(yq e ".starterProjects[] | select(.name == \"${name}\").subDir" $stack_root/devfile.yaml)
+    local_path=${stack_root}/${name}-offline
 
     if [ "${remote_name}" == "null" ]
     then
@@ -27,23 +28,23 @@ download_git_starter_project() {
         remote_url=$(yq e ".starterProjects[] | select(.name == \"${name}\").git.remotes.${remote_name}" $stack_root/devfile.yaml)
     fi
 
-    mkdir -p $stack_root/$name
+    mkdir -p $local_path
 
-    git clone $remote_url $stack_root/$name
+    git clone $remote_url $local_path
 
     if [ "${revision}" != "null" ]
     then
-        cd $stack_root/$name && git checkout $revision && cd -
+        cd $local_path && git checkout $revision && cd -
     fi
 
     if [ "${subDir}" != "null" ]
     then
-        cd $stack_root/$name/$subDir && zip -q $stack_root/$name.zip * .[^.]* && cd -
+        cd $local_path/$subDir && zip -q ${local_path}.zip * .[^.]* && cd -
     else
-        cd $stack_root/$name && rm -rf ./.git && zip -q $stack_root/$name.zip * .[^.]* && cd -
+        cd $local_path && rm -rf ./.git && zip -q ${local_path}.zip * .[^.]* && cd -
     fi
 
-    rm -rf $stack_root/$name
+    rm -rf $local_path
 }
 
 # Downloads a starter project from a remote zip archive source
@@ -52,8 +53,9 @@ download_zip_starter_project() {
     stack_root=$1
     name=$2
     remote_url=$(yq e ".starterProjects[] | select(.name == \"${name}\").zip.location" $stack_root/devfile.yaml)
+    local_path=${stack_root}/${name}-offline
 
-    curl -L $remote_url -o $stack_root/$name.zip
+    curl -L $remote_url -o ${local_path}.zip
 }
 
 # Read stacks list
