@@ -9,6 +9,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 
 	indexSchema "github.com/devfile/registry-support/index/generator/schema"
 
@@ -24,8 +25,8 @@ func pushStackToRegistry(versionComponent indexSchema.Version, stackName string)
 	memoryStore := content.NewMemoryStore()
 	pushContents := []ocispec.Descriptor{}
 	for _, resource := range versionComponent.Resources {
-		if resource == "meta.yaml" {
-			// Some registries may still have the meta.yaml in it, but we don't need it, so skip pushing it up
+		if resource == "meta.yaml" || strings.HasSuffix(resource, "-offline.zip") {
+			// Some registries may still have the meta.yaml (we don't need it) or offline resources in it, so skip pushing these up
 			continue
 		}
 

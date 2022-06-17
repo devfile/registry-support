@@ -15,12 +15,11 @@ import (
 	"github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2"
 	"github.com/devfile/library/pkg/devfile/parser"
 	"github.com/devfile/library/pkg/devfile/parser/data/v2/common"
+	dfutil "github.com/devfile/library/pkg/util"
 	libutil "github.com/devfile/registry-support/index/generator/library"
-	"github.com/devfile/registry-support/index/generator/schema"
 	indexSchema "github.com/devfile/registry-support/index/generator/schema"
 	"github.com/devfile/registry-support/index/server/pkg/util"
 	"github.com/gin-gonic/gin"
-	versionpkg "github.com/hashicorp/go-version"
 	"github.com/prometheus/client_golang/prometheus"
 	"gopkg.in/segmentio/analytics-go.v3"
 )
@@ -131,7 +130,22 @@ func serveDevfileStarterProjectWithVersion(c *gin.Context) {
 	version := c.Param("version")
 	starterProjectName := c.Param("starterProjectName")
 	downloadTmpLoc := path.Join("/tmp", starterProjectName)
-	devfileBytes, _ := fetchDevfile(c, devfileName, version) // TODO: add devfileIndex when telemetry is migrated
+	stackLoc := path.Join(stacksPath, devfileName)
+	devfileBytes, devfileIndex := fetchDevfile(c, devfileName, version)
+
+	if len(devfileIndex.Versions) > 1 {
+		versionMap, err := util.MakeVersionMap(devfileIndex)
+		if err != nil {
+			log.Print(err.Error())
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error":  err.Error(),
+				"status": "failed to parse the stack version",
+			})
+			return
+		}
+
+		stackLoc = path.Join(stackLoc, versionMap[version].Version)
+	}
 
 	if len(devfileBytes) == 0 {
 		// fetchDevfile was unsuccessful (error or not found)
@@ -169,7 +183,7 @@ func serveDevfileStarterProjectWithVersion(c *gin.Context) {
 		}
 
 		if starterProject := starterProjects[0]; starterProject.Git != nil {
-			gitScheme := schema.Git{
+			gitScheme := indexSchema.Git{
 				Remotes:    starterProject.Git.Remotes,
 				RemoteName: "origin",
 				SubDir:     starterProject.SubDir,
@@ -194,14 +208,78 @@ func serveDevfileStarterProjectWithVersion(c *gin.Context) {
 				return
 			}
 		} else if starterProject.Zip != nil {
-			downloadBytes, err = libutil.DownloadStackFromZipUrl(starterProject.Zip.Location, starterProject.SubDir, downloadTmpLoc)
-			if err != nil {
-				log.Print(err.Error())
-				c.JSON(http.StatusInternalServerError, gin.H{
-					"error":  err.Error(),
-					"status": fmt.Sprintf("Problem with downloading starter project %s", starterProjectName),
-				})
-				return
+			if _, err = url.ParseRequestURI(starterProject.Zip.Location); err != nil {
+				localLoc := path.Join(stackLoc, starterProject.Zip.Location)
+				log.Printf("zip location is not a valid http url: %v\nTrying local path %s..", err, localLoc)
+
+				// If subdirectory is specified for starter project download then extract subdirectory
+				// and create new archive for download.
+				if starterProject.SubDir != "" {
+					downloadFilePath := fmt.Sprintf("%s.zip", downloadTmpLoc)
+
+					if _, err = os.Stat(downloadTmpLoc); os.IsExist(err) {
+						err = os.Remove(downloadTmpLoc)
+						if err != nil {
+							log.Print(err.Error())
+							c.JSON(http.StatusInternalServerError, gin.H{
+								"error": err.Error(),
+								"status": fmt.Sprintf("Problem removing existing temporary download directory '%s' for starter project %s",
+									downloadTmpLoc,
+									starterProjectName),
+							})
+							return
+						}
+					}
+
+					_, err = dfutil.Unzip(localLoc, downloadTmpLoc, starterProject.SubDir)
+					if err != nil {
+						log.Print(err.Error())
+						c.JSON(http.StatusInternalServerError, gin.H{
+							"error": err.Error(),
+							"status": fmt.Sprintf("Problem with reading subDir '%s' of starter project %s at %s",
+								starterProject.SubDir,
+								starterProjectName,
+								localLoc),
+						})
+						return
+					}
+
+					err = libutil.ZipDir(downloadTmpLoc, downloadFilePath)
+					if err != nil {
+						log.Print(err.Error())
+						c.JSON(http.StatusInternalServerError, gin.H{
+							"error": err.Error(),
+							"status": fmt.Sprintf("Problem with archiving subDir '%s' of starter project %s at %s",
+								starterProject.SubDir,
+								starterProjectName,
+								downloadFilePath),
+						})
+						return
+					}
+
+					localLoc = downloadFilePath
+				}
+
+				downloadBytes, err = ioutil.ReadFile(localLoc)
+				if err != nil {
+					log.Print(err.Error())
+					c.JSON(http.StatusInternalServerError, gin.H{
+						"error": err.Error(),
+						"status": fmt.Sprintf("Problem with reading starter project %s at %s", starterProjectName,
+							localLoc),
+					})
+					return
+				}
+			} else {
+				downloadBytes, err = libutil.DownloadStackFromZipUrl(starterProject.Zip.Location, starterProject.SubDir, downloadTmpLoc)
+				if err != nil {
+					log.Print(err.Error())
+					c.JSON(http.StatusInternalServerError, gin.H{
+						"error":  err.Error(),
+						"status": fmt.Sprintf("Problem with downloading starter project %s", starterProjectName),
+					})
+					return
+				}
 			}
 		} else {
 			c.JSON(http.StatusBadRequest, gin.H{
@@ -430,44 +508,25 @@ func fetchDevfile(c *gin.Context, name string, version string) ([]byte, indexSch
 					sampleDevfilePath = path.Join(samplesPath, devfileIndex.Name, devfileName)
 				}
 			} else {
-				versionMap := make(map[string]indexSchema.Version)
-				var latestVersion string
-				for _, versionElement := range devfileIndex.Versions {
-					versionMap[versionElement.Version] = versionElement
-					if versionElement.Default {
-						versionMap["default"] = versionElement
-					}
-					if latestVersion != "" {
-						latest, err := versionpkg.NewVersion(latestVersion)
-						if err != nil {
-							log.Print(err.Error())
-							c.JSON(http.StatusInternalServerError, gin.H{
-								"error":  err.Error(),
-								"status": fmt.Sprintf("failed to parse the stack version %s for stack %s", latestVersion, name),
-							})
-							return []byte{}, indexSchema.Schema{}
-						}
-						current, err := versionpkg.NewVersion(versionElement.Version)
-						if err != nil {
-							log.Print(err.Error())
-							c.JSON(http.StatusInternalServerError, gin.H{
-								"error":  err.Error(),
-								"status": fmt.Sprintf("failed to parse the stack version %s for stack %s", versionElement.Version, name),
-							})
-							return []byte{}, indexSchema.Schema{}
-						}
-						if current.GreaterThan(latest) {
-							latestVersion = versionElement.Version
-						}
-					} else {
-						latestVersion = versionElement.Version
-					}
+				versionMap, err := util.MakeVersionMap(devfileIndex)
+				if err != nil {
+					log.Print(err.Error())
+					c.JSON(http.StatusInternalServerError, gin.H{
+						"error":  err.Error(),
+						"status": "failed to parse the stack version",
+					})
+					return []byte{}, indexSchema.Schema{}
 				}
-				versionMap["latest"] = versionMap[latestVersion]
-
 				if foundVersion, ok := versionMap[version]; ok {
 					if devfileIndex.Type == indexSchema.StackDevfileType {
 						bytes, err = pullStackFromRegistry(foundVersion)
+						if err != nil {
+							c.JSON(http.StatusInternalServerError, gin.H{
+								"error":  err.Error(),
+								"status": fmt.Sprintf("Problem pulling version %s from OCI Registry", foundVersion.Version),
+							})
+							return []byte{}, indexSchema.Schema{}
+						}
 					} else {
 						// Retrieve the sample devfile stored under /registry/samples/<devfile>
 						sampleDevfilePath = path.Join(samplesPath, devfileIndex.Name, foundVersion.Version, devfileName)

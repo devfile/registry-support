@@ -11,6 +11,8 @@ import (
 	"strconv"
 	"strings"
 
+	versionpkg "github.com/hashicorp/go-version"
+
 	indexLibrary "github.com/devfile/registry-support/index/generator/library"
 	indexSchema "github.com/devfile/registry-support/index/generator/schema"
 )
@@ -181,4 +183,33 @@ func IsTelemetryEnabled() bool {
 		return true
 	}
 	return false
+}
+
+// MakeVersionMap creates a map of versions for a given devfile index schema.
+func MakeVersionMap(devfileIndex indexSchema.Schema) (map[string]indexSchema.Version, error) {
+	versionMap := make(map[string]indexSchema.Version)
+	var latestVersion string
+	for _, versionElement := range devfileIndex.Versions {
+		versionMap[versionElement.Version] = versionElement
+		if versionElement.Default {
+			versionMap["default"] = versionElement
+		}
+		if latestVersion != "" {
+			latest, err := versionpkg.NewVersion(latestVersion)
+			if err != nil {
+				return map[string]indexSchema.Version{}, err
+			}
+			current, err := versionpkg.NewVersion(versionElement.Version)
+			if err != nil {
+				return map[string]indexSchema.Version{}, err
+			}
+			if current.GreaterThan(latest) {
+				latestVersion = versionElement.Version
+			}
+		} else {
+			latestVersion = versionElement.Version
+		}
+	}
+	versionMap["latest"] = versionMap[latestVersion]
+	return versionMap, nil
 }
