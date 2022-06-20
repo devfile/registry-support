@@ -13,7 +13,6 @@ objects:
       run: redirector
     name: redirector
   spec:
-    serviceAccountName: redirector-service-account
     replicas: ${{REPLICAS}}
     selector:
       matchLabels:
@@ -32,6 +31,7 @@ objects:
         labels:
           run: redirector
       spec:
+        serviceAccountName: redirector-service-account
         containers:
         - env:
           - name: REDIRECTOR_DESTINATION
