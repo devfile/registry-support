@@ -67,3 +67,20 @@ jobs:
         start args: '--addons=ingress'
     - name: Run the devfile registry integration tests
       run: .ci/run_tests_minikube_linux.sh
+
+  test_staging:
+    name: Test Staging Devfile Registry
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v1
+    - name: Setup Go environment
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.17
+    - name: Run the devfile registry integration tests
+      run: |
+        # Run the integration tests
+        cd tests/integration
+        ./docker-build.sh
+        docker run --env REGISTRY=https://registry.stage.devfile.io --env IS_TEST_REGISTRY=false devfile-registry-integration
