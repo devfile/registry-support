@@ -57,7 +57,7 @@ func TestCloneRemoteStack(t *testing.T) {
 			"specifying commit in 'revision' is not yet supported",
 		},
 		{
-			"Case 4: Cloning a non-existant repo",
+			"Case 4: Cloning a non-existent repo",
 			&schema.Git{
 				Url:        "https://github.com/odo-devfiles/nonexist.git",
 				RemoteName: "origin",
@@ -213,7 +213,7 @@ func TestDownloadStackFromGit(t *testing.T) {
 			"specifying commit in 'revision' is not yet supported",
 		},
 		{
-			"Case 4: Cloning a non-existant repo",
+			"Case 4: Cloning a non-existent repo",
 			&schema.Git{
 				Url:        "https://github.com/odo-devfiles/nonexist.git",
 				RemoteName: "origin",
