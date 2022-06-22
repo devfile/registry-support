@@ -24,7 +24,7 @@ func TestCloneRemoteStack(t *testing.T) {
 		wantErrStr string
 	}{
 		{
-			"Case 1: Maven Java (Without subDir)",
+			"Case 1: Maven Java",
 			&schema.Git{
 				Url:        "https://github.com/odo-devfiles/springboot-ex.git",
 				RemoteName: "origin",
@@ -34,13 +34,14 @@ func TestCloneRemoteStack(t *testing.T) {
 			"",
 		},
 		{
-			"Case 2: Maven Java (With subDir)",
+			"Case 2: Wildfly Java - microprofile-config subdirectory",
 			&schema.Git{
-				Url:        "https://github.com/odo-devfiles/springboot-ex.git",
-				RemoteName: "origin",
-				SubDir:     "src/main",
+				Url:        "https://github.com/wildfly/quickstart.git",
+				RemoteName: "wildfly-quickstart",
+				Revision:   "22.0.1.Final",
+				SubDir:     "microprofile-config",
 			},
-			filepath.Join(os.TempDir(), "springboot-ex"),
+			filepath.Join(os.TempDir(), "quickstart"),
 			false,
 			"",
 		},
@@ -179,7 +180,7 @@ func TestDownloadStackFromGit(t *testing.T) {
 		wantErrStr string
 	}{
 		{
-			"Case 1: Maven Java (Without subDir)",
+			"Case 1: Maven Java",
 			&schema.Git{
 				Url:        "https://github.com/odo-devfiles/springboot-ex.git",
 				RemoteName: "origin",
@@ -189,13 +190,14 @@ func TestDownloadStackFromGit(t *testing.T) {
 			"",
 		},
 		{
-			"Case 2: Maven Java (With subDir)",
+			"Wildfly Java - microprofile-config subdirectory",
 			&schema.Git{
-				Url:        "https://github.com/odo-devfiles/springboot-ex.git",
-				RemoteName: "origin",
-				SubDir:     "src/main",
+				Url:        "https://github.com/wildfly/quickstart.git",
+				RemoteName: "wildfly-quickstart",
+				Revision:   "22.0.1.Final",
+				SubDir:     "microprofile-config",
 			},
-			filepath.Join(os.TempDir(), "springboot-ex-main"),
+			filepath.Join(os.TempDir(), "quickstart"),
 			false,
 			"",
 		},
