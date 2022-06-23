@@ -34,7 +34,18 @@ func TestCloneRemoteStack(t *testing.T) {
 			"",
 		},
 		{
-			"Case 2: Wildfly Java - microprofile-config subdirectory",
+			"Case 2: Maven Java (With subDir)",
+			&schema.Git{
+				Url:        "https://github.com/odo-devfiles/springboot-ex.git",
+				RemoteName: "origin",
+				SubDir:     "src/main",
+			},
+			filepath.Join(os.TempDir(), "springboot-ex"),
+			false,
+			"",
+		},
+		{
+			"Case 3: Wildfly Java - microprofile-config subdirectory",
 			&schema.Git{
 				Url:        "https://github.com/wildfly/quickstart.git",
 				RemoteName: "wildfly-quickstart",
@@ -46,7 +57,7 @@ func TestCloneRemoteStack(t *testing.T) {
 			"",
 		},
 		{
-			"Case 3: Maven Java - Cloning with Hash Revision",
+			"Case 4: Maven Java - Cloning with Hash Revision",
 			&schema.Git{
 				Url:        "https://github.com/odo-devfiles/springboot-ex.git",
 				RemoteName: "origin",
@@ -57,7 +68,7 @@ func TestCloneRemoteStack(t *testing.T) {
 			"specifying commit in 'revision' is not yet supported",
 		},
 		{
-			"Case 4: Cloning a non-existent repo",
+			"Case 5: Cloning a non-existent repo",
 			&schema.Git{
 				Url:        "https://github.com/odo-devfiles/nonexist.git",
 				RemoteName: "origin",
@@ -67,7 +78,7 @@ func TestCloneRemoteStack(t *testing.T) {
 			"",
 		},
 		{
-			"Case 5: Maven Java - Cloning with Invalid Revision",
+			"Case 6: Maven Java - Cloning with Invalid Revision",
 			&schema.Git{
 				Url:        "https://github.com/odo-devfiles/springboot-ex.git",
 				RemoteName: "origin",
@@ -111,7 +122,7 @@ func TestDownloadStackFromZipUrl(t *testing.T) {
 		wantErrStr string
 	}{
 		{
-			"Case 1: Java Quarkus (Without subDir)",
+			"Case 1: Java Quarkus",
 			map[string]string{
 				"Name":   "quarkus",
 				"ZipUrl": "https://code.quarkus.io/d?e=io.quarkus%3Aquarkus-resteasy&e=io.quarkus%3Aquarkus-micrometer&e=io.quarkus%3Aquarkus-smallrye-health&e=io.quarkus%3Aquarkus-openshift&cn=devfile",
@@ -190,7 +201,18 @@ func TestDownloadStackFromGit(t *testing.T) {
 			"",
 		},
 		{
-			"Wildfly Java - microprofile-config subdirectory",
+			"Case 2: Maven Java (With subDir)",
+			&schema.Git{
+				Url:        "https://github.com/odo-devfiles/springboot-ex.git",
+				RemoteName: "origin",
+				SubDir:     "src/main",
+			},
+			filepath.Join(os.TempDir(), "springboot-ex"),
+			false,
+			"",
+		},
+		{
+			"Case 3: Wildfly Java - microprofile-config subdirectory",
 			&schema.Git{
 				Url:        "https://github.com/wildfly/quickstart.git",
 				RemoteName: "wildfly-quickstart",
@@ -202,7 +224,7 @@ func TestDownloadStackFromGit(t *testing.T) {
 			"",
 		},
 		{
-			"Case 3: Maven Java - Cloning with Hash Revision",
+			"Case 4: Maven Java - Cloning with Hash Revision",
 			&schema.Git{
 				Url:        "https://github.com/odo-devfiles/springboot-ex.git",
 				RemoteName: "origin",
@@ -213,7 +235,7 @@ func TestDownloadStackFromGit(t *testing.T) {
 			"specifying commit in 'revision' is not yet supported",
 		},
 		{
-			"Case 4: Cloning a non-existent repo",
+			"Case 5: Cloning a non-existent repo",
 			&schema.Git{
 				Url:        "https://github.com/odo-devfiles/nonexist.git",
 				RemoteName: "origin",
@@ -223,7 +245,7 @@ func TestDownloadStackFromGit(t *testing.T) {
 			"",
 		},
 		{
-			"Case 5: Maven Java - Cloning with Invalid Revision",
+			"Case 6: Maven Java - Cloning with Invalid Revision",
 			&schema.Git{
 				Url:        "https://github.com/odo-devfiles/springboot-ex.git",
 				RemoteName: "origin",
