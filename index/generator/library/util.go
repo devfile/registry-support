@@ -213,6 +213,19 @@ func gitSubDir(srcPath, destinationPath, subDir string, fs filesystem.Filesystem
 			return err
 		}
 
+		// Create destinationPath if does not exist
+		if _, err = fs.Stat(destinationPath); os.IsNotExist(err) {
+			var srcinfo os.FileInfo
+
+			if srcinfo, err = fs.Stat(srcPath); err != nil {
+				return err
+			}
+
+			if err = fs.MkdirAll(destinationPath, srcinfo.Mode()); err != nil {
+				return err
+			}
+		}
+
 		// Loop over files.
 		for outputIndex := range outputDirFiles {
 			outputFileHere := outputDirFiles[outputIndex]
