@@ -24,57 +24,69 @@ func TestCloneRemoteStack(t *testing.T) {
 		wantErrStr string
 	}{
 		{
-			"Case 1: Maven Java (Without subDir)",
-			&schema.Git{
+			name: "Case 1: Maven Java",
+			git: &schema.Git{
 				Url:        "https://github.com/odo-devfiles/springboot-ex.git",
 				RemoteName: "origin",
 			},
-			filepath.Join(os.TempDir(), "springboot-ex"),
-			false,
-			"",
+			path:       filepath.Join(os.TempDir(), "springboot-ex"),
+			wantErr:    false,
+			wantErrStr: "",
 		},
 		{
-			"Case 2: Maven Java (With subDir)",
-			&schema.Git{
+			name: "Case 2: Maven Java (With subDir)",
+			git: &schema.Git{
 				Url:        "https://github.com/odo-devfiles/springboot-ex.git",
 				RemoteName: "origin",
 				SubDir:     "src/main",
 			},
-			filepath.Join(os.TempDir(), "springboot-ex"),
-			false,
-			"",
+			path:       filepath.Join(os.TempDir(), "springboot-ex"),
+			wantErr:    false,
+			wantErrStr: "",
 		},
 		{
-			"Case 3: Maven Java - Cloning with Hash Revision",
-			&schema.Git{
+			name: "Case 3: Wildfly Java - microprofile-config subdirectory",
+			git: &schema.Git{
+				Url:        "https://github.com/wildfly/quickstart.git",
+				RemoteName: "wildfly-quickstart",
+				Revision:   "22.0.1.Final",
+				SubDir:     "microprofile-config",
+			},
+			path:       filepath.Join(os.TempDir(), "quickstart"),
+			wantErr:    false,
+			wantErrStr: "",
+		},
+		{
+			name: "Case 4: Maven Java - Cloning with Hash Revision",
+			git: &schema.Git{
 				Url:        "https://github.com/odo-devfiles/springboot-ex.git",
 				RemoteName: "origin",
 				Revision:   "694e96286ffdc3a9990d0041637d32cecba38181",
 			},
-			filepath.Join(os.TempDir(), "springboot-ex"),
-			true,
-			"specifying commit in 'revision' is not yet supported",
+			path:       filepath.Join(os.TempDir(), "springboot-ex"),
+			wantErr:    true,
+			wantErrStr: "specifying commit in 'revision' is not yet supported",
 		},
 		{
-			"Case 4: Cloning a non-existant repo",
-			&schema.Git{
+			name: "Case 5: Cloning a non-existent repo",
+			git: &schema.Git{
 				Url:        "https://github.com/odo-devfiles/nonexist.git",
 				RemoteName: "origin",
 			},
-			filepath.Join(os.TempDir(), "nonexist"),
-			true,
-			"",
+			path:       filepath.Join(os.TempDir(), "nonexist"),
+			wantErr:    true,
+			wantErrStr: "",
 		},
 		{
-			"Case 5: Maven Java - Cloning with Invalid Revision",
-			&schema.Git{
+			name: "Case 6: Maven Java - Cloning with Invalid Revision",
+			git: &schema.Git{
 				Url:        "https://github.com/odo-devfiles/springboot-ex.git",
 				RemoteName: "origin",
 				Revision:   "invalid",
 			},
-			filepath.Join(os.TempDir(), "springboot-ex"),
-			true,
-			"couldn't find remote ref \"refs/tags/invalid\"",
+			path:       filepath.Join(os.TempDir(), "springboot-ex"),
+			wantErr:    true,
+			wantErrStr: "couldn't find remote ref \"refs/tags/invalid\"",
 		},
 	}
 
@@ -110,34 +122,34 @@ func TestDownloadStackFromZipUrl(t *testing.T) {
 		wantErrStr string
 	}{
 		{
-			"Case 1: Java Quarkus (Without subDir)",
-			map[string]string{
+			name: "Case 1: Java Quarkus",
+			params: map[string]string{
 				"Name":   "quarkus",
 				"ZipUrl": "https://code.quarkus.io/d?e=io.quarkus%3Aquarkus-resteasy&e=io.quarkus%3Aquarkus-micrometer&e=io.quarkus%3Aquarkus-smallrye-health&e=io.quarkus%3Aquarkus-openshift&cn=devfile",
 				"SubDir": "",
 			},
-			false,
-			"",
+			wantErr:    false,
+			wantErrStr: "",
 		},
 		{
-			"Case 2: Java Quarkus (With subDir)",
-			map[string]string{
+			name: "Case 2: Java Quarkus (With subDir)",
+			params: map[string]string{
 				"Name":   "quarkus",
 				"ZipUrl": "https://code.quarkus.io/d?e=io.quarkus%3Aquarkus-resteasy&e=io.quarkus%3Aquarkus-micrometer&e=io.quarkus%3Aquarkus-smallrye-health&e=io.quarkus%3Aquarkus-openshift&cn=devfile",
 				"SubDir": "src",
 			},
-			false,
-			"",
+			wantErr:    false,
+			wantErrStr: "",
 		},
 		{
-			"Case 3: Download error",
-			map[string]string{
+			name: "Case 3: Download error",
+			params: map[string]string{
 				"Name":   "quarkus",
 				"ZipUrl": "https://code.quarkus.io/d?e=io.quarkus",
 				"SubDir": "",
 			},
-			true,
-			"failed to retrieve https://code.quarkus.io/d?e=io.quarkus, 400: Bad Request",
+			wantErr:    true,
+			wantErrStr: "failed to retrieve https://code.quarkus.io/d?e=io.quarkus, 400: Bad Request",
 		},
 	}
 
@@ -179,57 +191,69 @@ func TestDownloadStackFromGit(t *testing.T) {
 		wantErrStr string
 	}{
 		{
-			"Case 1: Maven Java (Without subDir)",
-			&schema.Git{
+			name: "Case 1: Maven Java",
+			git: &schema.Git{
 				Url:        "https://github.com/odo-devfiles/springboot-ex.git",
 				RemoteName: "origin",
 			},
-			filepath.Join(os.TempDir(), "springboot-ex"),
-			false,
-			"",
+			path:       filepath.Join(os.TempDir(), "springboot-ex"),
+			wantErr:    false,
+			wantErrStr: "",
 		},
 		{
-			"Case 2: Maven Java (With subDir)",
-			&schema.Git{
+			name: "Case 2: Maven Java (With subDir)",
+			git: &schema.Git{
 				Url:        "https://github.com/odo-devfiles/springboot-ex.git",
 				RemoteName: "origin",
 				SubDir:     "src/main",
 			},
-			filepath.Join(os.TempDir(), "springboot-ex-main"),
-			false,
-			"",
+			path:       filepath.Join(os.TempDir(), "springboot-ex"),
+			wantErr:    false,
+			wantErrStr: "",
 		},
 		{
-			"Case 3: Maven Java - Cloning with Hash Revision",
-			&schema.Git{
+			name: "Case 3: Wildfly Java - microprofile-config subdirectory",
+			git: &schema.Git{
+				Url:        "https://github.com/wildfly/quickstart.git",
+				RemoteName: "wildfly-quickstart",
+				Revision:   "22.0.1.Final",
+				SubDir:     "microprofile-config",
+			},
+			path:       filepath.Join(os.TempDir(), "quickstart"),
+			wantErr:    false,
+			wantErrStr: "",
+		},
+		{
+			name: "Case 4: Maven Java - Cloning with Hash Revision",
+			git: &schema.Git{
 				Url:        "https://github.com/odo-devfiles/springboot-ex.git",
 				RemoteName: "origin",
 				Revision:   "694e96286ffdc3a9990d0041637d32cecba38181",
 			},
-			filepath.Join(os.TempDir(), "springboot-ex"),
-			true,
-			"specifying commit in 'revision' is not yet supported",
+			path:       filepath.Join(os.TempDir(), "springboot-ex"),
+			wantErr:    true,
+			wantErrStr: "specifying commit in 'revision' is not yet supported",
 		},
 		{
-			"Case 4: Cloning a non-existant repo",
-			&schema.Git{
+			name: "Case 5: Cloning a non-existent repo",
+			git: &schema.Git{
 				Url:        "https://github.com/odo-devfiles/nonexist.git",
 				RemoteName: "origin",
 			},
-			filepath.Join(os.TempDir(), "nonexist"),
-			true,
-			"",
+			path:       filepath.Join(os.TempDir(), "nonexist"),
+			wantErr:    true,
+			wantErrStr: "",
 		},
 		{
-			"Case 5: Maven Java - Cloning with Invalid Revision",
-			&schema.Git{
+			name: "Case 6: Maven Java - Cloning with Invalid Revision",
+			git: &schema.Git{
 				Url:        "https://github.com/odo-devfiles/springboot-ex.git",
 				RemoteName: "origin",
 				Revision:   "invalid",
 			},
-			filepath.Join(os.TempDir(), "springboot-ex"),
-			true,
-			"couldn't find remote ref \"refs/tags/invalid\"",
+			path:       filepath.Join(os.TempDir(), "springboot-ex"),
+			wantErr:    true,
+			wantErrStr: "couldn't find remote ref \"refs/tags/invalid\"",
 		},
 	}
 
