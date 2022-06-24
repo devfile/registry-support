@@ -111,6 +111,11 @@ func DownloadStackFromGit(git *schema.Git, path string, verbose bool) ([]byte, e
 		return []byte{}, err
 	}
 
+	// Throw error if path was not created
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		return []byte{}, err
+	}
+
 	// Zip directory containing downloaded git repo
 	if err := ZipDir(path, zipPath); err != nil {
 		return []byte{}, err
@@ -206,6 +211,19 @@ func gitSubDir(srcPath, destinationPath, subDir string, fs filesystem.Filesystem
 		outputDirFiles, err := outputDirRead.Readdir(0)
 		if err != nil {
 			return err
+		}
+
+		// Create destinationPath if does not exist
+		if _, err = fs.Stat(destinationPath); os.IsNotExist(err) {
+			var srcinfo os.FileInfo
+
+			if srcinfo, err = fs.Stat(srcPath); err != nil {
+				return err
+			}
+
+			if err = fs.MkdirAll(destinationPath, srcinfo.Mode()); err != nil {
+				return err
+			}
 		}
 
 		// Loop over files.
