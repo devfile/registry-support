@@ -100,7 +100,7 @@ github.com/devfile/library/pkg/devfile/parser/data/v2/common
 github.com/devfile/library/pkg/devfile/validate
 github.com/devfile/library/pkg/testingutil/filesystem
 github.com/devfile/library/pkg/util
-# github.com/devfile/registry-support/index/generator v0.0.0-20220316161530-f06d84c42b54
+# github.com/devfile/registry-support/index/generator v0.0.0-20220624203950-e7282a4695b6
 ## explicit; go 1.14
 github.com/devfile/registry-support/index/generator/library
 github.com/devfile/registry-support/index/generator/schema
