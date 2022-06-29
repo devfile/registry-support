@@ -304,6 +304,61 @@ func PullStackFromRegistry(registry string, stack string, destDir string, option
 	return PullStackByMediaTypesFromRegistry(registry, stack, DevfileAllMediaTypesList, destDir, options)
 }
 
+func DownloadStarterProjectAsBytes(registryURL string, stack string, starterProject string, options RegistryOptions) ([]byte, error) {
+	// Get stack index
+	stackIndex, err := GetStackIndex(registryURL, stack, options)
+	if err != nil {
+		return nil, err
+	}
+
+	// Check if starter project exists in the stack index
+	exists := false
+	for _, sp := range stackIndex.StarterProjects {
+		if sp == starterProject {
+			exists = true
+			break
+		}
+	}
+	if !exists {
+		stackName, _ := splitVersionFromStack(stack)
+		return nil, fmt.Errorf("the starter project '%s' does not exist under the stack '%s'", starterProject, stackName)
+	}
+
+	// Get stack link
+	stackLink, err := GetStackLink(registryURL, stack, options)
+	if err != nil {
+		return nil, err
+	}
+
+	urlObj, err := url.Parse(registryURL)
+	if err != nil {
+		return nil, err
+	}
+
+	url := path.Join(urlObj.String(), stackLink, "starter-projects", starterProject)
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	setHeaders(&req.Header, options)
+
+	httpClient := &http.Client{
+		Transport: &http.Transport{
+			ResponseHeaderTimeout: responseHeaderTimeout,
+			TLSClientConfig:       &tls.Config{InsecureSkipVerify: options.SkipTLSVerify},
+		},
+		Timeout: httpRequestTimeout,
+	}
+	resp, err := httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	// Return downloaded starter project as bytes or error if unsuccessful.
+	return ioutil.ReadAll(resp.Body)
+}
+
 // GetStackLink returns the slug needed to pull a specified stack from a registry URL
 func GetStackLink(registryURL string, stack string, options RegistryOptions) (string, error) {
 	var stackLink string
