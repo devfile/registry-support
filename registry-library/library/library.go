@@ -247,62 +247,10 @@ func PrintRegistry(registryURLs string, devfileType string, options RegistryOpti
 // PullStackByMediaTypesFromRegistry pulls a specified stack with allowed media types from a given registry URL to the destination directory.
 // OWNERS files present in the registry will be excluded
 func PullStackByMediaTypesFromRegistry(registry string, stack string, allowedMediaTypes []string, destDir string, options RegistryOptions) error {
-	var requestVersion string
-	if strings.Contains(stack, ":") {
-		stackWithVersion := strings.Split(stack, ":")
-		stack = stackWithVersion[0]
-		requestVersion = stackWithVersion[1]
-	}
-	// Get the registry index
-	registryIndex, err := GetRegistryIndex(registry, options, indexSchema.StackDevfileType)
+	// Get stack link
+	stackLink, err := GetStackLink(registry, stack, options)
 	if err != nil {
 		return err
-	}
-
-	// Parse the index to get the specified stack's metadata in the index
-	var stackIndex indexSchema.Schema
-	exist := false
-	for _, item := range registryIndex {
-		if item.Name == stack {
-			stackIndex = item
-			exist = true
-			break
-		}
-	}
-	if !exist {
-		return fmt.Errorf("stack %s does not exist in the registry %s", stack, registry)
-	}
-	var stackLink string
-
-	if options.NewIndexSchema {
-		latestVersionIndex := 0
-		latest, err := versionpkg.NewVersion(stackIndex.Versions[latestVersionIndex].Version)
-		if err != nil {
-			return fmt.Errorf("failed to parse the stack version %s for stack %s", stackIndex.Versions[latestVersionIndex].Version, stack)
-		}
-		for index, version := range stackIndex.Versions {
-			if (requestVersion == "" && version.Default) || (version.Version == requestVersion) {
-				stackLink = version.Links["self"]
-				break
-			} else if requestVersion == "latest" {
-				current, err := versionpkg.NewVersion(version.Version)
-				if err != nil {
-					return fmt.Errorf("failed to parse the stack version %s for stack %s", version.Version, stack)
-				}
-				if current.GreaterThan(latest) {
-					latestVersionIndex = index
-					latest = current
-				}
-			}
-		}
-		if requestVersion == "latest" {
-			stackLink = stackIndex.Versions[latestVersionIndex].Links["self"]
-		}
-		if stackLink == "" {
-			return fmt.Errorf("the requested verion %s for stack %s does not exist in the registry %s", requestVersion, stack, registry)
-		}
-	} else {
-		stackLink = stackIndex.Links["self"]
 	}
 
 	// Pull stack initialization
@@ -354,6 +302,91 @@ func PullStackByMediaTypesFromRegistry(registry string, stack string, allowedMed
 // PullStackFromRegistry pulls a specified stack with all devfile supported media types from a registry URL to the destination directory
 func PullStackFromRegistry(registry string, stack string, destDir string, options RegistryOptions) error {
 	return PullStackByMediaTypesFromRegistry(registry, stack, DevfileAllMediaTypesList, destDir, options)
+}
+
+// GetStackLink returns the slug needed to pull a specified stack from a registry URL
+func GetStackLink(registryURL string, stack string, options RegistryOptions) (string, error) {
+	var stackLink string
+
+	// Get stack index
+	stackIndex, err := GetStackIndex(registryURL, stack, options)
+	if err != nil {
+		return "", err
+	}
+
+	// Split version from stack label if specified
+	stack, requestVersion := splitVersionFromStack(stack)
+
+	if options.NewIndexSchema {
+		latestVersionIndex := 0
+		latest, err := versionpkg.NewVersion(stackIndex.Versions[latestVersionIndex].Version)
+		if err != nil {
+			return "", fmt.Errorf("failed to parse the stack version %s for stack %s", stackIndex.Versions[latestVersionIndex].Version, stack)
+		}
+		for index, version := range stackIndex.Versions {
+			if (requestVersion == "" && version.Default) || (version.Version == requestVersion) {
+				stackLink = version.Links["self"]
+				break
+			} else if requestVersion == "latest" {
+				current, err := versionpkg.NewVersion(version.Version)
+				if err != nil {
+					return "", fmt.Errorf("failed to parse the stack version %s for stack %s", version.Version, stack)
+				}
+				if current.GreaterThan(latest) {
+					latestVersionIndex = index
+					latest = current
+				}
+			}
+		}
+		if requestVersion == "latest" {
+			stackLink = stackIndex.Versions[latestVersionIndex].Links["self"]
+		}
+		if stackLink == "" {
+			return "", fmt.Errorf("the requested verion %s for stack %s does not exist in the registry %s", requestVersion, stack, registryURL)
+		}
+	} else {
+		stackLink = stackIndex.Links["self"]
+	}
+
+	return stackLink, nil
+}
+
+func GetStackIndex(registryURL string, stack string, options RegistryOptions) (indexSchema.Schema, error) {
+	// Get the registry index
+	registryIndex, err := GetRegistryIndex(registryURL, options, indexSchema.StackDevfileType)
+	if err != nil {
+		return indexSchema.Schema{}, err
+	}
+
+	// Prune version from stack label if specified
+	stack, _ = splitVersionFromStack(stack)
+
+	// Parse the index to get the specified stack's metadata in the index
+	for _, item := range registryIndex {
+		// Return index of specified stack if found
+		if item.Name == stack {
+			return item, nil
+		}
+	}
+
+	// Return error if stack index is not found
+	return indexSchema.Schema{}, fmt.Errorf("stack %s does not exist in the registry %s", stack, registryURL)
+}
+
+func splitVersionFromStack(stackWithVersion string) (string, string) {
+	var requestVersion string
+	var stack string
+
+	if strings.Contains(stackWithVersion, ":") {
+		pair := strings.Split(stackWithVersion, ":")
+		stack = pair[0]
+		requestVersion = pair[1]
+	} else {
+		stack = stackWithVersion
+		requestVersion = ""
+	}
+
+	return stack, requestVersion
 }
 
 // decompress extracts the archive file
