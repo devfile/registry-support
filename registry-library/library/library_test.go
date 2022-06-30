@@ -2,6 +2,7 @@ package library
 
 import (
 	"encoding/json"
+	"fmt"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -12,8 +13,30 @@ import (
 	indexSchema "github.com/devfile/registry-support/index/generator/schema"
 )
 
+const (
+	serverIP = "127.0.0.1:8080"
+)
+
+func setUpTestServer(handler func(http.ResponseWriter, *http.Request)) (func(), error) {
+	// Mocking the registry REST endpoints on a very basic level
+	testServer := httptest.NewUnstartedServer(http.HandlerFunc(handler))
+	// create a listener with the desired port.
+	l, err := net.Listen("tcp", serverIP)
+	if err != nil {
+		return testServer.Close, fmt.Errorf("Unexpected error while creating listener: %v", err)
+	}
+
+	// NewUnstartedServer creates a listener. Close that listener and replace
+	// with the one we created.
+	testServer.Listener.Close()
+	testServer.Listener = l
+
+	testServer.Start()
+
+	return testServer.Close, nil
+}
+
 func TestGetRegistryIndex(t *testing.T) {
-	const serverIP = "127.0.0.1:8080"
 	archFilteredIndex := []indexSchema.Schema{
 		{
 			Name:          "archindex1",
@@ -99,8 +122,7 @@ func TestGetRegistryIndex(t *testing.T) {
 		},
 	}
 
-	// Mocking the registry REST endpoints on a very basic level
-	testServer := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	close, err := setUpTestServer(func(w http.ResponseWriter, r *http.Request) {
 
 		var data []indexSchema.Schema
 		var err error
@@ -133,21 +155,12 @@ func TestGetRegistryIndex(t *testing.T) {
 		if err != nil {
 			t.Errorf("Unexpected error while writing data: %v", err)
 		}
-	}))
-	// create a listener with the desired port.
-	l, err := net.Listen("tcp", serverIP)
+	})
 	if err != nil {
-		t.Errorf("Unexpected error while creating listener: %v", err)
+		t.Error(err)
 		return
 	}
-
-	// NewUnstartedServer creates a listener. Close that listener and replace
-	// with the one we created.
-	testServer.Listener.Close()
-	testServer.Listener = l
-
-	testServer.Start()
-	defer testServer.Close()
+	defer close()
 
 	tests := []struct {
 		name         string
@@ -168,7 +181,7 @@ func TestGetRegistryIndex(t *testing.T) {
 				},
 			},
 			devfileTypes: []indexSchema.DevfileType{indexSchema.StackDevfileType},
-			wantSchemas: schemaVersionFilteredIndex,
+			wantSchemas:  schemaVersionFilteredIndex,
 		},
 		{
 			name: "Get Arch Filtered Index",
