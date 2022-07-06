@@ -376,3 +376,83 @@ func TestGetStackIndex(t *testing.T) {
 		})
 	}
 }
+
+func TestGetStackLink(t *testing.T) {
+	close, err := setUpTestServer(func(w http.ResponseWriter, r *http.Request) {
+		var err error
+
+		data := setUpIndexHandle(r.URL)
+
+		bytes, err := json.MarshalIndent(&data, "", "  ")
+		if err != nil {
+			t.Errorf("Unexpected error while doing json marshal: %v", err)
+			return
+		}
+
+		_, err = w.Write(bytes)
+		if err != nil {
+			t.Errorf("Unexpected error while writing data: %v", err)
+		}
+	})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	defer close()
+
+	tests := []struct {
+		name     string
+		url      string
+		stack    string
+		options  RegistryOptions
+		wantLink string
+		wantErr  bool
+	}{
+		{
+			name:     "Get Stack Link",
+			url:      "http://" + serverIP,
+			stack:    "stackindex1",
+			wantLink: stackFilteredIndex[0].Links["self"],
+		},
+		{
+			name:  "Get V2 Stack default Link",
+			url:   "http://" + serverIP,
+			stack: "stackv2index1",
+			options: RegistryOptions{
+				NewIndexSchema: true,
+			},
+			wantLink: stackFilteredV2Index[0].Versions[1].Links["self"],
+		},
+		{
+			name:  "Get V2 Stack latest Link",
+			url:   "http://" + serverIP,
+			stack: "stackv2index2:latest",
+			options: RegistryOptions{
+				NewIndexSchema: true,
+			},
+			wantLink: stackFilteredV2Index[1].Versions[2].Links["self"],
+		},
+		{
+			name:  "Get V2 Stack Non-Existent Tagged Link",
+			url:   "http://" + serverIP,
+			stack: "stackv2index2:faketag",
+			options: RegistryOptions{
+				NewIndexSchema: true,
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			gotLink, err := GetStackLink(test.url, test.stack, test.options)
+			if !test.wantErr && err != nil {
+				t.Errorf("Unexpected err: %+v", err)
+			} else if test.wantErr && err == nil {
+				t.Errorf("Expected error but got nil")
+			} else if !reflect.DeepEqual(gotLink, test.wantLink) {
+				t.Errorf("Expected: %+v, \nGot: %+v", test.wantLink, gotLink)
+			}
+		})
+	}
+}
