@@ -86,15 +86,43 @@ var (
 	stackFilteredV2Index = []indexSchema.Schema{
 		{
 			Name: "stackv2index1",
-			Links: map[string]string{
-				"self": "devfile-catalog/stackv2index1:1.0.0",
-			},
+			Versions: []indexSchema.Version{{
+				Version: "2.0.0",
+				Links: map[string]string{
+					"self": "devfile-catalog/stackv2index1:2.0.0",
+				},
+			}, {
+				Version: "2.1.0",
+				Default: true,
+				Links: map[string]string{
+					"self": "devfile-catalog/stackv2index1:2.1.0",
+				},
+			}, {
+				Version: "2.2.0",
+				Links: map[string]string{
+					"self": "devfile-catalog/stackv2index1:2.2.0",
+				},
+			}},
 		},
 		{
 			Name: "stackv2index2",
-			Links: map[string]string{
-				"self": "devfile-catalog/stackv2index2:1.0.0",
-			},
+			Versions: []indexSchema.Version{{
+				Version: "2.0.0",
+				Links: map[string]string{
+					"self": "devfile-catalog/stackv2index2:2.0.0",
+				},
+			}, {
+				Version: "2.1.0",
+				Default: true,
+				Links: map[string]string{
+					"self": "devfile-catalog/stackv2index2:2.1.0",
+				},
+			}, {
+				Version: "2.2.0",
+				Links: map[string]string{
+					"self": "devfile-catalog/stackv2index2:2.2.0",
+				},
+			}},
 		},
 	}
 
