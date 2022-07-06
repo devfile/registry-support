@@ -304,6 +304,44 @@ func PullStackFromRegistry(registry string, stack string, destDir string, option
 	return PullStackByMediaTypesFromRegistry(registry, stack, DevfileAllMediaTypesList, destDir, options)
 }
 
+func DownloadStarterProject(path string, registryURL string, stack string, starterProject string, options RegistryOptions) error {
+	var fileStream *os.File
+
+	// Download Starter Project archive bytes
+	bytes, err := DownloadStarterProjectAsBytes(registryURL, stack, starterProject, options)
+	if err != nil {
+		return err
+	}
+
+	// Error if parent directory does not exist
+	if _, err = os.Stat(filepath.Dir(path)); os.IsNotExist(err) {
+		return fmt.Errorf("parent directory '%s' does not exist: %v", filepath.Dir(path), err)
+	}
+
+	// If file does not exist, create a new one
+	// Else open existing for overwriting
+	if _, err = os.Stat(path); os.IsNotExist(err) {
+		fileStream, err = os.Create(path)
+		if err != nil {
+			return fmt.Errorf("failed to create file '%s': %v", path, err)
+		}
+	} else {
+		fileStream, err = os.Open(path)
+		if err != nil {
+			return fmt.Errorf("failed to open file '%s': %v", path, err)
+		}
+	}
+	defer fileStream.Close()
+
+	// Write downloaded bytes to file
+	_, err = fileStream.Write(bytes)
+	if err != nil {
+		return fmt.Errorf("failed writing to '%s': %v", path, err)
+	}
+
+	return nil
+}
+
 func DownloadStarterProjectAsBytes(registryURL string, stack string, starterProject string, options RegistryOptions) ([]byte, error) {
 	// Get stack index
 	stackIndex, err := GetStackIndex(registryURL, stack, options)
