@@ -6,6 +6,7 @@ import (
 	"net"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"reflect"
 	"strings"
 	"testing"
@@ -16,6 +17,129 @@ import (
 const (
 	serverIP = "127.0.0.1:8080"
 )
+
+var (
+	archFilteredIndex = []indexSchema.Schema{
+		{
+			Name:          "archindex1",
+			Architectures: []string{"amd64, arm64"},
+		},
+		{
+			Name: "archindex2",
+		},
+	}
+
+	schemaVersionFilteredIndex = []indexSchema.Schema{
+		{
+			Name: "indexSchema2.1",
+			Versions: []indexSchema.Version{
+				{
+					Version:       "1.0.0",
+					SchemaVersion: "2.1.0",
+				},
+			},
+		},
+		{
+			Name: "indexSchema2.2",
+			Versions: []indexSchema.Version{
+				{
+					Version:       "1.1.0",
+					SchemaVersion: "2.2.0",
+				},
+			},
+		},
+	}
+
+	sampleFilteredIndex = []indexSchema.Schema{
+		{
+			Name: "sampleindex1",
+		},
+		{
+			Name: "sampleindex2",
+		},
+	}
+
+	sampleFilteredV2Index = []indexSchema.Schema{
+		{
+			Name: "samplev2index1",
+		},
+		{
+			Name: "samplev2index2",
+		},
+	}
+
+	stackFilteredIndex = []indexSchema.Schema{
+		{
+			Name: "stackindex1",
+			Links: map[string]string{
+				"self": "devfile-catalog/stackindex1:1.0.0",
+			},
+		},
+		{
+			Name: "stackindex2",
+			Links: map[string]string{
+				"self": "devfile-catalog/stackindex2:1.0.0",
+			},
+		},
+	}
+
+	stackFilteredV2Index = []indexSchema.Schema{
+		{
+			Name: "stackv2index1",
+			Links: map[string]string{
+				"self": "devfile-catalog/stackv2index1:1.0.0",
+			},
+		},
+		{
+			Name: "stackv2index2",
+			Links: map[string]string{
+				"self": "devfile-catalog/stackv2index2:1.0.0",
+			},
+		},
+	}
+
+	notFilteredIndex = []indexSchema.Schema{
+		{
+			Name: "index1",
+		},
+		{
+			Name: "index2",
+		},
+	}
+
+	notFilteredV2Index = []indexSchema.Schema{
+		{
+			Name: "v2index1",
+		},
+		{
+			Name: "v2index2",
+		},
+	}
+)
+
+func setUpIndexHandle(indexUrl *url.URL) []indexSchema.Schema {
+	var data []indexSchema.Schema
+
+	if strings.Contains(indexUrl.String(), "arch=amd64&arch=arm64") {
+		data = archFilteredIndex
+	} else if strings.Contains(indexUrl.String(), "maxSchemaVersion=2.2") && strings.Contains(indexUrl.String(), "minSchemaVersion=2.1") {
+		data = schemaVersionFilteredIndex
+	} else if indexUrl.Path == "/index/sample" {
+		data = sampleFilteredIndex
+	} else if indexUrl.Path == "/v2index/sample" {
+		data = sampleFilteredV2Index
+	} else if indexUrl.Path == "/index/stack" || indexUrl.Path == "/index" {
+		data = stackFilteredIndex
+	} else if indexUrl.Path == "/v2index/stack" || indexUrl.Path == "/v2index" {
+		data = stackFilteredV2Index
+	} else if indexUrl.Path == "/index/all" {
+		data = notFilteredIndex
+	} else if indexUrl.Path == "/v2index/all" {
+		data = notFilteredV2Index
+	}
+
+	return data
+}
 
 func setUpTestServer(handler func(http.ResponseWriter, *http.Request)) (func(), error) {
 	// Mocking the registry REST endpoints on a very basic level
@@ -37,113 +161,10 @@ func setUpTestServer(handler func(http.ResponseWriter, *http.Request)) (func(), 
 }
 
 func TestGetRegistryIndex(t *testing.T) {
-	archFilteredIndex := []indexSchema.Schema{
-		{
-			Name:          "archindex1",
-			Architectures: []string{"amd64, arm64"},
-		},
-		{
-			Name: "archindex2",
-		},
-	}
-
-	schemaVersionFilteredIndex := []indexSchema.Schema{
-		{
-			Name: "indexSchema2.1",
-			Versions: []indexSchema.Version{
-				{
-					Version:       "1.0.0",
-					SchemaVersion: "2.1.0",
-				},
-			},
-		},
-		{
-			Name: "indexSchema2.2",
-			Versions: []indexSchema.Version{
-				{
-					Version:       "1.1.0",
-					SchemaVersion: "2.2.0",
-				},
-			},
-		},
-	}
-
-	sampleFilteredIndex := []indexSchema.Schema{
-		{
-			Name: "sampleindex1",
-		},
-		{
-			Name: "sampleindex2",
-		},
-	}
-
-	sampleFilteredV2Index := []indexSchema.Schema{
-		{
-			Name: "samplev2index1",
-		},
-		{
-			Name: "samplev2index2",
-		},
-	}
-
-	stackFilteredIndex := []indexSchema.Schema{
-		{
-			Name: "stackindex1",
-		},
-		{
-			Name: "stackindex2",
-		},
-	}
-
-	stackFilteredV2Index := []indexSchema.Schema{
-		{
-			Name: "stackv2index1",
-		},
-		{
-			Name: "stackv2index2",
-		},
-	}
-
-	notFilteredIndex := []indexSchema.Schema{
-		{
-			Name: "index1",
-		},
-		{
-			Name: "index2",
-		},
-	}
-
-	notFilteredV2Index := []indexSchema.Schema{
-		{
-			Name: "v2index1",
-		},
-		{
-			Name: "v2index2",
-		},
-	}
-
 	close, err := setUpTestServer(func(w http.ResponseWriter, r *http.Request) {
-
-		var data []indexSchema.Schema
 		var err error
 
-		if strings.Contains(r.URL.String(), "arch=amd64&arch=arm64") {
-			data = archFilteredIndex
-		} else if strings.Contains(r.URL.String(), "maxSchemaVersion=2.2") && strings.Contains(r.URL.String(), "minSchemaVersion=2.1") {
-			data = schemaVersionFilteredIndex
-		} else if r.URL.Path == "/index/sample" {
-			data = sampleFilteredIndex
-		} else if r.URL.Path == "/v2index/sample" {
-			data = sampleFilteredV2Index
-		} else if r.URL.Path == "/index/stack" || r.URL.Path == "/index" {
-			data = stackFilteredIndex
-		} else if r.URL.Path == "/v2index/stack" || r.URL.Path == "/v2index" {
-			data = stackFilteredV2Index
-		} else if r.URL.Path == "/index/all" {
-			data = notFilteredIndex
-		} else if r.URL.Path == "/v2index/all" {
-			data = notFilteredV2Index
-		}
+		data := setUpIndexHandle(r.URL)
 
 		bytes, err := json.MarshalIndent(&data, "", "  ")
 		if err != nil {
@@ -255,6 +276,74 @@ func TestGetRegistryIndex(t *testing.T) {
 				t.Errorf("Expected error but got nil")
 			} else if !reflect.DeepEqual(gotSchemas, test.wantSchemas) {
 				t.Errorf("Expected: %+v, \nGot: %+v", test.wantSchemas, gotSchemas)
+			}
+		})
+	}
+}
+
+func TestGetStackIndex(t *testing.T) {
+	close, err := setUpTestServer(func(w http.ResponseWriter, r *http.Request) {
+		var err error
+
+		data := setUpIndexHandle(r.URL)
+
+		bytes, err := json.MarshalIndent(&data, "", "  ")
+		if err != nil {
+			t.Errorf("Unexpected error while doing json marshal: %v", err)
+			return
+		}
+
+		_, err = w.Write(bytes)
+		if err != nil {
+			t.Errorf("Unexpected error while writing data: %v", err)
+		}
+	})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	defer close()
+
+	tests := []struct {
+		name       string
+		url        string
+		stack      string
+		options    RegistryOptions
+		wantSchema indexSchema.Schema
+		wantErr    bool
+	}{
+		{
+			name:       "Get Stack Schema Index",
+			url:        "http://" + serverIP,
+			stack:      "stackindex1",
+			wantSchema: stackFilteredIndex[0],
+		},
+		{
+			name:  "Get V2 Stack Schema Index",
+			url:   "http://" + serverIP,
+			stack: "stackv2index2",
+			options: RegistryOptions{
+				NewIndexSchema: true,
+			},
+			wantSchema: stackFilteredV2Index[1],
+		},
+		{
+			name:    "Get Non-Existent Stack Schema Index",
+			url:     "http://" + serverIP,
+			stack:   "fakestackindex",
+			wantErr: true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			gotSchema, err := GetStackIndex(test.url, test.stack, test.options)
+			if !test.wantErr && err != nil {
+				t.Errorf("Unexpected err: %+v", err)
+			} else if test.wantErr && err == nil {
+				t.Errorf("Expected error but got nil")
+			} else if !reflect.DeepEqual(gotSchema, test.wantSchema) {
+				t.Errorf("Expected: %+v, \nGot: %+v", test.wantSchema, gotSchema)
 			}
 		})
 	}
