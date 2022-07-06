@@ -343,6 +343,8 @@ func DownloadStarterProject(path string, registryURL string, stack string, start
 }
 
 func DownloadStarterProjectAsBytes(registryURL string, stack string, starterProject string, options RegistryOptions) ([]byte, error) {
+	var stackName string
+
 	// Get stack index
 	stackIndex, err := GetStackIndex(registryURL, stack, options)
 	if err != nil {
@@ -358,14 +360,8 @@ func DownloadStarterProjectAsBytes(registryURL string, stack string, starterProj
 		}
 	}
 	if !exists {
-		stackName, _ := splitVersionFromStack(stack)
+		stackName, _ = splitVersionFromStack(stack)
 		return nil, fmt.Errorf("the starter project '%s' does not exist under the stack '%s'", starterProject, stackName)
-	}
-
-	// Get stack link
-	stackLink, err := GetStackLink(registryURL, stack, options)
-	if err != nil {
-		return nil, err
 	}
 
 	urlObj, err := url.Parse(registryURL)
@@ -373,7 +369,7 @@ func DownloadStarterProjectAsBytes(registryURL string, stack string, starterProj
 		return nil, err
 	}
 
-	url := path.Join(urlObj.String(), stackLink, "starter-projects", starterProject)
+	url := path.Join(urlObj.String(), "devfiles", stackName, "starter-projects", starterProject)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err
