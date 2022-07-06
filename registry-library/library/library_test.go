@@ -1,6 +1,8 @@
 package library
 
 import (
+	"archive/zip"
+	bytespkg "bytes"
 	"encoding/json"
 	"fmt"
 	"net"
@@ -463,4 +465,33 @@ func TestGetStackLink(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestDownloadStarterProjectAsBytes(t *testing.T) {
+	close, err := setUpTestServer(func(w http.ResponseWriter, r *http.Request) {
+		var bytes []byte
+		var err error
+
+		buffer := bytespkg.Buffer{}
+		writer := zip.NewWriter(&buffer)
+
+		_, err = writer.Create("README.md")
+		if err != nil {
+			t.Errorf("error in creating testing starter project archive: %v", err)
+		}
+
+		writer.Close()
+
+		bytes = buffer.Bytes()
+
+		_, err = w.Write(bytes)
+		if err != nil {
+			t.Errorf("Unexpected error while writing data: %v", err)
+		}
+	})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	defer close()
 }
