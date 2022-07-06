@@ -434,8 +434,10 @@ func GetStackLink(registryURL string, stack string, options RegistryOptions) (st
 		if requestVersion == "latest" {
 			stackLink = stackIndex.Versions[latestVersionIndex].Links["self"]
 		}
-		if stackLink == "" {
-			return "", fmt.Errorf("the requested verion %s for stack %s does not exist in the registry %s", requestVersion, stack, registryURL)
+		if requestVersion == "" && stackLink == "" {
+			return "", fmt.Errorf("no version specified for stack %s which no default version exists in the registry %s", stack, registryURL)
+		} else if stackLink == "" {
+			return "", fmt.Errorf("the requested version %s for stack %s does not exist in the registry %s", requestVersion, stack, registryURL)
 		}
 	} else {
 		stackLink = stackIndex.Links["self"]

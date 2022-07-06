@@ -113,7 +113,6 @@ var (
 				},
 			}, {
 				Version: "2.1.0",
-				Default: true,
 				Links: map[string]string{
 					"self": "devfile-catalog/stackv2index2:2.1.0",
 				},
@@ -436,6 +435,15 @@ func TestGetStackLink(t *testing.T) {
 			name:  "Get V2 Stack Non-Existent Tagged Link",
 			url:   "http://" + serverIP,
 			stack: "stackv2index2:faketag",
+			options: RegistryOptions{
+				NewIndexSchema: true,
+			},
+			wantErr: true,
+		},
+		{
+			name:  "Get V2 Stack Link with no default version",
+			url:   "http://" + serverIP,
+			stack: "stackv2index2",
 			options: RegistryOptions{
 				NewIndexSchema: true,
 			},
