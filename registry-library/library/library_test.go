@@ -327,7 +327,7 @@ func TestGetRegistryIndex(t *testing.T) {
 			if !test.wantErr && err != nil {
 				t.Errorf("Unexpected err: %+v", err)
 			} else if test.wantErr && err == nil {
-				t.Errorf("Expected error but got nil")
+				t.Error("Expected error but got nil")
 			} else if !reflect.DeepEqual(gotSchemas, test.wantSchemas) {
 				t.Errorf("Expected: %+v, \nGot: %+v", test.wantSchemas, gotSchemas)
 			}
@@ -395,7 +395,7 @@ func TestGetStackIndex(t *testing.T) {
 			if !test.wantErr && err != nil {
 				t.Errorf("Unexpected err: %+v", err)
 			} else if test.wantErr && err == nil {
-				t.Errorf("Expected error but got nil")
+				t.Error("Expected error but got nil")
 			} else if !reflect.DeepEqual(gotSchema, test.wantSchema) {
 				t.Errorf("Expected: %+v, \nGot: %+v", test.wantSchema, gotSchema)
 			}
@@ -484,7 +484,7 @@ func TestGetStackLink(t *testing.T) {
 			if !test.wantErr && err != nil {
 				t.Errorf("Unexpected err: %+v", err)
 			} else if test.wantErr && err == nil {
-				t.Errorf("Expected error but got nil")
+				t.Error("Expected error but got nil")
 			} else if !reflect.DeepEqual(gotLink, test.wantLink) {
 				t.Errorf("Expected: %+v, \nGot: %+v", test.wantLink, gotLink)
 			}
@@ -597,9 +597,9 @@ func TestDownloadStarterProjectAsBytes(t *testing.T) {
 
 			if !test.wantErr && err != nil {
 				t.Errorf("Unexpected err: %+v", err)
-			} else if test.wantErr && err == nil {
-				t.Errorf("Expected error but got nil")
-			} else {
+			} else if (test.wantErr || gotBytes == nil) && err == nil {
+				t.Error("Expected error but got nil")
+			} else if test.wantType != "" {
 				gotType := http.DetectContentType(gotBytes)
 				if !reflect.DeepEqual(gotType, test.wantType) {
 					t.Errorf("Expected: %+v, \nGot: %+v", test.wantType, gotType)
