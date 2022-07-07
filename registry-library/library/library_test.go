@@ -492,6 +492,107 @@ func TestGetStackLink(t *testing.T) {
 	}
 }
 
+func TestIsStarterProjectExists(t *testing.T) {
+	close, err := setUpTestServer(func(w http.ResponseWriter, r *http.Request) {
+		var err error
+
+		data := setUpIndexHandle(r.URL)
+
+		bytes, err := json.MarshalIndent(&data, "", "  ")
+		if err != nil {
+			t.Errorf("Unexpected error while doing json marshal: %v", err)
+			return
+		}
+
+		_, err = w.Write(bytes)
+		if err != nil {
+			t.Errorf("Unexpected error while writing data: %v", err)
+		}
+	})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	defer close()
+
+	tests := []struct {
+		name           string
+		url            string
+		stack          string
+		starterProject string
+		options        RegistryOptions
+		wantExist      bool
+		wantErr        bool
+	}{
+		{
+			name:           "Starter Project Exists",
+			url:            "http://" + serverIP,
+			stack:          "stackindex1",
+			starterProject: "stackindex1-starter",
+			wantExist:      true,
+		},
+		{
+			name:           "Starter Project Exists V2",
+			url:            "http://" + serverIP,
+			stack:          "stackv2index1",
+			starterProject: "stackv2index1-starter",
+			options: RegistryOptions{
+				NewIndexSchema: true,
+			},
+			wantExist: true,
+		},
+		{
+			name:           "Starter Project Does Not Exists",
+			url:            "http://" + serverIP,
+			stack:          "stackindex1",
+			starterProject: "fake-starter",
+			wantExist:      false,
+		},
+		{
+			name:           "Starter Project Does Not Exists V2",
+			url:            "http://" + serverIP,
+			stack:          "stackv2index1",
+			starterProject: "fake-starter",
+			options: RegistryOptions{
+				NewIndexSchema: true,
+			},
+			wantExist: false,
+		},
+		{
+			name:           "Stack Does Not Exists",
+			url:            "http://" + serverIP,
+			stack:          "fake-stack",
+			starterProject: "fake-starter",
+			wantExist:      false,
+			wantErr:        true,
+		},
+		{
+			name:           "Stack Does Not Exists V2",
+			url:            "http://" + serverIP,
+			stack:          "fake-stack",
+			starterProject: "fake-starter",
+			options: RegistryOptions{
+				NewIndexSchema: true,
+			},
+			wantExist: false,
+			wantErr:   true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			exists, err := IsStarterProjectExists(test.url, test.stack, test.starterProject, test.options)
+			if !test.wantErr && err != nil {
+				t.Errorf("Unexpected err: %+v", err)
+			} else if test.wantErr && err == nil {
+				t.Error("Expected error but got nil")
+			} else if !reflect.DeepEqual(exists, test.wantExist) {
+				t.Errorf("Expected: %+v, \nGot: %+v", test.wantExist, exists)
+			}
+		})
+	}
+}
+
 func TestDownloadStarterProjectAsBytes(t *testing.T) {
 	close, err := setUpTestServer(func(w http.ResponseWriter, r *http.Request) {
 		var bytes []byte
