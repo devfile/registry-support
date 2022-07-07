@@ -356,7 +356,7 @@ func DownloadStarterProjectAsBytes(registryURL string, stack string, starterProj
 		return nil, err
 	}
 
-	url := path.Join(urlObj.String(), "devfiles", stackName, "starter-projects", starterProject)
+	url := fmt.Sprintf("%s/%s", urlObj.String(), path.Join("devfiles", stackName, "starter-projects", starterProject))
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err
