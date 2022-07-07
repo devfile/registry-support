@@ -10,6 +10,7 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"reflect"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -76,11 +77,17 @@ var (
 			Links: map[string]string{
 				"self": "devfile-catalog/stackindex1:1.0.0",
 			},
+			StarterProjects: []string{
+				"stackindex1-starter",
+			},
 		},
 		{
 			Name: "stackindex2",
 			Links: map[string]string{
 				"self": "devfile-catalog/stackindex2:1.0.0",
+			},
+			StarterProjects: []string{
+				"stackindex2-starter",
 			},
 		},
 	}
@@ -93,16 +100,25 @@ var (
 				Links: map[string]string{
 					"self": "devfile-catalog/stackv2index1:2.0.0",
 				},
+				StarterProjects: []string{
+					"stackv2index1-starter",
+				},
 			}, {
 				Version: "2.1.0",
 				Default: true,
 				Links: map[string]string{
 					"self": "devfile-catalog/stackv2index1:2.1.0",
 				},
+				StarterProjects: []string{
+					"stackv2index1-starter",
+				},
 			}, {
 				Version: "2.2.0",
 				Links: map[string]string{
 					"self": "devfile-catalog/stackv2index1:2.2.0",
+				},
+				StarterProjects: []string{
+					"index1-starter",
 				},
 			}},
 		},
@@ -113,15 +129,24 @@ var (
 				Links: map[string]string{
 					"self": "devfile-catalog/stackv2index2:2.0.0",
 				},
+				StarterProjects: []string{
+					"stackv2index2-starter",
+				},
 			}, {
 				Version: "2.1.0",
 				Links: map[string]string{
 					"self": "devfile-catalog/stackv2index2:2.1.0",
 				},
+				StarterProjects: []string{
+					"stackv2index2-starter",
+				},
 			}, {
 				Version: "2.2.0",
 				Links: map[string]string{
 					"self": "devfile-catalog/stackv2index2:2.2.0",
+				},
+				StarterProjects: []string{
+					"index2-starter",
 				},
 			}},
 		},
@@ -472,17 +497,36 @@ func TestDownloadStarterProjectAsBytes(t *testing.T) {
 		var bytes []byte
 		var err error
 
-		buffer := bytespkg.Buffer{}
-		writer := zip.NewWriter(&buffer)
+		if matched, err := regexp.MatchString(`/devfiles/[^/]+/starter-projects/[^/]+`, r.URL.Path); matched {
+			if err != nil {
+				t.Errorf("Unexpected error while matching url: %v", err)
+				return
+			}
 
-		_, err = writer.Create("README.md")
-		if err != nil {
-			t.Errorf("error in creating testing starter project archive: %v", err)
+			buffer := bytespkg.Buffer{}
+			writer := zip.NewWriter(&buffer)
+
+			_, err = writer.Create("README.md")
+			if err != nil {
+				t.Errorf("error in creating testing starter project archive: %v", err)
+				return
+			}
+
+			writer.Close()
+
+			bytes = buffer.Bytes()
+		} else if strings.HasPrefix(r.URL.Path, "/index") || strings.HasPrefix(r.URL.Path, "/v2index") {
+			data := setUpIndexHandle(r.URL)
+
+			bytes, err = json.MarshalIndent(&data, "", "  ")
+			if err != nil {
+				t.Errorf("Unexpected error while doing json marshal: %v", err)
+				return
+			}
+		} else {
+			t.Errorf("Route %s was not found", r.URL.Path)
+			return
 		}
-
-		writer.Close()
-
-		bytes = buffer.Bytes()
 
 		_, err = w.Write(bytes)
 		if err != nil {
@@ -494,4 +538,73 @@ func TestDownloadStarterProjectAsBytes(t *testing.T) {
 		return
 	}
 	defer close()
+
+	tests := []struct {
+		name           string
+		url            string
+		stack          string
+		starterProject string
+		options        RegistryOptions
+		wantType       string
+		wantErr        bool
+	}{
+		{
+			name:           "Download Starter Project",
+			url:            "http://" + serverIP,
+			stack:          "stackindex1",
+			starterProject: "stackindex1-starter",
+			wantType:       "application/zip",
+		},
+		{
+			name:           "Download Starter Project V2",
+			url:            "http://" + serverIP,
+			stack:          "stackv2index1",
+			starterProject: "stackv2index1-starter",
+			options: RegistryOptions{
+				NewIndexSchema: true,
+			},
+			wantType: "application/zip",
+		},
+		{
+			name:           "Download Starter Project from Fake Stack",
+			url:            "http://" + serverIP,
+			stack:          "fakestack",
+			starterProject: "fakestarter",
+			wantErr:        true,
+		},
+		{
+			name:           "Download Fake Starter Project",
+			url:            "http://" + serverIP,
+			stack:          "stackindex1",
+			starterProject: "fakestarter",
+			wantErr:        true,
+		},
+		{
+			name:           "Download Fake Starter Project V2",
+			url:            "http://" + serverIP,
+			stack:          "stackv2index1",
+			starterProject: "fakestarter",
+			options: RegistryOptions{
+				NewIndexSchema: true,
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			gotBytes, err := DownloadStarterProjectAsBytes(test.url, test.stack, test.starterProject, test.options)
+
+			if !test.wantErr && err != nil {
+				t.Errorf("Unexpected err: %+v", err)
+			} else if test.wantErr && err == nil {
+				t.Errorf("Expected error but got nil")
+			} else {
+				gotType := http.DetectContentType(gotBytes)
+				if !reflect.DeepEqual(gotType, test.wantType) {
+					t.Errorf("Expected: %+v, \nGot: %+v", test.wantType, gotType)
+				}
+			}
+		})
+	}
 }
