@@ -343,24 +343,11 @@ func DownloadStarterProject(path string, registryURL string, stack string, start
 }
 
 func DownloadStarterProjectAsBytes(registryURL string, stack string, starterProject string, options RegistryOptions) ([]byte, error) {
-	var stackName string
-
-	// Get stack index
-	stackIndex, err := GetStackIndex(registryURL, stack, options)
+	stackName, _ := splitVersionFromStack(stack)
+	exists, err := IsStarterProjectExists(registryURL, stack, starterProject, options)
 	if err != nil {
 		return nil, err
-	}
-
-	// Check if starter project exists in the stack index
-	exists := false
-	for _, sp := range stackIndex.StarterProjects {
-		if sp == starterProject {
-			exists = true
-			break
-		}
-	}
-	if !exists {
-		stackName, _ = splitVersionFromStack(stack)
+	} else if !exists {
 		return nil, fmt.Errorf("the starter project '%s' does not exist under the stack '%s'", starterProject, stackName)
 	}
 
@@ -391,6 +378,43 @@ func DownloadStarterProjectAsBytes(registryURL string, stack string, starterProj
 
 	// Return downloaded starter project as bytes or error if unsuccessful.
 	return ioutil.ReadAll(resp.Body)
+}
+
+func IsStarterProjectExists(registryURL string, stack string, starterProject string, options RegistryOptions) (bool, error) {
+	// Get stack index
+	stackIndex, err := GetStackIndex(registryURL, stack, options)
+	if err != nil {
+		return false, err
+	}
+
+	// Check if starter project exists in the stack index
+	exists := false
+	for _, sp := range stackIndex.StarterProjects {
+		if sp == starterProject {
+			exists = true
+			break
+		}
+	}
+
+	if !exists && options.NewIndexSchema {
+		var starterProjects []string
+
+		for _, version := range stackIndex.Versions {
+			starterProjects = append(starterProjects, version.StarterProjects...)
+		}
+
+		exists = false
+		for _, sp := range starterProjects {
+			if sp == starterProject {
+				exists = true
+				break
+			}
+		}
+
+		return exists, nil
+	} else {
+		return exists, nil
+	}
 }
 
 // GetStackLink returns the slug needed to pull a specified stack from a registry URL
