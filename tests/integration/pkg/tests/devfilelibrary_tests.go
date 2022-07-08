@@ -30,12 +30,13 @@ import (
 )
 
 const (
-	nodejsStack    = "nodejs"
-	javaMavenStack = "java-maven"
-	quarkusStack   = "java-quarkus"
-	nodejsSample   = "nodejs-basic"
-	quarkusSample  = "code-with-quarkus"
-	pythonSample   = "python-basic"
+	nodejsStack      = "nodejs"
+	javaMavenStack   = "java-maven"
+	quarkusStack     = "java-quarkus"
+	nodejsSample     = "nodejs-basic"
+	quarkusSample    = "code-with-quarkus"
+	pythonSample     = "python-basic"
+	javaMavenStarter = "springbootproject"
 )
 
 var (
@@ -123,5 +124,14 @@ var _ = ginkgo.Describe("[Verify registry library works with registry]", func() 
 		}
 		_, _, err = devfilePkg.ParseDevfileAndValidate(parserArgs)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+	})
+
+	ginkgo.It("should properly download stack starter project", func() {
+		tempDir := os.TempDir()
+		util.CmdShouldPass("registry-library", "download", publicDevfileRegistry, javaMavenStack, javaMavenStarter, "--context", tempDir)
+		starterPath := path.Join(tempDir, javaMavenStarter)
+		info, err := os.Stat(starterPath)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		gomega.Expect(info.IsDir()).To(gomega.Equal(true))
 	})
 })
