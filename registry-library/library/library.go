@@ -304,6 +304,7 @@ func PullStackFromRegistry(registry string, stack string, destDir string, option
 	return PullStackByMediaTypesFromRegistry(registry, stack, DevfileAllMediaTypesList, destDir, options)
 }
 
+// DownloadStarterProject downloads a specified starter project archive to a given path
 func DownloadStarterProject(path string, registryURL string, stack string, starterProject string, options RegistryOptions) error {
 	var fileStream *os.File
 
@@ -342,6 +343,7 @@ func DownloadStarterProject(path string, registryURL string, stack string, start
 	return nil
 }
 
+// DownloadStarterProjectAsBytes downloads the file bytes of a specified starter project archive and return these bytes
 func DownloadStarterProjectAsBytes(registryURL string, stack string, starterProject string, options RegistryOptions) ([]byte, error) {
 	stackName, _ := splitVersionFromStack(stack)
 	exists, err := IsStarterProjectExists(registryURL, stack, starterProject, options)
@@ -380,6 +382,7 @@ func DownloadStarterProjectAsBytes(registryURL string, stack string, starterProj
 	return ioutil.ReadAll(resp.Body)
 }
 
+// IsStarterProjectExists checks if starter project exists for a given stack
 func IsStarterProjectExists(registryURL string, stack string, starterProject string, options RegistryOptions) (bool, error) {
 	// Get stack index
 	stackIndex, err := GetStackIndex(registryURL, stack, options)
@@ -466,6 +469,7 @@ func GetStackLink(registryURL string, stack string, options RegistryOptions) (st
 	return stackLink, nil
 }
 
+// GetStackIndex returns the schema index of a specified stack
 func GetStackIndex(registryURL string, stack string, options RegistryOptions) (indexSchema.Schema, error) {
 	// Get the registry index
 	registryIndex, err := GetRegistryIndex(registryURL, options, indexSchema.StackDevfileType)
@@ -488,6 +492,7 @@ func GetStackIndex(registryURL string, stack string, options RegistryOptions) (i
 	return indexSchema.Schema{}, fmt.Errorf("stack %s does not exist in the registry %s", stack, registryURL)
 }
 
+// splitVersionFromStack takes a stack/version tag and splits the stack name from the version
 func splitVersionFromStack(stackWithVersion string) (string, string) {
 	var requestVersion string
 	var stack string
