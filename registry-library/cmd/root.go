@@ -18,6 +18,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
 
@@ -147,7 +148,34 @@ func init() {
 	listCmd.Flags().BoolVar(&skipTLSVerify, "skip-tls-verify", false, "skip TLS verification")
 	listCmd.Flags().StringVar(&user, "user", "", "consumer name")
 
-	rootCmd.AddCommand(pullCmd, listCmd)
+	var downloadCmd = &cobra.Command{
+		Use:   "download <registry name> <stack name> <starter project name>",
+		Short: "Downloads starter project",
+		Args:  cobra.ExactArgs(3),
+		Run: func(cmd *cobra.Command, args []string) {
+			registry, stack, starterProject := args[0], args[1], args[2]
+			var err error
+
+			options := library.RegistryOptions{
+				NewIndexSchema: newIndexSchema,
+				Telemetry: library.TelemetryData{
+					User: "user",
+				},
+				SkipTLSVerify: skipTLSVerify,
+			}
+
+			err = library.DownloadStarterProjectAsDir(filepath.Join(destDir, starterProject), registry, stack, starterProject, options)
+			if err != nil {
+				fmt.Printf("failed to download starter project %s: %v\n", starterProject, err)
+			}
+		},
+	}
+	downloadCmd.Flags().StringVar(&destDir, "context", ".", "destination directory that stores stack resources")
+	downloadCmd.Flags().BoolVar(&skipTLSVerify, "skip-tls-verify", false, "skip TLS verification")
+	downloadCmd.Flags().BoolVar(&newIndexSchema, "new-index-schema", false, "use new index schema")
+	downloadCmd.Flags().StringVar(&user, "user", "", "consumer name")
+
+	rootCmd.AddCommand(pullCmd, listCmd, downloadCmd)
 }
 
 // initConfig reads in config file and ENV variables if set.
