@@ -17,6 +17,7 @@ package library
 
 import (
 	"archive/tar"
+	"archive/zip"
 	"compress/gzip"
 	"crypto/tls"
 	"encoding/json"
@@ -302,6 +303,69 @@ func PullStackByMediaTypesFromRegistry(registry string, stack string, allowedMed
 // PullStackFromRegistry pulls a specified stack with all devfile supported media types from a registry URL to the destination directory
 func PullStackFromRegistry(registry string, stack string, destDir string, options RegistryOptions) error {
 	return PullStackByMediaTypesFromRegistry(registry, stack, DevfileAllMediaTypesList, destDir, options)
+}
+
+// DownloadStarterProjectAsDir downloads a specified starter project archive and extracts it to given path
+func DownloadStarterProjectAsDir(path string, registryURL string, stack string, starterProject string, options RegistryOptions) error {
+	var err error
+
+	// Create temp path to download archive
+	archivePath := filepath.Join(os.TempDir(), fmt.Sprintf("%s.zip", starterProject))
+
+	// Download starter project archive to temp path
+	if err = DownloadStarterProject(archivePath, registryURL, stack, starterProject, options); err != nil {
+		return err
+	}
+
+	// Open archive reader
+	archive, err := zip.OpenReader(archivePath)
+	if err != nil {
+		return fmt.Errorf("error opening downloaded starter project archive: %v", err)
+	}
+	defer archive.Close()
+
+	// Extract files from starter project archive to specified directory path
+	for _, file := range archive.File {
+		filePath := filepath.Join(path, file.Name)
+
+		// validate extracted filepath
+		if !strings.HasPrefix(filePath, filepath.Clean(path)+string(os.PathSeparator)) {
+			return fmt.Errorf("invalid file path %s", filePath)
+		}
+
+		// if file is a directory, create it in destination and continue to next file
+		if file.FileInfo().IsDir() {
+			os.MkdirAll(filePath, os.ModePerm)
+			continue
+		}
+
+		// ensure parent directory of current file is created in destination
+		if err = os.MkdirAll(filepath.Dir(filePath), os.ModePerm); err != nil {
+			return fmt.Errorf("error creating parent directory %s: %v", filepath.Dir(filePath), err)
+		}
+
+		// open destination file
+		dstFile, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, file.Mode())
+		if err != nil {
+			return fmt.Errorf("error opening destination file at %s: %v", filePath, err)
+		}
+
+		// open source file in archive
+		srcFile, err := file.Open()
+		if err != nil {
+			return fmt.Errorf("error opening source file %s in archive %s: %v", file.Name, archivePath, err)
+		}
+
+		// extract source file to destination file
+		if _, err = io.Copy(dstFile, srcFile); err != nil {
+			return fmt.Errorf("error extracting file %s from archive %s to destination at %s: %v", file.Name, archivePath, filePath, err)
+		}
+
+		dstFile.Close()
+		srcFile.Close()
+	}
+
+	return nil
 }
 
 // DownloadStarterProject downloads a specified starter project archive to a given path
