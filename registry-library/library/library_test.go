@@ -5,10 +5,13 @@ import (
 	bytespkg "bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"os"
+	"path/filepath"
 	"reflect"
 	"regexp"
 	"strings"
@@ -704,6 +707,286 @@ func TestDownloadStarterProjectAsBytes(t *testing.T) {
 				gotType := http.DetectContentType(gotBytes)
 				if !reflect.DeepEqual(gotType, test.wantType) {
 					t.Errorf("Expected: %+v, \nGot: %+v", test.wantType, gotType)
+				}
+			}
+		})
+	}
+}
+
+func TestDownloadStarterProject(t *testing.T) {
+	close, err := setUpTestServer(func(w http.ResponseWriter, r *http.Request) {
+		var bytes []byte
+		var err error
+
+		if matched, err := regexp.MatchString(`/devfiles/[^/]+/starter-projects/[^/]+`, r.URL.Path); matched {
+			if err != nil {
+				t.Errorf("Unexpected error while matching url: %v", err)
+				return
+			}
+
+			buffer := bytespkg.Buffer{}
+			writer := zip.NewWriter(&buffer)
+
+			_, err = writer.Create("README.md")
+			if err != nil {
+				t.Errorf("error in creating testing starter project archive: %v", err)
+				return
+			}
+
+			writer.Close()
+
+			bytes = buffer.Bytes()
+		} else if strings.HasPrefix(r.URL.Path, "/index") || strings.HasPrefix(r.URL.Path, "/v2index") {
+			data := setUpIndexHandle(r.URL)
+
+			bytes, err = json.MarshalIndent(&data, "", "  ")
+			if err != nil {
+				t.Errorf("Unexpected error while doing json marshal: %v", err)
+				return
+			}
+		} else {
+			t.Errorf("Route %s was not found", r.URL.Path)
+			return
+		}
+
+		_, err = w.Write(bytes)
+		if err != nil {
+			t.Errorf("Unexpected error while writing data: %v", err)
+		}
+	})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	defer close()
+
+	tests := []struct {
+		name           string
+		path           string
+		url            string
+		stack          string
+		starterProject string
+		options        RegistryOptions
+		wantType       string
+		wantErr        bool
+	}{
+		{
+			name:           "Download Starter Project",
+			path:           filepath.Join(os.TempDir(), "test.zip"),
+			url:            "http://" + serverIP,
+			stack:          "stackindex1",
+			starterProject: "stackindex1-starter",
+			wantType:       "application/zip",
+		},
+		{
+			name:           "Download Starter Project V2",
+			path:           filepath.Join(os.TempDir(), "test.zip"),
+			url:            "http://" + serverIP,
+			stack:          "stackv2index1",
+			starterProject: "stackv2index1-starter",
+			options: RegistryOptions{
+				NewIndexSchema: true,
+			},
+			wantType: "application/zip",
+		},
+		{
+			name:           "Download Starter Project from Fake Stack",
+			path:           filepath.Join(os.TempDir(), "test.zip"),
+			url:            "http://" + serverIP,
+			stack:          "fakestack",
+			starterProject: "fakestarter",
+			wantErr:        true,
+		},
+		{
+			name:           "Download Fake Starter Project",
+			path:           filepath.Join(os.TempDir(), "test.zip"),
+			url:            "http://" + serverIP,
+			stack:          "stackindex1",
+			starterProject: "fakestarter",
+			wantErr:        true,
+		},
+		{
+			name:           "Download Fake Starter Project V2",
+			path:           filepath.Join(os.TempDir(), "test.zip"),
+			url:            "http://" + serverIP,
+			stack:          "stackv2index1",
+			starterProject: "fakestarter",
+			options: RegistryOptions{
+				NewIndexSchema: true,
+			},
+			wantErr: true,
+		},
+		{
+			name:           "Download Starter Project to non-existent parent path",
+			path:           filepath.Join(os.TempDir(), "dummy", "path", "to", "file.zip"),
+			url:            "http://" + serverIP,
+			stack:          "stackindex1",
+			starterProject: "stackindex1-starter",
+			wantErr:        true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			err := DownloadStarterProject(test.path, test.url, test.stack, test.starterProject, test.options)
+
+			if !test.wantErr && err != nil {
+				t.Errorf("Unexpected err: %+v", err)
+			} else if test.wantErr && err == nil {
+				t.Error("Expected error but got nil")
+			} else if test.wantType != "" {
+				file, err := os.Open(test.path)
+				if err != nil {
+					t.Errorf("Unexpected err: %+v", err)
+				}
+				defer func() {
+					file.Close()
+					err := os.Remove(test.path)
+					if err != nil {
+						t.Errorf("Unexpected err: %+v", err)
+					}
+				}()
+
+				gotBytes, err := io.ReadAll(file)
+				if err != nil {
+					t.Errorf("Unexpected err: %+v", err)
+				}
+
+				gotType := http.DetectContentType(gotBytes)
+				if !reflect.DeepEqual(gotType, test.wantType) {
+					t.Errorf("Expected: %+v, \nGot: %+v", test.wantType, gotType)
+				}
+			}
+		})
+	}
+}
+
+func TestDownloadStarterProjectAsDir(t *testing.T) {
+	close, err := setUpTestServer(func(w http.ResponseWriter, r *http.Request) {
+		var bytes []byte
+		var err error
+
+		if matched, err := regexp.MatchString(`/devfiles/[^/]+/starter-projects/[^/]+`, r.URL.Path); matched {
+			if err != nil {
+				t.Errorf("Unexpected error while matching url: %v", err)
+				return
+			}
+
+			buffer := bytespkg.Buffer{}
+			writer := zip.NewWriter(&buffer)
+
+			_, err = writer.Create("README.md")
+			if err != nil {
+				t.Errorf("error in creating testing starter project archive: %v", err)
+				return
+			}
+
+			writer.Close()
+
+			bytes = buffer.Bytes()
+		} else if strings.HasPrefix(r.URL.Path, "/index") || strings.HasPrefix(r.URL.Path, "/v2index") {
+			data := setUpIndexHandle(r.URL)
+
+			bytes, err = json.MarshalIndent(&data, "", "  ")
+			if err != nil {
+				t.Errorf("Unexpected error while doing json marshal: %v", err)
+				return
+			}
+		} else {
+			t.Errorf("Route %s was not found", r.URL.Path)
+			return
+		}
+
+		_, err = w.Write(bytes)
+		if err != nil {
+			t.Errorf("Unexpected error while writing data: %v", err)
+		}
+	})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	defer close()
+
+	tests := []struct {
+		name           string
+		path           string
+		url            string
+		stack          string
+		starterProject string
+		options        RegistryOptions
+		wantErr        bool
+	}{
+		{
+			name:           "Download Starter Project",
+			path:           filepath.Join(os.TempDir(), "stackindex1-starter"),
+			url:            "http://" + serverIP,
+			stack:          "stackindex1",
+			starterProject: "stackindex1-starter",
+		},
+		{
+			name:           "Download Starter Project V2",
+			path:           filepath.Join(os.TempDir(), "stackv2index1-starter"),
+			url:            "http://" + serverIP,
+			stack:          "stackv2index1",
+			starterProject: "stackv2index1-starter",
+			options: RegistryOptions{
+				NewIndexSchema: true,
+			},
+		},
+		{
+			name:           "Download Starter Project from Fake Stack",
+			path:           filepath.Join(os.TempDir(), "fakestarter"),
+			url:            "http://" + serverIP,
+			stack:          "fakestack",
+			starterProject: "fakestarter",
+			wantErr:        true,
+		},
+		{
+			name:           "Download Fake Starter Project",
+			path:           filepath.Join(os.TempDir(), "fakestarter"),
+			url:            "http://" + serverIP,
+			stack:          "stackindex1",
+			starterProject: "fakestarter",
+			wantErr:        true,
+		},
+		{
+			name:           "Download Fake Starter Project V2",
+			path:           filepath.Join(os.TempDir(), "fakestarter"),
+			url:            "http://" + serverIP,
+			stack:          "stackv2index1",
+			starterProject: "fakestarter",
+			options: RegistryOptions{
+				NewIndexSchema: true,
+			},
+			wantErr: true,
+		},
+		{
+			name:           "Download Starter Project to non-existent parent path",
+			path:           filepath.Join(os.TempDir(), "stackindex1", "stackindex1-starter"),
+			url:            "http://" + serverIP,
+			stack:          "stackindex1",
+			starterProject: "stackindex1-starter",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			err := DownloadStarterProjectAsDir(test.path, test.url, test.stack, test.starterProject, test.options)
+
+			if !test.wantErr && err != nil {
+				t.Errorf("Unexpected err: %+v", err)
+			} else if test.wantErr && err == nil {
+				t.Error("Expected error but got nil")
+			} else if err == nil {
+				fileinfo, err := os.Stat(test.path)
+
+				if err != nil && os.IsNotExist(err) {
+					t.Errorf("Expected %s directory to exist.", test.path)
+				} else if err != nil {
+					t.Errorf("Unexpected err: %+v", err)
+				} else if !fileinfo.IsDir() {
+					t.Errorf("%s was expected to be a directory but is a file.", test.path)
 				}
 			}
 		})
