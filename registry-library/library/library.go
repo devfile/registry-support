@@ -391,7 +391,7 @@ func DownloadStarterProject(path string, registryURL string, stack string, start
 			return fmt.Errorf("failed to create file '%s': %v", path, err)
 		}
 	} else {
-		fileStream, err = os.Open(path)
+		fileStream, err = os.OpenFile(path, os.O_WRONLY|os.O_TRUNC, os.ModePerm)
 		if err != nil {
 			return fmt.Errorf("failed to open file '%s': %v", path, err)
 		}
