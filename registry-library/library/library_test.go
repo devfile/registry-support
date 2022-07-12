@@ -198,9 +198,48 @@ func setUpIndexHandle(indexUrl *url.URL) []indexSchema.Schema {
 	return data
 }
 
-func setUpTestServer(handler func(http.ResponseWriter, *http.Request)) (func(), error) {
+func setUpTestServer(t *testing.T) (func(), error) {
 	// Mocking the registry REST endpoints on a very basic level
-	testServer := httptest.NewUnstartedServer(http.HandlerFunc(handler))
+	testServer := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var bytes []byte
+		var err error
+
+		if matched, err := regexp.MatchString(`/devfiles/[^/]+/starter-projects/[^/]+`, r.URL.Path); matched {
+			if err != nil {
+				t.Errorf("Unexpected error while matching url: %v", err)
+				return
+			}
+
+			buffer := bytespkg.Buffer{}
+			writer := zip.NewWriter(&buffer)
+
+			_, err = writer.Create("README.md")
+			if err != nil {
+				t.Errorf("error in creating testing starter project archive: %v", err)
+				return
+			}
+
+			writer.Close()
+
+			bytes = buffer.Bytes()
+		} else if strings.HasPrefix(r.URL.Path, "/index") || strings.HasPrefix(r.URL.Path, "/v2index") {
+			data := setUpIndexHandle(r.URL)
+
+			bytes, err = json.MarshalIndent(&data, "", "  ")
+			if err != nil {
+				t.Errorf("Unexpected error while doing json marshal: %v", err)
+				return
+			}
+		} else {
+			t.Errorf("Route %s was not found", r.URL.Path)
+			return
+		}
+
+		_, err = w.Write(bytes)
+		if err != nil {
+			t.Errorf("Unexpected error while writing data: %v", err)
+		}
+	}))
 	// create a listener with the desired port.
 	l, err := net.Listen("tcp", serverIP)
 	if err != nil {
@@ -218,22 +257,7 @@ func setUpTestServer(handler func(http.ResponseWriter, *http.Request)) (func(), 
 }
 
 func TestGetRegistryIndex(t *testing.T) {
-	close, err := setUpTestServer(func(w http.ResponseWriter, r *http.Request) {
-		var err error
-
-		data := setUpIndexHandle(r.URL)
-
-		bytes, err := json.MarshalIndent(&data, "", "  ")
-		if err != nil {
-			t.Errorf("Unexpected error while doing json marshal: %v", err)
-			return
-		}
-
-		_, err = w.Write(bytes)
-		if err != nil {
-			t.Errorf("Unexpected error while writing data: %v", err)
-		}
-	})
+	close, err := setUpTestServer(t)
 	if err != nil {
 		t.Error(err)
 		return
@@ -339,22 +363,7 @@ func TestGetRegistryIndex(t *testing.T) {
 }
 
 func TestGetStackIndex(t *testing.T) {
-	close, err := setUpTestServer(func(w http.ResponseWriter, r *http.Request) {
-		var err error
-
-		data := setUpIndexHandle(r.URL)
-
-		bytes, err := json.MarshalIndent(&data, "", "  ")
-		if err != nil {
-			t.Errorf("Unexpected error while doing json marshal: %v", err)
-			return
-		}
-
-		_, err = w.Write(bytes)
-		if err != nil {
-			t.Errorf("Unexpected error while writing data: %v", err)
-		}
-	})
+	close, err := setUpTestServer(t)
 	if err != nil {
 		t.Error(err)
 		return
@@ -407,22 +416,7 @@ func TestGetStackIndex(t *testing.T) {
 }
 
 func TestGetStackLink(t *testing.T) {
-	close, err := setUpTestServer(func(w http.ResponseWriter, r *http.Request) {
-		var err error
-
-		data := setUpIndexHandle(r.URL)
-
-		bytes, err := json.MarshalIndent(&data, "", "  ")
-		if err != nil {
-			t.Errorf("Unexpected error while doing json marshal: %v", err)
-			return
-		}
-
-		_, err = w.Write(bytes)
-		if err != nil {
-			t.Errorf("Unexpected error while writing data: %v", err)
-		}
-	})
+	close, err := setUpTestServer(t)
 	if err != nil {
 		t.Error(err)
 		return
@@ -496,22 +490,7 @@ func TestGetStackLink(t *testing.T) {
 }
 
 func TestIsStarterProjectExists(t *testing.T) {
-	close, err := setUpTestServer(func(w http.ResponseWriter, r *http.Request) {
-		var err error
-
-		data := setUpIndexHandle(r.URL)
-
-		bytes, err := json.MarshalIndent(&data, "", "  ")
-		if err != nil {
-			t.Errorf("Unexpected error while doing json marshal: %v", err)
-			return
-		}
-
-		_, err = w.Write(bytes)
-		if err != nil {
-			t.Errorf("Unexpected error while writing data: %v", err)
-		}
-	})
+	close, err := setUpTestServer(t)
 	if err != nil {
 		t.Error(err)
 		return
@@ -597,46 +576,7 @@ func TestIsStarterProjectExists(t *testing.T) {
 }
 
 func TestDownloadStarterProjectAsBytes(t *testing.T) {
-	close, err := setUpTestServer(func(w http.ResponseWriter, r *http.Request) {
-		var bytes []byte
-		var err error
-
-		if matched, err := regexp.MatchString(`/devfiles/[^/]+/starter-projects/[^/]+`, r.URL.Path); matched {
-			if err != nil {
-				t.Errorf("Unexpected error while matching url: %v", err)
-				return
-			}
-
-			buffer := bytespkg.Buffer{}
-			writer := zip.NewWriter(&buffer)
-
-			_, err = writer.Create("README.md")
-			if err != nil {
-				t.Errorf("error in creating testing starter project archive: %v", err)
-				return
-			}
-
-			writer.Close()
-
-			bytes = buffer.Bytes()
-		} else if strings.HasPrefix(r.URL.Path, "/index") || strings.HasPrefix(r.URL.Path, "/v2index") {
-			data := setUpIndexHandle(r.URL)
-
-			bytes, err = json.MarshalIndent(&data, "", "  ")
-			if err != nil {
-				t.Errorf("Unexpected error while doing json marshal: %v", err)
-				return
-			}
-		} else {
-			t.Errorf("Route %s was not found", r.URL.Path)
-			return
-		}
-
-		_, err = w.Write(bytes)
-		if err != nil {
-			t.Errorf("Unexpected error while writing data: %v", err)
-		}
-	})
+	close, err := setUpTestServer(t)
 	if err != nil {
 		t.Error(err)
 		return
@@ -714,46 +654,7 @@ func TestDownloadStarterProjectAsBytes(t *testing.T) {
 }
 
 func TestDownloadStarterProject(t *testing.T) {
-	close, err := setUpTestServer(func(w http.ResponseWriter, r *http.Request) {
-		var bytes []byte
-		var err error
-
-		if matched, err := regexp.MatchString(`/devfiles/[^/]+/starter-projects/[^/]+`, r.URL.Path); matched {
-			if err != nil {
-				t.Errorf("Unexpected error while matching url: %v", err)
-				return
-			}
-
-			buffer := bytespkg.Buffer{}
-			writer := zip.NewWriter(&buffer)
-
-			_, err = writer.Create("README.md")
-			if err != nil {
-				t.Errorf("error in creating testing starter project archive: %v", err)
-				return
-			}
-
-			writer.Close()
-
-			bytes = buffer.Bytes()
-		} else if strings.HasPrefix(r.URL.Path, "/index") || strings.HasPrefix(r.URL.Path, "/v2index") {
-			data := setUpIndexHandle(r.URL)
-
-			bytes, err = json.MarshalIndent(&data, "", "  ")
-			if err != nil {
-				t.Errorf("Unexpected error while doing json marshal: %v", err)
-				return
-			}
-		} else {
-			t.Errorf("Route %s was not found", r.URL.Path)
-			return
-		}
-
-		_, err = w.Write(bytes)
-		if err != nil {
-			t.Errorf("Unexpected error while writing data: %v", err)
-		}
-	})
+	close, err := setUpTestServer(t)
 	if err != nil {
 		t.Error(err)
 		return
@@ -862,46 +763,7 @@ func TestDownloadStarterProject(t *testing.T) {
 }
 
 func TestDownloadStarterProjectAsDir(t *testing.T) {
-	close, err := setUpTestServer(func(w http.ResponseWriter, r *http.Request) {
-		var bytes []byte
-		var err error
-
-		if matched, err := regexp.MatchString(`/devfiles/[^/]+/starter-projects/[^/]+`, r.URL.Path); matched {
-			if err != nil {
-				t.Errorf("Unexpected error while matching url: %v", err)
-				return
-			}
-
-			buffer := bytespkg.Buffer{}
-			writer := zip.NewWriter(&buffer)
-
-			_, err = writer.Create("README.md")
-			if err != nil {
-				t.Errorf("error in creating testing starter project archive: %v", err)
-				return
-			}
-
-			writer.Close()
-
-			bytes = buffer.Bytes()
-		} else if strings.HasPrefix(r.URL.Path, "/index") || strings.HasPrefix(r.URL.Path, "/v2index") {
-			data := setUpIndexHandle(r.URL)
-
-			bytes, err = json.MarshalIndent(&data, "", "  ")
-			if err != nil {
-				t.Errorf("Unexpected error while doing json marshal: %v", err)
-				return
-			}
-		} else {
-			t.Errorf("Route %s was not found", r.URL.Path)
-			return
-		}
-
-		_, err = w.Write(bytes)
-		if err != nil {
-			t.Errorf("Unexpected error while writing data: %v", err)
-		}
-	})
+	close, err := setUpTestServer(t)
 	if err != nil {
 		t.Error(err)
 		return
