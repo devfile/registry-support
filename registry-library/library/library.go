@@ -16,15 +16,12 @@ limitations under the License.
 package library
 
 import (
-	"archive/tar"
 	"archive/zip"
-	"compress/gzip"
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -409,7 +406,11 @@ func DownloadStarterProject(path string, registryURL string, stack string, start
 
 // DownloadStarterProjectAsBytes downloads the file bytes of a specified starter project archive and return these bytes
 func DownloadStarterProjectAsBytes(registryURL string, stack string, starterProject string, options RegistryOptions) ([]byte, error) {
-	stackName, _ := splitVersionFromStack(stack)
+	stackName, _, err := SplitVersionFromStack(stack)
+	if err != nil {
+		return nil, fmt.Errorf("problem in stack/version tag: %v", err)
+	}
+
 	exists, err := IsStarterProjectExists(registryURL, stack, starterProject, options)
 	if err != nil {
 		return nil, err
@@ -495,7 +496,10 @@ func GetStackLink(registryURL string, stack string, options RegistryOptions) (st
 	}
 
 	// Split version from stack label if specified
-	stack, requestVersion := splitVersionFromStack(stack)
+	stack, requestVersion, err := SplitVersionFromStack(stack)
+	if err != nil {
+		return "", fmt.Errorf("problem in stack/version tag: %v", err)
+	}
 
 	if options.NewIndexSchema {
 		latestVersionIndex := 0
@@ -542,7 +546,10 @@ func GetStackIndex(registryURL string, stack string, options RegistryOptions) (i
 	}
 
 	// Prune version from stack label if specified
-	stack, _ = splitVersionFromStack(stack)
+	stack, _, err = SplitVersionFromStack(stack)
+	if err != nil {
+		return indexSchema.Schema{}, fmt.Errorf("problem in stack/version tag: %v", err)
+	}
 
 	// Parse the index to get the specified stack's metadata in the index
 	for _, item := range registryIndex {
@@ -554,96 +561,4 @@ func GetStackIndex(registryURL string, stack string, options RegistryOptions) (i
 
 	// Return error if stack index is not found
 	return indexSchema.Schema{}, fmt.Errorf("stack %s does not exist in the registry %s", stack, registryURL)
-}
-
-// splitVersionFromStack takes a stack/version tag and splits the stack name from the version
-func splitVersionFromStack(stackWithVersion string) (string, string) {
-	var requestVersion string
-	var stack string
-
-	if strings.Contains(stackWithVersion, ":") {
-		pair := strings.Split(stackWithVersion, ":")
-		stack = pair[0]
-		requestVersion = pair[1]
-	} else {
-		stack = stackWithVersion
-		requestVersion = ""
-	}
-
-	return stack, requestVersion
-}
-
-// decompress extracts the archive file
-func decompress(targetDir string, tarFile string, excludeFiles []string) error {
-	reader, err := os.Open(tarFile)
-	if err != nil {
-		return err
-	}
-	defer reader.Close()
-
-	gzReader, err := gzip.NewReader(reader)
-	if err != nil {
-		return err
-	}
-	defer gzReader.Close()
-
-	tarReader := tar.NewReader(gzReader)
-	for {
-		header, err := tarReader.Next()
-		if err == io.EOF {
-			break
-		} else if err != nil {
-			return err
-		}
-		if isExcluded(header.Name, excludeFiles) {
-			continue
-		}
-
-		target := path.Join(targetDir, header.Name)
-		switch header.Typeflag {
-		case tar.TypeDir:
-			err = os.MkdirAll(target, os.FileMode(header.Mode))
-			if err != nil {
-				return err
-			}
-		case tar.TypeReg:
-			w, err := os.OpenFile(target, os.O_CREATE|os.O_RDWR, os.FileMode(header.Mode))
-			if err != nil {
-				return err
-			}
-			_, err = io.Copy(w, tarReader)
-			if err != nil {
-				return err
-			}
-			w.Close()
-		default:
-			log.Printf("Unsupported type: %v", header.Typeflag)
-		}
-	}
-
-	return nil
-}
-
-func isExcluded(name string, excludeFiles []string) bool {
-	basename := filepath.Base(name)
-	for _, excludeFile := range excludeFiles {
-		if basename == excludeFile {
-			return true
-		}
-	}
-	return false
-}
-
-//setHeaders sets the request headers
-func setHeaders(headers *http.Header, options RegistryOptions) {
-	t := options.Telemetry
-	if t.User != "" {
-		headers.Add("User", t.User)
-	}
-	if t.Client != "" {
-		headers.Add("Client", t.Client)
-	}
-	if t.Locale != "" {
-		headers.Add("Locale", t.Locale)
-	}
 }
