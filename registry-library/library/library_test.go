@@ -1,20 +1,31 @@
 package library
 
 import (
+	"archive/zip"
+	bytespkg "bytes"
 	"encoding/json"
+	"fmt"
+	"io"
 	"net"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
+	"os"
+	"path/filepath"
 	"reflect"
+	"regexp"
 	"strings"
 	"testing"
 
 	indexSchema "github.com/devfile/registry-support/index/generator/schema"
 )
 
-func TestGetRegistryIndex(t *testing.T) {
-	const serverIP = "127.0.0.1:8080"
-	archFilteredIndex := []indexSchema.Schema{
+const (
+	serverIP = "127.0.0.1:8080"
+)
+
+var (
+	archFilteredIndex = []indexSchema.Schema{
 		{
 			Name:          "archindex1",
 			Architectures: []string{"amd64, arm64"},
@@ -24,7 +35,7 @@ func TestGetRegistryIndex(t *testing.T) {
 		},
 	}
 
-	schemaVersionFilteredIndex := []indexSchema.Schema{
+	schemaVersionFilteredIndex = []indexSchema.Schema{
 		{
 			Name: "indexSchema2.1",
 			Versions: []indexSchema.Version{
@@ -45,7 +56,7 @@ func TestGetRegistryIndex(t *testing.T) {
 		},
 	}
 
-	sampleFilteredIndex := []indexSchema.Schema{
+	sampleFilteredIndex = []indexSchema.Schema{
 		{
 			Name: "sampleindex1",
 		},
@@ -54,7 +65,7 @@ func TestGetRegistryIndex(t *testing.T) {
 		},
 	}
 
-	sampleFilteredV2Index := []indexSchema.Schema{
+	sampleFilteredV2Index = []indexSchema.Schema{
 		{
 			Name: "samplev2index1",
 		},
@@ -63,25 +74,88 @@ func TestGetRegistryIndex(t *testing.T) {
 		},
 	}
 
-	stackFilteredIndex := []indexSchema.Schema{
+	stackFilteredIndex = []indexSchema.Schema{
 		{
 			Name: "stackindex1",
+			Links: map[string]string{
+				"self": "devfile-catalog/stackindex1:1.0.0",
+			},
+			StarterProjects: []string{
+				"stackindex1-starter",
+			},
 		},
 		{
 			Name: "stackindex2",
+			Links: map[string]string{
+				"self": "devfile-catalog/stackindex2:1.0.0",
+			},
+			StarterProjects: []string{
+				"stackindex2-starter",
+			},
 		},
 	}
 
-	stackFilteredV2Index := []indexSchema.Schema{
+	stackFilteredV2Index = []indexSchema.Schema{
 		{
 			Name: "stackv2index1",
+			Versions: []indexSchema.Version{{
+				Version: "2.0.0",
+				Links: map[string]string{
+					"self": "devfile-catalog/stackv2index1:2.0.0",
+				},
+				StarterProjects: []string{
+					"stackv2index1-starter",
+				},
+			}, {
+				Version: "2.1.0",
+				Default: true,
+				Links: map[string]string{
+					"self": "devfile-catalog/stackv2index1:2.1.0",
+				},
+				StarterProjects: []string{
+					"stackv2index1-starter",
+				},
+			}, {
+				Version: "2.2.0",
+				Links: map[string]string{
+					"self": "devfile-catalog/stackv2index1:2.2.0",
+				},
+				StarterProjects: []string{
+					"index1-starter",
+				},
+			}},
 		},
 		{
 			Name: "stackv2index2",
+			Versions: []indexSchema.Version{{
+				Version: "2.0.0",
+				Links: map[string]string{
+					"self": "devfile-catalog/stackv2index2:2.0.0",
+				},
+				StarterProjects: []string{
+					"stackv2index2-starter",
+				},
+			}, {
+				Version: "2.1.0",
+				Links: map[string]string{
+					"self": "devfile-catalog/stackv2index2:2.1.0",
+				},
+				StarterProjects: []string{
+					"stackv2index2-starter",
+				},
+			}, {
+				Version: "2.2.0",
+				Links: map[string]string{
+					"self": "devfile-catalog/stackv2index2:2.2.0",
+				},
+				StarterProjects: []string{
+					"index2-starter",
+				},
+			}},
 		},
 	}
 
-	notFilteredIndex := []indexSchema.Schema{
+	notFilteredIndex = []indexSchema.Schema{
 		{
 			Name: "index1",
 		},
@@ -90,7 +164,7 @@ func TestGetRegistryIndex(t *testing.T) {
 		},
 	}
 
-	notFilteredV2Index := []indexSchema.Schema{
+	notFilteredV2Index = []indexSchema.Schema{
 		{
 			Name: "v2index1",
 		},
@@ -98,34 +172,66 @@ func TestGetRegistryIndex(t *testing.T) {
 			Name: "v2index2",
 		},
 	}
+)
 
+func setUpIndexHandle(indexUrl *url.URL) []indexSchema.Schema {
+	var data []indexSchema.Schema
+
+	if strings.Contains(indexUrl.String(), "arch=amd64&arch=arm64") {
+		data = archFilteredIndex
+	} else if strings.Contains(indexUrl.String(), "maxSchemaVersion=2.2") && strings.Contains(indexUrl.String(), "minSchemaVersion=2.1") {
+		data = schemaVersionFilteredIndex
+	} else if indexUrl.Path == "/index/sample" {
+		data = sampleFilteredIndex
+	} else if indexUrl.Path == "/v2index/sample" {
+		data = sampleFilteredV2Index
+	} else if indexUrl.Path == "/index/stack" || indexUrl.Path == "/index" {
+		data = stackFilteredIndex
+	} else if indexUrl.Path == "/v2index/stack" || indexUrl.Path == "/v2index" {
+		data = stackFilteredV2Index
+	} else if indexUrl.Path == "/index/all" {
+		data = notFilteredIndex
+	} else if indexUrl.Path == "/v2index/all" {
+		data = notFilteredV2Index
+	}
+
+	return data
+}
+
+func setUpTestServer(t *testing.T) (func(), error) {
 	// Mocking the registry REST endpoints on a very basic level
 	testServer := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
-		var data []indexSchema.Schema
+		var bytes []byte
 		var err error
 
-		if strings.Contains(r.URL.String(), "arch=amd64&arch=arm64") {
-			data = archFilteredIndex
-		} else if strings.Contains(r.URL.String(), "maxSchemaVersion=2.2") && strings.Contains(r.URL.String(), "minSchemaVersion=2.1") {
-			data = schemaVersionFilteredIndex
-		} else if r.URL.Path == "/index/sample" {
-			data = sampleFilteredIndex
-		} else if r.URL.Path == "/v2index/sample" {
-			data = sampleFilteredV2Index
-		} else if r.URL.Path == "/index/stack" || r.URL.Path == "/index" {
-			data = stackFilteredIndex
-		} else if r.URL.Path == "/v2index/stack" || r.URL.Path == "/v2index" {
-			data = stackFilteredV2Index
-		} else if r.URL.Path == "/index/all" {
-			data = notFilteredIndex
-		} else if r.URL.Path == "/v2index/all" {
-			data = notFilteredV2Index
-		}
+		if matched, err := regexp.MatchString(`/devfiles/[^/]+/starter-projects/[^/]+`, r.URL.Path); matched {
+			if err != nil {
+				t.Errorf("Unexpected error while matching url: %v", err)
+				return
+			}
 
-		bytes, err := json.MarshalIndent(&data, "", "  ")
-		if err != nil {
-			t.Errorf("Unexpected error while doing json marshal: %v", err)
+			buffer := bytespkg.Buffer{}
+			writer := zip.NewWriter(&buffer)
+
+			_, err = writer.Create("README.md")
+			if err != nil {
+				t.Errorf("error in creating testing starter project archive: %v", err)
+				return
+			}
+
+			writer.Close()
+
+			bytes = buffer.Bytes()
+		} else if strings.HasPrefix(r.URL.Path, "/index") || strings.HasPrefix(r.URL.Path, "/v2index") {
+			data := setUpIndexHandle(r.URL)
+
+			bytes, err = json.MarshalIndent(&data, "", "  ")
+			if err != nil {
+				t.Errorf("Unexpected error while doing json marshal: %v", err)
+				return
+			}
+		} else {
+			t.Errorf("Route %s was not found", r.URL.Path)
 			return
 		}
 
@@ -137,8 +243,7 @@ func TestGetRegistryIndex(t *testing.T) {
 	// create a listener with the desired port.
 	l, err := net.Listen("tcp", serverIP)
 	if err != nil {
-		t.Errorf("Unexpected error while creating listener: %v", err)
-		return
+		return testServer.Close, fmt.Errorf("Unexpected error while creating listener: %v", err)
 	}
 
 	// NewUnstartedServer creates a listener. Close that listener and replace
@@ -147,7 +252,17 @@ func TestGetRegistryIndex(t *testing.T) {
 	testServer.Listener = l
 
 	testServer.Start()
-	defer testServer.Close()
+
+	return testServer.Close, nil
+}
+
+func TestGetRegistryIndex(t *testing.T) {
+	close, err := setUpTestServer(t)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	defer close()
 
 	tests := []struct {
 		name         string
@@ -168,7 +283,7 @@ func TestGetRegistryIndex(t *testing.T) {
 				},
 			},
 			devfileTypes: []indexSchema.DevfileType{indexSchema.StackDevfileType},
-			wantSchemas: schemaVersionFilteredIndex,
+			wantSchemas:  schemaVersionFilteredIndex,
 		},
 		{
 			name: "Get Arch Filtered Index",
@@ -239,9 +354,502 @@ func TestGetRegistryIndex(t *testing.T) {
 			if !test.wantErr && err != nil {
 				t.Errorf("Unexpected err: %+v", err)
 			} else if test.wantErr && err == nil {
-				t.Errorf("Expected error but got nil")
+				t.Error("Expected error but got nil")
 			} else if !reflect.DeepEqual(gotSchemas, test.wantSchemas) {
 				t.Errorf("Expected: %+v, \nGot: %+v", test.wantSchemas, gotSchemas)
+			}
+		})
+	}
+}
+
+func TestGetStackIndex(t *testing.T) {
+	close, err := setUpTestServer(t)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	defer close()
+
+	tests := []struct {
+		name       string
+		url        string
+		stack      string
+		options    RegistryOptions
+		wantSchema indexSchema.Schema
+		wantErr    bool
+	}{
+		{
+			name:       "Get Stack Schema Index",
+			url:        "http://" + serverIP,
+			stack:      "stackindex1",
+			wantSchema: stackFilteredIndex[0],
+		},
+		{
+			name:  "Get V2 Stack Schema Index",
+			url:   "http://" + serverIP,
+			stack: "stackv2index2",
+			options: RegistryOptions{
+				NewIndexSchema: true,
+			},
+			wantSchema: stackFilteredV2Index[1],
+		},
+		{
+			name:    "Get Non-Existent Stack Schema Index",
+			url:     "http://" + serverIP,
+			stack:   "fakestackindex",
+			wantErr: true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			gotSchema, err := GetStackIndex(test.url, test.stack, test.options)
+			if !test.wantErr && err != nil {
+				t.Errorf("Unexpected err: %+v", err)
+			} else if test.wantErr && err == nil {
+				t.Error("Expected error but got nil")
+			} else if !reflect.DeepEqual(gotSchema, test.wantSchema) {
+				t.Errorf("Expected: %+v, \nGot: %+v", test.wantSchema, gotSchema)
+			}
+		})
+	}
+}
+
+func TestGetStackLink(t *testing.T) {
+	close, err := setUpTestServer(t)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	defer close()
+
+	tests := []struct {
+		name     string
+		url      string
+		stack    string
+		options  RegistryOptions
+		wantLink string
+		wantErr  bool
+	}{
+		{
+			name:     "Get Stack Link",
+			url:      "http://" + serverIP,
+			stack:    "stackindex1",
+			wantLink: stackFilteredIndex[0].Links["self"],
+		},
+		{
+			name:  "Get V2 Stack default Link",
+			url:   "http://" + serverIP,
+			stack: "stackv2index1",
+			options: RegistryOptions{
+				NewIndexSchema: true,
+			},
+			wantLink: stackFilteredV2Index[0].Versions[1].Links["self"],
+		},
+		{
+			name:  "Get V2 Stack latest Link",
+			url:   "http://" + serverIP,
+			stack: "stackv2index2:latest",
+			options: RegistryOptions{
+				NewIndexSchema: true,
+			},
+			wantLink: stackFilteredV2Index[1].Versions[2].Links["self"],
+		},
+		{
+			name:  "Get V2 Stack Non-Existent Tagged Link",
+			url:   "http://" + serverIP,
+			stack: "stackv2index2:faketag",
+			options: RegistryOptions{
+				NewIndexSchema: true,
+			},
+			wantErr: true,
+		},
+		{
+			name:  "Get V2 Stack Link with no default version",
+			url:   "http://" + serverIP,
+			stack: "stackv2index2",
+			options: RegistryOptions{
+				NewIndexSchema: true,
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			gotLink, err := GetStackLink(test.url, test.stack, test.options)
+			if !test.wantErr && err != nil {
+				t.Errorf("Unexpected err: %+v", err)
+			} else if test.wantErr && err == nil {
+				t.Error("Expected error but got nil")
+			} else if !reflect.DeepEqual(gotLink, test.wantLink) {
+				t.Errorf("Expected: %+v, \nGot: %+v", test.wantLink, gotLink)
+			}
+		})
+	}
+}
+
+func TestIsStarterProjectExists(t *testing.T) {
+	close, err := setUpTestServer(t)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	defer close()
+
+	tests := []struct {
+		name           string
+		url            string
+		stack          string
+		starterProject string
+		options        RegistryOptions
+		wantExist      bool
+		wantErr        bool
+	}{
+		{
+			name:           "Starter Project Exists",
+			url:            "http://" + serverIP,
+			stack:          "stackindex1",
+			starterProject: "stackindex1-starter",
+			wantExist:      true,
+		},
+		{
+			name:           "Starter Project Exists V2",
+			url:            "http://" + serverIP,
+			stack:          "stackv2index1",
+			starterProject: "stackv2index1-starter",
+			options: RegistryOptions{
+				NewIndexSchema: true,
+			},
+			wantExist: true,
+		},
+		{
+			name:           "Starter Project Does Not Exists",
+			url:            "http://" + serverIP,
+			stack:          "stackindex1",
+			starterProject: "fake-starter",
+			wantExist:      false,
+		},
+		{
+			name:           "Starter Project Does Not Exists V2",
+			url:            "http://" + serverIP,
+			stack:          "stackv2index1",
+			starterProject: "fake-starter",
+			options: RegistryOptions{
+				NewIndexSchema: true,
+			},
+			wantExist: false,
+		},
+		{
+			name:           "Stack Does Not Exists",
+			url:            "http://" + serverIP,
+			stack:          "fake-stack",
+			starterProject: "fake-starter",
+			wantExist:      false,
+			wantErr:        true,
+		},
+		{
+			name:           "Stack Does Not Exists V2",
+			url:            "http://" + serverIP,
+			stack:          "fake-stack",
+			starterProject: "fake-starter",
+			options: RegistryOptions{
+				NewIndexSchema: true,
+			},
+			wantExist: false,
+			wantErr:   true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			exists, err := IsStarterProjectExists(test.url, test.stack, test.starterProject, test.options)
+			if !test.wantErr && err != nil {
+				t.Errorf("Unexpected err: %+v", err)
+			} else if test.wantErr && err == nil {
+				t.Error("Expected error but got nil")
+			} else if !reflect.DeepEqual(exists, test.wantExist) {
+				t.Errorf("Expected: %+v, \nGot: %+v", test.wantExist, exists)
+			}
+		})
+	}
+}
+
+func TestDownloadStarterProjectAsBytes(t *testing.T) {
+	close, err := setUpTestServer(t)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	defer close()
+
+	tests := []struct {
+		name           string
+		url            string
+		stack          string
+		starterProject string
+		options        RegistryOptions
+		wantType       string
+		wantErr        bool
+	}{
+		{
+			name:           "Download Starter Project",
+			url:            "http://" + serverIP,
+			stack:          "stackindex1",
+			starterProject: "stackindex1-starter",
+			wantType:       "application/zip",
+		},
+		{
+			name:           "Download Starter Project V2",
+			url:            "http://" + serverIP,
+			stack:          "stackv2index1",
+			starterProject: "stackv2index1-starter",
+			options: RegistryOptions{
+				NewIndexSchema: true,
+			},
+			wantType: "application/zip",
+		},
+		{
+			name:           "Download Starter Project from Fake Stack",
+			url:            "http://" + serverIP,
+			stack:          "fakestack",
+			starterProject: "fakestarter",
+			wantErr:        true,
+		},
+		{
+			name:           "Download Fake Starter Project",
+			url:            "http://" + serverIP,
+			stack:          "stackindex1",
+			starterProject: "fakestarter",
+			wantErr:        true,
+		},
+		{
+			name:           "Download Fake Starter Project V2",
+			url:            "http://" + serverIP,
+			stack:          "stackv2index1",
+			starterProject: "fakestarter",
+			options: RegistryOptions{
+				NewIndexSchema: true,
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			gotBytes, err := DownloadStarterProjectAsBytes(test.url, test.stack, test.starterProject, test.options)
+
+			if !test.wantErr && err != nil {
+				t.Errorf("Unexpected err: %+v", err)
+			} else if (test.wantErr || gotBytes == nil) && err == nil {
+				t.Error("Expected error but got nil")
+			} else if test.wantType != "" {
+				gotType := http.DetectContentType(gotBytes)
+				if !reflect.DeepEqual(gotType, test.wantType) {
+					t.Errorf("Expected: %+v, \nGot: %+v", test.wantType, gotType)
+				}
+			}
+		})
+	}
+}
+
+func TestDownloadStarterProject(t *testing.T) {
+	close, err := setUpTestServer(t)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	defer close()
+
+	tests := []struct {
+		name           string
+		path           string
+		url            string
+		stack          string
+		starterProject string
+		options        RegistryOptions
+		wantType       string
+		wantErr        bool
+	}{
+		{
+			name:           "Download Starter Project",
+			path:           filepath.Join(os.TempDir(), "test.zip"),
+			url:            "http://" + serverIP,
+			stack:          "stackindex1",
+			starterProject: "stackindex1-starter",
+			wantType:       "application/zip",
+		},
+		{
+			name:           "Download Starter Project V2",
+			path:           filepath.Join(os.TempDir(), "test.zip"),
+			url:            "http://" + serverIP,
+			stack:          "stackv2index1",
+			starterProject: "stackv2index1-starter",
+			options: RegistryOptions{
+				NewIndexSchema: true,
+			},
+			wantType: "application/zip",
+		},
+		{
+			name:           "Download Starter Project from Fake Stack",
+			path:           filepath.Join(os.TempDir(), "test.zip"),
+			url:            "http://" + serverIP,
+			stack:          "fakestack",
+			starterProject: "fakestarter",
+			wantErr:        true,
+		},
+		{
+			name:           "Download Fake Starter Project",
+			path:           filepath.Join(os.TempDir(), "test.zip"),
+			url:            "http://" + serverIP,
+			stack:          "stackindex1",
+			starterProject: "fakestarter",
+			wantErr:        true,
+		},
+		{
+			name:           "Download Fake Starter Project V2",
+			path:           filepath.Join(os.TempDir(), "test.zip"),
+			url:            "http://" + serverIP,
+			stack:          "stackv2index1",
+			starterProject: "fakestarter",
+			options: RegistryOptions{
+				NewIndexSchema: true,
+			},
+			wantErr: true,
+		},
+		{
+			name:           "Download Starter Project to non-existent parent path",
+			path:           filepath.Join(os.TempDir(), "dummy", "path", "to", "file.zip"),
+			url:            "http://" + serverIP,
+			stack:          "stackindex1",
+			starterProject: "stackindex1-starter",
+			wantErr:        true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			err := DownloadStarterProject(test.path, test.url, test.stack, test.starterProject, test.options)
+
+			if !test.wantErr && err != nil {
+				t.Errorf("Unexpected err: %+v", err)
+			} else if test.wantErr && err == nil {
+				t.Error("Expected error but got nil")
+			} else if test.wantType != "" {
+				file, err := os.Open(test.path)
+				if err != nil {
+					t.Errorf("Unexpected err: %+v", err)
+				}
+				defer func() {
+					file.Close()
+					err := os.Remove(test.path)
+					if err != nil {
+						t.Errorf("Unexpected err: %+v", err)
+					}
+				}()
+
+				gotBytes, err := io.ReadAll(file)
+				if err != nil {
+					t.Errorf("Unexpected err: %+v", err)
+				}
+
+				gotType := http.DetectContentType(gotBytes)
+				if !reflect.DeepEqual(gotType, test.wantType) {
+					t.Errorf("Expected: %+v, \nGot: %+v", test.wantType, gotType)
+				}
+			}
+		})
+	}
+}
+
+func TestDownloadStarterProjectAsDir(t *testing.T) {
+	close, err := setUpTestServer(t)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	defer close()
+
+	tests := []struct {
+		name           string
+		path           string
+		url            string
+		stack          string
+		starterProject string
+		options        RegistryOptions
+		wantErr        bool
+	}{
+		{
+			name:           "Download Starter Project",
+			path:           filepath.Join(os.TempDir(), "stackindex1-starter"),
+			url:            "http://" + serverIP,
+			stack:          "stackindex1",
+			starterProject: "stackindex1-starter",
+		},
+		{
+			name:           "Download Starter Project V2",
+			path:           filepath.Join(os.TempDir(), "stackv2index1-starter"),
+			url:            "http://" + serverIP,
+			stack:          "stackv2index1",
+			starterProject: "stackv2index1-starter",
+			options: RegistryOptions{
+				NewIndexSchema: true,
+			},
+		},
+		{
+			name:           "Download Starter Project from Fake Stack",
+			path:           filepath.Join(os.TempDir(), "fakestarter"),
+			url:            "http://" + serverIP,
+			stack:          "fakestack",
+			starterProject: "fakestarter",
+			wantErr:        true,
+		},
+		{
+			name:           "Download Fake Starter Project",
+			path:           filepath.Join(os.TempDir(), "fakestarter"),
+			url:            "http://" + serverIP,
+			stack:          "stackindex1",
+			starterProject: "fakestarter",
+			wantErr:        true,
+		},
+		{
+			name:           "Download Fake Starter Project V2",
+			path:           filepath.Join(os.TempDir(), "fakestarter"),
+			url:            "http://" + serverIP,
+			stack:          "stackv2index1",
+			starterProject: "fakestarter",
+			options: RegistryOptions{
+				NewIndexSchema: true,
+			},
+			wantErr: true,
+		},
+		{
+			name:           "Download Starter Project to non-existent parent path",
+			path:           filepath.Join(os.TempDir(), "stackindex1", "stackindex1-starter"),
+			url:            "http://" + serverIP,
+			stack:          "stackindex1",
+			starterProject: "stackindex1-starter",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			err := DownloadStarterProjectAsDir(test.path, test.url, test.stack, test.starterProject, test.options)
+
+			if !test.wantErr && err != nil {
+				t.Errorf("Unexpected err: %+v", err)
+			} else if test.wantErr && err == nil {
+				t.Error("Expected error but got nil")
+			} else if err == nil {
+				fileinfo, err := os.Stat(test.path)
+
+				if err != nil && os.IsNotExist(err) {
+					t.Errorf("Expected %s directory to exist.", test.path)
+				} else if err != nil {
+					t.Errorf("Unexpected err: %+v", err)
+				} else if !fileinfo.IsDir() {
+					t.Errorf("%s was expected to be a directory but is a file.", test.path)
+				}
 			}
 		})
 	}
