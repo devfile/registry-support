@@ -122,3 +122,45 @@ Supported devfile media types can be found in the latest version of [library.go]
     }
     ```
 
+#### Download the starter project
+
+1. Download starter project in-memory
+```go
+var bytes []byte
+var err error
+
+...
+
+starterProject := "springbootproject"
+bytes, err = registryLibrary.DownloadStarterProjectAsBytes(registryURL, 
+    stack, starterProject, options)
+if err != nil {
+    return err
+}
+```
+2. Download starter project archive to filesystem path
+```go
+starterProject := "springbootproject"
+path := fmt.Sprintf("%s.zip", starterProject)
+err := registryLibrary.DownloadStarterProject(path, registryURL, stack, starterProject, options)
+if err != nil {
+    return err
+}
+```
+
+```sh
+ls # => devfile.yaml springbootproject.zip
+```
+3. Download starter project archive and extract to filesystem path
+```go
+starterProject := "springbootproject"
+path := "."
+err := registryLibrary.DownloadStarterProjectAsDir(path, registryURL, stack, starterProject, options)
+if err != nil {
+    return err
+}
+```
+
+```sh
+ls # => devfile.yaml pom.xml HELP.md mvnw mvnw.cmd src 
+```
