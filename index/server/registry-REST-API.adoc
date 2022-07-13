@@ -25,7 +25,7 @@ xref:Gets registry v2 index of all devfile types[all types]
 
 xref:Gets registry stack devfile with version[]
 
-|/devfiles/:stack/starterProjects
+|/devfiles/:stack/starter-projects
 |xref:Download Starter Project from requested Devfile[]
 
 xref:Download Starter Project from requested Devfile with Version[]
