@@ -326,7 +326,7 @@ func DownloadStarterProjectAsDir(path string, registryURL string, stack string, 
 		filePath := filepath.Join(path, file.Name)
 
 		// validate extracted filepath
-		if !strings.HasPrefix(filePath, filepath.Clean(path)+string(os.PathSeparator)) {
+		if filePath != file.Name && !strings.HasPrefix(filePath, filepath.Clean(path)+string(os.PathSeparator)) {
 			return fmt.Errorf("invalid file path %s", filePath)
 		}
 
@@ -423,7 +423,7 @@ func DownloadStarterProjectAsBytes(registryURL string, stack string, starterProj
 		return nil, err
 	}
 
-	url := fmt.Sprintf("%s/%s", urlObj.String(), path.Join("devfiles", stackName, "starter-projects", starterProject))
+	url := fmt.Sprintf("%s://%s", urlObj.Scheme, path.Join(urlObj.Host, "devfiles", stackName, "starter-projects", starterProject))
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err

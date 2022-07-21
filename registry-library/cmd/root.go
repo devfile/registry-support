@@ -18,7 +18,6 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 
 	"github.com/spf13/cobra"
 
@@ -164,7 +163,7 @@ func init() {
 				SkipTLSVerify: skipTLSVerify,
 			}
 
-			err = library.DownloadStarterProjectAsDir(filepath.Join(destDir, starterProject), registry, stack, starterProject, options)
+			err = library.DownloadStarterProjectAsDir(destDir, registry, stack, starterProject, options)
 			if err != nil {
 				fmt.Printf("failed to download starter project %s: %v\n", starterProject, err)
 			}
