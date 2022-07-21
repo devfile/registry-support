@@ -633,6 +633,13 @@ func TestDownloadStarterProjectAsBytes(t *testing.T) {
 			},
 			wantErr: true,
 		},
+		{
+			name:           "Download Starter Project from hostname with '/' suffix",
+			url:            fmt.Sprintf("http://%s/", serverIP),
+			stack:          "stackindex1",
+			starterProject: "stackindex1-starter",
+			wantType:       "application/zip",
+		},
 	}
 
 	for _, test := range tests {
@@ -725,11 +732,33 @@ func TestDownloadStarterProject(t *testing.T) {
 			starterProject: "stackindex1-starter",
 			wantErr:        true,
 		},
+		{
+			name:           "Download Starter Project from hostname with '/' suffix",
+			path:           filepath.Join(os.TempDir(), "test.zip"),
+			url:            fmt.Sprintf("http://%s/", serverIP),
+			stack:          "stackindex1",
+			starterProject: "stackindex1-starter",
+			wantType:       "application/zip",
+		},
+		{
+			name:           "Download Starter Project to relative path of WD",
+			path:           "test.zip",
+			url:            "http://" + serverIP,
+			stack:          "stackindex1",
+			starterProject: "stackindex1-starter",
+			wantType:       "application/zip",
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			err := DownloadStarterProject(test.path, test.url, test.stack, test.starterProject, test.options)
+
+			defer func() {
+				if err := os.RemoveAll(test.path); err != nil {
+					t.Errorf("Unexpected err: %+v", err)
+				}
+			}()
 
 			if !test.wantErr && err != nil {
 				t.Errorf("Unexpected err: %+v", err)
@@ -830,11 +859,67 @@ func TestDownloadStarterProjectAsDir(t *testing.T) {
 			stack:          "stackindex1",
 			starterProject: "stackindex1-starter",
 		},
+		{
+			name:           "Download Starter Project from hostname with '/' suffix",
+			path:           filepath.Join(os.TempDir(), "stackindex1-starter"),
+			url:            fmt.Sprintf("http://%s/", serverIP),
+			stack:          "stackindex1",
+			starterProject: "stackindex1-starter",
+		},
+		{
+			name:           "Download Starter Project to relative path of WD",
+			path:           ".",
+			url:            "http://" + serverIP,
+			stack:          "stackindex1",
+			starterProject: "stackindex1-starter",
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			err := DownloadStarterProjectAsDir(test.path, test.url, test.stack, test.starterProject, test.options)
+			var err error
+
+			if test.path == "." {
+				newWorkingDir := filepath.Join(os.TempDir(), "testing")
+				originalDir, err := os.Getwd()
+
+				if err != nil {
+					t.Errorf("Unexpected err: %+v", err)
+				}
+
+				if _, err = os.Stat(newWorkingDir); err != nil && os.IsNotExist(err) {
+					err = os.MkdirAll(newWorkingDir, os.ModePerm)
+					if err != nil {
+						t.Errorf("Unexpected err: %+v", err)
+					}
+				} else if err != nil {
+					t.Errorf("Unexpected err: %+v", err)
+				}
+
+				if err = os.Chdir(newWorkingDir); err != nil {
+					t.Errorf("Unexpected err: %+v", err)
+				}
+
+				defer func() {
+					if err = os.Chdir(originalDir); err != nil {
+						t.Errorf("Unexpected err: %+v", err)
+					}
+				}()
+
+				defer func() {
+					if err := os.RemoveAll(newWorkingDir); err != nil {
+						t.Errorf("Unexpected err: %+v", err)
+					}
+				}()
+			} else {
+				defer func() {
+					if err := os.RemoveAll(test.path); err != nil {
+						t.Errorf("Unexpected err: %+v", err)
+					}
+				}()
+			}
+
+			err = DownloadStarterProjectAsDir(test.path, test.url, test.stack, test.starterProject, test.options)
 
 			if !test.wantErr && err != nil {
 				t.Errorf("Unexpected err: %+v", err)
