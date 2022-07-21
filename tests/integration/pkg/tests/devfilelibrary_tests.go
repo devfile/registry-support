@@ -143,4 +143,28 @@ var _ = ginkgo.Describe("[Verify registry library works with registry]", func() 
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		gomega.Expect(info.IsDir()).To(gomega.Equal(true))
 	})
+
+	ginkgo.It("should properly download stack starter project with hostname url ending with '/'", func() {
+		tempDir := path.Join(os.TempDir(), javaMavenStarter)
+		util.CmdShouldPass("registry-library", "download", publicDevfileRegistry+"/", javaMavenStack, javaMavenStarter, "--context", tempDir)
+		info, err := os.Stat(tempDir)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		gomega.Expect(info.IsDir()).To(gomega.Equal(true))
+	})
+
+	ginkgo.It("should properly download stack starter project with context set to relative path of WD (default)", func() {
+		originalDir, err := os.Getwd()
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+
+		err = os.Chdir(os.TempDir())
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+
+		util.CmdShouldPass("registry-library", "download", publicDevfileRegistry+"/", javaMavenStack, javaMavenStarter)
+		info, err := os.Stat(".")
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		gomega.Expect(info.IsDir()).To(gomega.Equal(true))
+
+		err = os.Chdir(originalDir)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+	})
 })
