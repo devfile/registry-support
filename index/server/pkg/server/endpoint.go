@@ -533,7 +533,6 @@ func fetchDevfile(c *gin.Context, name string, version string) ([]byte, indexSch
 					}
 				} else {
 					c.JSON(http.StatusNotFound, gin.H{
-						"error":  err.Error(),
 						"status": fmt.Sprintf("version: %s not found in stack %s", version, name),
 					})
 					return []byte{}, indexSchema.Schema{}
