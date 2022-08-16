@@ -19,3 +19,8 @@ or by running all tests:
 ```sh
 go test ./...
 ```
+
+**Environment Variables**
+
+- `DEVFILE_REGISTRY`: Optional environment variable for specifying testing registry path
+    - default: `../../tests/registry`
