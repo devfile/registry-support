@@ -923,14 +923,13 @@ func TestOCIServerProxy(t *testing.T) {
 			url:      "/devfile-catalog/go/manifests/1.2.0",
 			wantCode: 200,
 		},
-		// TODO: Fix bug which overrides status code 200 for HEAD request despite response returning 404
-		// {
-		// 	name:      "HEAD /v2/devfile-catalog/go/manifests/notfound",
-		// 	method:    http.MethodHead,
-		// 	url:       "/devfile-catalog/go/manifests/notfound",
-		// 	wantCode:  404,
-		// 	wantError: true,
-		// },
+		{
+			name:      "HEAD /v2/devfile-catalog/go/manifests/notfound",
+			method:    http.MethodHead,
+			url:       "/devfile-catalog/go/manifests/notfound",
+			wantCode:  404,
+			wantError: true,
+		},
 		{
 			name:     "GET /v2/devfile-catalog/go/manifests/1.2.0",
 			method:   http.MethodGet,
@@ -969,6 +968,9 @@ func TestOCIServerProxy(t *testing.T) {
 			c.Params = append(c.Params, gin.Param{Key: "proxyPath", Value: test.url})
 
 			ociServerProxy(c)
+
+			// Force writes response headers to combat a response recording issue
+			c.Writer.WriteHeaderNow()
 
 			if gotStatusCode := w.Code; !reflect.DeepEqual(gotStatusCode, test.wantCode) {
 				t.Errorf("Did not get expected status code, Got: %v, Expected: %v", gotStatusCode, test.wantCode)
