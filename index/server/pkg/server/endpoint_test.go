@@ -708,7 +708,7 @@ func TestServeDevfileWithVersion(t *testing.T) {
 
 // TestServeDevfileStarterProject tests '/devfiles/:name/starter-projects/:starterProjectName' endpoint
 func TestServeDevfileStarterProject(t *testing.T) {
-	const wantContentType = "application/zip"
+	const wantContentType = starterProjectMediaType
 	tests := []struct {
 		name      string
 		params    gin.Params
@@ -808,7 +808,7 @@ func TestServeDevfileStarterProject(t *testing.T) {
 
 // TestServeDevfileStarterProjectWithVersion tests '/devfiles/:name/:version/starter-projects/:starterProjectName' endpoint
 func TestServeDevfileStarterProjectWithVersion(t *testing.T) {
-	const wantContentType = "application/zip"
+	const wantContentType = starterProjectMediaType
 	tests := []struct {
 		name      string
 		params    gin.Params

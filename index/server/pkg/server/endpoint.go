@@ -289,7 +289,7 @@ func serveDevfileStarterProjectWithVersion(c *gin.Context) {
 		}
 
 		c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s.zip\"", starterProjectName))
-		c.Data(http.StatusAccepted, "application/zip", downloadBytes)
+		c.Data(http.StatusAccepted, starterProjectMediaType, downloadBytes)
 	}
 }
 
