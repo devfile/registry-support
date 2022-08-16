@@ -49,6 +49,33 @@ var getIndexLatency = prometheus.NewHistogramVec(
 	[]string{"status"},
 )
 
+// CreateIndexServer creates index server engine with REST API endpoints
+func CreateIndexServer() *gin.Engine {
+	// Start the server and serve requests and index.json
+	router := gin.Default()
+
+	// Registry REST APIs
+	router.GET("/", serveRootEndpoint)
+	router.GET("/index", serveDevfileIndexV1)
+	router.GET("/index/:type", serveDevfileIndexV1WithType)
+	router.GET("/health", serveHealthCheck)
+	router.GET("/devfiles/:name", serveDevfile)
+	router.GET("/devfiles/:name/:version", serveDevfileWithVersion)
+	router.GET("/devfiles/:name/starter-projects/:starterProjectName", serveDevfileStarterProject)
+	router.GET("/devfiles/:name/:version/starter-projects/:starterProjectName", serveDevfileStarterProjectWithVersion)
+
+	// Registry REST APIs for index v2
+	router.GET("/v2index", serveDevfileIndexV2)
+	router.GET("/v2index/:type", serveDevfileIndexV2WithType)
+
+	// Set up a simple proxy for /v2 endpoints
+	// Only allow HEAD and GET requests
+	router.HEAD("/v2/*proxyPath", ociServerProxy)
+	router.GET("/v2/*proxyPath", ociServerProxy)
+
+	return router
+}
+
 func ServeRegistry() {
 	// Enable metrics
 	// Run on a separate port and router from the index server so that it's not exposed publicly
@@ -126,27 +153,8 @@ func ServeRegistry() {
 		log.Println("Telemetry is not enabled")
 	}
 
-	// Start the server and serve requests and index.json
-	router := gin.Default()
-
-	// Registry REST APIs
-	router.GET("/", serveRootEndpoint)
-	router.GET("/index", serveDevfileIndexV1)
-	router.GET("/index/:type", serveDevfileIndexV1WithType)
-	router.GET("/health", serveHealthCheck)
-	router.GET("/devfiles/:name", serveDevfile)
-	router.GET("/devfiles/:name/:version", serveDevfileWithVersion)
-	router.GET("/devfiles/:name/starter-projects/:starterProjectName", serveDevfileStarterProject)
-	router.GET("/devfiles/:name/:version/starter-projects/:starterProjectName", serveDevfileStarterProjectWithVersion)
-
-	// Registry REST APIs for index v2
-	router.GET("/v2index", serveDevfileIndexV2)
-	router.GET("/v2index/:type", serveDevfileIndexV2WithType)
-
-	// Set up a simple proxy for /v2 endpoints
-	// Only allow HEAD and GET requests
-	router.HEAD("/v2/*proxyPath", ociServerProxy)
-	router.GET("/v2/*proxyPath", ociServerProxy)
+	// Create index server with REST API endpoints
+	router := CreateIndexServer()
 
 	// Set up routes for the registry viewer
 	router.GET("/viewer", serveUI)
@@ -158,6 +166,7 @@ func ServeRegistry() {
 	// Serve static content for stacks
 	router.Static("/stacks", stacksPath)
 
+	// Run index server
 	router.Run(":8080")
 }
 

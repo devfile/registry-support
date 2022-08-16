@@ -521,6 +521,7 @@ func fetchDevfile(c *gin.Context, name string, version string) ([]byte, indexSch
 					if devfileIndex.Type == indexSchema.StackDevfileType {
 						bytes, err = pullStackFromRegistry(foundVersion)
 						if err != nil {
+							log.Print(err.Error())
 							c.JSON(http.StatusInternalServerError, gin.H{
 								"error":  err.Error(),
 								"status": fmt.Sprintf("Problem pulling version %s from OCI Registry", foundVersion.Version),

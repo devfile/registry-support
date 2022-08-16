@@ -1,0 +1,39 @@
+schemaVersion: 1.0.0
+samples:
+  - name: nodejs-basic
+    displayName: Basic NodeJS
+    description: A simple Hello World application
+    icon: nodejsIcon.svg
+    tags: ["NodeJS", "Express"]
+    projectType: nodejs
+    language: nodejs
+    versions:
+      - version: 1.0.0
+        schemaVersion: 2.0.0
+        description: nodejs with devfile v2.0.0
+        git:
+          remotes:
+            origin: https://github.com/redhat-developer/devfile-sample
+      - version: 1.0.1
+        schemaVersion: 2.2.0
+        default: true
+        description: nodejs with devfile v2.2.0
+        git:
+          remotes:
+            origin: https://github.com/nodeshift-starters/devfile-sample
+  - name: code-with-quarkus
+    displayName: Basic Quarkus
+    description: A simple Hello World Java application using Quarkus
+    icon: https://raw.githubusercontent.com/elsony/devfile-sample-code-with-quarkus/main/.devfile/icon/quarkus.png
+    tags: ["Java", "Quarkus"]
+    projectType: quarkus
+    language: java
+    provider: Red Hat
+    versions:
+      - version: 1.1.0
+        schemaVersion: 2.0.0
+        default: true
+        description: java quarkus with devfile v2.0.0
+        git:
+          remotes:
+            origin: https://github.com/elsony/devfile-sample-code-with-quarkus.git
