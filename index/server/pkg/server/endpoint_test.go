@@ -943,6 +943,32 @@ func TestOCIServerProxy(t *testing.T) {
 			wantCode:  404,
 			wantError: true,
 		},
+		{
+			name:     "HEAD /v2/devfile-catalog/go/blobs/sha256:bb4c6b96292bbcd48f445436f7945399a4d314b111ee976d6235199e854bfb68",
+			method:   http.MethodHead,
+			url:      "/devfile-catalog/go/blobs/sha256:bb4c6b96292bbcd48f445436f7945399a4d314b111ee976d6235199e854bfb68",
+			wantCode: 200,
+		},
+		{
+			name:      "HEAD /v2/devfile-catalog/go/blobs/notfound",
+			method:    http.MethodHead,
+			url:       "/devfile-catalog/go/blobs/notfound",
+			wantCode:  404,
+			wantError: true,
+		},
+		{
+			name:     "GET /v2/devfile-catalog/go/blobs/sha256:bb4c6b96292bbcd48f445436f7945399a4d314b111ee976d6235199e854bfb68",
+			method:   http.MethodGet,
+			url:      "/devfile-catalog/go/blobs/sha256:bb4c6b96292bbcd48f445436f7945399a4d314b111ee976d6235199e854bfb68",
+			wantCode: 200,
+		},
+		{
+			name:      "GET /v2/devfile-catalog/go/blobs/notfound",
+			method:    http.MethodGet,
+			url:       "/devfile-catalog/go/blobs/notfound",
+			wantCode:  404,
+			wantError: true,
+		},
 	}
 
 	closeServer, err := setupMockOCIServer()
