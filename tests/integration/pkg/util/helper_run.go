@@ -15,6 +15,11 @@ import (
 
 // From https://github.com/openshift/odo/blob/main/tests/helper/helper_run.go
 
+const (
+	timeout  = time.Second * 10
+	interval = time.Millisecond * 250
+)
+
 func runningCmd(cmd *exec.Cmd) string {
 	prog := filepath.Base(cmd.Path)
 	return fmt.Sprintf("Running %s with args %v", prog, cmd.Args)
@@ -34,14 +39,14 @@ func CmdRunner(program string, args ...string) *gexec.Session {
 // CmdShouldPass returns stdout if command succeeds
 func CmdShouldPass(program string, args ...string) string {
 	session := CmdRunner(program, args...)
-	Eventually(session).Should(gexec.Exit(0), runningCmd(session.Command))
+	Eventually(session, timeout, interval).Should(gexec.Exit(0), runningCmd(session.Command))
 	return string(session.Wait().Out.Contents())
 }
 
 // CmdShouldPassIncludeErrStream returns stdout and stderr if command succeeds
 func CmdShouldPassIncludeErrStream(program string, args ...string) (string, string) {
 	session := CmdRunner(program, args...)
-	Eventually(session).Should(gexec.Exit(0), runningCmd(session.Command))
+	Eventually(session, timeout, interval).Should(gexec.Exit(0), runningCmd(session.Command))
 	stdout := string(session.Wait().Out.Contents())
 	stderr := string(session.Wait().Err.Contents())
 	return stdout, stderr
