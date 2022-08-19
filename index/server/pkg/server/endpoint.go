@@ -289,7 +289,7 @@ func serveDevfileStarterProjectWithVersion(c *gin.Context) {
 		}
 
 		c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s.zip\"", starterProjectName))
-		c.Data(http.StatusAccepted, "application/zip", downloadBytes)
+		c.Data(http.StatusAccepted, starterProjectMediaType, downloadBytes)
 	}
 }
 
@@ -521,6 +521,7 @@ func fetchDevfile(c *gin.Context, name string, version string) ([]byte, indexSch
 					if devfileIndex.Type == indexSchema.StackDevfileType {
 						bytes, err = pullStackFromRegistry(foundVersion)
 						if err != nil {
+							log.Print(err.Error())
 							c.JSON(http.StatusInternalServerError, gin.H{
 								"error":  err.Error(),
 								"status": fmt.Sprintf("Problem pulling version %s from OCI Registry", foundVersion.Version),

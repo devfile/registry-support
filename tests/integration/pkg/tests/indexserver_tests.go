@@ -300,7 +300,7 @@ var _ = ginkgo.Describe("[Verify index server is working properly]", func() {
 		gomega.Expect(resp.StatusCode).To(gomega.Equal(http.StatusAccepted))
 		gomega.Expect(bytes).ToNot(gomega.BeEmpty())
 		gomega.Expect(bytes).To(gomega.Satisfy(func(file []byte) bool {
-			return http.DetectContentType(file) == "application/zip"
+			return http.DetectContentType(file) == starterProjectMediaType
 		}))
 	})
 
@@ -317,7 +317,7 @@ var _ = ginkgo.Describe("[Verify index server is working properly]", func() {
 		gomega.Expect(resp.StatusCode).To(gomega.Equal(http.StatusAccepted))
 		gomega.Expect(bytes).ToNot(gomega.BeEmpty())
 		gomega.Expect(bytes).To(gomega.Satisfy(func(file []byte) bool {
-			return http.DetectContentType(file) == "application/zip"
+			return http.DetectContentType(file) == starterProjectMediaType
 		}))
 	})
 
@@ -335,7 +335,7 @@ var _ = ginkgo.Describe("[Verify index server is working properly]", func() {
 			gomega.Expect(resp.StatusCode).To(gomega.Equal(http.StatusAccepted))
 			gomega.Expect(bytes).ToNot(gomega.BeEmpty())
 			gomega.Expect(bytes).To(gomega.Satisfy(func(file []byte) bool {
-				return http.DetectContentType(file) == "application/zip"
+				return http.DetectContentType(file) == starterProjectMediaType
 			}))
 		} else {
 			ginkgo.Skip("cannot guarantee test outside of test registry, skipping test")
@@ -357,7 +357,7 @@ var _ = ginkgo.Describe("[Verify index server is working properly]", func() {
 			gomega.Expect(resp.StatusCode).To(gomega.Equal(http.StatusAccepted))
 			gomega.Expect(bytes).ToNot(gomega.BeEmpty())
 			gomega.Expect(bytes).To(gomega.Satisfy(func(file []byte) bool {
-				return http.DetectContentType(file) == "application/zip"
+				return http.DetectContentType(file) == starterProjectMediaType
 			}))
 		} else {
 			ginkgo.Skip("cannot guarantee test outside of test registry, skipping test")
@@ -379,7 +379,7 @@ var _ = ginkgo.Describe("[Verify index server is working properly]", func() {
 			gomega.Expect(resp.StatusCode).To(gomega.Equal(http.StatusAccepted))
 			gomega.Expect(bytes).ToNot(gomega.BeEmpty())
 			gomega.Expect(bytes).To(gomega.Satisfy(func(file []byte) bool {
-				return http.DetectContentType(file) == "application/zip"
+				return http.DetectContentType(file) == starterProjectMediaType
 			}))
 		} else {
 			ginkgo.Skip("cannot guarantee test outside of test registry, skipping test")

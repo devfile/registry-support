@@ -1,0 +1,60 @@
+schemaVersion: 2.2.0
+metadata:
+  name: java-quarkus
+  version: 1.1.0
+  website: https://quarkus.io
+  displayName: Quarkus Java
+  description: Upstream Quarkus with Java+GraalVM
+  tags: ["Java", "Quarkus"]
+  projectType: "quarkus"
+  language: "java"
+  provider: "Red Hat"
+starterProjects:
+  - name: community
+    zip:
+      location: https://code.quarkus.io/d?e=io.quarkus%3Aquarkus-resteasy&e=io.quarkus%3Aquarkus-micrometer&e=io.quarkus%3Aquarkus-smallrye-health&e=io.quarkus%3Aquarkus-openshift&cn=devfile
+  - name: redhat-product
+    zip:
+      location: https://code.quarkus.redhat.com/d?e=io.quarkus%3Aquarkus-resteasy&e=io.quarkus%3Aquarkus-smallrye-health&e=io.quarkus%3Aquarkus-openshift
+components:
+  - name: tools
+    container:
+      image: quay.io/eclipse/che-quarkus:nightly
+      memoryLimit: 1512Mi
+      mountSources: true
+      volumeMounts:
+        - name: m2
+          path: /home/user/.m2
+      endpoints:
+        - name: '8080-http'
+          targetPort: 8080
+  - name: m2
+    volume:
+      size: 3Gi
+commands:
+  - id: init-compile
+    exec:
+      component: tools
+      commandLine: "mvn -Dmaven.repo.local=/home/user/.m2/repository compile"
+      workingDir: $PROJECTS_ROOT
+  - id: dev-run
+    exec:
+      component: tools
+      commandLine: "mvn -Dmaven.repo.local=/home/user/.m2/repository quarkus:dev -Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager"
+      hotReloadCapable: true
+      group:
+        kind: run
+        isDefault: true
+      workingDir: $PROJECTS_ROOT
+  - id: dev-debug
+    exec:
+      component: tools
+      commandLine: "mvn -Dmaven.repo.local=/home/user/.m2/repository quarkus:dev -Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager -Ddebug=${DEBUG_PORT}"
+      hotReloadCapable: true
+      group:
+        kind: debug
+        isDefault: true
+      workingDir: $PROJECTS_ROOT
+events:
+  postStart:
+    - init-compile
