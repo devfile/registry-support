@@ -17,7 +17,6 @@ package library
 
 import (
 	"archive/zip"
-	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -82,7 +81,7 @@ type TelemetryData struct {
 
 type RegistryOptions struct {
 	// SkipTLSVerify is false by default which is the recommended setting for a devfile registry deployed in production.  SkipTLSVerify should only be set to true
-	// if you are testing a devfile registry that is set up with self-signed certificates in a pre-production environment.
+	// if you are testing a devfile registry or proxy server that is set up with self-signed certificates in a pre-production environment.
 	SkipTLSVerify bool
 	// Telemetry allows clients to send telemetry data to the community Devfile Registry
 	Telemetry TelemetryData
@@ -172,13 +171,8 @@ func GetRegistryIndex(registryURL string, options RegistryOptions, devfileTypes 
 
 	setHeaders(&req.Header, options)
 
-	httpClient := &http.Client{
-		Transport: &http.Transport{
-			ResponseHeaderTimeout: responseHeaderTimeout,
-			TLSClientConfig:       &tls.Config{InsecureSkipVerify: options.SkipTLSVerify},
-		},
-		Timeout: httpRequestTimeout,
-	}
+	httpClient := getHTTPClient(options)
+
 	resp, err := httpClient.Do(req)
 	if err != nil {
 		return nil, err
@@ -261,11 +255,8 @@ func PullStackByMediaTypesFromRegistry(registry string, stack string, allowedMed
 	if urlObj.Scheme == "https" {
 		plainHTTP = false
 	}
-	httpClient := &http.Client{
-		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: options.SkipTLSVerify},
-		},
-	}
+	httpClient := getHTTPClient(options)
+
 	headers := make(http.Header)
 	setHeaders(&headers, options)
 
@@ -431,13 +422,7 @@ func DownloadStarterProjectAsBytes(registryURL string, stack string, starterProj
 
 	setHeaders(&req.Header, options)
 
-	httpClient := &http.Client{
-		Transport: &http.Transport{
-			ResponseHeaderTimeout: responseHeaderTimeout,
-			TLSClientConfig:       &tls.Config{InsecureSkipVerify: options.SkipTLSVerify},
-		},
-		Timeout: httpRequestTimeout,
-	}
+	httpClient := getHTTPClient(options)
 	resp, err := httpClient.Do(req)
 	if err != nil {
 		return nil, err

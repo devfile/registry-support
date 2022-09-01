@@ -18,6 +18,7 @@ package library
 import (
 	"archive/tar"
 	"compress/gzip"
+	"crypto/tls"
 	"fmt"
 	"io"
 	"log"
@@ -141,5 +142,17 @@ func setHeaders(headers *http.Header, options RegistryOptions) {
 	}
 	if t.Locale != "" {
 		headers.Add("Locale", t.Locale)
+	}
+}
+
+//getHTTPClient returns a new http client object
+func getHTTPClient(options RegistryOptions) *http.Client {
+	return &http.Client{
+		Transport: &http.Transport{
+			Proxy:                 http.ProxyFromEnvironment,
+			ResponseHeaderTimeout: responseHeaderTimeout,
+			TLSClientConfig:       &tls.Config{InsecureSkipVerify: options.SkipTLSVerify},
+		},
+		Timeout: httpRequestTimeout,
 	}
 }
