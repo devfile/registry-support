@@ -1,0 +1,45 @@
+schemaVersion: 2.1.0
+metadata:
+  description: Stack with Nuxt.js 2
+  displayName: Nuxt.js
+  icon: https://raw.githubusercontent.com/devfile-samples/devfile-stack-icons/main/nuxt-js.svg
+  language: javascript
+  name: nodejs-nuxtjs
+  projectType: nuxtjs
+  tags:
+    - NodeJS
+    - Nuxtjs
+  version: 1.0.1
+starterProjects:
+  - name: nodejs-nuxtjs-starter
+    git:
+      checkoutFrom:
+        revision: main
+      remotes:
+        origin: https://github.com/devfile-samples/devfile-stack-nodejs-nuxtjs.git
+components:
+  - container:
+      endpoints:
+        - name: http
+          targetPort: 3000
+      image: node:lts
+      memoryLimit: 1024Mi
+    name: runtime
+commands:
+  - exec:
+      commandLine: yarn install
+      component: runtime
+      group:
+        isDefault: true
+        kind: build
+      workingDir: ${PROJECT_SOURCE}
+    id: install
+  - exec:
+      commandLine: yarn dev
+      component: runtime
+      group:
+        isDefault: true
+        kind: run
+      hotReloadCapable: true
+      workingDir: ${PROJECT_SOURCE}
+    id: run

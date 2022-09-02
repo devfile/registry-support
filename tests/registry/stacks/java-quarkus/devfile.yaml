@@ -5,16 +5,11 @@ metadata:
   website: https://quarkus.io
   displayName: Quarkus Java
   description: Quarkus with Java
-  tags: ["Java", "Quarkus"]
-  projectType: "quarkus"
-  language: "java"
-  architectures:
-    - "amd64"
+  icon: https://design.jboss.org/quarkus/logo/final/SVG/quarkus_icon_rgb_default.svg
+  tags: ['Java', 'Quarkus']
+  projectType: 'quarkus'
+  language: 'java'
 starterProjects:
-  - name: community-offline
-    zip:
-      location: community-offline.zip
-    subDir: src/main/java/org/acme
   - name: community
     zip:
       location: https://code.quarkus.io/d?e=io.quarkus%3Aquarkus-resteasy&e=io.quarkus%3Aquarkus-micrometer&e=io.quarkus%3Aquarkus-smallrye-health&e=io.quarkus%3Aquarkus-openshift&cn=devfile
@@ -33,6 +28,9 @@ components:
       endpoints:
         - name: '8080-http'
           targetPort: 8080
+      env:
+        - name: DEBUG_PORT
+          value: "5858"
   - name: m2
     volume:
       size: 3Gi
@@ -40,26 +38,26 @@ commands:
   - id: init-compile
     exec:
       component: tools
-      commandLine: "mvn -Dmaven.repo.local=/home/user/.m2/repository compile"
-      workingDir: $PROJECTS_ROOT
+      commandLine: 'mvn -Dmaven.repo.local=/home/user/.m2/repository compile'
+      workingDir: ${PROJECT_SOURCE}
   - id: dev-run
     exec:
       component: tools
-      commandLine: "mvn -Dmaven.repo.local=/home/user/.m2/repository quarkus:dev -Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager"
+      commandLine: 'mvn -Dmaven.repo.local=/home/user/.m2/repository quarkus:dev -Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager'
       hotReloadCapable: true
       group:
         kind: run
         isDefault: true
-      workingDir: $PROJECTS_ROOT
+      workingDir: ${PROJECT_SOURCE}
   - id: dev-debug
     exec:
       component: tools
-      commandLine: "mvn -Dmaven.repo.local=/home/user/.m2/repository quarkus:dev -Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager -Ddebug=${DEBUG_PORT}"
+      commandLine: 'mvn -Dmaven.repo.local=/home/user/.m2/repository quarkus:dev -Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager -Ddebug=${DEBUG_PORT}'
       hotReloadCapable: true
       group:
         kind: debug
         isDefault: true
-      workingDir: $PROJECTS_ROOT
+      workingDir: ${PROJECT_SOURCE}
 events:
   postStart:
     - init-compile

@@ -1,0 +1,50 @@
+schemaVersion: 2.0.0
+metadata:
+  name: python
+  version: 1.0.0
+  displayName: Python
+  description: Python Stack with Python 3.7
+  icon: https://raw.githubusercontent.com/devfile-samples/devfile-stack-icons/main/python.svg
+  tags: ['Python', 'pip']
+  projectType: 'python'
+  language: 'python'
+starterProjects:
+  - name: python-example
+    git:
+      remotes:
+        origin: https://github.com/devfile-samples/python-ex
+components:
+  - name: py-web
+    container:
+      image: registry.redhat.io/codeready-workspaces/plugin-java8-rhel8
+      mountSources: true
+      endpoints:
+        - name: web
+          targetPort: 8080
+      env:
+        - name: DEBUG_PORT
+          value: "5858"
+commands:
+  - id: pip-install-requirements
+    exec:
+      commandLine: pip install --user -r requirements.txt
+      workingDir: ${PROJECT_SOURCE}
+      group:
+        kind: build
+        isDefault: true
+      component: py-web
+  - id: run-app
+    exec:
+      commandLine: 'python app.py'
+      workingDir: ${PROJECT_SOURCE}
+      component: py-web
+      group:
+        kind: run
+        isDefault: true
+  - id: debugpy
+    exec:
+      commandLine: 'pip install --user debugpy && python -m debugpy --listen 0.0.0.0:${DEBUG_PORT} app.py'
+      workingDir: ${PROJECT_SOURCE}
+      component: py-web
+      group:
+        kind: debug

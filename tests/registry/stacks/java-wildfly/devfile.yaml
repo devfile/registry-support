@@ -1,0 +1,35 @@
+schemaVersion: 2.0.0
+metadata:
+  name: java-wildfly
+  website: https://wildfly.org
+  displayName: WildFly Java
+  description: Upstream WildFly
+  icon: https://design.jboss.org/wildfly/logo/final/wildfly_logomark.svg
+  tags: ['Java', 'WildFly']
+  projectType: 'wildfly'
+  language: 'java'
+starterProjects:
+  - name: quickstart
+    git:
+      checkoutFrom:
+        revision: main
+      remotes:
+        origin: 'https://github.com/wildfly/quickstart.git'
+components:
+  - name: runtime
+    container:
+      image: ibmcom/wildfly-s390x:23.0.2
+      memoryLimit: 1024Mi
+      endpoints:
+        - name: "8080-tcp"
+          targetPort: 8080
+          exposure: public
+      mountSources: true
+commands:
+  - id: run
+    exec:
+      component: runtime
+      commandLine: standalone.sh -b 0.0.0.0 -bmanagement 0.0.0.0
+      workingDir: /opt/jboss/wildfly-/bin
+      group:
+        kind: run

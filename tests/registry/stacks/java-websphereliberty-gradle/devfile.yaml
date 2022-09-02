@@ -1,0 +1,90 @@
+# Copyright (c) 2021,2022 IBM Corporation and others
+#
+# See the NOTICE file(s) distributed with this work for additional
+# information regarding copyright ownership.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# You may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+schemaVersion: 2.1.0
+metadata:
+  name: java-websphereliberty-gradle
+  version: 0.3.1
+  displayName: 'WebSphere Liberty Gradle'
+  description: Java application Gradle-built stack using the WebSphere Liberty runtime
+  icon: https://raw.githubusercontent.com/OpenLiberty/logos/7fbb132949b9b2589e18c8d5665c1b107028a21d/logomark/svg/OL_logomark.svg
+  tags: ['Java', 'Gradle']
+  architectures: ['amd64', 'ppc64le', 's390x']
+  language: 'java'
+  projectType: 'websphereliberty'
+  alpha.build-dockerfile: 'https://github.com/OpenLiberty/devfile-stack/releases/download/websphere-liberty-gradle-0.3.1/Dockerfile'
+  alpha.deployment-manifest: 'https://github.com/OpenLiberty/devfile-stack/releases/download/websphere-liberty-gradle-0.3.1/app-deploy.yaml'
+starterProjects:
+  - name: rest
+    git:
+      remotes:
+        origin: 'https://github.com/OpenLiberty/devfile-stack-starters.git'
+variables:
+  # Liberty runtime version. Minimum recommended: 21.0.0.9
+  liberty-version: '22.0.0.1'
+  gradle-cmd: 'gradle'
+components:
+  - name: dev
+    container:
+      image: icr.io/appcafe/websphere-liberty-devfile-stack:{{liberty-version}}-gradle
+      memoryLimit: 1280Mi
+      mountSources: true
+      endpoints:
+        - exposure: public
+          path: /
+          name: ep1
+          targetPort: 9080
+          protocol: http
+      env:
+        - name: DEBUG_PORT
+          value: "5858"
+commands:
+  - id: run
+    exec:
+      component: dev
+      commandLine: echo "gradle run command"; {{gradle-cmd}} -Dgradle.user.home=/.gradle libertyDev -Pliberty.runtime.version={{liberty-version}} -Pliberty.runtime.name=wlp-javaee8 -Pliberty.runtime.group=com.ibm.websphere.appserver.runtime --libertyDebug=false --hotTests --compileWait=3
+      workingDir: ${PROJECT_SOURCE}
+      hotReloadCapable: true
+      group:
+        kind: run
+        isDefault: true
+  - id: run-test-off
+    exec:
+      component: dev
+      commandLine: echo "gradle run-tests-off command "; {{gradle-cmd}} -Dgradle.user.home=/.gradle libertyDev -Pliberty.runtime.version={{liberty-version}} -Pliberty.runtime.name=wlp-javaee8 -Pliberty.runtime.group=com.ibm.websphere.appserver.runtime --libertyDebug=false
+      workingDir: ${PROJECT_SOURCE}
+      hotReloadCapable: true
+      group:
+        kind: run
+        isDefault: false
+  - id: debug
+    exec:
+      component: dev
+      commandLine: echo "gradle debug command "; {{gradle-cmd}} -Dgradle.user.home=/.gradle libertyDev -Pliberty.runtime.version={{liberty-version}} -Pliberty.runtime.name=wlp-javaee8 -Pliberty.runtime.group=com.ibm.websphere.appserver.runtime --libertyDebugPort=${DEBUG_PORT} -Pliberty.server.env.WLP_DEBUG_REMOTE=y
+      workingDir: ${PROJECT_SOURCE}
+      hotReloadCapable: true
+      group:
+        kind: debug
+        isDefault: true
+  - id: test
+    exec:
+      component: dev
+      commandLine: echo "gradle test command "; {{gradle-cmd}} -Dgradle.user.home=/.gradle test -Pliberty.runtime.version={{liberty-version}} -Pliberty.runtime.name=wlp-javaee8 -Pliberty.runtime.group=com.ibm.websphere.appserver.runtime
+      workingDir: ${PROJECT_SOURCE}
+      hotReloadCapable: true
+      group:
+        kind: test
+        isDefault: true

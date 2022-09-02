@@ -1,15 +1,14 @@
-schemaVersion: 2.1.0
+schemaVersion: 2.0.0
 metadata:
-  description: Stack with the latest Go version with devfile v2.1.0 schema verison
+  description: Stack with the latest Go version
   displayName: Go Runtime
   icon: https://raw.githubusercontent.com/devfile-samples/devfile-stack-icons/main/golang.svg
   language: go
   name: go
-  provider: Red Hat
   projectType: go
   tags:
-    - testtag
-  version: 1.2.0
+    - Go
+  version: 1.0.0
 starterProjects:
   - name: go-starter
     git:
@@ -17,9 +16,6 @@ starterProjects:
         revision: main
       remotes:
         origin: https://github.com/devfile-samples/devfile-stack-go.git
-  - name: go-starter-offline
-    zip:
-      location: go-starter-offline.zip
 components:
   - container:
       endpoints:
@@ -28,16 +24,15 @@ components:
       image: golang:latest
       memoryLimit: 1024Mi
       mountSources: true
-      sourceMapping: /project
     name: runtime
 commands:
   - exec:
-      commandLine: GOCACHE=/project/.cache go build main.go
+      commandLine: GOCACHE=${PROJECT_SOURCE}/.cache go build main.go
       component: runtime
       group:
         isDefault: true
         kind: build
-      workingDir: /project
+      workingDir: ${PROJECT_SOURCE}
     id: build
   - exec:
       commandLine: ./main
@@ -45,6 +40,5 @@ commands:
       group:
         isDefault: true
         kind: run
-      workingDir: /project
+      workingDir: ${PROJECT_SOURCE}
     id: run
-
