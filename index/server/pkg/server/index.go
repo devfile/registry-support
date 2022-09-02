@@ -171,8 +171,8 @@ func ociServerProxy(c *gin.Context) {
 	proxy := httputil.NewSingleHostReverseProxy(remote)
 
 	// Set up the request to the proxy
-	// Track event for telemetry
-	if enableTelemetry {
+	// Track event for telemetry for GET requests only
+	if enableTelemetry && c.Request.Method == http.MethodGet {
 		proxyPath := c.Param("proxyPath")
 		if proxyPath != "" {
 			var name string
