@@ -52,3 +52,11 @@ $ helm install devfile-registry ./deploy/chart/devfile-registry \
 ```
 
 For more information on the Helm chart, consult [its readme](deploy/chart/devfile-registry/README.md).
+
+## Contributing
+
+Please see our [contributing.md](./CONTRIBUTING.md).
+
+## License
+
+Apache License 2.0, see [LICENSE](./LICENSE) for details.
