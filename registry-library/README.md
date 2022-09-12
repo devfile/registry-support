@@ -121,6 +121,13 @@ Supported devfile media types can be found in the latest version of [library.go]
         },
     }
     ```
+6.  Override the HTTP request and response timeout values
+   ```go
+   customTimeout := 20
+   options := registryLibrary.RegistryOptions{
+      HTTPTimeout: &customTimeout
+   }
+   ```
 
 #### Download the starter project
 

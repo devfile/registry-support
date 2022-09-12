@@ -257,6 +257,9 @@ func setUpTestServer(t *testing.T) (func(), error) {
 }
 
 func TestGetRegistryIndex(t *testing.T) {
+	invalidHTTPTimeout := -1
+	validHTTPTimeout := 10
+
 	close, err := setUpTestServer(t)
 	if err != nil {
 		t.Error(err)
@@ -289,6 +292,30 @@ func TestGetRegistryIndex(t *testing.T) {
 			name: "Get Arch Filtered Index",
 			url:  "http://" + serverIP,
 			options: RegistryOptions{
+				Filter: RegistryFilter{
+					Architectures: []string{"amd64", "arm64"},
+				},
+			},
+			devfileTypes: []indexSchema.DevfileType{indexSchema.SampleDevfileType},
+			wantSchemas:  archFilteredIndex,
+		},
+		{
+			name: "Get Registry Index with invalid httpTimeout value",
+			url:  "http://" + serverIP,
+			options: RegistryOptions{
+				HTTPTimeout: &invalidHTTPTimeout,
+				Filter: RegistryFilter{
+					Architectures: []string{"amd64", "arm64"},
+				},
+			},
+			devfileTypes: []indexSchema.DevfileType{indexSchema.SampleDevfileType},
+			wantSchemas:  archFilteredIndex,
+		},
+		{
+			name: "Get Registry Index with valid httpTimeout value",
+			url:  "http://" + serverIP,
+			options: RegistryOptions{
+				HTTPTimeout: &validHTTPTimeout,
 				Filter: RegistryFilter{
 					Architectures: []string{"amd64", "arm64"},
 				},
