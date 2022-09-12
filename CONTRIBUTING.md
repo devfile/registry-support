@@ -11,7 +11,7 @@ Before contributing to this repository for the first time, please review our pro
 By contributing to this project you agree to the Developer Certificate of
 Origin (DCO). This document was created by the Linux Kernel community and is a
 simple statement that you, as a contributor, have the legal right to make the
-contribution. See the [DCO](https://github.com/devfile/api/issues/DCO) file for details.
+contribution. See the [DCO](./DCO) file for details.
 
 ## How to Contribute:
 
