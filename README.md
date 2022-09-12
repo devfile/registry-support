@@ -1,5 +1,10 @@
 # registry-support
 
+<div id="header">
+
+[![Apache2.0 License](https://img.shields.io/badge/license-Apache2.0-brightgreen.svg)](LICENSE)
+</div>
+
 Provide support for devfile registries
 
 Issue tracking repo: https://github.com/devfile/api with label area/registry
@@ -52,3 +57,7 @@ $ helm install devfile-registry ./deploy/chart/devfile-registry \
 ```
 
 For more information on the Helm chart, consult [its readme](deploy/chart/devfile-registry/README.md).
+
+## Contributing
+
+Please see our [contributing.md](./CONTRIBUTING.md).
