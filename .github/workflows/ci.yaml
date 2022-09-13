@@ -39,13 +39,16 @@ jobs:
       run: cd index/server && ./build.sh
 
     - name: Test index server
-      run: cd index/server && go test ./...
+      run: cd index/server && go test ./... -coverprofile cover.out
 
     - name: Check if oci server build is working
       run: cd oci-registry && ./build.sh
     
     - name: Check if devfile-registry-integration build is working
       run: cd tests/integration && ./docker-build.sh
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v2.1.0
 
   test_minikube:
     name: Test Devfile Registry
