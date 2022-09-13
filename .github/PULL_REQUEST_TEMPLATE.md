@@ -8,7 +8,8 @@ Fixes #?
 
 **PR acceptance criteria**:
 
-- [ ] Test (WIP) 
+- [ ] Test Coverage 
+    - Are your changes sufficiently tested, and are any applicable test cases added or updated to cover your changes?
 
 Documentation (WIP)
 - [ ] Does the [REST API doc](../index/server/registry-REST-API.adoc) need to be updated with your changes?
