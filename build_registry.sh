@@ -4,12 +4,14 @@
 # This can be useful if developing components within this repository (such as the index server or build tools)
 # and want to test all of the components together
 shopt -s expand_aliases
-set -eux
+set -ex
+
+registryViewerPath=$1
 #set the docker alias if necessary
 . ./setenv.sh
 
 # Build the index server base image
-. ./index/server/build.sh
+. ./index/server/build.sh $registryViewerPath
 
 # Build the test devfile registry image
 docker build -t devfile-index:latest -f .ci/Dockerfile .

@@ -16,6 +16,10 @@ If you want to run the build scripts with Podman, set the environment variable
 
 To build all of the components together (recommended) for dev/test, run `./build_registry.sh` to build a Devfile Registry index image that is populated with the mock devfile registry data under `tests/registry/`.
 
+Alternatively, if you wish to build with custom version of the devfile registry viewer, you can pass a path to a folder containing the registry viewer as an optional argument:
+
+`$ ./build_registry.sh <path-to-registry-viewer>`
+
 Once the container has been pushed, you can push it to a container registry of your choosing with the following commands:
 
 ```
