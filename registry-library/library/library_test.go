@@ -14,6 +14,8 @@ import (
 
 func TestGetRegistryIndex(t *testing.T) {
 	const serverIP = "127.0.0.1:8080"
+	invalidHTTPTimeout := -1
+	validHTTPTimeout := 10
 	archFilteredIndex := []indexSchema.Schema{
 		{
 			Name:          "archindex1",
@@ -134,6 +136,30 @@ func TestGetRegistryIndex(t *testing.T) {
 			name:    "Not a URL",
 			url:     serverIP,
 			wantErr: true,
+		},
+		{
+			name: "Get Registry Index with invalid httpTimeout value",
+			url:  "http://" + serverIP,
+			options: RegistryOptions{
+				HTTPTimeout: &invalidHTTPTimeout,
+				Filter: RegistryFilter{
+					Architectures: []string{"amd64", "arm64"},
+				},
+			},
+			devfileTypes: []indexSchema.DevfileType{indexSchema.SampleDevfileType},
+			wantSchemas:  archFilteredIndex,
+		},
+		{
+			name: "Get Registry Index with valid httpTimeout value",
+			url:  "http://" + serverIP,
+			options: RegistryOptions{
+				HTTPTimeout: &validHTTPTimeout,
+				Filter: RegistryFilter{
+					Architectures: []string{"amd64", "arm64"},
+				},
+			},
+			devfileTypes: []indexSchema.DevfileType{indexSchema.SampleDevfileType},
+			wantSchemas:  archFilteredIndex,
 		},
 	}
 

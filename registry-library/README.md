@@ -12,19 +12,18 @@ Devfile registry library is used for interacting with devfile registry, consumer
 
 ## How to use it
 1. Import devfile registry library
-```go
-import (
-    registryLibrary "github.com/devfile/registry-support/registry-library/library"
-)
-```
+   ```go
+   import (
+       registryLibrary "github.com/devfile/registry-support/registry-library/library"
+   )
+   ```
 2. Invoke devfile registry library
-
     a. Get the index of devfile registry for various devfile types
     ```go
     registryIndex, err := registryLibrary.GetRegistryIndex(registryURL, options, StackDevfileType)
-	if err != nil {
-		return err
-	}
+    if err != nil {
+        return err
+    }
     ```
     b. Get the indices of multiple devfile registries for various devfile types
     ```go
@@ -32,17 +31,17 @@ import (
     ```
     c. Download the stack devfile from devfile registry
     ```go
-	err := registryLibrary.PullStackByMediaTypesFromRegistry(registry, stack, registryLibrary.DevfileMediaTypeList, destDir, options)
-	if err != nil {
-		return err
-	}
+    err := registryLibrary.PullStackByMediaTypesFromRegistry(registry, stack, registryLibrary.DevfileMediaTypeList, destDir, options)
+    if err != nil {
+        return err
+    }
     ```
     d. Download the whole stack from devfile registry
     ```go
     err := registryLibrary.PullStackFromRegistry(registry, stack, destDir, options)
     if err != nil {
-		return err
-	}
+        return err
+    }
     ```
     e. Specify Options
     ```go
@@ -54,3 +53,11 @@ import (
         },
     }
     ```
+    f. Override the HTTP request and response timeout values
+    ```go
+    customTimeout := 20
+    options := registryLibrary.RegistryOptions{
+      HTTPTimeout: &customTimeout
+    }
+    ```
+   
