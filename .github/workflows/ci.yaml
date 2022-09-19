@@ -39,7 +39,7 @@ jobs:
       run: |
         go get github.com/google/addlicense@latest
         git reset HEAD --hard
-        ./check_licences.sh          
+        ./check_licenses.sh          
         if [[ $? != 0 ]]
         then
           echo "license headers not found:"
