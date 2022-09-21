@@ -37,7 +37,8 @@ jobs:
 
     - name: Check license
       run: |
-        go get github.com/google/addlicense@latest
+        export PATH=$PATH:$(go env GOPATH)/bin
+        go install github.com/google/addlicense@latest
         git reset HEAD --hard
         ./check_licenses.sh          
         if [[ $? != 0 ]]
