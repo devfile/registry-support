@@ -34,7 +34,20 @@ jobs:
     steps:
     - name: Check out code
       uses: actions/checkout@v2
-      
+
+    - name: Check license
+      run: |
+        export PATH=$PATH:$(go env GOPATH)/bin
+        go install github.com/google/addlicense@latest
+        git reset HEAD --hard
+        ./check_licenses.sh          
+        if [[ $? != 0 ]]
+        then
+          echo "license headers not found:"
+          git --no-pager diff
+          exit 1
+        fi     
+
     - name: Check if index server build is working
       run: cd index/server && ./build.sh
 
