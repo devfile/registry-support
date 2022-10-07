@@ -21,7 +21,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"net/http/httputil"
 	"net/url"
 	"os"
 	"path"
@@ -307,27 +306,6 @@ func serveDevfileStarterProjectWithVersion(c *gin.Context) {
 		c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s.zip\"", starterProjectName))
 		c.Data(http.StatusAccepted, starterProjectMediaType, downloadBytes)
 	}
-}
-
-func serveUI(c *gin.Context) {
-	remote, err := url.Parse(scheme + "://" + viewerService + "/viewer/")
-	if err != nil {
-		panic(err)
-	}
-
-	proxy := httputil.NewSingleHostReverseProxy(remote)
-
-	// Set up the request to the proxy
-	// This is a good place to set up telemetry for requests to the OCI server (e.g. by parsing the path)
-	proxy.Director = func(req *http.Request) {
-		req.Header = c.Request.Header
-		req.Header.Add("X-Forwarded-Host", req.Host)
-		req.Header.Add("X-Origin-Host", remote.Host)
-		req.URL.Scheme = remote.Scheme
-		req.URL.Host = remote.Host
-	}
-
-	proxy.ServeHTTP(c.Writer, c.Request)
 }
 
 // buildIndexAPIResponse builds the response of the REST API of getting the devfile index

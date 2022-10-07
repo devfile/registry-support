@@ -173,11 +173,7 @@ func ServeRegistry() {
 	router.GET("/v2/*proxyPath", ociServerProxy)
 
 	// Set up routes for the registry viewer
-	router.GET("/viewer", serveUI)
-	router.GET("/viewer/*proxyPath", serveUI)
-	// Static content not available under /viewer that the registry viewer needs
-	router.Static("/images", "/app/public/images")
-	router.StaticFile("/manifest.json/", "/app/public/manifest.json")
+	router.Static("/viewer", viewerPath)
 
 	// Serve static content for stacks
 	router.Static("/stacks", stacksPath)

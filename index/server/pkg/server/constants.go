@@ -39,11 +39,11 @@ const (
 
 	scheme          = "http"
 	registryService = "localhost:5000"
-	viewerService   = "localhost:3000"
 	encodeFormat    = "base64"
 )
 
 var (
+	viewerPath            = os.Getenv("DEVFILE_VIEWER")
 	stacksPath            = os.Getenv("DEVFILE_STACKS")
 	samplesPath           = os.Getenv("DEVFILE_SAMPLES")
 	indexPath             = os.Getenv("DEVFILE_INDEX")
