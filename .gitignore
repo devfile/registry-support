@@ -6,3 +6,6 @@
 
 # Ignore the registry-viewer repo that we clone
 registry-viewer
+
+# Ignore the devfile-web repo that we clone
+devfile-web
