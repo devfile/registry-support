@@ -91,6 +91,7 @@ func CreateIndexFile(index []schema.Schema, indexFilePath string) error {
 		return fmt.Errorf("failed to marshal %s data: %v", indexFilePath, err)
 	}
 
+	/* #nosec G306 -- index file does not contain any sensitive data*/
 	err = ioutil.WriteFile(indexFilePath, bytes, 0644)
 	if err != nil {
 		return fmt.Errorf("failed to write %s: %v", indexFilePath, err)
@@ -312,6 +313,7 @@ func parseStackDevfile(devfileDirPath string, stackName string, force bool, vers
 		}
 	}
 
+	/* #nosec G304 -- devfilePath is produced using filepath.Join which cleans the input path */
 	bytes, err := ioutil.ReadFile(devfilePath)
 	if err != nil {
 		return fmt.Errorf("failed to read %s: %v", devfilePath, err)
@@ -403,6 +405,7 @@ func parseStackDevfile(devfileDirPath string, stackName string, force bool, vers
 func parseExtraDevfileEntries(registryDirPath string, force bool) ([]schema.Schema, error) {
 	var index []schema.Schema
 	extraDevfileEntriesPath := path.Join(registryDirPath, extraDevfileEntries)
+	/* #nosec G304 -- extraDevfileEntriesPath is produced using path.Join which cleans the input path */
 	bytes, err := ioutil.ReadFile(extraDevfileEntriesPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read %s: %v", extraDevfileEntriesPath, err)
@@ -487,6 +490,7 @@ func parseExtraDevfileEntries(registryDirPath string, force bool) ([]schema.Sche
 	return index, nil
 }
 
+/* #nosec G304 -- stackYamlPath is produced from file.Join which cleans the input path */
 func parseStackInfo(stackYamlPath string) (schema.Schema, error) {
 	var index schema.Schema
 	bytes, err := ioutil.ReadFile(stackYamlPath)

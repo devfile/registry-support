@@ -69,6 +69,7 @@ func pushStackToRegistry(versionComponent indexSchema.Version, stackName string)
 		if _, err := os.Stat(resourcePath); os.IsNotExist(err) {
 			resourcePath = filepath.Join(stacksPath, stackName, resource)
 		}
+		/* #nosec G304 -- resourcePath is constructed from filepath.Join which cleans the input paths */
 		resourceContent, err := ioutil.ReadFile(resourcePath)
 		if err != nil {
 			return err

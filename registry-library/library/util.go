@@ -20,6 +20,7 @@ import (
 	"compress/gzip"
 	"crypto/tls"
 	"fmt"
+	"github.com/hashicorp/go-multierror"
 	"io"
 	"log"
 	"net/http"
@@ -73,17 +74,30 @@ func ValidateStackVersionTag(stackWithVersion string) (bool, error) {
 
 // decompress extracts the archive file
 func decompress(targetDir string, tarFile string, excludeFiles []string) error {
-	reader, err := os.Open(tarFile)
+	var returnedErr error
+
+	reader, err := os.Open(filepath.Clean(tarFile))
 	if err != nil {
 		return err
 	}
-	defer reader.Close()
+
+	defer func() {
+		if err = reader.Close(); err != nil {
+			returnedErr = multierror.Append(returnedErr, err)
+		}
+	}()
 
 	gzReader, err := gzip.NewReader(reader)
 	if err != nil {
-		return err
+		returnedErr = multierror.Append(returnedErr, err)
+		return returnedErr
 	}
-	defer gzReader.Close()
+
+	defer func() {
+		if err = gzReader.Close(); err != nil {
+			returnedErr = multierror.Append(returnedErr, err)
+		}
+	}()
 
 	tarReader := tar.NewReader(gzReader)
 	for {
@@ -91,29 +105,39 @@ func decompress(targetDir string, tarFile string, excludeFiles []string) error {
 		if err == io.EOF {
 			break
 		} else if err != nil {
-			return err
+			returnedErr = multierror.Append(returnedErr, err)
+			return returnedErr
 		}
 		if isExcluded(header.Name, excludeFiles) {
 			continue
 		}
 
-		target := path.Join(targetDir, header.Name)
+		target := path.Join(targetDir, filepath.Clean(header.Name))
 		switch header.Typeflag {
 		case tar.TypeDir:
 			err = os.MkdirAll(target, os.FileMode(header.Mode))
 			if err != nil {
-				return err
+				returnedErr = multierror.Append(returnedErr, err)
+				return returnedErr
 			}
 		case tar.TypeReg:
+			/* #nosec G304 -- target is produced using path.Join which cleans the dir path */
 			w, err := os.OpenFile(target, os.O_CREATE|os.O_RDWR, os.FileMode(header.Mode))
 			if err != nil {
-				return err
+				returnedErr = multierror.Append(returnedErr, err)
+				return returnedErr
 			}
+			/* #nosec G110 -- starter projects are vetted before they are added to a registry.  Their contents can be seen before they are downloaded */
 			_, err = io.Copy(w, tarReader)
 			if err != nil {
-				return err
+				returnedErr = multierror.Append(returnedErr, err)
+				return returnedErr
 			}
-			w.Close()
+			err = w.Close()
+			if err != nil {
+				returnedErr = multierror.Append(returnedErr, err)
+				return returnedErr
+			}
 		default:
 			log.Printf("Unsupported type: %v", header.Typeflag)
 		}
@@ -161,7 +185,8 @@ func getHTTPClient(options RegistryOptions) *http.Client {
 		Transport: &http.Transport{
 			Proxy:                 http.ProxyFromEnvironment,
 			ResponseHeaderTimeout: overriddenTimeout,
-			TLSClientConfig:       &tls.Config{InsecureSkipVerify: options.SkipTLSVerify},
+			/*#nosec G402 -- documented user option for dev/test, not for prod use */
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: options.SkipTLSVerify},
 		},
 		Timeout: overriddenTimeout,
 	}
