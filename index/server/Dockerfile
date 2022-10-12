@@ -5,7 +5,7 @@ COPY . .
 RUN CGO_ENABLED=0 go build -mod=vendor -o index-server main.go
 
 # Registry Viewer build stage
-FROM registry.access.redhat.com/ubi8/nodejs-14-minimal AS viewer-builder
+FROM registry.access.redhat.com/ubi8/nodejs-16-minimal AS viewer-builder
 USER root
 
 # Install yarn global dependency
