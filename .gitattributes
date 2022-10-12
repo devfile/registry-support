@@ -25,6 +25,7 @@
 *.sql eol=lf
 *.sh eol=lf
 *.bat eol=lf
+*.go eol=lf
 
 # templates
 *.ejs eol=lf
