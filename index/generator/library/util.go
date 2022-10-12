@@ -23,6 +23,9 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"regexp"
+	"sort"
+	"strconv"
 	"strings"
 	"syscall"
 
@@ -32,6 +35,8 @@ import (
 	gitpkg "github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 )
+
+var semverRe = regexp.MustCompile(`^(\d+)\.(\d+)\.(\d+)$`)
 
 // CloneRemoteStack downloads the stack version from a git repo outside of the registry by
 // cloning then removing the local .git folder. When git.SubDir is set, fetches specified
@@ -421,4 +426,75 @@ func createZipper(writer *zip.Writer, root string, fs filesystem.Filesystem) fil
 
 		return nil
 	}
+}
+
+type Semver struct {
+	major int
+	minor int
+	patch int
+}
+
+func SortVersionByDescendingOrder(versions []schema.Version) []schema.Version {
+	semvers := make([]struct {
+		index  int
+		semver Semver
+	}, len(versions))
+
+	// convert to semver
+	for i, version := range versions {
+		matches := semverRe.FindStringSubmatch(version.Version)
+		if len(matches) != 4 {
+			fmt.Printf("error occurred while parsing semver %s", version.Version)
+		}
+
+		major, err := strconv.Atoi(matches[1])
+		if err != nil {
+			fmt.Printf("error %v occurred while parsing major version", err)
+		}
+
+		minor, err := strconv.Atoi(matches[2])
+		if err != nil {
+			fmt.Printf("error %v occurred while parsing minor version", err)
+		}
+
+		patch, err := strconv.Atoi(matches[3])
+		if err != nil {
+			fmt.Printf("error %v occurred while parsing patch version", err)
+		}
+
+		semvers[i] = struct {
+			index  int
+			semver Semver
+		}{
+			index: i,
+			semver: Semver{
+				major: major,
+				minor: minor,
+				patch: patch,
+			},
+		}
+	}
+
+	// sort semver
+	sort.SliceStable(semvers, func(i, j int) bool {
+		if semvers[i].semver.major > semvers[j].semver.major {
+			return true
+		} else if semvers[i].semver.major == semvers[j].semver.major {
+			if semvers[i].semver.minor > semvers[j].semver.minor {
+				return true
+			} else if semvers[i].semver.minor == semvers[j].semver.minor {
+				return semvers[i].semver.patch > semvers[j].semver.patch
+			}
+		}
+
+		return false
+	})
+
+	// convert back to version
+	sortedVersions := make([]schema.Version, len(versions))
+	for i, semver := range semvers {
+		sortedVersions[i] = versions[semver.index]
+	}
+
+	return sortedVersions
 }

@@ -17,7 +17,7 @@ name: Next Dockerimage
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   repository_dispatch:
     types: [build]
 
@@ -25,18 +25,18 @@ jobs:
   indexServerBuild:
     runs-on: ubuntu-latest
     steps:
-    - name: Check out registry support source code
-      uses: actions/checkout@v2
-    - name: Login to Quay
-      uses: docker/login-action@v1 
-      with:
-        registry: quay.io
-        username: ${{ secrets.QUAY_USERNAME }}
-        password: ${{ secrets.QUAY_PASSWORD }}
-    - name: Build the index server base image
-      run: cd index/server && ./build.sh
-    - name: Push the index server base image
-      run: cd index/server && ./push.sh quay.io/devfile/devfile-index-base:next
+      - name: Check out registry support source code
+        uses: actions/checkout@v2
+      - name: Login to Quay
+        uses: docker/login-action@v1
+        with:
+          registry: quay.io
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_PASSWORD }}
+      - name: Build the index server base image
+        run: cd index/server && bash ./build.sh
+      - name: Push the index server base image
+        run: cd index/server && bash ./push.sh quay.io/devfile/devfile-index-base:next
 
   dispatch:
     needs: indexServerBuild
@@ -57,7 +57,7 @@ jobs:
           else
             echo ::set-output name=repo::$(echo ${{ github.event.client_payload.repo }})
           fi
-          
+
           # Check if commit sha is not set in the client payload
           # If it's not set, the triggered commit came from this repo (registry-support)
           # If it is set, the triggered commit came from registry-viewer
@@ -79,32 +79,32 @@ jobs:
   ociRegistryBuild:
     runs-on: ubuntu-latest
     steps:
-    - name: Check out registry support source code
-      uses: actions/checkout@v2
-    - name: Build and push oci-registry docker image
-      uses: docker/build-push-action@v1.1.0
-      with:
-        path: ./oci-registry
-        username: ${{ secrets.QUAY_USERNAME }}
-        password: ${{ secrets.QUAY_PASSWORD }}
-        registry: quay.io
-        repository: devfile/oci-registry
-        dockerfile: ./oci-registry/Dockerfile
-        tags: next
-        tag_with_sha: true
+      - name: Check out registry support source code
+        uses: actions/checkout@v2
+      - name: Build and push oci-registry docker image
+        uses: docker/build-push-action@v1.1.0
+        with:
+          path: ./oci-registry
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_PASSWORD }}
+          registry: quay.io
+          repository: devfile/oci-registry
+          dockerfile: ./oci-registry/Dockerfile
+          tags: next
+          tag_with_sha: true
 
   devfileRegistryIntegrationBuild:
     runs-on: ubuntu-latest
     steps:
-    - name: Check out registry support source code
-      uses: actions/checkout@v2
-    - name: Login to Quay
-      uses: docker/login-action@v1 
-      with:
-        registry: quay.io
-        username: ${{ secrets.QUAY_USERNAME }}
-        password: ${{ secrets.QUAY_PASSWORD }}
-    - name: Build the index server base image
-      run: cd tests/integration && ./docker-build.sh
-    - name: Push the index server base image
-      run: cd tests/integration && ./docker-push.sh quay.io/devfile/devfile-registry-integration:next
+      - name: Check out registry support source code
+        uses: actions/checkout@v2
+      - name: Login to Quay
+        uses: docker/login-action@v1
+        with:
+          registry: quay.io
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_PASSWORD }}
+      - name: Build the index server base image
+        run: cd tests/integration && bash ./docker-build.sh
+      - name: Push the index server base image
+        run: cd tests/integration && bash ./docker-push.sh quay.io/devfile/devfile-registry-integration:next

@@ -27,6 +27,7 @@ import (
 	"github.com/devfile/library/pkg/devfile/parser"
 	v2 "github.com/devfile/library/pkg/devfile/parser/data/v2"
 	"github.com/devfile/registry-support/index/generator/schema"
+	"github.com/nsf/jsondiff"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -511,7 +512,15 @@ func TestParseDevfileRegistry(t *testing.T) {
 			t.Errorf("Failed to call function parseDevfileRegistry: %v", err)
 		}
 		if !reflect.DeepEqual(wantIndex, gotIndex) {
-			t.Errorf("Want index %v, got index %v", wantIndex, gotIndex)
+			bWantIndex, _ := json.Marshal(wantIndex)
+			bGotIndex, _ := json.Marshal(gotIndex)
+
+			options := jsondiff.DefaultConsoleOptions()
+			options.SkipMatches = true
+
+			diff, str := jsondiff.Compare(bWantIndex, bGotIndex, &options)
+
+			t.Errorf("Difference type %v, diff %v", diff, str)
 		}
 	})
 }
@@ -535,7 +544,15 @@ func TestParseExtraDevfileEntries(t *testing.T) {
 			t.Errorf("Failed to call function parseExtraDevfileEntries: %v", err)
 		}
 		if !reflect.DeepEqual(wantIndex, gotIndex) {
-			t.Errorf("Want index %v, got index %v", wantIndex, gotIndex)
+			bWantIndex, _ := json.Marshal(wantIndex)
+			bGotIndex, _ := json.Marshal(gotIndex)
+
+			options := jsondiff.DefaultConsoleOptions()
+			options.SkipMatches = true
+
+			diff, str := jsondiff.Compare(bWantIndex, bGotIndex, &options)
+
+			t.Errorf("Difference type %v, diff %v", diff, str)
 		}
 	})
 }
@@ -559,7 +576,15 @@ func TestGenerateIndexStruct(t *testing.T) {
 			t.Errorf("Failed to call function GenerateIndexStruct: %v", err)
 		}
 		if !reflect.DeepEqual(wantIndex, gotIndex) {
-			t.Errorf("Want index %v, got index %v", wantIndex, gotIndex)
+			bWantIndex, _ := json.Marshal(wantIndex)
+			bGotIndex, _ := json.Marshal(gotIndex)
+
+			options := jsondiff.DefaultConsoleOptions()
+			options.SkipMatches = true
+
+			diff, str := jsondiff.Compare(bWantIndex, bGotIndex, &options)
+
+			t.Errorf("Difference type %v, diff %v", diff, str)
 		}
 	})
 }

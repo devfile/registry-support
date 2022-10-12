@@ -2,101 +2,101 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   go:
     name: Check go tools build
     runs-on: ubuntu-latest
     steps:
-    - name: Check out code
-      uses: actions/checkout@v2
+      - name: Check out code
+        uses: actions/checkout@v2
 
-    - name: Setup Go environment
-      uses: actions/setup-go@v2
-      with:
-        go-version: 1.17
+      - name: Setup Go environment
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.17
 
-    - name: Check if index-generator build is working
-      run: cd index/generator && ./build.sh
+      - name: Check if index-generator build is working
+        run: cd index/generator && bash ./build.sh
 
-    - name: Test index-generator
-      run: cd index/generator && go test ./...
+      - name: Test index-generator
+        run: cd index/generator && go test ./...
 
-    - name: Check if registry-library build is working
-      run: cd registry-library && ./build.sh
-      
+      - name: Check if registry-library build is working
+        run: cd registry-library && bash ./build.sh
+
   docker:
     name: Check docker builds
     runs-on: ubuntu-latest
     steps:
-    - name: Check out code
-      uses: actions/checkout@v2
+      - name: Check out code
+        uses: actions/checkout@v2
 
-    - name: Check license
-      run: |
-        export PATH=$PATH:$(go env GOPATH)/bin
-        go install github.com/google/addlicense@latest
-        git reset HEAD --hard
-        ./check_licenses.sh          
-        if [[ $? != 0 ]]
-        then
-          echo "license headers not found:"
-          git --no-pager diff
-          exit 1
-        fi     
+      - name: Check license
+        run: |
+          export PATH=$PATH:$(go env GOPATH)/bin
+          go install github.com/google/addlicense@latest
+          git reset HEAD --hard
+          bash ./check_licenses.sh          
+          if [[ $? != 0 ]]
+          then
+            echo "license headers not found:"
+            git --no-pager diff
+            exit 1
+          fi
 
-    - name: Check if index server build is working
-      run: cd index/server && ./build.sh
+      - name: Check if index server build is working
+        run: cd index/server && bash ./build.sh
 
-    - name: Test index server
-      run: cd index/server && go test ./... -coverprofile cover.out
+      - name: Test index server
+        run: cd index/server && go test ./... -coverprofile cover.out
 
-    - name: Check if oci server build is working
-      run: cd oci-registry && ./build.sh
-    
-    - name: Check if devfile-registry-integration build is working
-      run: cd tests/integration && ./docker-build.sh
+      - name: Check if oci server build is working
+        run: cd oci-registry && bash ./build.sh
 
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v2.1.0
+      - name: Check if devfile-registry-integration build is working
+        run: cd tests/integration && bash ./docker-build.sh
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v2.1.0
 
   test_minikube:
     name: Test Devfile Registry
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout
-      uses: actions/checkout@v1
-    - name: Setup Go environment
-      uses: actions/setup-go@v2
-      with:
-        go-version: 1.17
-    - name: Setup Minikube
-      uses: manusa/actions-setup-minikube@v2.4.2
-      with:
-        minikube version: 'v1.21.0'
-        kubernetes version: 'v1.21.0'
-        driver: 'docker'
-        github token: ${{ secrets.GITHUB_TOKEN }}
-        start args: '--addons=ingress'
-    - name: Run the devfile registry integration tests
-      run: .ci/run_tests_minikube_linux.sh
+      - name: Checkout
+        uses: actions/checkout@v1
+      - name: Setup Go environment
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.17
+      - name: Setup Minikube
+        uses: manusa/actions-setup-minikube@v2.4.2
+        with:
+          minikube version: 'v1.21.0'
+          kubernetes version: 'v1.21.0'
+          driver: 'docker'
+          github token: ${{ secrets.GITHUB_TOKEN }}
+          start args: '--addons=ingress'
+      - name: Run the devfile registry integration tests
+        run: bash .ci/run_tests_minikube_linux.sh
 
   test_staging:
     name: Test Staging Devfile Registry
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout
-      uses: actions/checkout@v1
-    - name: Setup Go environment
-      uses: actions/setup-go@v2
-      with:
-        go-version: 1.17
-    - name: Run the devfile registry integration tests
-      run: |
-        # Run the integration tests
-        cd tests/integration
-        ./docker-build.sh
-        docker run --env REGISTRY=https://registry.stage.devfile.io --env IS_TEST_REGISTRY=false devfile-registry-integration
+      - name: Checkout
+        uses: actions/checkout@v1
+      - name: Setup Go environment
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.17
+      - name: Run the devfile registry integration tests
+        run: |
+          # Run the integration tests
+          cd tests/integration
+          bash ./docker-build.sh
+          docker run --env REGISTRY=https://registry.stage.devfile.io --env IS_TEST_REGISTRY=false devfile-registry-integration

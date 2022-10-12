@@ -228,6 +228,8 @@ func parseDevfileRegistry(registryDirPath string, force bool) ([]schema.Schema, 
 				}
 			}
 
+			indexComponent.Versions = SortVersionByDescendingOrder(indexComponent.Versions)
+
 			i := 0
 			for i < len(indexComponent.Versions) {
 				versionComponent := indexComponent.Versions[i]

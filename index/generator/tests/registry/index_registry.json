@@ -4,51 +4,36 @@
     "displayName": "Go Runtime",
     "description": "Stack with the latest Go version",
     "type": "stack",
-    "tags": [
-      "Go",
-      "testtag"
-    ],
+    "tags": ["testtag", "Go"],
     "icon": "https://raw.githubusercontent.com/devfile-samples/devfile-stack-icons/main/golang.svg",
     "projectType": "go",
     "language": "go",
     "provider": "Red Hat",
     "versions": [
       {
-        "version": "1.1.0",
-        "schemaVersion": "2.0.0",
-        "default": true,
-        "description": "Stack with the latest Go version with devfile v2.0.0 schema verison",
-        "tags": [
-          "Go"
-        ],
-        "icon": "https://raw.githubusercontent.com/devfile-samples/devfile-stack-icons/main/golang.svg",
-        "links": {
-          "self": "devfile-catalog/go:1.1.0"
-        },
-        "resources": [
-          "devfile.yaml"
-        ],
-        "starterProjects": [
-          "go-starter"
-        ]
-      },
-      {
         "version": "1.2.0",
         "schemaVersion": "2.1.0",
-        "description": "Stack with the latest Go version with devfile v2.1.0 schema verison",
-        "tags": [
-          "testtag"
-        ],
+        "description": "Stack with the latest Go version with devfile v2.1.0 schema version",
+        "tags": ["testtag"],
         "icon": "https://raw.githubusercontent.com/devfile-samples/devfile-stack-icons/main/golang.svg",
         "links": {
           "self": "devfile-catalog/go:1.2.0"
         },
-        "resources": [
-          "devfile.yaml"
-        ],
-        "starterProjects": [
-          "go-starter"
-        ]
+        "resources": ["devfile.yaml"],
+        "starterProjects": ["go-starter"]
+      },
+      {
+        "version": "1.1.0",
+        "schemaVersion": "2.0.0",
+        "default": true,
+        "description": "Stack with the latest Go version with devfile v2.0.0 schema version",
+        "tags": ["Go"],
+        "icon": "https://raw.githubusercontent.com/devfile-samples/devfile-stack-icons/main/golang.svg",
+        "links": {
+          "self": "devfile-catalog/go:1.1.0"
+        },
+        "resources": ["devfile.yaml"],
+        "starterProjects": ["go-starter"]
       }
     ]
   },
@@ -57,10 +42,7 @@
     "displayName": "Maven Java",
     "description": "Upstream Maven and OpenJDK 11",
     "type": "stack",
-    "tags": [
-      "Java",
-      "Maven"
-    ],
+    "tags": ["Java", "Maven"],
     "projectType": "maven",
     "language": "java",
     "provider": "Red Hat",
@@ -70,19 +52,12 @@
         "schemaVersion": "2.2.0",
         "default": true,
         "description": "Upstream Maven and OpenJDK 11",
-        "tags": [
-          "Java",
-          "Maven"
-        ],
+        "tags": ["Java", "Maven"],
         "links": {
           "self": "devfile-catalog/java-maven:1.1.0"
         },
-        "resources": [
-          "devfile.yaml"
-        ],
-        "starterProjects": [
-          "springbootproject"
-        ]
+        "resources": ["devfile.yaml"],
+        "starterProjects": ["springbootproject"]
       }
     ]
   },
@@ -103,12 +78,8 @@
         "links": {
           "self": "devfile-catalog/java-openliberty:0.5.0"
         },
-        "resources": [
-          "devfile.yaml"
-        ],
-        "starterProjects": [
-          "user-app"
-        ]
+        "resources": ["devfile.yaml"],
+        "starterProjects": ["user-app"]
       }
     ]
   },
@@ -117,10 +88,7 @@
     "displayName": "Quarkus Java",
     "description": "Upstream Quarkus with Java+GraalVM",
     "type": "stack",
-    "tags": [
-      "Java",
-      "Quarkus"
-    ],
+    "tags": ["Java", "Quarkus"],
     "projectType": "quarkus",
     "language": "java",
     "provider": "Red Hat",
@@ -130,20 +98,12 @@
         "schemaVersion": "2.2.0",
         "default": true,
         "description": "Upstream Quarkus with Java+GraalVM",
-        "tags": [
-          "Java",
-          "Quarkus"
-        ],
+        "tags": ["Java", "Quarkus"],
         "links": {
           "self": "devfile-catalog/java-quarkus:1.1.0"
         },
-        "resources": [
-          "devfile.yaml"
-        ],
-        "starterProjects": [
-          "community",
-          "redhat-product"
-        ]
+        "resources": ["devfile.yaml"],
+        "starterProjects": ["community", "redhat-product"]
       }
     ]
   },
@@ -152,10 +112,7 @@
     "displayName": "Spring Boot®",
     "description": "Spring Boot® using Java",
     "type": "stack",
-    "tags": [
-      "Java",
-      "Spring"
-    ],
+    "tags": ["Java", "Spring"],
     "icon": "https://www.eclipse.org/che/images/logo-eclipseche.svg",
     "projectType": "spring",
     "language": "java",
@@ -165,20 +122,13 @@
         "schemaVersion": "2.2.0",
         "default": true,
         "description": "Spring Boot® using Java",
-        "tags": [
-          "Java",
-          "Spring"
-        ],
+        "tags": ["Java", "Spring"],
         "icon": "https://www.eclipse.org/che/images/logo-eclipseche.svg",
         "links": {
           "self": "devfile-catalog/java-springboot:1.1.0"
         },
-        "resources": [
-          "devfile.yaml"
-        ],
-        "starterProjects": [
-          "springbootproject"
-        ]
+        "resources": ["devfile.yaml"],
+        "starterProjects": ["springbootproject"]
       }
     ]
   },
@@ -187,10 +137,7 @@
     "displayName": "Vert.x Java",
     "description": "Upstream Vert.x using Java",
     "type": "stack",
-    "tags": [
-      "Java",
-      "Vert.x"
-    ],
+    "tags": ["Java", "Vert.x"],
     "projectType": "vertx",
     "language": "java",
     "versions": [
@@ -199,16 +146,11 @@
         "schemaVersion": "2.2.0",
         "default": true,
         "description": "Upstream Vert.x using Java",
-        "tags": [
-          "Java",
-          "Vert.x"
-        ],
+        "tags": ["Java", "Vert.x"],
         "links": {
           "self": "devfile-catalog/java-vertx:1.1.0"
         },
-        "resources": [
-          "devfile.yaml"
-        ],
+        "resources": ["devfile.yaml"],
         "starterProjects": [
           "vertx-http-example",
           "vertx-istio-circuit-breaker-booster",
@@ -238,10 +180,7 @@
     "displayName": "WildFly Java",
     "description": "Upstream WildFly",
     "type": "stack",
-    "tags": [
-      "Java",
-      "WildFly"
-    ],
+    "tags": ["Java", "WildFly"],
     "projectType": "wildfly",
     "language": "java",
     "versions": [
@@ -250,16 +189,11 @@
         "schemaVersion": "2.2.0",
         "default": true,
         "description": "Upstream WildFly",
-        "tags": [
-          "Java",
-          "WildFly"
-        ],
+        "tags": ["Java", "WildFly"],
         "links": {
           "self": "devfile-catalog/java-wildfly:1.0.0"
         },
-        "resources": [
-          "devfile.yaml"
-        ],
+        "resources": ["devfile.yaml"],
         "starterProjects": [
           "microprofile-config",
           "microprofile-fault-tolerance",
@@ -278,15 +212,7 @@
     "displayName": "WildFly Bootable Jar",
     "description": "Java stack with WildFly in bootable Jar mode, OpenJDK 11 and Maven 3.5",
     "type": "stack",
-    "tags": [
-      "RHEL8",
-      "Java",
-      "OpenJDK",
-      "Maven",
-      "WildFly",
-      "Microprofile",
-      "WildFly Bootable"
-    ],
+    "tags": ["RHEL8", "Java", "OpenJDK", "Maven", "WildFly", "Microprofile", "WildFly Bootable"],
     "projectType": "WildFly",
     "language": "java",
     "versions": [
@@ -307,9 +233,7 @@
         "links": {
           "self": "devfile-catalog/java-wildfly-bootable-jar:1.0.0"
         },
-        "resources": [
-          "devfile.yaml"
-        ],
+        "resources": ["devfile.yaml"],
         "starterProjects": [
           "microprofile-config",
           "microprofile-fault-tolerance",
@@ -328,11 +252,7 @@
     "displayName": "NodeJS Runtime",
     "description": "Stack with NodeJS 12",
     "type": "stack",
-    "tags": [
-      "NodeJS",
-      "Express",
-      "ubi8"
-    ],
+    "tags": ["NodeJS", "Express", "ubi8"],
     "projectType": "nodejs",
     "language": "nodejs",
     "versions": [
@@ -341,21 +261,12 @@
         "schemaVersion": "2.2.0",
         "default": true,
         "description": "Stack with NodeJS 12",
-        "tags": [
-          "NodeJS",
-          "Express",
-          "ubi8"
-        ],
+        "tags": ["NodeJS", "Express", "ubi8"],
         "links": {
           "self": "devfile-catalog/nodejs:1.0.0"
         },
-        "resources": [
-          "archive.tar",
-          "devfile.yaml"
-        ],
-        "starterProjects": [
-          "nodejs-starter"
-        ]
+        "resources": ["archive.tar", "devfile.yaml"],
+        "starterProjects": ["nodejs-starter"]
       }
     ]
   },
@@ -364,10 +275,7 @@
     "displayName": "Python",
     "description": "Python Stack with Python 3.7",
     "type": "stack",
-    "tags": [
-      "Python",
-      "pip"
-    ],
+    "tags": ["Python", "pip"],
     "projectType": "python",
     "language": "python",
     "versions": [
@@ -376,19 +284,12 @@
         "schemaVersion": "2.2.0",
         "default": true,
         "description": "Python Stack with Python 3.7",
-        "tags": [
-          "Python",
-          "pip"
-        ],
+        "tags": ["Python", "pip"],
         "links": {
           "self": "devfile-catalog/python:1.0.0"
         },
-        "resources": [
-          "devfile.yaml"
-        ],
-        "starterProjects": [
-          "python-example"
-        ]
+        "resources": ["devfile.yaml"],
+        "starterProjects": ["python-example"]
       }
     ]
   },
@@ -397,11 +298,7 @@
     "displayName": "Django",
     "description": "Python3.7 with Django",
     "type": "stack",
-    "tags": [
-      "Python",
-      "pip",
-      "Django"
-    ],
+    "tags": ["Python", "pip", "Django"],
     "projectType": "django",
     "language": "python",
     "versions": [
@@ -410,20 +307,12 @@
         "schemaVersion": "2.2.0",
         "default": true,
         "description": "Python3.7 with Django",
-        "tags": [
-          "Python",
-          "pip",
-          "Django"
-        ],
+        "tags": ["Python", "pip", "Django"],
         "links": {
           "self": "devfile-catalog/python-django:1.0.0"
         },
-        "resources": [
-          "devfile.yaml"
-        ],
-        "starterProjects": [
-          "django-example"
-        ]
+        "resources": ["devfile.yaml"],
+        "starterProjects": ["django-example"]
       }
     ]
   }
