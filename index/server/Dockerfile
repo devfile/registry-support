@@ -17,9 +17,7 @@ COPY --from=index-builder /tools/devfile-web /app
 WORKDIR /app
 
 # Install project dependencies
-RUN $(npm get prefix)/bin/yarn install --frozen-lockfile --ignore-optional
-# Build production registry-viewer
-RUN $(npm get prefix)/bin/yarn nx build registry-viewer --configuration=production
+RUN $(npm get prefix)/bin/yarn install --frozen-lockfile
 # Export static site
 RUN $(npm get prefix)/bin/yarn nx run registry-viewer:export
 
