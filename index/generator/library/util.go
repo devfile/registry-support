@@ -123,25 +123,27 @@ func CloneRemoteStack(git *schema.Git, path string, verbose bool) (err error) {
 // returns byte array of zip file and error if occurs otherwise is nil. If git.SubDir is set, then
 // zip file will contain contents of the specified subdirectory instead of the whole downloaded git repo.
 func DownloadStackFromGit(git *schema.Git, path string, verbose bool) ([]byte, error) {
-	zipPath := fmt.Sprintf("%s.zip", path)
+	cleanPath := filepath.Clean(path)
+	zipPath := fmt.Sprintf("%s.zip", cleanPath)
 
 	// Download from given git url. Downloaded result contains subDir
 	// when specified, if error return empty bytes.
-	if err := CloneRemoteStack(git, path, verbose); err != nil {
+	if err := CloneRemoteStack(git, cleanPath, verbose); err != nil {
 		return []byte{}, err
 	}
 
 	// Throw error if path was not created
-	if _, err := os.Stat(path); os.IsNotExist(err) {
+	if _, err := os.Stat(cleanPath); os.IsNotExist(err) {
 		return []byte{}, err
 	}
 
 	// Zip directory containing downloaded git repo
-	if err := ZipDir(path, zipPath); err != nil {
+	if err := ZipDir(cleanPath, zipPath); err != nil {
 		return []byte{}, err
 	}
 
 	// Read bytes from response and return, error will be nil if successful
+	/* #nosec G304 -- zipPath is constructed from a clean path */
 	return ioutil.ReadFile(zipPath)
 }
 
@@ -152,7 +154,7 @@ func DownloadStackFromZipUrl(zipUrl string, subDir string, path string) ([]byte,
 
 // downloadStackFromZipUrl downloads the zip file containing the stack at a given url
 func downloadStackFromZipUrl(zipUrl string, subDir string, path string, fs filesystem.Filesystem) ([]byte, error) {
-	zipDst := fmt.Sprintf("%s.zip", path)
+	zipDst := fmt.Sprintf("%s.zip", filepath.Clean(path))
 
 	// Create path if does not exist
 	if err := fs.MkdirAll(path, os.ModePerm); err != nil {
@@ -192,6 +194,7 @@ func downloadStackFromZipUrl(zipUrl string, subDir string, path string, fs files
 	}
 
 	// Read bytes from response and return, error will be nil if successful
+	/* #nosec G304 -- zipDest is produced using a cleaned path */
 	return ioutil.ReadFile(zipDst)
 }
 

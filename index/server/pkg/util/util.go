@@ -45,6 +45,7 @@ func IsHtmlRequested(acceptHeader []string) bool {
 // EncodeIndexIconToBase64 encodes all index icons to base64 format given the index file path
 func EncodeIndexIconToBase64(indexPath string, base64IndexPath string) ([]byte, error) {
 	// load index
+	/* #nosec G304 -- indexPath is derived from known paths set in the docker image */
 	bytes, err := ioutil.ReadFile(indexPath)
 	if err != nil {
 		return nil, err
@@ -86,6 +87,7 @@ func encodeToBase64(uri string) (string, error) {
 	// load the content from the given uri
 	var bytes []byte
 	if url.Scheme == "http" || url.Scheme == "https" {
+		/* #nosec G107 -- uri is taken from the index file.  Stacks with URLs to a devile icon should be vetted beforehand */
 		resp, err := http.Get(uri)
 		if err != nil {
 			return "", err
@@ -97,6 +99,7 @@ func encodeToBase64(uri string) (string, error) {
 			return "", err
 		}
 	} else {
+		/* #nosec G304 -- uri is derived from known paths set in the docker image */
 		bytes, err = ioutil.ReadFile(uri)
 		if err != nil {
 			return "", err
@@ -121,6 +124,7 @@ func encodeToBase64(uri string) (string, error) {
 // ReadIndexPath reads the index from the path and unmarshalls it into the index
 func ReadIndexPath(indexPath string) ([]indexSchema.Schema, error) {
 	// load index
+	/* #nosec G304 -- not user input */
 	bytes, err := ioutil.ReadFile(indexPath)
 	if err != nil {
 		return nil, err

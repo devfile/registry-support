@@ -25,6 +25,7 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"path/filepath"
 	"regexp"
 
 	"github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2"
@@ -275,7 +276,7 @@ func serveDevfileStarterProjectWithVersion(c *gin.Context) {
 					localLoc = downloadFilePath
 				}
 
-				downloadBytes, err = ioutil.ReadFile(localLoc)
+				downloadBytes, err = ioutil.ReadFile(filepath.Clean(localLoc))
 				if err != nil {
 					log.Print(err.Error())
 					c.JSON(http.StatusInternalServerError, gin.H{
@@ -556,6 +557,7 @@ func fetchDevfile(c *gin.Context, name string, version string) ([]byte, indexSch
 			}
 			if sampleDevfilePath != "" {
 				if _, err = os.Stat(sampleDevfilePath); err == nil {
+					/* #nosec G304 -- sampleDevfilePath is constructed from path.Join which cleans the input paths */
 					bytes, err = ioutil.ReadFile(sampleDevfilePath)
 				}
 				if err != nil {

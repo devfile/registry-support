@@ -67,9 +67,18 @@ var getIndexLatency = prometheus.NewHistogramVec(
 func ServeRegistry() {
 	// Enable metrics
 	// Run on a separate port and router from the index server so that it's not exposed publicly
-	http.Handle("/metrics", promhttp.Handler())
+
+	handler := http.NewServeMux()
+	handler.Handle("/metrics", promhttp.Handler())
 	prometheus.MustRegister(getIndexLatency)
-	go http.ListenAndServe(":7071", nil)
+	indexServer := &http.Server{
+		Addr:         ":7071",
+		Handler:      handler,
+		ReadTimeout:  10 * time.Second,
+		WriteTimeout: 10 * time.Second,
+	}
+
+	go indexServer.ListenAndServe()
 
 	// Wait until registry is up and running
 	err := wait.PollImmediate(time.Millisecond, time.Second*30, func() (bool, error) {
