@@ -24,7 +24,7 @@ WORKDIR /app
 # Install project dependencies
 RUN $(npm get prefix)/bin/yarn install --frozen-lockfile
 # Export static site
-RUN $(npm get prefix)/bin/yarn nx run registry-viewer:export
+RUN $(npm get prefix)/bin/yarn nx run registry-viewer:postexport
 
 # Application image
 FROM registry.access.redhat.com/ubi8/ubi-minimal AS runner
