@@ -43,6 +43,11 @@ const (
 )
 
 var (
+	// HTML pages for static 404 responses in order of
+	// preference.
+	staticNotFoundPages = []string{
+		"404.html",
+	}
 	viewerPath            = os.Getenv("DEVFILE_VIEWER")
 	stacksPath            = os.Getenv("DEVFILE_STACKS")
 	samplesPath           = os.Getenv("DEVFILE_SAMPLES")
