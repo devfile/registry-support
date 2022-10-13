@@ -26,6 +26,7 @@ import (
 	"path"
 	"path/filepath"
 	"regexp"
+	"strings"
 
 	"github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2"
 	"github.com/devfile/library/pkg/devfile/parser"
@@ -38,6 +39,17 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"gopkg.in/segmentio/analytics-go.v3"
 )
+
+func serveNotFound(c *gin.Context) {
+	if strings.HasPrefix(c.Request.URL.Path, "/viewer") {
+		buildStaticNotFoundResponse(c, viewerPath)
+		return
+	}
+
+	c.JSON(http.StatusNotFound, gin.H{
+		"status": "404 endpoint not found",
+	})
+}
 
 // serveRootEndpoint sets up the handler for the root (/) endpoint on the server
 // If html is requested (i.e. from a web browser), the viewer is displayed, otherwise the devfile index is served.
@@ -306,6 +318,40 @@ func serveDevfileStarterProjectWithVersion(c *gin.Context) {
 		c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s.zip\"", starterProjectName))
 		c.Data(http.StatusAccepted, starterProjectMediaType, downloadBytes)
 	}
+}
+
+// buildStaticNotFoundResponse builds the response for a static page not found
+func buildStaticNotFoundResponse(c *gin.Context, root string) {
+	// finds a static 404 html page defined in staticNotFoundPages (ordered priority)
+	foundPageFile, err := util.FindFile(filepath.Clean(root), func(path string) bool {
+		for _, filename := range staticNotFoundPages {
+			if strings.HasSuffix(path, filename) {
+				return true
+			}
+		}
+
+		return false
+	})
+
+	if err != nil {
+		log.Print(err.Error())
+		c.String(http.StatusInternalServerError, "500 internal server error")
+		return
+	} else if foundPageFile == "" {
+		// If not 404 html page is found, respond in plain text
+		c.String(http.StatusNotFound, "404 page not found")
+		return
+	}
+
+	bytes, err := ioutil.ReadFile(foundPageFile)
+
+	if err != nil {
+		log.Print(err.Error())
+		c.String(http.StatusInternalServerError, "500 internal server error")
+		return
+	}
+
+	c.Data(http.StatusNotFound, http.DetectContentType(bytes), bytes)
 }
 
 // buildIndexAPIResponse builds the response of the REST API of getting the devfile index

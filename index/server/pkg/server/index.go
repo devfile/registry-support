@@ -172,7 +172,10 @@ func ServeRegistry() {
 	router.HEAD("/v2/*proxyPath", ociServerProxy)
 	router.GET("/v2/*proxyPath", ociServerProxy)
 
-	// Set up routes for the registry viewer
+	// Serve not found endpoint
+	router.NoRoute(serveNotFound)
+
+	// Serve static routes and content for the registry viewer
 	router.Static("/viewer", viewerPath)
 
 	// Serve static content for stacks
