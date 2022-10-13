@@ -7,6 +7,11 @@ RUN CGO_ENABLED=0 go build -mod=vendor -o index-server main.go
 # Registry Viewer build stage
 FROM registry.access.redhat.com/ubi8/nodejs-16-minimal AS viewer-builder
 USER root
+ARG PUBLIC_ANALYTICS_WRITE_KEY=
+
+# Environment build variables
+ENV NEXT_PUBLIC_BASE_PATH /viewer
+ENV NEXT_PUBLIC_ANALYTICS_WRITE_KEY ${PUBLIC_ANALYTICS_WRITE_KEY}
 
 # Install yarn global dependency
 RUN npm install -g yarn
@@ -47,7 +52,6 @@ WORKDIR /www
 COPY --from=viewer-builder /app/dist/apps/registry-viewer/exported ./viewer
 
 ENV DEVFILE_VIEWER /www/viewer
-ENV DEVFILE_VIEWER_ROOT /viewer
 ENV DEVFILE_COMMUNITY_HOST false
 
 # Set env vars for the locations of the devfile stacks and index.json
