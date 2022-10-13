@@ -234,7 +234,8 @@ func PrintRegistry(registryURLs string, devfileType string, options RegistryOpti
 			}
 		}
 	}
-	w.Flush()
+
+	_ = w.Flush()
 	return nil
 }
 
@@ -326,7 +327,9 @@ func DownloadStarterProjectAsDir(path string, registryURL string, stack string, 
 
 		// if file is a directory, create it in destination and continue to next file
 		if file.FileInfo().IsDir() {
-			os.MkdirAll(filePath, os.ModePerm)
+			if err = os.MkdirAll(filePath, os.ModePerm); err != nil {
+				return fmt.Errorf("error creating directory %s: %v", filepath.Dir(filePath), err)
+			}
 			continue
 		}
 
