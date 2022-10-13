@@ -18,11 +18,13 @@ package util
 import (
 	"encoding/base64"
 	"encoding/json"
+	"io/fs"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -231,4 +233,22 @@ func MakeVersionMap(devfileIndex indexSchema.Schema) (map[string]indexSchema.Ver
 	}
 	versionMap["latest"] = versionMap[latestVersion]
 	return versionMap, nil
+}
+
+func FindFile(root string, fn func(path string) bool) (string, error) {
+	foundFile := ""
+
+	err := filepath.WalkDir(filepath.Clean(root), func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+
+		if !d.IsDir() && fn(path) {
+			foundFile = filepath.Clean(path)
+		}
+
+		return nil
+	})
+
+	return foundFile, err
 }

@@ -21,6 +21,7 @@ import (
 	"io/ioutil"
 	"os"
 	"reflect"
+	"strings"
 	"testing"
 
 	indexSchema "github.com/devfile/registry-support/index/generator/schema"
@@ -343,4 +344,69 @@ func TestMakeVersionMapOnBadVersion(t *testing.T) {
 			t.Error("Was expecting malformed version error with MakeVersionMap")
 		}
 	})
+}
+
+func TestFindFile(t *testing.T) {
+	tests := []struct {
+		name    string
+		rootDir string
+		fn      func(path string) bool
+		wantVal string
+		isError bool
+	}{
+		{
+			name:    "Find index.json under tests/resources",
+			rootDir: "../../tests/resources",
+			fn: func(path string) bool {
+				return strings.HasSuffix(path, "index.json")
+			},
+			wantVal: "../../tests/resources/index.json",
+		},
+		{
+			name:    "Find nodejs-icon.png under tests/resources",
+			rootDir: "../../tests/resources",
+			fn: func(path string) bool {
+				return strings.HasSuffix(path, "nodejs-icon.png")
+			},
+			wantVal: "../../tests/resources/nodejs-icon.png",
+		},
+		{
+			name:    "Find nodejs-basic version 1.0.0 devfile under tests/registry",
+			rootDir: "../../tests/registry",
+			fn: func(path string) bool {
+				return strings.HasSuffix(path, "nodejs-basic/1.0.0/devfile.yaml")
+			},
+			wantVal: "../../tests/registry/samples/nodejs-basic/1.0.0/devfile.yaml",
+		},
+		{
+			name:    "Try to find a file which does not exist",
+			rootDir: "../../tests/resources",
+			fn: func(path string) bool {
+				return strings.HasSuffix(path, "doesnotexist.txt")
+			},
+			wantVal: "",
+		},
+		{
+			name:    "Try to use a root that does not exist",
+			rootDir: "../../doesnotexist",
+			fn: func(path string) bool {
+				return strings.HasSuffix(path, "doesnotexist.txt")
+			},
+			wantVal: "",
+			isError: true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			gotVal, err := FindFile(test.rootDir, test.fn)
+			if err == nil && test.isError {
+				t.Error("Was expecting an error")
+			} else if err != nil && !test.isError {
+				t.Errorf("Was not expecting this error: %v", err)
+			} else if !reflect.DeepEqual(test.wantVal, gotVal) {
+				t.Errorf("Wanted %s file path, but got %s file path", test.wantVal, gotVal)
+			}
+		})
+	}
 }
