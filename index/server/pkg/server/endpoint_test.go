@@ -319,6 +319,12 @@ func setupVars() {
 		registryPath = "../../tests/registry"
 	}
 
+	if _, found := os.LookupEnv("DEVFILE_VIEWER"); found {
+		viewerPath = os.Getenv("DEVFILE_VIEWER")
+	} else {
+		viewerPath = "../../tests/viewer"
+	}
+
 	if stacksPath == "" {
 		stacksPath = filepath.Join(registryPath, "stacks")
 	}
@@ -1015,6 +1021,75 @@ func TestOCIServerProxy(t *testing.T) {
 
 			if gotStatusCode := w.Code; !reflect.DeepEqual(gotStatusCode, test.wantCode) {
 				t.Errorf("Did not get expected status code, Got: %v, Expected: %v", gotStatusCode, test.wantCode)
+			}
+		})
+	}
+}
+
+// TestNotFound tests not found responses
+func TestNotFound(t *testing.T) {
+	tests := []struct {
+		name                string
+		url                 string
+		params              gin.Params
+		wantCode            int
+		wantContentType     string
+		blankStaticNotFound bool
+	}{
+		{
+			name:            "Test base not found.",
+			url:             "/notfound",
+			wantCode:        404,
+			wantContentType: "application/json",
+		},
+		{
+			name:                "Test registry viewer plain text not found.",
+			url:                 "/viewer/notfound",
+			wantCode:            404,
+			wantContentType:     "text/plain",
+			blankStaticNotFound: true,
+		},
+		{
+			name:            "Test registry viewer not found.",
+			url:             "/viewer/notfound",
+			wantCode:        404,
+			wantContentType: "text/html",
+		},
+	}
+	setupVars()
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			var err error
+
+			if test.blankStaticNotFound {
+				baseStaticNotFoundPages := staticNotFoundPages
+				staticNotFoundPages = []string{}
+				defer func() {
+					staticNotFoundPages = baseStaticNotFoundPages
+				}()
+			}
+
+			gin.SetMode(gin.TestMode)
+
+			w := httptest.NewRecorder()
+			c, _ := gin.CreateTestContext(w)
+
+			c.Request, err = http.NewRequest(http.MethodGet, test.url, nil)
+
+			if err != nil {
+				t.Fatalf("Did not expect error: %v", err)
+			}
+
+			c.Params = append(c.Params, test.params...)
+
+			serveNotFound(c)
+
+			if gotStatusCode := w.Code; !reflect.DeepEqual(gotStatusCode, test.wantCode) {
+				t.Errorf("Did not get expected status code, Got: %v, Expected: %v", gotStatusCode, test.wantCode)
+			} else if gotContentType := strings.Split(w.Header().Get("Content-Type"), ";")[0]; !reflect.DeepEqual(gotContentType, test.wantContentType) {
+				t.Errorf("Did not get expected content type, Got: %v, Expected: %v", gotContentType, test.wantContentType)
+				return
 			}
 		})
 	}
