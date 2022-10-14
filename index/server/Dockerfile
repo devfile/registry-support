@@ -4,25 +4,6 @@ WORKDIR /tools
 COPY . .
 RUN CGO_ENABLED=0 go build -mod=vendor -o index-server main.go
 
-# Registry Viewer build stage
-FROM registry.access.redhat.com/ubi8/nodejs-14-minimal AS viewer-builder
-USER root
-
-# Install yarn global dependency
-RUN npm install -g yarn
-
-# Copy devfile-web repository from index-builder
-COPY --from=index-builder /tools/devfile-web /app
-
-WORKDIR /app
-
-# Install project dependencies
-RUN $(npm get prefix)/bin/yarn install --frozen-lockfile --ignore-optional
-# Build production registry-viewer
-RUN $(npm get prefix)/bin/yarn nx build registry-viewer --configuration=production
-# Export static site
-RUN $(npm get prefix)/bin/yarn nx run registry-viewer:export
-
 # Application image
 FROM registry.access.redhat.com/ubi8/ubi-minimal AS runner
 USER root
@@ -43,10 +24,8 @@ RUN set -x ; \
 # Modify the permissions on the necessary files to allow the container to properly run as a non-root UID
 RUN mkdir -p /www/data && chmod -R g+rwx /www/data
 
-WORKDIR /www
-
-# Copy over the registry viewer's resources
-COPY --from=viewer-builder /app/dist/apps/registry-viewer/exported ./viewer
+# Make registry viewer directory
+RUN mkdir -p /www/viewer
 
 ENV DEVFILE_VIEWER /www/viewer
 ENV DEVFILE_VIEWER_ROOT /viewer
