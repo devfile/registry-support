@@ -28,8 +28,4 @@ fi
 . ./index/server/build.sh
 
 # Build the test devfile registry image
-<<<<<<< HEAD
-docker build -t devfile-index:latest -f .ci/Dockerfile .
-=======
 docker build -t devfile-index:latest --build-arg headless=$headless --build-arg static_files_path=$static_files_path -f .ci/Dockerfile .
->>>>>>> f586a44 (build_registry.sh script now includes build script arguments 'headless' & 'static_files_path'.)

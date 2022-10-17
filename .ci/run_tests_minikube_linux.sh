@@ -12,7 +12,7 @@ set -u
 set -x
 
 # Build the test devfile registry image
-./build_registry.sh
+bash build_registry.sh false
 if [ $? -ne 0 ]; then
   echo "Error building devfile registry images"
   exit 1;
