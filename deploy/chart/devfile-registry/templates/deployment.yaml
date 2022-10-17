@@ -52,12 +52,6 @@ spec:
             items:
               - key: registry-config.yml
                 path: config.yml
-        - name: viewer-config
-          configMap:
-            name: {{ template "devfileregistry.fullname" . }}
-            items:
-              - key: devfile-registry-hosts.json
-                path: devfile-registry-hosts.json
 
       containers:
       - image: "{{ .Values.devfileIndex.image }}:{{ .Values.devfileIndex.tag }}"
@@ -80,31 +74,17 @@ spec:
             scheme: HTTP
           initialDelaySeconds: 15
           periodSeconds: 10
-          timeoutSeconds: 3
-        startupProbe:
-          httpGet:
-            path: /viewer
-            port: 8080
-            scheme: HTTP
-          initialDelaySeconds: 30
-          periodSeconds: 1
-          timeoutSeconds: 10          
+          timeoutSeconds: 3         
         resources:
           limits:
             memory: {{ .Values.devfileIndex.memoryLimit }}
           requests:
             memory: 64Mi
         env:
-          - name: DEVFILE_VIEWER_ROOT
-            value: "/viewer"
           - name: REGISTRY_NAME
             value: {{ .Values.telemetry.registryName }}
           - name: TELEMETRY_KEY
             value: {{ .Values.telemetry.key }}
-        volumeMounts:
-        - name: viewer-config
-          mountPath: "/app/config"
-          readOnly: false
 
       - image: "{{ .Values.ociRegistry.image }}:{{ .Values.ociRegistry.tag }}"
         imagePullPolicy: {{ .Values.ociRegistry.imagePullPolicy }}
