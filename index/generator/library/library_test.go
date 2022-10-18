@@ -24,8 +24,8 @@ import (
 
 	"github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2"
 	devfilepkg "github.com/devfile/api/v2/pkg/devfile"
-	"github.com/devfile/library/pkg/devfile/parser"
-	v2 "github.com/devfile/library/pkg/devfile/parser/data/v2"
+	"github.com/devfile/library/v2/pkg/devfile/parser"
+	v2 "github.com/devfile/library/v2/pkg/devfile/parser/data/v2"
 	"github.com/devfile/registry-support/index/generator/schema"
 	"github.com/nsf/jsondiff"
 	"github.com/stretchr/testify/assert"
