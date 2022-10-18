@@ -23,8 +23,8 @@ import (
 	"path"
 	"path/filepath"
 
-	devfileParser "github.com/devfile/library/pkg/devfile"
-	"github.com/devfile/library/pkg/devfile/parser"
+	devfileParser "github.com/devfile/library/v2/pkg/devfile"
+	"github.com/devfile/library/v2/pkg/devfile/parser"
 	"github.com/devfile/registry-support/index/generator/schema"
 	"gopkg.in/yaml.v2"
 )
