@@ -23,7 +23,7 @@ github.com/containerd/containerd/remotes/docker/auth
 github.com/containerd/containerd/remotes/docker/schema1
 github.com/containerd/containerd/remotes/errors
 github.com/containerd/containerd/version
-# github.com/devfile/registry-support/index/generator v0.0.0-20220624203950-e7282a4695b6
+# github.com/devfile/registry-support/index/generator v0.0.0-20221018203505-df96d34d4273
 ## explicit
 github.com/devfile/registry-support/index/generator/schema
 # github.com/docker/cli v20.10.11+incompatible
