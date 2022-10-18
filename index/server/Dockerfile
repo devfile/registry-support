@@ -24,13 +24,6 @@ RUN set -x ; \
 # Modify the permissions on the necessary files to allow the container to properly run as a non-root UID
 RUN mkdir -p /www/data && chmod -R g+rwx /www/data
 
-# Make registry viewer directory
-RUN mkdir -p /www/viewer
-
-ENV DEVFILE_VIEWER /www/viewer
-ENV DEVFILE_VIEWER_ROOT /viewer
-ENV DEVFILE_COMMUNITY_HOST false
-
 # Set env vars for the locations of the devfile stacks and index.json
 ENV DEVFILE_STACKS /registry/stacks
 ENV DEVFILE_SAMPLES /registry/samples
