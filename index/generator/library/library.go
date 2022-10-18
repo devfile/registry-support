@@ -299,10 +299,12 @@ func parseStackDevfile(devfileDirPath string, stackName string, force bool, vers
 	if fileExists(devfileHiddenPath) {
 		devfilePath = devfileHiddenPath
 	}
-
+	convertUri := false
 	if !force {
 		// Devfile validation
-		devfileObj, _, err := devfileParser.ParseDevfileAndValidate(parser.ParserArgs{Path: devfilePath})
+		devfileObj, _, err := devfileParser.ParseDevfileAndValidate(parser.ParserArgs{
+			ConvertKubernetesContentInUri: &convertUri,
+			Path:                          devfilePath})
 		if err != nil {
 			return fmt.Errorf("%s devfile is not valid: %v", devfileDirPath, err)
 		}
@@ -447,9 +449,11 @@ func parseExtraDevfileEntries(registryDirPath string, force bool) ([]schema.Sche
 								// This error shouldn't occur since we check for the devfile's existence during registry build, but check for it regardless
 								return nil, fmt.Errorf("%s devfile sample does not have a devfile.yaml: %v", indexComponent.Name, err)
 							}
-
+							convertUri := false
 							// Validate the sample devfile
-							_, _, err = devfileParser.ParseDevfileAndValidate(parser.ParserArgs{Path: devfilePath})
+							_, _, err = devfileParser.ParseDevfileAndValidate(parser.ParserArgs{
+								ConvertKubernetesContentInUri: &convertUri,
+								Path:                          devfilePath})
 							if err != nil {
 								return nil, fmt.Errorf("%s sample devfile is not valid: %v", devfileEntry.Name, err)
 							}
@@ -461,9 +465,10 @@ func parseExtraDevfileEntries(registryDirPath string, force bool) ([]schema.Sche
 							// This error shouldn't occur since we check for the devfile's existence during registry build, but check for it regardless
 							return nil, fmt.Errorf("%s devfile sample does not have a devfile.yaml: %v", indexComponent.Name, err)
 						}
-
+						convertUri := false
 						// Validate the sample devfile
-						_, _, err = devfileParser.ParseDevfileAndValidate(parser.ParserArgs{Path: devfilePath})
+						_, _, err = devfileParser.ParseDevfileAndValidate(parser.ParserArgs{Path: devfilePath,
+							ConvertKubernetesContentInUri: &convertUri})
 						if err != nil {
 							return nil, fmt.Errorf("%s sample devfile is not valid: %v", devfileEntry.Name, err)
 						}
