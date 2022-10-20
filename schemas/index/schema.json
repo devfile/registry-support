@@ -1,0 +1,62 @@
+{
+    "description": "The index file schema",
+    "type": "object",
+    "title": "Index schema - Version 1.0.0",
+    "properties": {
+        "description": {
+            "type": "string",
+            "description": "The description of devfile",
+            "x-go-name": "Description"
+        },
+        "displayName": {
+            "type": "string",
+            "description": "The display name of devfile",
+            "x-go-name": "DisplayName"
+        },
+        "language": {
+            "type": "string",
+            "description": "The project language that is used in the devfile",
+            "x-go-name": "Language"
+        },
+        "links": {
+            "type": "object",
+            "description": "Links related to the devfile",
+            "x-go-name": "Links"
+        },
+        "name": {
+            "type": "string",
+            "description": "The stack name",
+            "x-go-name": "Name"
+        },
+        "projectType": {
+            "type": "string",
+            "description": "The project framework that is used in the devfile",
+            "x-go-name": "ProjectType"
+        },
+        "resources": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "description": "The file resources that compose a devfile stack",
+            "x-go-name": "Resources"
+        },
+        "starterProjects": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "description": "The project templates that can be used in the devfile",
+            "x-go-name": "StarterProjects"
+        },
+        "tags": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "description": "The tags associated to devfile",
+            "x-go-name": "Tags"
+        }
+    },
+    "x-go-package": "github.com/devfile/registry-support/index/generator/schema"
+}
