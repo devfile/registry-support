@@ -38,8 +38,19 @@ We recommend using the [Devfile Registry Operator](https://github.com/devfile/re
 
 Alternatively, a Helm chart is also provided if you do not wish to use an operator. To install (with Helm 3) run:
 
+**Headed**
+
 ```bash
 $ helm install devfile-registry ./deploy/chart/devfile-registry \ 
+    --set global.ingress.domain=<ingress-domain> \
+	--set devfileIndex.image=<index-image> \
+	--set devfileIndex.tag=<index-image-tag>
+```
+
+**Headless**
+
+```bash
+$ helm install devfile-registry ./deploy/chart/devfile-registry-headless \ 
     --set global.ingress.domain=<ingress-domain> \
 	--set devfileIndex.image=<index-image> \
 	--set devfileIndex.tag=<index-image-tag>
@@ -49,11 +60,33 @@ Where `<ingress-domain>` is the ingress domain for your cluster, `<index-image>`
 
 For example, if you're installing your own custom devfile registry image for dev/test purposes on Minikube, you might run:
 
+**Headed**
+
 ```bash
 $ helm install devfile-registry ./deploy/chart/devfile-registry \
     --set global.ingress.domain="$(minikube ip).nip.io" \
 	--set devfileIndex.image=quay.io/someuser/devfile-index \
 	--set devfileIndex.tag=latest
+```
+
+**Headless**
+
+```bash
+$ helm install devfile-registry ./deploy/chart/devfile-registry-headless \ 
+    --set global.ingress.domain="$(minikube ip).nip.io" \
+	--set devfileIndex.image=quay.io/someuser/devfile-index \
+	--set devfileIndex.tag=latest
+```
+
+In addition, you can deploy a *headed* devfile registry with a custom registry viewer image (uses `quay.io/devfile/registry-viewer:next` by default) by running the following:
+
+```bash
+$ helm install devfile-registry ./deploy/chart/devfile-registry \
+    --set global.ingress.domain="$(minikube ip).nip.io" \
+	--set devfileIndex.image=quay.io/someuser/devfile-index \
+	--set devfileIndex.tag=latest \
+	--set registryViewer.image=quay.io/someuser/registry-viewer \
+	--set registryViewer.tag=latest
 ```
 
 For more information on the Helm chart, consult [its readme](deploy/chart/devfile-registry/README.md).
