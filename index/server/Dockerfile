@@ -6,6 +6,7 @@ RUN CGO_ENABLED=0 go build -mod=vendor -o index-server main.go
 
 # Application image
 FROM registry.access.redhat.com/ubi8/ubi-minimal AS runner
+ARG headless=
 USER root
 
 # Install and configure dependencies
@@ -23,6 +24,9 @@ RUN set -x ; \
 
 # Modify the permissions on the necessary files to allow the container to properly run as a non-root UID
 RUN mkdir -p /www/data && chmod -R g+rwx /www/data
+
+# Define headless env var, if set block registry viewer route on index server
+ENV REGISTRY_HEADLESS ${headless}
 
 # Set env vars for the locations of the devfile stacks and index.json
 ENV DEVFILE_STACKS /registry/stacks
