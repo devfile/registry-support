@@ -27,6 +27,12 @@ devfileIndex:
   imagePullPolicy: Always
   memoryLimit: 256Mi
 
+registryViewer:
+  image: quay.io/devfile/registry-viewer
+  tag: next
+  imagePullPolicy: Always
+  memoryLimit: 256Mi
+
 ociRegistry:
   image: quay.io/devfile/oci-registry
   tag: next
