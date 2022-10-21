@@ -1,0 +1,45 @@
+#
+#   Copyright 2021-2022 Red Hat, Inc.
+#
+#   Licensed under the Apache License, Version 2.0 (the "License");
+#   you may not use this file except in compliance with the License.
+#   You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
+{{- if not .Values.global.isOpenShift }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ template "devfileregistry.fullname" . }}
+  labels:
+    app: {{ template "devfileregistry.name" . }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+  annotations:
+    kubernetes.io/ingress.class: {{ .Values.global.ingress.class }}
+spec:
+  rules:
+  - host: {{ template "devfileregistry.hostname" . -}} . {{- .Values.global.ingress.domain }}
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: {{ template "devfileregistry.fullname" . }}
+            port: 
+              number: 8080
+{{- if and .Values.global.tlsEnabled .Values.global.ingress.secretName }}
+  tls:
+  - hosts:
+    - {{ template "devfileregistry.hostname" . -}} . {{- .Values.global.ingress.domain }}
+    secretName: {{ .Values.global.ingress.secretName }}
+{{- end -}}
+{{- end -}}
