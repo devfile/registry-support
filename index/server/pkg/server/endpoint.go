@@ -27,6 +27,7 @@ import (
 	"path"
 	"path/filepath"
 	"regexp"
+	"strings"
 
 	"github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2"
 	"github.com/devfile/library/pkg/devfile/parser"
@@ -309,6 +310,12 @@ func serveDevfileStarterProjectWithVersion(c *gin.Context) {
 	}
 }
 
+// serveHeadlessUI handles registry viewer proxy requests in headless mode
+func serveHeadlessUI(c *gin.Context) {
+	c.String(http.StatusBadRequest, "registry viewer is not available in headless mode")
+}
+
+// serveUI handles registry viewer proxy requests in headed mode
 func serveUI(c *gin.Context) {
 	remote, err := url.Parse(scheme + "://" + viewerService + "/viewer/")
 	if err != nil {
@@ -325,6 +332,19 @@ func serveUI(c *gin.Context) {
 		req.Header.Add("X-Origin-Host", remote.Host)
 		req.URL.Scheme = remote.Scheme
 		req.URL.Host = remote.Host
+	}
+
+	// Setup registry viewer proxy error response
+	proxy.ErrorHandler = func(w http.ResponseWriter, r *http.Request, err error) {
+		log.Print(err)
+
+		if strings.Contains(err.Error(), "connection refused") {
+			w.WriteHeader(http.StatusBadGateway)
+			w.Write([]byte("registry viewer is not accessible"))
+		} else {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("internal server error"))
+		}
 	}
 
 	proxy.ServeHTTP(c.Writer, c.Request)
