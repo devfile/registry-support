@@ -16,7 +16,7 @@ paths:
       - devfile
       summary: Get devfile by stack name.
       description: Return the specific stack devfile content of devfile registry.
-      operationId: getDevfile
+      operationId: serveDevfile
       parameters:
       - name: stack
         in: path
@@ -85,7 +85,7 @@ paths:
       - server
       summary: Get health status.
       description: Return the devfile registry health status.
-      operationId: getStatus
+      operationId: serveHealthCheck
       responses:
         200:
           description: |-
@@ -109,7 +109,7 @@ paths:
       - devfile
       summary: Get index.
       description: Return the index content of devfile registry.
-      operationId: getIndex
+      operationId: serveDevfileIndexV1
       responses:
         200:
           description: |-
