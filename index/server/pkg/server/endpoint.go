@@ -41,28 +41,31 @@ import (
 	"gopkg.in/segmentio/analytics-go.v3"
 )
 
+type Server struct {
+}
+
 // serveRootEndpoint sets up the handler for the root (/) endpoint on the server
 // If html is requested (i.e. from a web browser), the viewer is displayed, otherwise the devfile index is served.
-func serveRootEndpoint(c *gin.Context) {
+func (*Server) ServeRootEndpoint(c *gin.Context) {
 	// Determine if text/html was requested by the client
 	acceptHeader := c.Request.Header.Values("Accept")
 	if util.IsHtmlRequested(acceptHeader) {
 		c.Redirect(http.StatusFound, "/viewer")
 	} else {
-		serveDevfileIndex(c, true)
+		ServeDevfileIndex(c, true)
 	}
 }
 
-func serveDevfileIndexV1(c *gin.Context) {
-	serveDevfileIndex(c, true)
+func (*Server) ServeDevfileIndexV1(c *gin.Context) {
+	ServeDevfileIndex(c, true)
 }
 
-func serveDevfileIndexV2(c *gin.Context) {
-	serveDevfileIndex(c, false)
+func (*Server) ServeDevfileIndexV2(c *gin.Context) {
+	ServeDevfileIndex(c, false)
 }
 
-// serveDevfileIndex serves the index.json file located in the container at `serveDevfileIndex`
-func serveDevfileIndex(c *gin.Context, wantV1Index bool) {
+// ServeDevfileIndex serves the index.json file located in the container at `ServeDevfileIndex`
+func ServeDevfileIndex(c *gin.Context, wantV1Index bool) {
 	// Start the counter for the request
 	var status string
 	timer := prometheus.NewTimer(prometheus.ObserverFunc(func(v float64) {
@@ -79,28 +82,26 @@ func serveDevfileIndex(c *gin.Context, wantV1Index bool) {
 	buildIndexAPIResponse(c, wantV1Index)
 }
 
-func serveDevfileIndexV1WithType(c *gin.Context) {
+func (*Server) ServeDevfileIndexV1WithType(c *gin.Context) {
 
 	// Serve the index with type
 	buildIndexAPIResponse(c, true)
 }
 
-func serveDevfileIndexV2WithType(c *gin.Context) {
+func (*Server) ServeDevfileIndexV2WithType(c *gin.Context) {
 
 	// Serve the index with type
 	buildIndexAPIResponse(c, false)
 }
 
-// serveHealthCheck serves endpoint `/health` for registry health check
-func serveHealthCheck(c *gin.Context) {
+// ServeHealthCheck serves endpoint `/health` for registry health check
+func (*Server) ServeHealthCheck(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "the server is up and running",
 	})
 }
 
-func serveDevfileWithVersion(c *gin.Context) {
-	name := c.Param("name")
-	version := c.Param("version")
+func (*Server) ServeDevfileWithVersion(c *gin.Context, name string, version string) {
 	bytes, devfileIndex := fetchDevfile(c, name, version)
 
 	if len(bytes) != 0 {
@@ -128,21 +129,20 @@ func serveDevfileWithVersion(c *gin.Context) {
 	}
 }
 
-// serveDevfile returns the devfile content
-func serveDevfile(c *gin.Context) {
+// ServeDevfile returns the devfile content
+func (s *Server) ServeDevfile(c *gin.Context, name string) {
 	// append the stack version, for endpoint /devfiles/name without version
-	c.Params = append(c.Params, gin.Param{Key: "version", Value: "default"})
-	serveDevfileWithVersion(c)
+	s.ServeDevfileWithVersion(c, name, "default")
 }
 
-// serveDevfileStarterProject returns the starter project content for the devfile using default version
-func serveDevfileStarterProject(c *gin.Context) {
+// ServeDevfileStarterProject returns the starter project content for the devfile using default version
+func (s *Server) ServeDevfileStarterProject(c *gin.Context) {
 	c.Params = append(c.Params, gin.Param{Key: "version", Value: "default"})
-	serveDevfileStarterProjectWithVersion(c)
+	s.ServeDevfileStarterProjectWithVersion(c)
 }
 
-// serveDevfileStarterProject returns the starter project content for the devfile using specified version
-func serveDevfileStarterProjectWithVersion(c *gin.Context) {
+// ServeDevfileStarterProject returns the starter project content for the devfile using specified version
+func (*Server) ServeDevfileStarterProjectWithVersion(c *gin.Context) {
 	devfileName := c.Param("name")
 	version := c.Param("version")
 	starterProjectName := c.Param("starterProjectName")
@@ -330,13 +330,13 @@ func serveDevfileStarterProjectWithVersion(c *gin.Context) {
 	}
 }
 
-// serveHeadlessUI handles registry viewer proxy requests in headless mode
-func serveHeadlessUI(c *gin.Context) {
+// ServeHeadlessUI handles registry viewer proxy requests in headless mode
+func ServeHeadlessUI(c *gin.Context) {
 	c.String(http.StatusBadRequest, "registry viewer is not available in headless mode")
 }
 
-// serveUI handles registry viewer proxy requests in headed mode
-func serveUI(c *gin.Context) {
+// ServeUI handles registry viewer proxy requests in headed mode
+func ServeUI(c *gin.Context) {
 	remote, err := url.Parse(scheme + "://" + viewerService + "/viewer/")
 	if err != nil {
 		panic(err)

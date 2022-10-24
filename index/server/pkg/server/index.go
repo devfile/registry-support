@@ -34,6 +34,7 @@ import (
 	indexLibrary "github.com/devfile/registry-support/index/generator/library"
 	indexSchema "github.com/devfile/registry-support/index/generator/schema"
 
+	oapiMiddleware "github.com/deepmap/oapi-codegen/pkg/gin-middleware"
 	_ "github.com/devfile/registry-support/index/server/docs"
 	"github.com/gin-gonic/gin"
 	"gopkg.in/segmentio/analytics-go.v3"
@@ -151,22 +152,25 @@ func ServeRegistry() {
 		log.Println("Telemetry is not enabled")
 	}
 
+	// Get OpenAPI spec
+	swagger, err := GetSwagger()
+	if err != nil {
+		log.Fatalf("Error loading OpenAPI spec: %v", err)
+	}
+
+	swagger.Servers = nil
+
+	// Create server context
+	server := &Server{}
+
 	// Start the server and serve requests and index.json
 	router := gin.Default()
 
-	// Registry REST APIs
-	router.GET("/", serveRootEndpoint)
-	router.GET("/index", serveDevfileIndexV1)
-	router.GET("/index/:type", serveDevfileIndexV1WithType)
-	router.GET("/health", serveHealthCheck)
-	router.GET("/devfiles/:name", serveDevfile)
-	router.GET("/devfiles/:name/:version", serveDevfileWithVersion)
-	router.GET("/devfiles/:name/starter-projects/:starterProjectName", serveDevfileStarterProject)
-	router.GET("/devfiles/:name/:version/starter-projects/:starterProjectName", serveDevfileStarterProjectWithVersion)
+	// Use OpenAPI validator middleware
+	router.Use(oapiMiddleware.OapiRequestValidator(swagger))
 
-	// Registry REST APIs for index v2
-	router.GET("/v2index", serveDevfileIndexV2)
-	router.GET("/v2index/:type", serveDevfileIndexV2WithType)
+	// Registry REST APIs
+	router = RegisterHandlers(router, server)
 
 	// Set up a simple proxy for /v2 endpoints
 	// Only allow HEAD and GET requests
@@ -175,11 +179,11 @@ func ServeRegistry() {
 
 	// Set up routes for the registry viewer
 	if headless {
-		router.GET("/viewer", serveHeadlessUI)
-		router.GET("/viewer/*proxyPath", serveHeadlessUI)
+		router.GET("/viewer", ServeHeadlessUI)
+		router.GET("/viewer/*proxyPath", ServeHeadlessUI)
 	} else {
-		router.GET("/viewer", serveUI)
-		router.GET("/viewer/*proxyPath", serveUI)
+		router.GET("/viewer", ServeUI)
+		router.GET("/viewer/*proxyPath", ServeUI)
 	}
 
 	// Serve static content for stacks
