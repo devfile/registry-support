@@ -198,7 +198,8 @@ func ConvertToOldIndexFormat(schemaList []indexSchema.Schema) []indexSchema.Sche
 }
 
 func IsTelemetryEnabled() bool {
-	if len(telemetryKey) > 0 {
+	isTelemetryEnabled := GetOptionalEnv("ENABLE_TELEMETRY", false).(bool)
+	if isTelemetryEnabled && len(telemetryKey) > 0 {
 		return true
 	}
 	return false
