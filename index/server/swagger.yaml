@@ -28,57 +28,11 @@ paths:
         x-go-name: Stack
       responses:
         200:
-          description: |-
-            Successful operation.
-
-            Stack devfile content.
-          content:
-            application/yaml:
-              schema:
-                $ref: '#/components/schemas/Devfile'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Devfile'
+          $ref: '#/components/responses/devfileResponse'
         404:
-          description: Failed to find the devfile.
-          content:
-            application/yaml:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    x-go-name: Status
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    x-go-name: Status
+          $ref: '#/components/responses/devfileNotFoundResponse'
         500:
-          description: Failed to get the devfile.
-          content:
-            application/yaml:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    x-go-name: Error
-                  status:
-                    type: string
-                    x-go-name: Status
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    x-go-name: Error
-                  status:
-                    type: string
-                    x-go-name: Status
+          $ref: '#/components/responses/devfileErrorResponse'
   /health:
     get:
       tags:
@@ -88,20 +42,9 @@ paths:
       operationId: serveHealthCheck
       responses:
         200:
-          description: |-
-            Successful operation.
-
-            Health status.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    x-go-name: Message
+          $ref: '#/components/responses/healthResponse'
         404:
-          description: ' Page not found.'
+          description: 'Page not found.'
           content: {}
   /index:
     get:
@@ -112,19 +55,44 @@ paths:
       operationId: serveDevfileIndexV1
       responses:
         200:
-          description: |-
-            Successful operation.
-
-            Index content.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Schema'
+          $ref: '#/components/responses/indexResponse'
         404:
-          description: ' Page not found.'
+          description: 'Page not found.'
           content: {}
+  /devfiles/{stack}/starter-projects/{starterProject}:
+    get:
+      summary: Fetches starter project by stack and project name
+      description: |-
+        Fetches starter project specified in requested registry stack devfile with 
+        version's content and provides an archive (zip) file download as the HTTP response.
+      operationId: serveDevfileStarterProject
+      parameters:
+      - name: stack
+        in: path
+        description: The stack name
+        required: true
+        schema:
+          type: string
+          x-go-name: Stack
+        x-go-name: Stack
+      - name:  starterProject
+        in: path
+        description: The starter project name in the stack devfile
+        required: true
+        schema:
+          type: string
+          x-go-name: StarterProject
+        x-go-name: StarterProject
+      responses:
+        '200':
+          $ref: '#/components/responses/starterProjectResponse'
+        '404':
+          description: 'Page not found.'
+          content: {}
+        '500':
+          description: Failed to get the devfile or starter project.
+          $ref: '#/components/responses/devfileErrorResponse'
+
 components:
   schemas:
     Devfile:
@@ -222,6 +190,16 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/Schema'
+    starterProjectResponse:
+      description: |-
+        Successful operation.
+
+        File bytes to download.
+      content:
+        application/zip:
+          schema:
+            type: string
+            format: binary
   securitySchemes:
     basic:
       type: http

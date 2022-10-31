@@ -36,6 +36,9 @@ type ServerInterface interface {
 	// Get devfile by stack name.
 	// (GET /devfiles/{stack})
 	ServeDevfile(c *gin.Context, stack string)
+	// Fetches starter project by stack and project name
+	// (GET /devfiles/{stack}/starter-projects/{starterProject})
+	ServeDevfileStarterProject(c *gin.Context, stack string, starterProject string)
 	// Get health status.
 	// (GET /health)
 	ServeHealthCheck(c *gin.Context)
@@ -71,6 +74,36 @@ func (siw *ServerInterfaceWrapper) ServeDevfile(c *gin.Context) {
 	}
 
 	siw.Handler.ServeDevfile(c, stack)
+}
+
+// ServeDevfileStarterProject operation middleware
+func (siw *ServerInterfaceWrapper) ServeDevfileStarterProject(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "stack" -------------
+	var stack string
+
+	err = runtime.BindStyledParameter("simple", false, "stack", c.Param("stack"), &stack)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter stack: %s", err)})
+		return
+	}
+
+	// ------------- Path parameter "starterProject" -------------
+	var starterProject string
+
+	err = runtime.BindStyledParameter("simple", false, "starterProject", c.Param("starterProject"), &starterProject)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter starterProject: %s", err)})
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+	}
+
+	siw.Handler.ServeDevfileStarterProject(c, stack, starterProject)
 }
 
 // ServeHealthCheck operation middleware
@@ -113,6 +146,8 @@ func RegisterHandlersWithOptions(router *gin.Engine, si ServerInterface, options
 
 	router.GET(options.BaseURL+"/devfiles/:stack", wrapper.ServeDevfile)
 
+	router.GET(options.BaseURL+"/devfiles/:stack/starter-projects/:starterProject", wrapper.ServeDevfileStarterProject)
+
 	router.GET(options.BaseURL+"/health", wrapper.ServeHealthCheck)
 
 	router.GET(options.BaseURL+"/index", wrapper.ServeDevfileIndexV1)
@@ -123,21 +158,25 @@ func RegisterHandlersWithOptions(router *gin.Engine, si ServerInterface, options
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/7xWwZLbNgz9FQ7aoyLtbtOLbp0mbXzoNBNnemn2QFOQxKxEsiRkx+PRv3dAUV47thNv",
-	"NpPTamEABN4DHrkDZXtnDRoKUO4gqBZ7GT9f4brWHfKn7Lq/ayj/3cHPHmsooSVyoSwKLzd5o6kdVkNA",
-	"r6whNJQr2xfVFF1Ip4v1XX6X3xQpd9FJwkCzR/4xWANjtoNPLxr7wkn1IBuEEqa8Z5IV7qHhz1BsrH8I",
-	"TioMxfpWdq6VdzDejxks41Fceio4z4s831egTYWf0n/p/DGDgGrwmrYxGCMGKxm02uPCVU2WDGjrMAEB",
-	"I0drU1v2rDAorx1pa6CEV1YNPRqS/L+wtUitCI+NDuS34t3r5Xvx29tF/sF8MO9bvOwhdBBDwErU1gtt",
-	"CL1UpE0jNprak7BcLIygVgdRHdaQCWpRtDYQpwvo15yBbW5YdVqd5MnE1g5CSSNUK02DQpMgy0Yv7Mak",
-	"VHX02kgTfxwCCuf1WtJpOzmDp4kHax6xM2BABmv0YQLxNr/Jb2HMwDo00mko4ZdoysBJaiNT84yEYhdI",
-	"qoeRjQ3SKSXvkAZvYsvBodK1ViKG7EtNc3yOLi7MOvQRy0UFJSzRr3HeFS7Iyx4JfYj7cnw00zsdZWTP",
-	"3pqt3ANkEE0lxN8hA4//DdpjBSX5AbO0mdxOGr1AXpsGsmlvUvQyRo9njfecNDhrwjTcdzc3/Cd1G/fc",
-	"uU6r2FsR12KvCAer9FPxKBn7jZoB4E04zLKVffctWcbsM+iWg1IYQj10Yo9/XJnlOepyhuDlzcsn9ec8",
-	"ZyY9oRNI0hCuwJu9uN7kZlcfUdEVQHzn404Q+0PqDitex1qbKs77LLmMzq9PZP+4XPTe+q9V+zo6sbL+",
-	"WCx/cHFfQL5B+gx4PnDoe+m3UMKfSPvJXW0PpCGKpGxYQyA5wD3HFi3KjtprxO3kHplCxdTvBSF7E31+",
-	"bzFp0DPk4piTHkOI9/qXYf4ruV2F80VNeHPc6aMWHMeLt7JBYSyJ2g6mOsfOCWYzK3xzok+kxPfENZxE",
-	"x2+/XxYc/s/tc5nRhH34mhanJ9QjD9J7uX0SDYvDbp9FQ8TtwlLElxuTMd24g+8OH6gzroFkg/m8h9oW",
-	"8cl5wfnI7X78PwAA//+d1X1kJQsAAA==",
+	"H4sIAAAAAAAC/8xWTW/cNhD9KwRboC0gS7abXnQrmrjxoa3hNXqpfeBSI4mxRLLkaDcbQ/+9GOrDK2s3",
+	"Xm/cIDeJHA5n3rx5nAcuTW2NBo2epw/cgbdGewg/GaxyVcE754y77jdoXRqNoJE+hbWVkgKV0ckHbzSt",
+	"eVlCLejLOmPBoercAfmhD9xY4Cn36JQueMQ/nhTmRIuaFsNlvI24R4GNf8580Vm1bTSYmeUHkBhWtoPb",
+	"iLr6hoJrI56Bl05Zio6n/EKoCjKGhhWADEtgPfoxD7bh+0+DF6bR2SsU4yvD+38Cliud7UPsKKS+d5Dz",
+	"lH+XPPZG0u365G3n9wAADvMyy2vRSAne503FCMDgPb7Vt3qBQt4PObI+mZBrCaLC8hVIUYP3ooDnyvRH",
+	"b/bltHiFCw8H8H2AiXVUDMApncHHo3BTCLV/rsqLzvwxaOGc2BwA0pd5PxyRS8p/QiWPwiG4K2cI3gOg",
+	"+aTsNPbcuFogT/lSaeE2PHpS2ZfEd0FMX24QPPV5Zta6MiKLA4I9DHTl0E0UWlX9lfP0nxG6EtH6NEmc",
+	"WMeFwrJZNh7ckLI0ddJ3VCKsSlbn8Xl8OkJcCQSPg0UcaNBGDx03rZD3gbu887vDWWLvC/r0ydq4e2+F",
+	"BJ+szkRlS3HO27s24ounehHHSRyPEQSG9n/9/ZQ7yMYp3ITDXScthVdyrARF1a2M8BMQHfhK56Z73reL",
+	"8NbIpgaNAX1m8lFpHBTKo9uw63eLG/br1WUozc2j3s4tmPKs8ZCx3DimNIITEpUu2FphOTsWs0vNsFSe",
+	"ZdsxREHTS+OR3HlwK/JAa7ZZVkrO/ERsYxomhWayFLoAppBoszGNY2ate1d5sFoLHTYbD8w6tRI4Tycm",
+	"8BQSsQaK7QCDR3wFzncgnsWn8Rn1kbGghVU85T+HpYhbgWWo1MARnzx4kvSWFgvAeUmuARunQ8reglS5",
+	"kszvegV2lYsCG7vpMqM2A7eCoVcoICdqQHA+9Mv0aipvd1WQYCINT0MOPOK9Kod9HnEH/zbKQcZTdA1E",
+	"W1rwzFsv7wmqHYt30XQQPT893aeGo13y9MVvI/7m9M3B52azVRvxX15w73RKDl3a1DUpYMp/Bxzrs9xs",
+	"ARsoJgqqwDCx8Ds6OyNJ0ivzie2kudvY0ur9NLoAlCV41tuz3sPAKciY0oyKCB4he6T4lGqhdW91z/Uf",
+	"/Mg9oTNyuVIZeCY0E06WagXsx0/K/sTC2UG5mfCBze9vbq7YgODnibqYJPlt0zbaE84EdTpCgOMYaja2",
+	"5O5op/kfHfa2m/bzu0f1357R4bENp9hciQKYNshy6rr4NdttH+HH1uspO9YjnE+6MfoQNZ49fOV0tNxJ",
+	"6G78/K2Enn0vxffJlH8wrjMlmgU7KBC9seB6AQqTxyFgqO0h8uUvUZhB/z47CpLp/H48IsHPHi0O4xbh",
+	"0ulN46rtqXJI0aMoIB4GRWWSoAZ7jCdmd+1/AQAA//96q8/MhBEAAA==",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

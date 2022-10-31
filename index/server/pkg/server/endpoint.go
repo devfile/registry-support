@@ -136,8 +136,11 @@ func (s *Server) ServeDevfile(c *gin.Context, name string) {
 }
 
 // ServeDevfileStarterProject returns the starter project content for the devfile using default version
-func (s *Server) ServeDevfileStarterProject(c *gin.Context) {
-	c.Params = append(c.Params, gin.Param{Key: "version", Value: "default"})
+func (s *Server) ServeDevfileStarterProject(c *gin.Context, name string, starterProject string) {
+	c.Params = append(c.Params,
+		gin.Param{Key: "name", Value: name},
+		gin.Param{Key: "starterProjectName", Value: starterProject},
+		gin.Param{Key: "version", Value: "default"})
 	s.ServeDevfileStarterProjectWithVersion(c)
 }
 

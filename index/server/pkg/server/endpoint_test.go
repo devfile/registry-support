@@ -918,7 +918,10 @@ func TestServeDevfileStarterProject(t *testing.T) {
 
 			c.Params = append(c.Params, test.params...)
 
-			server.ServeDevfileStarterProject(c)
+			name, _ := c.Params.Get("name")
+			starterProject, _ := c.Params.Get("starterProjectName")
+
+			server.ServeDevfileStarterProject(c, name, starterProject)
 
 			if gotStatusCode := w.Code; !reflect.DeepEqual(gotStatusCode, test.wantCode) {
 				t.Errorf("Did not get expected status code, Got: %v, Expected: %v", gotStatusCode, test.wantCode)
