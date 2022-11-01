@@ -336,22 +336,7 @@ func serveUI(c *gin.Context) {
 
 	// Setup registry viewer proxy error response
 	proxy.ErrorHandler = func(w http.ResponseWriter, r *http.Request, err error) {
-		var writeErr error
-
-		log.Print(err.Error())
-
-		if strings.Contains(err.Error(), "connection refused") {
-			w.WriteHeader(http.StatusBadGateway)
-			_, writeErr = w.Write([]byte("registry viewer is not accessible"))
-
-		} else {
-			w.WriteHeader(http.StatusInternalServerError)
-			_, writeErr = w.Write([]byte("internal server error"))
-		}
-
-		if writeErr != nil {
-			log.Print(writeErr.Error())
-		}
+		buildProxyErrorResponse(w, r, err, "registry viewer")
 	}
 
 	proxy.ServeHTTP(c.Writer, c.Request)
@@ -481,6 +466,26 @@ func buildIndexAPIResponse(c *gin.Context, wantV1Index bool) {
 		if err != nil {
 			log.Println(err)
 		}
+	}
+}
+
+// buildProxyErrorResponse builds an error response for proxy routes
+func buildProxyErrorResponse(w http.ResponseWriter, r *http.Request, err error, name string) {
+	var writeErr error
+
+	log.Print(err.Error())
+
+	if strings.Contains(err.Error(), "connection refused") {
+		w.WriteHeader(http.StatusBadGateway)
+		_, writeErr = w.Write([]byte(fmt.Sprintf("%s is not accessible", name)))
+
+	} else {
+		w.WriteHeader(http.StatusInternalServerError)
+		_, writeErr = w.Write([]byte("internal server error"))
+	}
+
+	if writeErr != nil {
+		log.Print(writeErr.Error())
 	}
 }
 
