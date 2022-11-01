@@ -49,9 +49,9 @@ const (
 	DevfilePNGLogoMediaType = "image/png"
 	DevfileArchiveMediaType = "application/x-tar"
 
-	OwnersFile = "OWNERS"
-
-	httpRequestResponseTimeout = 30 * time.Second // httpRequestTimeout configures timeout of all HTTP requests
+	OwnersFile                 = "OWNERS"
+	registryLibrary            = "registry-library" //constant to indicate that function is called by the library
+	httpRequestResponseTimeout = 30 * time.Second   // httpRequestTimeout configures timeout of all HTTP requests
 )
 
 var (
@@ -457,7 +457,10 @@ func DownloadStarterProjectAsBytes(registryURL string, stack string, starterProj
 // IsStarterProjectExists checks if starter project exists for a given stack
 func IsStarterProjectExists(registryURL string, stack string, starterProject string, options RegistryOptions) (bool, error) {
 	// Get stack index
-	stackIndex, err := GetStackIndex(registryURL, stack, options)
+	// Avoid collecting telemetry here since it's an indirect call to GetStackIndex
+	modifiedOptions := options
+	modifiedOptions.Telemetry = TelemetryData{Client: registryLibrary}
+	stackIndex, err := GetStackIndex(registryURL, stack, modifiedOptions)
 	if err != nil {
 		return false, err
 	}
@@ -497,7 +500,10 @@ func GetStackLink(registryURL string, stack string, options RegistryOptions) (st
 	var stackLink string
 
 	// Get stack index
-	stackIndex, err := GetStackIndex(registryURL, stack, options)
+	// Avoid collecting telemetry here since it's an indirect call to GetStackIndex
+	modifiedOptions := options
+	modifiedOptions.Telemetry = TelemetryData{Client: registryLibrary}
+	stackIndex, err := GetStackIndex(registryURL, stack, modifiedOptions)
 	if err != nil {
 		return "", err
 	}

@@ -24,9 +24,10 @@ import (
 )
 
 const (
-	defaultUser = "devfile-registry"
-	viewerId    = "registry-viewer"
-	consoleId   = "openshift-console"
+	defaultUser     = "devfile-registry"
+	viewerId        = "registry-viewer"
+	consoleId       = "openshift-console"
+	registryLibrary = "registry-library"
 )
 
 var telemetryKey = GetOptionalEnv("TELEMETRY_KEY", "").(string)
@@ -117,6 +118,16 @@ func IsWebClient(c *gin.Context) bool {
 	client := GetClient(c)
 	userId := GetUser(c)
 	if client == viewerId || userId == consoleId {
+		return true
+	}
+
+	return false
+}
+
+//IsIndirectCall determines if a request is made from an internal client
+func IsIndirectCall(c *gin.Context) bool {
+	client := GetClient(c)
+	if client == registryLibrary {
 		return true
 	}
 

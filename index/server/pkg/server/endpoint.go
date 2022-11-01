@@ -439,7 +439,7 @@ func buildIndexAPIResponse(c *gin.Context, wantV1Index bool) {
 	c.Data(http.StatusOK, http.DetectContentType(bytes), bytes)
 
 	// Track event for telemetry.  Ignore events from the registry-viewer and DevConsole since those are tracked on the client side
-	if enableTelemetry && !util.IsWebClient(c) {
+	if enableTelemetry && !util.IsWebClient(c) && !util.IsIndirectCall(c) {
 		user := util.GetUser(c)
 		client := util.GetClient(c)
 		err := util.TrackEvent(analytics.Track{
