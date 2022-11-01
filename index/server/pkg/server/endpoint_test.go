@@ -1019,3 +1019,24 @@ func TestOCIServerProxy(t *testing.T) {
 		})
 	}
 }
+
+// TestServeHeadlessUI tests headless handle of the registry viewer endpoint
+func TestServeHeadlessUI(t *testing.T) {
+	const (
+		wantCode = http.StatusBadRequest
+		wantBody = "registry viewer is not available in headless mode"
+	)
+
+	gin.SetMode(gin.TestMode)
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+
+	serveHeadlessUI(c)
+
+	if gotStatusCode, gotBody := w.Code, w.Body.String(); !reflect.DeepEqual(gotStatusCode, wantCode) {
+		t.Errorf("Did not get expected status code, Got: %v, Expected: %v", gotStatusCode, wantCode)
+	} else if !reflect.DeepEqual(gotBody, wantBody) {
+		t.Errorf("Did not get expected response body, Got: %v, Expected: %v", gotBody, wantBody)
+	}
+}
