@@ -336,14 +336,21 @@ func serveUI(c *gin.Context) {
 
 	// Setup registry viewer proxy error response
 	proxy.ErrorHandler = func(w http.ResponseWriter, r *http.Request, err error) {
-		log.Print(err)
+		var writeErr error
+
+		log.Print(err.Error())
 
 		if strings.Contains(err.Error(), "connection refused") {
 			w.WriteHeader(http.StatusBadGateway)
-			w.Write([]byte("registry viewer is not accessible"))
+			_, writeErr = w.Write([]byte("registry viewer is not accessible"))
+
 		} else {
 			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte("internal server error"))
+			_, writeErr = w.Write([]byte("internal server error"))
+		}
+
+		if writeErr != nil {
+			log.Print(writeErr.Error())
 		}
 	}
 
