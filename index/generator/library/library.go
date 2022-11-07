@@ -34,6 +34,7 @@ const (
 	devfileHidden       = ".devfile.yaml"
 	extraDevfileEntries = "extraDevfileEntries.yaml"
 	stackYaml           = "stack.yaml"
+	ownersFile          = "OWNERS"
 )
 
 // MissingArchError is an error if the architecture list is empty
@@ -397,7 +398,7 @@ func parseStackDevfile(devfileDirPath string, stackName string, force bool, vers
 	for _, stackFile := range stackFiles {
 		// The registry build should have already packaged any folders and miscellaneous files into an archive.tar file
 		// But, add this check as a safeguard, as OCI doesn't support unarchived folders being pushed up.
-		if !stackFile.IsDir() {
+		if !stackFile.IsDir() && stackFile.Name() != ownersFile {
 			versionComponent.Resources = append(versionComponent.Resources, stackFile.Name())
 		}
 	}
