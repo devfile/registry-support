@@ -85,7 +85,7 @@ spec:
             value: {{ .Values.telemetry.registryName }}
           - name: TELEMETRY_KEY
             value: {{ .Values.telemetry.key }}
-
+      {{- if not .Values.global.headless }}
       - image: "{{ .Values.registryViewer.image }}:{{ .Values.registryViewer.tag }}"
         imagePullPolicy: {{ .Values.registryViewer.imagePullPolicy }}
         name: registry-viewer
@@ -111,7 +111,7 @@ spec:
             memory: {{ .Values.registryViewer.memoryLimit }}
           requests:
             memory: 64Mi
-
+      {{- end }}
       - image: "{{ .Values.ociRegistry.image }}:{{ .Values.ociRegistry.tag }}"
         imagePullPolicy: {{ .Values.ociRegistry.imagePullPolicy }}
         name: oci-registry

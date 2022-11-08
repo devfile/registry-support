@@ -20,6 +20,7 @@ global:
     secretName: ''
   isOpenShift: false
   tlsEnabled: false
+  headless: false
 
 devfileIndex:
   image: quay.io/devfile/devfile-index
