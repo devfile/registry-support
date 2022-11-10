@@ -62,19 +62,24 @@ The following fields can be configured in the Helm chart, either via the `values
 
 | Parameter                              | Description                                     | Default                                                    |
 | -----------------------                | ---------------------------------------------   | ---------------------------------------------------------- |
-| `global.ingress.domain`                | Ingress domain for the devfile registry         | **MUST BE SET BY USER**     |
-| `global.ingress.class`                 | Ingress class for the devfile registry          | `nginx` |
-| `global.ingress.secretName`            | Name of an existing tls secret if using TLS     | ` '' ` |
-| `global.isOpenShift  `                 | Set to true to use OpenShift routes instead of ingress   | `false` |
-| `global.tlsEnabled`                    | Set to true to use the devfile registry with TLS | `false` |
-| `devfileIndex.image`                   | Image used for the devfile index image          | `quay.io/devfile/devfile-index` |
-| `devfileIndex.tag`                     | Tag for devfile index image                     | `next` |
-| `devfileIndex.imagePullpolicy`         | Image pull policy for devfile index image       | `Always` |
-| `devfileIndex.memoryLimit`             | Memory for devfile index container              | `256Mi` |
-| `ociRegistry.image`                    | Image used for the oci registry image           | `quay.io/devfile/oci-registry` |
-| `ociRegistry.tag`                      | Tag for oci registry image                      | `next` |
-| `ociRegistry.imagePullpolicy`          | Image pull policy for oci registry image        | `Always` |
-| `ociRegistry.memoryLimit`              | Memory for oci registry container               | `256Mi` |
-| `persistence.enabled`                  | Enable persistent storage for the registry      | `true` |
-| `persistence.size`                     | The size of the persistent volume (if-enabled)  | `1Gi` |
-| `telemetry.key`                        | The write key for the Segment instance          | **MUST BE SET BY USER**  |
+| `global.ingress.domain`                | Ingress domain for the devfile registry                                        | **MUST BE SET BY USER**     |
+| `global.ingress.class`                 | Ingress class for the devfile registry                                         | `nginx` |
+| `global.ingress.secretName`            | Name of an existing tls secret if using TLS                                    | ` '' ` |
+| `global.isOpenShift  `                 | Set to true to use OpenShift routes instead of ingress                         | `false` |
+| `global.tlsEnabled`                    | Set to true to use the devfile registry with TLS                               | `false` |
+| `global.headless`                      | Set to true to run in headless mode (does not expect attached registry viewer) | `false` |
+| `devfileIndex.image`                   | Image used for the devfile index image                                         | `quay.io/devfile/devfile-index` |
+| `devfileIndex.tag`                     | Tag for devfile index image                                                    | `next` |
+| `devfileIndex.imagePullpolicy`         | Image pull policy for devfile index image                                      | `Always` |
+| `devfileIndex.memoryLimit`             | Memory for devfile index container                                             | `256Mi` |
+| `registryViewer.image`                 | Image used for the registry viewer image                                       | `quay.io/devfile/registry-viewer` |
+| `registryViewer.tag`                   | Tag for registry viewer image                                                  | `next` |
+| `registryViewer.imagePullpolicy`       | Image pull policy for registry viewer image                                    | `Always` |
+| `registryViewer.memoryLimit`           | Memory for registry viewer container                                           | `256Mi` |
+| `ociRegistry.image`                    | Image used for the oci registry image                                          | `quay.io/devfile/oci-registry` |
+| `ociRegistry.tag`                      | Tag for oci registry image                                                     | `next` |
+| `ociRegistry.imagePullpolicy`          | Image pull policy for oci registry image                                       | `Always` |
+| `ociRegistry.memoryLimit`              | Memory for oci registry container                                              | `256Mi` |
+| `persistence.enabled`                  | Enable persistent storage for the registry                                     | `true` |
+| `persistence.size`                     | The size of the persistent volume (if-enabled)                                 | `1Gi` |
+| `telemetry.key`                        | The write key for the Segment instance                                         | **MUST BE SET BY USER**  |
