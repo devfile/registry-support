@@ -4,4 +4,4 @@
 buildfolder="$(realpath $(dirname ${BASH_SOURCE[0]}))"
 
 # Build the index server
-docker build -t devfile-index-base:latest --build-arg headless=${REGISTRY_HEADLESS:-""} $buildfolder
+docker build -t devfile-index-base:latest $buildfolder

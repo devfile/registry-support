@@ -85,6 +85,10 @@ spec:
             value: {{ .Values.telemetry.registryName }}
           - name: TELEMETRY_KEY
             value: {{ .Values.telemetry.key }}
+          {{- if .Values.global.headless }}
+          - name: REGISTRY_HEADLESS
+            value: "1"
+          {{- end }}
       {{- if not .Values.global.headless }}
       - image: "{{ .Values.registryViewer.image }}:{{ .Values.registryViewer.tag }}"
         imagePullPolicy: {{ .Values.registryViewer.imagePullPolicy }}
