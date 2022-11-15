@@ -83,3 +83,4 @@ The following fields can be configured in the Helm chart, either via the `values
 | `persistence.enabled`                  | Enable persistent storage for the registry                                     | `true` |
 | `persistence.size`                     | The size of the persistent volume (if-enabled)                                 | `1Gi` |
 | `telemetry.key`                        | The write key for the Segment instance                                         | **MUST BE SET BY USER**  |
+| `telemetry.registryViewerWriteKey`     | The write key for the registry viewer                                          | **MUST BE SET BY USER**  |
