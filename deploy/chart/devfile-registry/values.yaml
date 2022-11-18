@@ -33,6 +33,8 @@ registryViewer:
   tag: next
   imagePullPolicy: Always
   memoryLimit: 256Mi
+  registryHosts: |
+    "[{ \"name\": \"Community\", \"link\": \"http://localhost:8080\" }]"
 
 ociRegistry:
   image: quay.io/devfile/oci-registry

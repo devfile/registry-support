@@ -116,13 +116,10 @@ spec:
           requests:
             memory: 64Mi
         env:
-          - name: SITE_URL
-            value: "http://localhost:8080"
           - name: NEXT_PUBLIC_BASE_PATH
             value: /viewer
           - name: NEXT_PUBLIC_DEVFILE_REGISTRIES
-            value: |
-              [{ "name": "Community", "link": "http://localhost:8080" }]
+            value: {{ .Values.registryViewer.registryHosts }}
           - name: NEXT_PUBLIC_ANALYTICS_WRITE_KEY
             value: {{ .Values.telemetry.registryViewerWriteKey }}
       {{- end }}
