@@ -76,7 +76,6 @@ The following fields can be configured in the Helm chart, either via the `values
 | `registryViewer.tag`                   | Tag for registry viewer image                                                  | `next` |
 | `registryViewer.imagePullpolicy`       | Image pull policy for registry viewer image                                    | `Always` |
 | `registryViewer.memoryLimit`           | Memory for registry viewer container                                           | `256Mi` |
-| `registryViewer.registryHosts`         | JSON array of registry host objects with a label `name`, a `link`, and an `alias` link properties | `[{"name": "Community", "link": "http://localhost:8080"}]` |
 | `ociRegistry.image`                    | Image used for the oci registry image                                          | `quay.io/devfile/oci-registry` |
 | `ociRegistry.tag`                      | Tag for oci registry image                                                     | `next` |
 | `ociRegistry.imagePullpolicy`          | Image pull policy for oci registry image                                       | `Always` |

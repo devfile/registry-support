@@ -243,6 +243,59 @@ func TestConvertToOldIndexFormat(t *testing.T) {
 	})
 }
 
+func TestIsEnabled(t *testing.T) {
+	const (
+		key          = "TEST_DEVFILE_IS_ENABLED"
+		defaultValue = true
+	)
+	tests := []struct {
+		name    string
+		setVal  string
+		wantVal bool
+	}{
+		{
+			name:    "Default value",
+			wantVal: defaultValue,
+		},
+		{
+			name:    "Enabled value",
+			setVal:  "true",
+			wantVal: true,
+		},
+		{
+			name:    "Disabled value",
+			setVal:  "false",
+			wantVal: false,
+		},
+		{
+			name:    "Invalid environment variable",
+			setVal:  "abc",
+			wantVal: defaultValue,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if test.setVal != "" {
+				if err := os.Setenv(key, test.setVal); err != nil {
+					t.Errorf("Unexpected error: %v", err)
+				}
+
+				defer func() {
+					if err := os.Unsetenv(key); err != nil {
+						t.Errorf("Unexpected error: %v", err)
+					}
+				}()
+			}
+
+			gotVal := IsEnabled(key, defaultValue)
+			if !reflect.DeepEqual(test.wantVal, gotVal) {
+				t.Errorf("Want enabled %v, got enabled %v", test.wantVal, gotVal)
+			}
+		})
+	}
+}
+
 func TestMakeVersionMap(t *testing.T) {
 	devfileIndex := indexSchema.Schema{
 		Name:              "Test Devfile",

@@ -56,7 +56,7 @@ $ helm install devfile-registry ./deploy/chart/devfile-registry \
 	--set devfileIndex.tag=latest
 ```
 
-You can deploy a devfile registry with a registry viewer image (uses `quay.io/devfile/registry-viewer:next` by default) by running the following:
+You can deploy a devfile registry with a custom registry viewer image (uses `quay.io/devfile/registry-viewer:next` by default) by running the following:
 
 ```bash
 $ helm install devfile-registry ./deploy/chart/devfile-registry \

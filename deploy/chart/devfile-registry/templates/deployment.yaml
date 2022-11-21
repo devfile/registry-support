@@ -85,10 +85,8 @@ spec:
             value: {{ .Values.telemetry.registryName }}
           - name: TELEMETRY_KEY
             value: {{ .Values.telemetry.key }}
-          {{- if .Values.global.headless }}
           - name: REGISTRY_HEADLESS
-            value: "1"
-          {{- end }}
+            value: "{{ .Values.global.headless }}"
       {{- if not .Values.global.headless }}
       - image: "{{ .Values.registryViewer.image }}:{{ .Values.registryViewer.tag }}"
         imagePullPolicy: {{ .Values.registryViewer.imagePullPolicy }}
@@ -110,6 +108,14 @@ spec:
           initialDelaySeconds: 15
           periodSeconds: 10
           timeoutSeconds: 3
+        startupProbe:
+          httpGet:
+            path: /viewer
+            port: 3000
+            scheme: HTTP
+          initialDelaySeconds: 30
+          periodSeconds: 1
+          timeoutSeconds: 10  
         resources:
           limits:
             memory: {{ .Values.registryViewer.memoryLimit }}
@@ -119,7 +125,10 @@ spec:
           - name: NEXT_PUBLIC_BASE_PATH
             value: /viewer
           - name: NEXT_PUBLIC_DEVFILE_REGISTRIES
-            value: {{ .Values.registryViewer.registryHosts }}
+            valueFrom:
+              configMapKeyRef:
+                name: {{ template "devfileregistry.fullname" . }}
+                key: devfile-registry-hosts.json
           - name: NEXT_PUBLIC_ANALYTICS_WRITE_KEY
             value: {{ .Values.telemetry.registryViewerWriteKey }}
       {{- end }}

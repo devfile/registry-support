@@ -173,7 +173,7 @@ func ServeRegistry() {
 	router.GET("/v2/*proxyPath", ociServerProxy)
 
 	// Set up routes for the registry viewer
-	if headless != "" {
+	if headless {
 		router.GET("/viewer", serveHeadlessUI)
 		router.GET("/viewer/*proxyPath", serveHeadlessUI)
 	} else {

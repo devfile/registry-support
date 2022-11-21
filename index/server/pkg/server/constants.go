@@ -52,7 +52,7 @@ var (
 	sampleBase64IndexPath = os.Getenv("DEVFILE_SAMPLE_BASE64_INDEX")
 	stackIndexPath        = os.Getenv("DEVFILE_STACK_INDEX")
 	stackBase64IndexPath  = os.Getenv("DEVFILE_STACK_BASE64_INDEX")
-	headless              = os.Getenv("REGISTRY_HEADLESS")
+	headless              = util.IsEnabled("REGISTRY_HEADLESS", false)
 	enableTelemetry       = util.IsTelemetryEnabled()
 	registry              = util.GetOptionalEnv("REGISTRY_NAME", "devfile-registry")
 )
