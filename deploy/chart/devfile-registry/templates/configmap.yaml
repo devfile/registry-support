@@ -42,10 +42,10 @@ data:
         prometheus:
           enabled: true
           path: /metrics
-
   devfile-registry-hosts.json: |
-    {
-      "Community": {
-        "url": "http://localhost:8080"
+    [
+      { 
+        "name": "Community", 
+        "link": "http://localhost:8080" 
       }
-    }
+    ]

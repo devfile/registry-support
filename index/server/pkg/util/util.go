@@ -204,6 +204,20 @@ func IsTelemetryEnabled() bool {
 	return false
 }
 
+// IsEnabled return value of a boolean environment variable, if environment variable
+// has non-boolean typed value returns default value
+func IsEnabled(key string, defaultValue bool) bool {
+	if strValue, present := os.LookupEnv(key); present {
+		value, err := strconv.ParseBool(strValue)
+		if err == nil {
+			return value
+		}
+
+		log.Print(err)
+	}
+	return defaultValue
+}
+
 // MakeVersionMap creates a map of versions for a given devfile index schema.
 func MakeVersionMap(devfileIndex indexSchema.Schema) (map[string]indexSchema.Version, error) {
 	versionMap := make(map[string]indexSchema.Version)

@@ -20,9 +20,16 @@ global:
     secretName: ''
   isOpenShift: false
   tlsEnabled: false
+  headless: false
 
 devfileIndex:
   image: quay.io/devfile/devfile-index
+  tag: next
+  imagePullPolicy: Always
+  memoryLimit: 256Mi
+
+registryViewer:
+  image: quay.io/devfile/registry-viewer
   tag: next
   imagePullPolicy: Always
   memoryLimit: 256Mi

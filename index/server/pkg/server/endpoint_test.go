@@ -18,6 +18,7 @@ package server
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/fs"
@@ -1017,5 +1018,67 @@ func TestOCIServerProxy(t *testing.T) {
 				t.Errorf("Did not get expected status code, Got: %v, Expected: %v", gotStatusCode, test.wantCode)
 			}
 		})
+	}
+}
+
+// TestServeHeadlessUI tests headless handle of the registry viewer endpoint
+func TestServeHeadlessUI(t *testing.T) {
+	const (
+		wantCode = http.StatusBadRequest
+		wantBody = "registry viewer is not available in headless mode"
+	)
+
+	gin.SetMode(gin.TestMode)
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+
+	serveHeadlessUI(c)
+
+	if gotStatusCode, gotBody := w.Code, w.Body.String(); !reflect.DeepEqual(gotStatusCode, wantCode) {
+		t.Errorf("Did not get expected status code, Got: %v, Expected: %v", gotStatusCode, wantCode)
+	} else if !reflect.DeepEqual(gotBody, wantBody) {
+		t.Errorf("Did not get expected response body, Got: %v, Expected: %v", gotBody, wantBody)
+	}
+}
+
+// TestBuildProxyErrorResponse tests building the correct error response for proxy routes
+func TestBuildProxyErrorResponse(t *testing.T) {
+	tests := []struct {
+		name      string
+		path      string
+		proxyName string
+		err       error
+		wantCode  int
+		wantBody  string
+	}{
+		{
+			name:      "No Registry Viewer at Listening Address",
+			path:      "/viewer",
+			proxyName: "registry viewer",
+			err:       errors.New("connection refused"),
+			wantCode:  http.StatusBadGateway,
+			wantBody:  "registry viewer is not accessible",
+		},
+		{
+			name:      "Other Error",
+			path:      "/viewer",
+			proxyName: "registry viewer",
+			err:       errors.New("something went wrong"),
+			wantCode:  http.StatusInternalServerError,
+			wantBody:  "internal server error",
+		},
+	}
+
+	for _, test := range tests {
+		w, r := httptest.NewRecorder(), httptest.NewRequest(http.MethodGet, test.path, nil)
+
+		buildProxyErrorResponse(w, r, test.err, test.proxyName)
+
+		if gotStatusCode, gotBody := w.Code, w.Body.String(); !reflect.DeepEqual(gotStatusCode, test.wantCode) {
+			t.Errorf("Did not get expected status code, Got: %v, Expected: %v", gotStatusCode, test.wantCode)
+		} else if !reflect.DeepEqual(gotBody, test.wantBody) {
+			t.Errorf("Did not get expected response body, Got: %v, Expected: %v", gotBody, test.wantBody)
+		}
 	}
 }
