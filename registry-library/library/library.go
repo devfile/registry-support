@@ -19,7 +19,6 @@ import (
 	"archive/zip"
 	"encoding/json"
 	"fmt"
-	"github.com/hashicorp/go-multierror"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -32,6 +31,7 @@ import (
 	"text/tabwriter"
 	"time"
 
+	"github.com/hashicorp/go-multierror"
 	orasctx "oras.land/oras-go/pkg/context"
 
 	"github.com/containerd/containerd/remotes/docker"
@@ -215,12 +215,15 @@ func PrintRegistry(registryURLs string, devfileType string, options RegistryOpti
 	registryURLArray := strings.Split(registryURLs, ",")
 	var registryList []Registry
 
+	//ignore telemetry when printing the registry
+	modifiedOptions := options
+	modifiedOptions.Telemetry = TelemetryData{Client: registryLibrary}
 	if devfileType == string(indexSchema.StackDevfileType) {
-		registryList = GetMultipleRegistryIndices(registryURLArray, options, indexSchema.StackDevfileType)
+		registryList = GetMultipleRegistryIndices(registryURLArray, modifiedOptions, indexSchema.StackDevfileType)
 	} else if devfileType == string(indexSchema.SampleDevfileType) {
-		registryList = GetMultipleRegistryIndices(registryURLArray, options, indexSchema.SampleDevfileType)
+		registryList = GetMultipleRegistryIndices(registryURLArray, modifiedOptions, indexSchema.SampleDevfileType)
 	} else if devfileType == "all" {
-		registryList = GetMultipleRegistryIndices(registryURLArray, options, indexSchema.StackDevfileType, indexSchema.SampleDevfileType)
+		registryList = GetMultipleRegistryIndices(registryURLArray, modifiedOptions, indexSchema.StackDevfileType, indexSchema.SampleDevfileType)
 	}
 
 	w := tabwriter.NewWriter(os.Stdout, 5, 2, 3, ' ', tabwriter.TabIndent)

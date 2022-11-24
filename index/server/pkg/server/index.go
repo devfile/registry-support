@@ -210,8 +210,8 @@ func ociServerProxy(c *gin.Context) {
 				resource = parts[3]
 			}
 
-			//Ignore events from the registry-viewer and DevConsole since those are tracked on the client side
-			if resource == "blobs" && !util.IsWebClient(c) {
+			//Ignore events from the registry-viewer and DevConsole since those are tracked on the client side.  Ignore indirect calls from clients.
+			if resource == "blobs" && !util.IsWebClient(c) && !util.IsIndirectCall(c) {
 				user := util.GetUser(c)
 				client := util.GetClient(c)
 

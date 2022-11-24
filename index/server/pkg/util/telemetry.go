@@ -16,18 +16,20 @@
 package util
 
 import (
+	"log"
+	"net"
+
 	"github.com/gin-gonic/gin"
 	"golang.org/x/text/language"
 	"gopkg.in/segmentio/analytics-go.v3"
-	"log"
-	"net"
 )
 
 const (
-	defaultUser     = "devfile-registry"
-	viewerId        = "registry-viewer"
-	consoleId       = "openshift-console"
-	registryLibrary = "registry-library"
+	defaultUser            = "devfile-registry"
+	viewerId               = "registry-viewer"
+	consoleId              = "openshift-console"
+	registryLibrary        = "registry-library"
+	devfileLibraryIndirect = "devfile-library-indirect"
 )
 
 var telemetryKey = GetOptionalEnv("TELEMETRY_KEY", "").(string)
@@ -127,7 +129,7 @@ func IsWebClient(c *gin.Context) bool {
 //IsIndirectCall determines if a request is made from an internal client
 func IsIndirectCall(c *gin.Context) bool {
 	client := GetClient(c)
-	if client == registryLibrary {
+	if client == registryLibrary || client == devfileLibraryIndirect {
 		return true
 	}
 
