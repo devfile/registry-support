@@ -104,8 +104,8 @@ func serveDevfileWithVersion(c *gin.Context) {
 	bytes, devfileIndex := fetchDevfile(c, name, version)
 
 	if len(bytes) != 0 {
-		// Track event for telemetry.  Ignore events from the registry-viewer and DevConsole since those are tracked on the client side
-		if enableTelemetry && !util.IsWebClient(c) {
+		// Track event for telemetry.  Ignore events from the registry-viewer and DevConsole since those are tracked on the client side.  Ignore indirect calls from clients.
+		if enableTelemetry && !util.IsWebClient(c) && !util.IsIndirectCall(c) {
 
 			user := util.GetUser(c)
 			client := util.GetClient(c)
