@@ -52,6 +52,12 @@ spec:
             items:
               - key: registry-config.yml
                 path: config.yml
+        - name: viewer-env-file
+          configMap:
+            name: {{ template "devfileregistry.fullname" . }}
+            items:
+              - key: .env.registry-viewer
+                path: .env.local
 
       containers:
       - image: "{{ .Values.devfileIndex.image }}:{{ .Values.devfileIndex.tag }}"
@@ -121,16 +127,10 @@ spec:
             memory: {{ .Values.registryViewer.memoryLimit }}
           requests:
             memory: 64Mi
-        env:
-          - name: NEXT_PUBLIC_BASE_PATH
-            value: /viewer
-          - name: NEXT_PUBLIC_DEVFILE_REGISTRIES
-            valueFrom:
-              configMapKeyRef:
-                name: {{ template "devfileregistry.fullname" . }}
-                key: devfile-registry-hosts.json
-          - name: NEXT_PUBLIC_ANALYTICS_WRITE_KEY
-            value: {{ .Values.telemetry.registryViewerWriteKey }}
+        volumeMounts:
+          - name: viewer-env-file
+            mountPath: /app/apps/registry-viewer/.env.local
+            subPath: .env.local
       {{- end }}
       - image: "{{ .Values.ociRegistry.image }}:{{ .Values.ociRegistry.tag }}"
         imagePullPolicy: {{ .Values.ociRegistry.imagePullPolicy }}

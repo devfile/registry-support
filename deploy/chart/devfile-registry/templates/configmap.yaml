@@ -42,10 +42,6 @@ data:
         prometheus:
           enabled: true
           path: /metrics
-  devfile-registry-hosts.json: |
-    [
-      { 
-        "name": "Community", 
-        "url": "http://localhost:8080" 
-      }
-    ]
+  .env.registry-viewer: |
+    ANALYTICS_WRITE_KEY={{ .Values.telemetry.registryViewerWriteKey }}
+    DEVFILE_REGISTRIES=[{"name":"Community","url":"http://localhost:8080","fqdn":"http://devfile-registry-default.{{ .Values.global.ingress.domain }}"}]
