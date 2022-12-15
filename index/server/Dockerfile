@@ -19,7 +19,7 @@ RUN chgrp -R 0 /registry && \
 
 # Create a non-root user to run the server as
 RUN set -x ; \
-    adduser www-data -u 82 -G root && exit 0
+    adduser www-data -u 1001 -G root && exit 0
 
 # Modify the permissions on the necessary files to allow the container to properly run as a non-root UID
 RUN mkdir -p /www/data && chmod -R g+rwx /www/data
@@ -34,7 +34,7 @@ ENV DEVFILE_SAMPLE_BASE64_INDEX /www/data/sample_base64_index.json
 ENV DEVFILE_STACK_INDEX /www/data/stack_index.json
 ENV DEVFILE_STACK_BASE64_INDEX /www/data/stack_base64_index.json
 
-USER www-data
+USER 1001
 
 EXPOSE 8080
 
