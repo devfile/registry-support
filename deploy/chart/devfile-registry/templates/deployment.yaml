@@ -52,7 +52,12 @@ spec:
             items:
               - key: registry-config.yml
                 path: config.yml
-
+        - name: viewer-env-file
+          configMap:
+            name: {{ template "devfileregistry.fullname" . }}
+            items:
+              - key: .env.registry-viewer
+                path: .env.local
       containers:
       - image: "{{ .Values.devfileIndex.image }}:{{ .Values.devfileIndex.tag }}"
         imagePullPolicy: {{ .Values.devfileIndex.imagePullPolicy }}
@@ -87,6 +92,13 @@ spec:
             value: {{ .Values.telemetry.key }}
           - name: REGISTRY_HEADLESS
             value: "{{ .Values.global.headless }}"
+        securityContext:
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          capabilities:
+            drop: ["ALL"]
+          seccompProfile:
+            type: "RuntimeDefault"
       {{- if not .Values.global.headless }}
       - image: "{{ .Values.registryViewer.image }}:{{ .Values.registryViewer.tag }}"
         imagePullPolicy: {{ .Values.registryViewer.imagePullPolicy }}
@@ -121,16 +133,18 @@ spec:
             memory: {{ .Values.registryViewer.memoryLimit }}
           requests:
             memory: 64Mi
-        env:
-          - name: NEXT_PUBLIC_BASE_PATH
-            value: /viewer
-          - name: NEXT_PUBLIC_DEVFILE_REGISTRIES
-            valueFrom:
-              configMapKeyRef:
-                name: {{ template "devfileregistry.fullname" . }}
-                key: devfile-registry-hosts.json
-          - name: NEXT_PUBLIC_ANALYTICS_WRITE_KEY
-            value: {{ .Values.telemetry.registryViewerWriteKey }}
+        volumeMounts:
+          - name: viewer-env-file
+            mountPath: /app/apps/registry-viewer/.env.local
+            subPath: .env.local
+            readOnly: true
+        securityContext:
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          capabilities:
+            drop: ["ALL"]
+          seccompProfile:
+            type: "RuntimeDefault"
       {{- end }}
       - image: "{{ .Values.ociRegistry.image }}:{{ .Values.ociRegistry.tag }}"
         imagePullPolicy: {{ .Values.ociRegistry.imagePullPolicy }}
@@ -157,6 +171,13 @@ spec:
             memory: {{ .Values.ociRegistry.memoryLimit }}
           requests:
             memory: 64Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          capabilities:
+            drop: ["ALL"]
+          seccompProfile:
+            type: "RuntimeDefault"
         volumeMounts:
         - name: devfile-registry-storage
           mountPath: "/var/lib/registry"
