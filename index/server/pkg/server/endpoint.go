@@ -75,23 +75,20 @@ func ServeDevfileIndex(c *gin.Context, wantV1Index bool) {
 		timer.ObserveDuration()
 	}()
 
-	// append the devfile type, for endpoint /index without type
-	c.Params = append(c.Params, gin.Param{Key: "type", Value: string(indexSchema.StackDevfileType)})
-
 	// Serve the index.json file
-	buildIndexAPIResponse(c, wantV1Index)
+	buildIndexAPIResponse(c, string(indexSchema.StackDevfileType), wantV1Index)
 }
 
-func (*Server) ServeDevfileIndexV1WithType(c *gin.Context) {
+func (*Server) ServeDevfileIndexV1WithType(c *gin.Context, indexType string) {
 
 	// Serve the index with type
-	buildIndexAPIResponse(c, true)
+	buildIndexAPIResponse(c, indexType, true)
 }
 
-func (*Server) ServeDevfileIndexV2WithType(c *gin.Context) {
+func (*Server) ServeDevfileIndexV2WithType(c *gin.Context, indexType string) {
 
 	// Serve the index with type
-	buildIndexAPIResponse(c, false)
+	buildIndexAPIResponse(c, indexType, false)
 }
 
 // ServeHealthCheck serves endpoint `/health` for registry health check
@@ -137,21 +134,14 @@ func (s *Server) ServeDevfile(c *gin.Context, name string) {
 
 // ServeDevfileStarterProject returns the starter project content for the devfile using default version
 func (s *Server) ServeDevfileStarterProject(c *gin.Context, name string, starterProject string) {
-	c.Params = append(c.Params,
-		gin.Param{Key: "name", Value: name},
-		gin.Param{Key: "starterProjectName", Value: starterProject},
-		gin.Param{Key: "version", Value: "default"})
-	s.ServeDevfileStarterProjectWithVersion(c)
+	s.ServeDevfileStarterProjectWithVersion(c, name, "default", starterProject)
 }
 
 // ServeDevfileStarterProject returns the starter project content for the devfile using specified version
-func (*Server) ServeDevfileStarterProjectWithVersion(c *gin.Context) {
-	devfileName := c.Param("name")
-	version := c.Param("version")
-	starterProjectName := c.Param("starterProjectName")
-	downloadTmpLoc := path.Join("/tmp", starterProjectName)
-	stackLoc := path.Join(stacksPath, devfileName)
-	devfileBytes, devfileIndex := fetchDevfile(c, devfileName, version)
+func (*Server) ServeDevfileStarterProjectWithVersion(c *gin.Context, name string, version string, starterProject string) {
+	downloadTmpLoc := path.Join("/tmp", starterProject)
+	stackLoc := path.Join(stacksPath, name)
+	devfileBytes, devfileIndex := fetchDevfile(c, name, version)
 
 	if len(devfileIndex.Versions) > 1 {
 		versionMap, err := util.MakeVersionMap(devfileIndex)
@@ -173,7 +163,7 @@ func (*Server) ServeDevfileStarterProjectWithVersion(c *gin.Context) {
 	} else {
 		content, err := parser.ParseFromData(devfileBytes)
 		filterOptions := common.DevfileOptions{
-			FilterByName: starterProjectName,
+			FilterByName: starterProject,
 		}
 		var starterProjects []v1alpha2.StarterProject
 		var downloadBytes []byte
@@ -182,7 +172,7 @@ func (*Server) ServeDevfileStarterProjectWithVersion(c *gin.Context) {
 			log.Print(err.Error())
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"error":  err.Error(),
-				"status": fmt.Sprintf("failed to parse the devfile of %s", devfileName),
+				"status": fmt.Sprintf("failed to parse the devfile of %s", name),
 			})
 			return
 		}
@@ -192,28 +182,28 @@ func (*Server) ServeDevfileStarterProjectWithVersion(c *gin.Context) {
 			log.Print(err.Error())
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"error":  err.Error(),
-				"status": fmt.Sprintf("problem in reading starter project %s of devfile %s", starterProjectName, devfileName),
+				"status": fmt.Sprintf("problem in reading starter project %s of devfile %s", starterProject, name),
 			})
 			return
 		} else if len(starterProjects) == 0 {
 			c.JSON(http.StatusNotFound, gin.H{
-				"status": fmt.Sprintf("the starter project named %s does not exist in the %s devfile", starterProjectName, devfileName),
+				"status": fmt.Sprintf("the starter project named %s does not exist in the %s devfile", starterProject, name),
 			})
 			return
 		}
 
-		if starterProject := starterProjects[0]; starterProject.Git != nil {
+		if selStarterProject := starterProjects[0]; selStarterProject.Git != nil {
 			gitScheme := indexSchema.Git{
-				Remotes:    starterProject.Git.Remotes,
+				Remotes:    selStarterProject.Git.Remotes,
 				RemoteName: "origin",
-				SubDir:     starterProject.SubDir,
+				SubDir:     selStarterProject.SubDir,
 			}
 
-			if starterProject.Git.CheckoutFrom != nil {
-				if starterProject.Git.CheckoutFrom.Remote != "" {
-					gitScheme.RemoteName = starterProject.Git.CheckoutFrom.Remote
+			if selStarterProject.Git.CheckoutFrom != nil {
+				if selStarterProject.Git.CheckoutFrom.Remote != "" {
+					gitScheme.RemoteName = selStarterProject.Git.CheckoutFrom.Remote
 				}
-				gitScheme.Revision = starterProject.Git.CheckoutFrom.Revision
+				gitScheme.Revision = selStarterProject.Git.CheckoutFrom.Revision
 			}
 
 			gitScheme.Url = gitScheme.Remotes[gitScheme.RemoteName]
@@ -223,18 +213,18 @@ func (*Server) ServeDevfileStarterProjectWithVersion(c *gin.Context) {
 				c.JSON(http.StatusInternalServerError, gin.H{
 					"error": err.Error(),
 					"status": fmt.Sprintf("Problem with downloading starter project %s from location: %s",
-						starterProjectName, gitScheme.Url),
+						starterProject, gitScheme.Url),
 				})
 				return
 			}
-		} else if starterProject.Zip != nil {
-			if _, err = url.ParseRequestURI(starterProject.Zip.Location); err != nil {
-				localLoc := path.Join(stackLoc, starterProject.Zip.Location)
+		} else if selStarterProject.Zip != nil {
+			if _, err = url.ParseRequestURI(selStarterProject.Zip.Location); err != nil {
+				localLoc := path.Join(stackLoc, selStarterProject.Zip.Location)
 				log.Printf("zip location is not a valid http url: %v\nTrying local path %s..", err, localLoc)
 
 				// If subdirectory is specified for starter project download then extract subdirectory
 				// and create new archive for download.
-				if starterProject.SubDir != "" {
+				if selStarterProject.SubDir != "" {
 					downloadFilePath := fmt.Sprintf("%s.zip", downloadTmpLoc)
 
 					if _, err = os.Stat(downloadTmpLoc); os.IsExist(err) {
@@ -245,20 +235,20 @@ func (*Server) ServeDevfileStarterProjectWithVersion(c *gin.Context) {
 								"error": err.Error(),
 								"status": fmt.Sprintf("Problem removing existing temporary download directory '%s' for starter project %s",
 									downloadTmpLoc,
-									starterProjectName),
+									starterProject),
 							})
 							return
 						}
 					}
 
-					_, err = dfutil.Unzip(localLoc, downloadTmpLoc, starterProject.SubDir)
+					_, err = dfutil.Unzip(localLoc, downloadTmpLoc, selStarterProject.SubDir)
 					if err != nil {
 						log.Print(err.Error())
 						c.JSON(http.StatusInternalServerError, gin.H{
 							"error": err.Error(),
 							"status": fmt.Sprintf("Problem with reading subDir '%s' of starter project %s at %s",
-								starterProject.SubDir,
-								starterProjectName,
+								selStarterProject.SubDir,
+								starterProject,
 								localLoc),
 						})
 						return
@@ -270,8 +260,8 @@ func (*Server) ServeDevfileStarterProjectWithVersion(c *gin.Context) {
 						c.JSON(http.StatusInternalServerError, gin.H{
 							"error": err.Error(),
 							"status": fmt.Sprintf("Problem with archiving subDir '%s' of starter project %s at %s",
-								starterProject.SubDir,
-								starterProjectName,
+								selStarterProject.SubDir,
+								starterProject,
 								downloadFilePath),
 						})
 						return
@@ -285,25 +275,25 @@ func (*Server) ServeDevfileStarterProjectWithVersion(c *gin.Context) {
 					log.Print(err.Error())
 					c.JSON(http.StatusInternalServerError, gin.H{
 						"error": err.Error(),
-						"status": fmt.Sprintf("Problem with reading starter project %s at %s", starterProjectName,
+						"status": fmt.Sprintf("Problem with reading starter project %s at %s", starterProject,
 							localLoc),
 					})
 					return
 				}
 			} else {
-				downloadBytes, err = libutil.DownloadStackFromZipUrl(starterProject.Zip.Location, starterProject.SubDir, downloadTmpLoc)
+				downloadBytes, err = libutil.DownloadStackFromZipUrl(selStarterProject.Zip.Location, selStarterProject.SubDir, downloadTmpLoc)
 				if err != nil {
 					log.Print(err.Error())
 					c.JSON(http.StatusInternalServerError, gin.H{
 						"error":  err.Error(),
-						"status": fmt.Sprintf("Problem with downloading starter project %s", starterProjectName),
+						"status": fmt.Sprintf("Problem with downloading starter project %s", starterProject),
 					})
 					return
 				}
 			}
 		} else {
 			c.JSON(http.StatusBadRequest, gin.H{
-				"status": fmt.Sprintf("Starter project %s has no source to download from", starterProjectName),
+				"status": fmt.Sprintf("Starter project %s has no source to download from", starterProject),
 			})
 			return
 		}
@@ -320,7 +310,7 @@ func (*Server) ServeDevfileStarterProjectWithVersion(c *gin.Context) {
 				Context: util.SetContext(c),
 				Properties: analytics.NewProperties().
 					Set("devfile", devfileName).
-					Set("starterProject", starterProjectName).
+					Set("starterProject", starterProject).
 					Set("client", client),
 			})
 			if err != nil {
@@ -328,7 +318,7 @@ func (*Server) ServeDevfileStarterProjectWithVersion(c *gin.Context) {
 			}
 		}
 
-		c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s.zip\"", starterProjectName))
+		c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s.zip\"", starterProject))
 		c.Data(http.StatusAccepted, starterProjectMediaType, downloadBytes)
 	}
 }
@@ -366,9 +356,8 @@ func ServeUI(c *gin.Context) {
 }
 
 // buildIndexAPIResponse builds the response of the REST API of getting the devfile index
-func buildIndexAPIResponse(c *gin.Context, wantV1Index bool) {
+func buildIndexAPIResponse(c *gin.Context, indexType string, wantV1Index bool) {
 
-	indexType := c.Param("type")
 	iconType := c.Query("icon")
 	archs := c.QueryArray("arch")
 
@@ -576,7 +565,7 @@ func fetchDevfile(c *gin.Context, name string, version string) ([]byte, indexSch
 			var bytes []byte
 			if devfileIndex.Versions == nil || len(devfileIndex.Versions) == 0 {
 				if devfileIndex.Type == indexSchema.SampleDevfileType {
-					sampleDevfilePath = path.Join(samplesPath, devfileIndex.Name, devfileName)
+					sampleDevfilePath = path.Join(samplesPath, devfileIndex.Name, name)
 				}
 			} else {
 				versionMap, err := util.MakeVersionMap(devfileIndex)
@@ -601,7 +590,7 @@ func fetchDevfile(c *gin.Context, name string, version string) ([]byte, indexSch
 						}
 					} else {
 						// Retrieve the sample devfile stored under /registry/samples/<devfile>
-						sampleDevfilePath = path.Join(samplesPath, devfileIndex.Name, foundVersion.Version, devfileName)
+						sampleDevfilePath = path.Join(samplesPath, devfileIndex.Name, foundVersion.Version, name)
 					}
 				} else {
 					c.JSON(http.StatusNotFound, gin.H{

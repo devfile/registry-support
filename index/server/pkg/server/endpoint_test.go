@@ -477,7 +477,9 @@ func TestServeDevfileIndexV1WithType(t *testing.T) {
 
 			c.Params = append(c.Params, test.params...)
 
-			server.ServeDevfileIndexV1WithType(c)
+			indexType, _ := c.Params.Get("type")
+
+			server.ServeDevfileIndexV1WithType(c, indexType)
 
 			if gotStatusCode := w.Code; !reflect.DeepEqual(gotStatusCode, test.wantCode) {
 				t.Errorf("Did not get expected status code, Got: %v, Expected: %v", gotStatusCode, test.wantCode)
@@ -602,7 +604,9 @@ func TestServeDevfileIndexV2WithType(t *testing.T) {
 			c.Params = append(c.Params, test.params...)
 			c.Request.URL.RawQuery = test.query.Encode()
 
-			server.ServeDevfileIndexV2WithType(c)
+			indexType, _ := c.Params.Get("type")
+
+			server.ServeDevfileIndexV2WithType(c, indexType)
 
 			if gotStatusCode := w.Code; !reflect.DeepEqual(gotStatusCode, test.wantCode) {
 				t.Errorf("Did not get expected status code, Got: %v, Expected: %v", gotStatusCode, test.wantCode)
@@ -1024,7 +1028,11 @@ func TestServeDevfileStarterProjectWithVersion(t *testing.T) {
 
 			c.Params = append(c.Params, test.params...)
 
-			server.ServeDevfileStarterProjectWithVersion(c)
+			name, _ := c.Params.Get("name")
+			version, _ := c.Params.Get("version")
+			starterProject, _ := c.Params.Get("starterProjectName")
+
+			server.ServeDevfileStarterProjectWithVersion(c, name, version, starterProject)
 
 			if gotStatusCode := w.Code; !reflect.DeepEqual(gotStatusCode, test.wantCode) {
 				t.Errorf("Did not get expected status code, Got: %v, Expected: %v", gotStatusCode, test.wantCode)
@@ -1147,7 +1155,7 @@ func TestServeHeadlessUI(t *testing.T) {
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
 
-	serveHeadlessUI(c)
+	ServeHeadlessUI(c)
 
 	if gotStatusCode, gotBody := w.Code, w.Body.String(); !reflect.DeepEqual(gotStatusCode, wantCode) {
 		t.Errorf("Did not get expected status code, Got: %v, Expected: %v", gotStatusCode, wantCode)
