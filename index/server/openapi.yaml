@@ -10,33 +10,10 @@ servers:
 - url: https://registry.stage.devfile.io/
 - url: https://registry.devfile.io/
 paths:
-  /devfiles/{stack}:
-    get:
-      tags:
-      - devfile
-      summary: Get devfile by stack name.
-      description: Return the specific stack devfile content of devfile registry.
-      operationId: serveDevfile
-      parameters:
-      - name: stack
-        in: path
-        description: The stack name
-        required: true
-        schema:
-          type: string
-          x-go-name: Stack
-        x-go-name: Stack
-      responses:
-        200:
-          $ref: '#/components/responses/devfileResponse'
-        404:
-          $ref: '#/components/responses/devfileNotFoundResponse'
-        500:
-          $ref: '#/components/responses/devfileErrorResponse'
   /health:
     get:
       tags:
-      - server
+        - server
       summary: Get health status.
       description: Return the devfile registry health status.
       operationId: serveHealthCheck
@@ -49,16 +26,163 @@ paths:
   /index:
     get:
       tags:
-      - devfile
-      summary: Get index.
-      description: Return the index content of devfile registry.
+        - devfile
+      summary: Gets index schemas of the stack devfiles.
+      description: |-
+        Fetches the registry index file content of stack devfile type 
+        from HTTP response
       operationId: serveDevfileIndexV1
+      requestBody:
+        description: The request body must be empty.
+        content: {}
+      parameters:
+        - $ref: '#/components/parameters/icon'
+        - $ref: '#/components/parameters/arch'
       responses:
         200:
           $ref: '#/components/responses/indexResponse'
         404:
           description: 'Page not found.'
           content: {}
+  /index/{indexType}:
+    get:
+      tags:
+        - devfile
+      summary: Gets index schemas of the devfiles of specific type.
+      description: |-
+        Fetches the registry index file content of specific devfile type 
+        from HTTP response
+      operationId: serveDevfileIndexV1WithType
+      requestBody:
+        description: The request body must be empty.
+        content: {}
+      parameters:
+        - name: indexType
+          in: path
+          description: The devfile type filter
+          required: true
+          schema:
+            type: string
+            x-go-name: IndexType
+          x-go-name: IndexType
+        - $ref: '#/components/parameters/icon'
+        - $ref: '#/components/parameters/arch'
+      responses:
+        200:
+          $ref: '#/components/responses/indexResponse'
+        404:
+          description: 'Page not found.'
+          content: {}
+  /v2index:
+    get:
+      tags:
+        - devfile
+      summary: Gets V2 index schemas of the stack devfiles.
+      description: |-
+        Fetches the registry version 2 index file content of 
+        stack devfile type from HTTP response
+      operationId: serveDevfileIndexV2
+      requestBody:
+        description: The request body must be empty.
+        content: {}
+      parameters:
+        - $ref: '#/components/parameters/icon'
+        - $ref: '#/components/parameters/arch'
+      responses:
+        200:
+          $ref: '#/components/responses/v2IndexResponse'
+        404:
+          description: 'Page not found.'
+          content: {}
+  /v2index/{indexType}:
+    get:
+      tags:
+        - devfile
+      summary: Gets V2 index schemas of the devfiles of specific type.
+      description: |-
+        Fetches the registry version 2 index file content 
+        of specific devfile type from HTTP response
+      operationId: serveDevfileIndexV2WithType
+      requestBody:
+        description: The request body must be empty.
+        content: {}
+      parameters:
+        - name: indexType
+          in: path
+          description: The devfile type filter
+          required: true
+          schema:
+            type: string
+            x-go-name: IndexType
+          x-go-name: IndexType
+        - $ref: '#/components/parameters/icon'
+        - $ref: '#/components/parameters/arch'
+      responses:
+        200:
+          $ref: '#/components/responses/v2IndexResponse'
+        404:
+          description: 'Page not found.'
+          content: {}
+  /devfiles/{stack}:
+    get:
+      tags:
+        - devfile
+      summary: Get devfile by stack name.
+      description: Return the specific stack devfile content of devfile registry.
+      operationId: serveDevfile
+      parameters:
+        - name: stack
+          in: path
+          description: The stack name
+          required: true
+          schema:
+            type: string
+            x-go-name: Stack
+          x-go-name: Stack
+      requestBody:
+        description: The request body must be empty.
+        content: {}
+      responses:
+        200:
+          $ref: '#/components/responses/devfileResponse'
+        404:
+          $ref: '#/components/responses/devfileNotFoundResponse'
+        500:
+          $ref: '#/components/responses/devfileErrorResponse'
+  /devfiles/{stack}/{version}:
+    get:
+      tags:
+        - devfile
+      summary: Get devfile by stack name.
+      description: Return the specific stack devfile content of devfile registry.
+      operationId: serveDevfileWithVersion
+      parameters:
+        - name: stack
+          in: path
+          description: The stack name
+          required: true
+          schema:
+            type: string
+            x-go-name: Stack
+          x-go-name: Stack
+        - name: version
+          in: path
+          description: The version of the stack
+          required: true
+          schema:
+            type: string
+            x-go-name: Version
+          x-go-name: Version
+      requestBody:
+        description: The request body must be empty.
+        content: {}
+      responses:
+        200:
+          $ref: '#/components/responses/devfileResponse'
+        404:
+          $ref: '#/components/responses/devfileNotFoundResponse'
+        500:
+          $ref: '#/components/responses/devfileErrorResponse'
   /devfiles/{stack}/starter-projects/{starterProject}:
     get:
       summary: Fetches starter project by stack and project name
@@ -67,22 +191,63 @@ paths:
         version's content and provides an archive (zip) file download as the HTTP response.
       operationId: serveDevfileStarterProject
       parameters:
-      - name: stack
-        in: path
-        description: The stack name
-        required: true
-        schema:
-          type: string
+        - name: stack
+          in: path
+          description: The stack name
+          required: true
+          schema:
+            type: string
+            x-go-name: Stack
           x-go-name: Stack
-        x-go-name: Stack
-      - name:  starterProject
-        in: path
-        description: The starter project name in the stack devfile
-        required: true
-        schema:
-          type: string
+        - name:  starterProject
+          in: path
+          description: The starter project name in the stack devfile
+          required: true
+          schema:
+            type: string
+            x-go-name: StarterProject
           x-go-name: StarterProject
-        x-go-name: StarterProject
+      responses:
+        '200':
+          $ref: '#/components/responses/starterProjectResponse'
+        '404':
+          description: 'Page not found.'
+          content: {}
+        '500':
+          description: Failed to get the devfile or starter project.
+          $ref: '#/components/responses/devfileErrorResponse'
+  /devfiles/{stack}/{version}/starter-projects/{starterProject}:
+    get:
+      summary: Fetches starter project by stack name, stack version, and project name
+      description: |-
+        Fetches starter project specified in requested registry stack devfile with 
+        version's content and provides an archive (zip) file download as the HTTP response.
+      operationId: serveDevfileStarterProjectWithVersion
+      parameters:
+        - name: stack
+          in: path
+          description: The stack name
+          required: true
+          schema:
+            type: string
+            x-go-name: Stack
+          x-go-name: Stack
+        - name: version
+          in: path
+          description: The version of the stack
+          required: true
+          schema:
+            type: string
+            x-go-name: Version
+          x-go-name: Version
+        - name:  starterProject
+          in: path
+          description: The starter project name in the stack devfile
+          required: true
+          schema:
+            type: string
+            x-go-name: StarterProject
+          x-go-name: StarterProject
       responses:
         '200':
           $ref: '#/components/responses/starterProjectResponse'
@@ -101,6 +266,29 @@ components:
         - x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
     Schema:
       $ref: '../../schemas/index/schema.json'
+    V2Schema:
+      $ref: '../../schemas/indexv2/schema.json'
+  parameters:
+    icon:
+      name: icon
+      in: query
+      description: The icon type filter
+      required: false
+      schema:
+        type: string
+        x-go-name: IconType
+      x-go-name: IconType
+    arch:
+      name: arch
+      in: query
+      description: The target architecture filter
+      required: false
+      schema:
+        type: array
+        items:
+          type: string
+        x-go-name: Archs
+      x-go-name: Archs
   responses:
     devfileErrorResponse:
       description: Failed to get the devfile.
@@ -190,6 +378,22 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/Schema'
+    v2IndexResponse:
+      description: |-
+        Successful operation.
+
+        V2 Index content.
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/V2Schema'
+        application/yaml:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/V2Schema'
     starterProjectResponse:
       description: |-
         Successful operation.

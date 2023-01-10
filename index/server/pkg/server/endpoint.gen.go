@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Red Hat, Inc.
+// Copyright 2023 Red Hat, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -39,12 +39,27 @@ type ServerInterface interface {
 	// Fetches starter project by stack and project name
 	// (GET /devfiles/{stack}/starter-projects/{starterProject})
 	ServeDevfileStarterProject(c *gin.Context, stack string, starterProject string)
+	// Get devfile by stack name.
+	// (GET /devfiles/{stack}/{version})
+	ServeDevfileWithVersion(c *gin.Context, stack string, version string)
+	// Fetches starter project by stack name, stack version, and project name
+	// (GET /devfiles/{stack}/{version}/starter-projects/{starterProject})
+	ServeDevfileStarterProjectWithVersion(c *gin.Context, stack string, version string, starterProject string)
 	// Get health status.
 	// (GET /health)
 	ServeHealthCheck(c *gin.Context)
-	// Get index.
+	// Gets index schemas of the stack devfiles.
 	// (GET /index)
-	ServeDevfileIndexV1(c *gin.Context)
+	ServeDevfileIndexV1(c *gin.Context, params ServeDevfileIndexV1Params)
+	// Gets index schemas of the devfiles of specific type.
+	// (GET /index/{indexType})
+	ServeDevfileIndexV1WithType(c *gin.Context, indexType string, params ServeDevfileIndexV1WithTypeParams)
+	// Gets V2 index schemas of the stack devfiles.
+	// (GET /v2index)
+	ServeDevfileIndexV2(c *gin.Context, params ServeDevfileIndexV2Params)
+	// Gets V2 index schemas of the devfiles of specific type.
+	// (GET /v2index/{indexType})
+	ServeDevfileIndexV2WithType(c *gin.Context, indexType string, params ServeDevfileIndexV2WithTypeParams)
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -106,6 +121,75 @@ func (siw *ServerInterfaceWrapper) ServeDevfileStarterProject(c *gin.Context) {
 	siw.Handler.ServeDevfileStarterProject(c, stack, starterProject)
 }
 
+// ServeDevfileWithVersion operation middleware
+func (siw *ServerInterfaceWrapper) ServeDevfileWithVersion(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "stack" -------------
+	var stack string
+
+	err = runtime.BindStyledParameter("simple", false, "stack", c.Param("stack"), &stack)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter stack: %s", err)})
+		return
+	}
+
+	// ------------- Path parameter "version" -------------
+	var version string
+
+	err = runtime.BindStyledParameter("simple", false, "version", c.Param("version"), &version)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter version: %s", err)})
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+	}
+
+	siw.Handler.ServeDevfileWithVersion(c, stack, version)
+}
+
+// ServeDevfileStarterProjectWithVersion operation middleware
+func (siw *ServerInterfaceWrapper) ServeDevfileStarterProjectWithVersion(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "stack" -------------
+	var stack string
+
+	err = runtime.BindStyledParameter("simple", false, "stack", c.Param("stack"), &stack)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter stack: %s", err)})
+		return
+	}
+
+	// ------------- Path parameter "version" -------------
+	var version string
+
+	err = runtime.BindStyledParameter("simple", false, "version", c.Param("version"), &version)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter version: %s", err)})
+		return
+	}
+
+	// ------------- Path parameter "starterProject" -------------
+	var starterProject string
+
+	err = runtime.BindStyledParameter("simple", false, "starterProject", c.Param("starterProject"), &starterProject)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter starterProject: %s", err)})
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+	}
+
+	siw.Handler.ServeDevfileStarterProjectWithVersion(c, stack, version, starterProject)
+}
+
 // ServeHealthCheck operation middleware
 func (siw *ServerInterfaceWrapper) ServeHealthCheck(c *gin.Context) {
 
@@ -119,11 +203,167 @@ func (siw *ServerInterfaceWrapper) ServeHealthCheck(c *gin.Context) {
 // ServeDevfileIndexV1 operation middleware
 func (siw *ServerInterfaceWrapper) ServeDevfileIndexV1(c *gin.Context) {
 
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ServeDevfileIndexV1Params
+
+	// ------------- Optional query parameter "icon" -------------
+	if paramValue := c.Query("icon"); paramValue != "" {
+
+	}
+
+	err = runtime.BindQueryParameter("form", true, false, "icon", c.Request.URL.Query(), &params.IconType)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter icon: %s", err)})
+		return
+	}
+
+	// ------------- Optional query parameter "arch" -------------
+	if paramValue := c.Query("arch"); paramValue != "" {
+
+	}
+
+	err = runtime.BindQueryParameter("form", true, false, "arch", c.Request.URL.Query(), &params.Archs)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter arch: %s", err)})
+		return
+	}
+
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)
 	}
 
-	siw.Handler.ServeDevfileIndexV1(c)
+	siw.Handler.ServeDevfileIndexV1(c, params)
+}
+
+// ServeDevfileIndexV1WithType operation middleware
+func (siw *ServerInterfaceWrapper) ServeDevfileIndexV1WithType(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "indexType" -------------
+	var indexType string
+
+	err = runtime.BindStyledParameter("simple", false, "indexType", c.Param("indexType"), &indexType)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter indexType: %s", err)})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ServeDevfileIndexV1WithTypeParams
+
+	// ------------- Optional query parameter "icon" -------------
+	if paramValue := c.Query("icon"); paramValue != "" {
+
+	}
+
+	err = runtime.BindQueryParameter("form", true, false, "icon", c.Request.URL.Query(), &params.IconType)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter icon: %s", err)})
+		return
+	}
+
+	// ------------- Optional query parameter "arch" -------------
+	if paramValue := c.Query("arch"); paramValue != "" {
+
+	}
+
+	err = runtime.BindQueryParameter("form", true, false, "arch", c.Request.URL.Query(), &params.Archs)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter arch: %s", err)})
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+	}
+
+	siw.Handler.ServeDevfileIndexV1WithType(c, indexType, params)
+}
+
+// ServeDevfileIndexV2 operation middleware
+func (siw *ServerInterfaceWrapper) ServeDevfileIndexV2(c *gin.Context) {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ServeDevfileIndexV2Params
+
+	// ------------- Optional query parameter "icon" -------------
+	if paramValue := c.Query("icon"); paramValue != "" {
+
+	}
+
+	err = runtime.BindQueryParameter("form", true, false, "icon", c.Request.URL.Query(), &params.IconType)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter icon: %s", err)})
+		return
+	}
+
+	// ------------- Optional query parameter "arch" -------------
+	if paramValue := c.Query("arch"); paramValue != "" {
+
+	}
+
+	err = runtime.BindQueryParameter("form", true, false, "arch", c.Request.URL.Query(), &params.Archs)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter arch: %s", err)})
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+	}
+
+	siw.Handler.ServeDevfileIndexV2(c, params)
+}
+
+// ServeDevfileIndexV2WithType operation middleware
+func (siw *ServerInterfaceWrapper) ServeDevfileIndexV2WithType(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "indexType" -------------
+	var indexType string
+
+	err = runtime.BindStyledParameter("simple", false, "indexType", c.Param("indexType"), &indexType)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter indexType: %s", err)})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ServeDevfileIndexV2WithTypeParams
+
+	// ------------- Optional query parameter "icon" -------------
+	if paramValue := c.Query("icon"); paramValue != "" {
+
+	}
+
+	err = runtime.BindQueryParameter("form", true, false, "icon", c.Request.URL.Query(), &params.IconType)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter icon: %s", err)})
+		return
+	}
+
+	// ------------- Optional query parameter "arch" -------------
+	if paramValue := c.Query("arch"); paramValue != "" {
+
+	}
+
+	err = runtime.BindQueryParameter("form", true, false, "arch", c.Request.URL.Query(), &params.Archs)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter arch: %s", err)})
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+	}
+
+	siw.Handler.ServeDevfileIndexV2WithType(c, indexType, params)
 }
 
 // GinServerOptions provides options for the Gin server.
@@ -148,9 +388,19 @@ func RegisterHandlersWithOptions(router *gin.Engine, si ServerInterface, options
 
 	router.GET(options.BaseURL+"/devfiles/:stack/starter-projects/:starterProject", wrapper.ServeDevfileStarterProject)
 
+	router.GET(options.BaseURL+"/devfiles/:stack/:version", wrapper.ServeDevfileWithVersion)
+
+	router.GET(options.BaseURL+"/devfiles/:stack/:version/starter-projects/:starterProject", wrapper.ServeDevfileStarterProjectWithVersion)
+
 	router.GET(options.BaseURL+"/health", wrapper.ServeHealthCheck)
 
 	router.GET(options.BaseURL+"/index", wrapper.ServeDevfileIndexV1)
+
+	router.GET(options.BaseURL+"/index/:indexType", wrapper.ServeDevfileIndexV1WithType)
+
+	router.GET(options.BaseURL+"/v2index", wrapper.ServeDevfileIndexV2)
+
+	router.GET(options.BaseURL+"/v2index/:indexType", wrapper.ServeDevfileIndexV2WithType)
 
 	return router
 }
@@ -158,25 +408,31 @@ func RegisterHandlersWithOptions(router *gin.Engine, si ServerInterface, options
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
+	"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",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

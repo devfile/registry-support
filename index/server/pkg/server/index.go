@@ -169,6 +169,9 @@ func ServeRegistry() {
 	// Use OpenAPI validator middleware
 	router.Use(oapiMiddleware.OapiRequestValidator(swagger))
 
+	// Registry root endpoint
+	router.GET("/", ServeRootEndpoint)
+
 	// Registry REST APIs
 	router = RegisterHandlers(router, server)
 

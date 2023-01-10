@@ -46,21 +46,21 @@ type Server struct {
 
 // serveRootEndpoint sets up the handler for the root (/) endpoint on the server
 // If html is requested (i.e. from a web browser), the viewer is displayed, otherwise the devfile index is served.
-func (*Server) ServeRootEndpoint(c *gin.Context) {
+func ServeRootEndpoint(c *gin.Context) {
 	// Determine if text/html was requested by the client
 	acceptHeader := c.Request.Header.Values("Accept")
 	if util.IsHtmlRequested(acceptHeader) {
 		c.Redirect(http.StatusFound, "/viewer")
 	} else {
-		ServeDevfileIndex(c, true)
+		c.Redirect(http.StatusFound, "/index")
 	}
 }
 
-func (*Server) ServeDevfileIndexV1(c *gin.Context) {
+func (*Server) ServeDevfileIndexV1(c *gin.Context, params ServeDevfileIndexV1Params) {
 	ServeDevfileIndex(c, true)
 }
 
-func (*Server) ServeDevfileIndexV2(c *gin.Context) {
+func (*Server) ServeDevfileIndexV2(c *gin.Context, params ServeDevfileIndexV2Params) {
 	ServeDevfileIndex(c, false)
 }
 
@@ -79,13 +79,13 @@ func ServeDevfileIndex(c *gin.Context, wantV1Index bool) {
 	buildIndexAPIResponse(c, string(indexSchema.StackDevfileType), wantV1Index)
 }
 
-func (*Server) ServeDevfileIndexV1WithType(c *gin.Context, indexType string) {
+func (*Server) ServeDevfileIndexV1WithType(c *gin.Context, indexType string, params ServeDevfileIndexV1WithTypeParams) {
 
 	// Serve the index with type
 	buildIndexAPIResponse(c, indexType, true)
 }
 
-func (*Server) ServeDevfileIndexV2WithType(c *gin.Context, indexType string) {
+func (*Server) ServeDevfileIndexV2WithType(c *gin.Context, indexType string, params ServeDevfileIndexV2WithTypeParams) {
 
 	// Serve the index with type
 	buildIndexAPIResponse(c, indexType, false)

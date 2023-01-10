@@ -421,7 +421,7 @@ func TestServeDevfileIndexV1(t *testing.T) {
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
 
-	server.ServeDevfileIndexV1(c)
+	server.ServeDevfileIndexV1(c, ServeDevfileIndexV1Params{})
 
 	if gotStatusCode := w.Code; !reflect.DeepEqual(gotStatusCode, wantStatusCode) {
 		t.Errorf("Did not get expected status code, Got: %v, Expected: %v", gotStatusCode, wantStatusCode)
@@ -479,7 +479,7 @@ func TestServeDevfileIndexV1WithType(t *testing.T) {
 
 			indexType, _ := c.Params.Get("type")
 
-			server.ServeDevfileIndexV1WithType(c, indexType)
+			server.ServeDevfileIndexV1WithType(c, indexType, ServeDevfileIndexV1WithTypeParams{})
 
 			if gotStatusCode := w.Code; !reflect.DeepEqual(gotStatusCode, test.wantCode) {
 				t.Errorf("Did not get expected status code, Got: %v, Expected: %v", gotStatusCode, test.wantCode)
@@ -501,7 +501,7 @@ func TestServeDevfileIndexV2(t *testing.T) {
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
 
-	server.ServeDevfileIndexV2(c)
+	server.ServeDevfileIndexV2(c, ServeDevfileIndexV2Params{})
 
 	if gotStatusCode := w.Code; !reflect.DeepEqual(gotStatusCode, wantStatusCode) {
 		t.Errorf("Did not get expected status code, Got: %v, Expected: %v", gotStatusCode, wantStatusCode)
@@ -606,7 +606,7 @@ func TestServeDevfileIndexV2WithType(t *testing.T) {
 
 			indexType, _ := c.Params.Get("type")
 
-			server.ServeDevfileIndexV2WithType(c, indexType)
+			server.ServeDevfileIndexV2WithType(c, indexType, ServeDevfileIndexV2WithTypeParams{})
 
 			if gotStatusCode := w.Code; !reflect.DeepEqual(gotStatusCode, test.wantCode) {
 				t.Errorf("Did not get expected status code, Got: %v, Expected: %v", gotStatusCode, test.wantCode)
