@@ -77,8 +77,10 @@ build_registry() {
     if [[ -f "stack.yaml" ]]; then
       for versionDir in $stackDir/*
       do
-        cd $versionDir
-        tar_files_and_cleanup
+        if [[ -d "${versionDir}" ]]; then
+          cd $versionDir
+          tar_files_and_cleanup
+        fi
       done
     else
       tar_files_and_cleanup
