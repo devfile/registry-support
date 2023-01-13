@@ -305,6 +305,26 @@ func serveDevfileStarterProjectWithVersion(c *gin.Context) {
 			return
 		}
 
+		// Track event for telemetry. Ignore events from the registry-viewer and DevConsole since those are tracked on the client side. Ignore indirect calls from clients.
+		if enableTelemetry && !util.IsWebClient(c) && !util.IsIndirectCall(c) {
+
+			user := util.GetUser(c)
+			client := util.GetClient(c)
+
+			err := util.TrackEvent(analytics.Track{
+				Event:   eventTrackMap["spdownload"],
+				UserId:  user,
+				Context: util.SetContext(c),
+				Properties: analytics.NewProperties().
+					Set("devfile", devfileName).
+					Set("starterProject", starterProjectName).
+					Set("client", client),
+			})
+			if err != nil {
+				log.Println(err)
+			}
+		}
+
 		c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s.zip\"", starterProjectName))
 		c.Data(http.StatusAccepted, starterProjectMediaType, downloadBytes)
 	}

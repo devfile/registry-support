@@ -41,9 +41,10 @@ import (
 )
 
 var eventTrackMap = map[string]string{
-	"list":     "list devfile",
-	"view":     "view devfile",
-	"download": "download devfile",
+	"list":       "list devfile",
+	"view":       "view devfile",
+	"download":   "download devfile",
+	"spdownload": "Starter Project Downloaded",
 }
 
 var mediaTypeMapping = map[string]string{
