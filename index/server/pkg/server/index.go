@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Red Hat, Inc.
+// Copyright 2022-2023 Red Hat, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -41,9 +41,10 @@ import (
 )
 
 var eventTrackMap = map[string]string{
-	"list":     "list devfile",
-	"view":     "view devfile",
-	"download": "download devfile",
+	"list":       "list devfile",
+	"view":       "view devfile",
+	"download":   "download devfile",
+	"spdownload": "Starter Project Downloaded",
 }
 
 var mediaTypeMapping = map[string]string{

@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Red Hat, Inc.
+// Copyright 2022-2023 Red Hat, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -303,6 +303,26 @@ func serveDevfileStarterProjectWithVersion(c *gin.Context) {
 				"status": fmt.Sprintf("Starter project %s has no source to download from", starterProjectName),
 			})
 			return
+		}
+
+		// Track event for telemetry. Ignore events from the registry-viewer and DevConsole since those are tracked on the client side. Ignore indirect calls from clients.
+		if enableTelemetry && !util.IsWebClient(c) && !util.IsIndirectCall(c) {
+
+			user := util.GetUser(c)
+			client := util.GetClient(c)
+
+			err := util.TrackEvent(analytics.Track{
+				Event:   eventTrackMap["spdownload"],
+				UserId:  user,
+				Context: util.SetContext(c),
+				Properties: analytics.NewProperties().
+					Set("devfile", devfileName).
+					Set("starterProject", starterProjectName).
+					Set("client", client),
+			})
+			if err != nil {
+				log.Println(err)
+			}
 		}
 
 		c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s.zip\"", starterProjectName))
