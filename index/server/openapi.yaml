@@ -36,8 +36,8 @@ paths:
         description: The request body must be empty.
         content: {}
       parameters:
-        - $ref: '#/components/parameters/icon'
-        - $ref: '#/components/parameters/arch'
+        - $ref: '#/components/parameters/archParam'
+        - $ref: '#/components/parameters/iconParam'
       responses:
         200:
           $ref: '#/components/responses/indexResponse'
@@ -65,8 +65,8 @@ paths:
             type: string
             x-go-name: IndexType
           x-go-name: IndexType
-        - $ref: '#/components/parameters/icon'
-        - $ref: '#/components/parameters/arch'
+        - $ref: '#/components/parameters/archParam'
+        - $ref: '#/components/parameters/iconParam'
       responses:
         200:
           $ref: '#/components/responses/indexResponse'
@@ -86,8 +86,8 @@ paths:
         description: The request body must be empty.
         content: {}
       parameters:
-        - $ref: '#/components/parameters/icon'
-        - $ref: '#/components/parameters/arch'
+        - $ref: '#/components/parameters/archParam'
+        - $ref: '#/components/parameters/iconParam'
       responses:
         200:
           $ref: '#/components/responses/v2IndexResponse'
@@ -115,8 +115,8 @@ paths:
             type: string
             x-go-name: IndexType
           x-go-name: IndexType
-        - $ref: '#/components/parameters/icon'
-        - $ref: '#/components/parameters/arch'
+        - $ref: '#/components/parameters/archParam'
+        - $ref: '#/components/parameters/iconParam'        
       responses:
         200:
           $ref: '#/components/responses/v2IndexResponse'
@@ -263,31 +263,50 @@ components:
     Devfile:
       allOf:
         - $ref: 'https://raw.githubusercontent.com/devfile/api/v2.2.0/schemas/latest/devfile.json'
-        - x-go-package: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
-    Schema:
-      $ref: '../../schemas/index/schema.json'
-    V2Schema:
-      $ref: '../../schemas/indexv2/schema.json'
+        - x-go-type: v1alpha2.Devfile
+          x-go-type-import:
+            path: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+    IndexParams:
+      description: IndexParams defines parameters for index endpoints.
+      type: object
+      properties:
+        icon:
+          $ref: '#/components/schemas/IconParam'
+        arch:
+          $ref: '#/components/schemas/ArchParam'
+    IconParam:
+      description: Optional devfile icon, can be a URI or a relative path in the project
+      type: string
+      x-go-name: IconType
+    ArchParam:
+      description: Optional list of processor architectures that the devfile supports, empty list suggests that the devfile can be used on any architecture
+      type: array
+      uniqueItems: false
+      items:
+        description: Architecture describes the architecture type
+        type: string
+        enum: 
+          - "amd64"
+          - "arm64"
+          - "ppc64le"
+          - "s390x"
+      x-go-name: Archs
   parameters:
-    icon:
+    iconParam:
       name: icon
       in: query
       description: The icon type filter
       required: false
       schema:
-        type: string
-        x-go-name: IconType
+        $ref: '#/components/schemas/IconParam'
       x-go-name: IconType
-    arch:
+    archParam:
       name: arch
       in: query
       description: The target architecture filter
       required: false
       schema:
-        type: array
-        items:
-          type: string
-        x-go-name: Archs
+        $ref: '#/components/schemas/ArchParam'
       x-go-name: Archs
   responses:
     devfileErrorResponse:
@@ -370,14 +389,18 @@ components:
       content:
         application/json:
           schema:
-            type: array
-            items:
-              $ref: '#/components/schemas/Schema'
+            allOf:
+              - $ref: '../../schemas/index/schema.json'
+              - x-go-type: schema.Schema
+                x-go-type-import:
+                  path: github.com/devfile/registry-support/index/generator/schema
         application/yaml:
           schema:
-            type: array
-            items:
-              $ref: '#/components/schemas/Schema'
+            allOf:
+              - $ref: '../../schemas/index/schema.json'
+              - x-go-type: schema.Schema
+                x-go-type-import:
+                  path: github.com/devfile/registry-support/index/generator/schema
     v2IndexResponse:
       description: |-
         Successful operation.
@@ -386,14 +409,18 @@ components:
       content:
         application/json:
           schema:
-            type: array
-            items:
-              $ref: '#/components/schemas/V2Schema'
+            allOf:
+              - $ref: '../../schemas/indexv2/schema.json'
+              - x-go-type: schema.Schema
+                x-go-type-import:
+                  path: github.com/devfile/registry-support/index/generator/schema
         application/yaml:
           schema:
-            type: array
-            items:
-              $ref: '#/components/schemas/V2Schema'
+            allOf:
+              - $ref: '../../schemas/indexv2/schema.json'
+              - x-go-type: schema.Schema
+                x-go-type-import:
+                  path: github.com/devfile/registry-support/index/generator/schema
     starterProjectResponse:
       description: |-
         Successful operation.

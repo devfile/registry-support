@@ -57,15 +57,15 @@ func ServeRootEndpoint(c *gin.Context) {
 }
 
 func (*Server) ServeDevfileIndexV1(c *gin.Context, params ServeDevfileIndexV1Params) {
-	ServeDevfileIndex(c, true)
+	ServeDevfileIndex(c, true, IndexParams(params))
 }
 
 func (*Server) ServeDevfileIndexV2(c *gin.Context, params ServeDevfileIndexV2Params) {
-	ServeDevfileIndex(c, false)
+	ServeDevfileIndex(c, false, IndexParams(params))
 }
 
 // ServeDevfileIndex serves the index.json file located in the container at `ServeDevfileIndex`
-func ServeDevfileIndex(c *gin.Context, wantV1Index bool) {
+func ServeDevfileIndex(c *gin.Context, wantV1Index bool, params IndexParams) {
 	// Start the counter for the request
 	var status string
 	timer := prometheus.NewTimer(prometheus.ObserverFunc(func(v float64) {
@@ -76,19 +76,19 @@ func ServeDevfileIndex(c *gin.Context, wantV1Index bool) {
 	}()
 
 	// Serve the index.json file
-	buildIndexAPIResponse(c, string(indexSchema.StackDevfileType), wantV1Index)
+	buildIndexAPIResponse(c, string(indexSchema.StackDevfileType), wantV1Index, params)
 }
 
 func (*Server) ServeDevfileIndexV1WithType(c *gin.Context, indexType string, params ServeDevfileIndexV1WithTypeParams) {
 
 	// Serve the index with type
-	buildIndexAPIResponse(c, indexType, true)
+	buildIndexAPIResponse(c, indexType, true, IndexParams(params))
 }
 
 func (*Server) ServeDevfileIndexV2WithType(c *gin.Context, indexType string, params ServeDevfileIndexV2WithTypeParams) {
 
 	// Serve the index with type
-	buildIndexAPIResponse(c, indexType, false)
+	buildIndexAPIResponse(c, indexType, false, IndexParams(params))
 }
 
 // ServeHealthCheck serves endpoint `/health` for registry health check
@@ -356,10 +356,18 @@ func ServeUI(c *gin.Context) {
 }
 
 // buildIndexAPIResponse builds the response of the REST API of getting the devfile index
-func buildIndexAPIResponse(c *gin.Context, indexType string, wantV1Index bool) {
+func buildIndexAPIResponse(c *gin.Context, indexType string, wantV1Index bool, params IndexParams) {
 
-	iconType := c.Query("icon")
-	archs := c.QueryArray("arch")
+	iconType := ""
+	archs := []string{}
+
+	if params.IconType != nil {
+		iconType = *params.IconType
+	}
+
+	if params.Archs != nil {
+		archs = append(archs, *params.Archs...)
+	}
 
 	var bytes []byte
 	var responseIndexPath, responseBase64IndexPath string
