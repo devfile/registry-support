@@ -57,7 +57,7 @@ spec:
             name: {{ template "devfileregistry.fullname" . }}
             items:
               - key: .env.registry-viewer
-                path: .env.local
+                path: .env.production
       containers:
       - image: "{{ .Values.devfileIndex.image }}:{{ .Values.devfileIndex.tag }}"
         imagePullPolicy: {{ .Values.devfileIndex.imagePullPolicy }}
@@ -133,10 +133,22 @@ spec:
             memory: {{ .Values.registryViewer.memoryLimit }}
           requests:
             memory: 64Mi
+        env:
+          - name: ANALYTICS_WRITE_KEY
+            value: {{ .Values.telemetry.registryViewerWriteKey }}
+          - name: DEVFILE_REGISTRIES
+            value: |
+              [
+                {
+                  "name": "Community",
+                  "url": "http://localhost:8080",
+                  "fqdn": "http://{{ .Release.Name }}-{{ .Release.Namespace }}.{{ .Values.global.ingress.domain }}"
+                }
+              ]
         volumeMounts:
           - name: viewer-env-file
-            mountPath: /app/apps/registry-viewer/.env.local
-            subPath: .env.local
+            mountPath: /app/.env.production
+            subPath: .env.production
             readOnly: true
         securityContext:
           allowPrivilegeEscalation: false
