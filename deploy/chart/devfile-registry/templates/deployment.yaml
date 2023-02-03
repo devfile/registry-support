@@ -79,7 +79,15 @@ spec:
             scheme: HTTP
           initialDelaySeconds: 15
           periodSeconds: 10
-          timeoutSeconds: 3         
+          timeoutSeconds: 3
+        startupProbe:
+          httpGet:
+            path: /viewer
+            port: 3000
+            scheme: HTTP
+          initialDelaySeconds: 30
+          periodSeconds: 1
+          timeoutSeconds: 10          
         resources:
           limits:
             memory: {{ .Values.devfileIndex.memoryLimit }}
@@ -103,31 +111,7 @@ spec:
       - image: "{{ .Values.registryViewer.image }}:{{ .Values.registryViewer.tag }}"
         imagePullPolicy: {{ .Values.registryViewer.imagePullPolicy }}
         name: registry-viewer
-        ports:
-        livenessProbe:
-          httpGet:
-            path: /viewer
-            port: 3000
-            scheme: HTTP
-          initialDelaySeconds: 15
-          periodSeconds: 10
-          timeoutSeconds: 3
-        readinessProbe:
-          httpGet:
-            path: /viewer
-            port: 3000
-            scheme: HTTP
-          initialDelaySeconds: 15
-          periodSeconds: 10
-          timeoutSeconds: 3
-        startupProbe:
-          httpGet:
-            path: /viewer
-            port: 3000
-            scheme: HTTP
-          initialDelaySeconds: 30
-          periodSeconds: 1
-          timeoutSeconds: 10  
+        ports: 
         resources:
           limits:
             memory: {{ .Values.registryViewer.memoryLimit }}
