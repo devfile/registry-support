@@ -80,6 +80,7 @@ spec:
           initialDelaySeconds: 15
           periodSeconds: 10
           timeoutSeconds: 3
+        {{- if not .Values.global.headless }}
         startupProbe:
           httpGet:
             path: /viewer
@@ -87,7 +88,8 @@ spec:
             scheme: HTTP
           initialDelaySeconds: 30
           periodSeconds: 1
-          timeoutSeconds: 10          
+          timeoutSeconds: 10
+        {{- end }}
         resources:
           limits:
             memory: {{ .Values.devfileIndex.memoryLimit }}
