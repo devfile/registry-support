@@ -43,5 +43,5 @@ data:
           enabled: true
           path: /metrics
   .env.registry-viewer: |
-    ANALYTICS_WRITE_KEY={{ .Values.telemetry.registryViewerWriteKey }}
+    NEXT_PUBLIC_ANALYTICS_WRITE_KEY={{ .Values.telemetry.registryViewerWriteKey }}
     DEVFILE_REGISTRIES=[{"name":"Community","url":"http://localhost:8080","fqdn":"http://{{ .Release.Name }}-{{ .Release.Namespace }}.{{ .Values.global.ingress.domain }}"}]

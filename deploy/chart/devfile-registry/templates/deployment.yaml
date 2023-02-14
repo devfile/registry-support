@@ -120,7 +120,7 @@ spec:
           requests:
             memory: 64Mi
         env:
-          - name: ANALYTICS_WRITE_KEY
+          - name: NEXT_PUBLIC_ANALYTICS_WRITE_KEY
             value: {{ .Values.telemetry.registryViewerWriteKey }}
           - name: DEVFILE_REGISTRIES
             value: |
