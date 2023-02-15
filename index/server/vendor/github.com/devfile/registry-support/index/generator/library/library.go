@@ -1,3 +1,18 @@
+//
+// Copyright 2022 Red Hat, Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package library
 
 import (
@@ -8,8 +23,8 @@ import (
 	"path"
 	"path/filepath"
 
-	devfileParser "github.com/devfile/library/pkg/devfile"
-	"github.com/devfile/library/pkg/devfile/parser"
+	devfileParser "github.com/devfile/library/v2/pkg/devfile"
+	"github.com/devfile/library/v2/pkg/devfile/parser"
 	"github.com/devfile/registry-support/index/generator/schema"
 	"gopkg.in/yaml.v2"
 )
@@ -19,6 +34,7 @@ const (
 	devfileHidden       = ".devfile.yaml"
 	extraDevfileEntries = "extraDevfileEntries.yaml"
 	stackYaml           = "stack.yaml"
+	ownersFile          = "OWNERS"
 )
 
 // MissingArchError is an error if the architecture list is empty
@@ -76,6 +92,7 @@ func CreateIndexFile(index []schema.Schema, indexFilePath string) error {
 		return fmt.Errorf("failed to marshal %s data: %v", indexFilePath, err)
 	}
 
+	/* #nosec G306 -- index file does not contain any sensitive data*/
 	err = ioutil.WriteFile(indexFilePath, bytes, 0644)
 	if err != nil {
 		return fmt.Errorf("failed to write %s: %v", indexFilePath, err)
@@ -213,6 +230,8 @@ func parseDevfileRegistry(registryDirPath string, force bool) ([]schema.Schema, 
 				}
 			}
 
+			indexComponent.Versions = SortVersionByDescendingOrder(indexComponent.Versions)
+
 			i := 0
 			for i < len(indexComponent.Versions) {
 				versionComponent := indexComponent.Versions[i]
@@ -281,10 +300,12 @@ func parseStackDevfile(devfileDirPath string, stackName string, force bool, vers
 	if fileExists(devfileHiddenPath) {
 		devfilePath = devfileHiddenPath
 	}
-
+	convertUri := false
 	if !force {
 		// Devfile validation
-		devfileObj, _, err := devfileParser.ParseDevfileAndValidate(parser.ParserArgs{Path: devfilePath})
+		devfileObj, _, err := devfileParser.ParseDevfileAndValidate(parser.ParserArgs{
+			ConvertKubernetesContentInUri: &convertUri,
+			Path:                          devfilePath})
 		if err != nil {
 			return fmt.Errorf("%s devfile is not valid: %v", devfileDirPath, err)
 		}
@@ -295,6 +316,7 @@ func parseStackDevfile(devfileDirPath string, stackName string, force bool, vers
 		}
 	}
 
+	/* #nosec G304 -- devfilePath is produced using filepath.Join which cleans the input path */
 	bytes, err := ioutil.ReadFile(devfilePath)
 	if err != nil {
 		return fmt.Errorf("failed to read %s: %v", devfilePath, err)
@@ -352,6 +374,33 @@ func parseStackDevfile(devfileDirPath string, stackName string, force bool, vers
 	versionComponent.Links["self"] = fmt.Sprintf("%s/%s:%s", "devfile-catalog", stackName, versionComponent.Version)
 	versionComponent.SchemaVersion = devfile.SchemaVersion
 
+	kinds := []schema.CommandGroupKind{
+		schema.BuildCommandGroupKind,
+		schema.RunCommandGroupKind,
+		schema.TestCommandGroupKind,
+		schema.DebugCommandGroupKind,
+		schema.DeployCommandGroupKind,
+	}
+
+	if versionComponent.CommandGroups == nil {
+		versionComponent.CommandGroups = make(map[schema.CommandGroupKind]bool)
+		for _, kind := range kinds {
+			versionComponent.CommandGroups[kind] = false
+		}
+	}
+
+	for _, commands := range devfile.Commands {
+		if commands.Exec.Group.Kind != "" {
+			versionComponent.CommandGroups[commands.Exec.Group.Kind] = true
+		}
+		if commands.Apply.Group.Kind != "" {
+			versionComponent.CommandGroups[commands.Apply.Group.Kind] = true
+		}
+		if commands.Composite.Group.Kind != "" {
+			versionComponent.CommandGroups[commands.Composite.Group.Kind] = true
+		}
+	}
+
 	for _, starterProject := range devfile.StarterProjects {
 		versionComponent.StarterProjects = append(versionComponent.StarterProjects, starterProject.Name)
 	}
@@ -376,7 +425,7 @@ func parseStackDevfile(devfileDirPath string, stackName string, force bool, vers
 	for _, stackFile := range stackFiles {
 		// The registry build should have already packaged any folders and miscellaneous files into an archive.tar file
 		// But, add this check as a safeguard, as OCI doesn't support unarchived folders being pushed up.
-		if !stackFile.IsDir() {
+		if !stackFile.IsDir() && stackFile.Name() != ownersFile {
 			versionComponent.Resources = append(versionComponent.Resources, stackFile.Name())
 		}
 	}
@@ -386,6 +435,7 @@ func parseStackDevfile(devfileDirPath string, stackName string, force bool, vers
 func parseExtraDevfileEntries(registryDirPath string, force bool) ([]schema.Schema, error) {
 	var index []schema.Schema
 	extraDevfileEntriesPath := path.Join(registryDirPath, extraDevfileEntries)
+	/* #nosec G304 -- extraDevfileEntriesPath is produced using path.Join which cleans the input path */
 	bytes, err := ioutil.ReadFile(extraDevfileEntriesPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read %s: %v", extraDevfileEntriesPath, err)
@@ -427,9 +477,11 @@ func parseExtraDevfileEntries(registryDirPath string, force bool) ([]schema.Sche
 								// This error shouldn't occur since we check for the devfile's existence during registry build, but check for it regardless
 								return nil, fmt.Errorf("%s devfile sample does not have a devfile.yaml: %v", indexComponent.Name, err)
 							}
-
+							convertUri := false
 							// Validate the sample devfile
-							_, _, err = devfileParser.ParseDevfileAndValidate(parser.ParserArgs{Path: devfilePath})
+							_, _, err = devfileParser.ParseDevfileAndValidate(parser.ParserArgs{
+								ConvertKubernetesContentInUri: &convertUri,
+								Path:                          devfilePath})
 							if err != nil {
 								return nil, fmt.Errorf("%s sample devfile is not valid: %v", devfileEntry.Name, err)
 							}
@@ -441,9 +493,10 @@ func parseExtraDevfileEntries(registryDirPath string, force bool) ([]schema.Sche
 							// This error shouldn't occur since we check for the devfile's existence during registry build, but check for it regardless
 							return nil, fmt.Errorf("%s devfile sample does not have a devfile.yaml: %v", indexComponent.Name, err)
 						}
-
+						convertUri := false
 						// Validate the sample devfile
-						_, _, err = devfileParser.ParseDevfileAndValidate(parser.ParserArgs{Path: devfilePath})
+						_, _, err = devfileParser.ParseDevfileAndValidate(parser.ParserArgs{Path: devfilePath,
+							ConvertKubernetesContentInUri: &convertUri})
 						if err != nil {
 							return nil, fmt.Errorf("%s sample devfile is not valid: %v", devfileEntry.Name, err)
 						}
@@ -470,6 +523,7 @@ func parseExtraDevfileEntries(registryDirPath string, force bool) ([]schema.Sche
 	return index, nil
 }
 
+/* #nosec G304 -- stackYamlPath is produced from file.Join which cleans the input path */
 func parseStackInfo(stackYamlPath string) (schema.Schema, error) {
 	var index schema.Schema
 	bytes, err := ioutil.ReadFile(stackYamlPath)

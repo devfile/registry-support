@@ -1,3 +1,18 @@
+//
+// Copyright 2022 Red Hat, Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package library
 
 import (
@@ -8,15 +23,20 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"regexp"
+	"sort"
+	"strconv"
 	"strings"
 	"syscall"
 
-	"github.com/devfile/library/pkg/testingutil/filesystem"
-	dfutil "github.com/devfile/library/pkg/util"
+	"github.com/devfile/library/v2/pkg/testingutil/filesystem"
+	dfutil "github.com/devfile/library/v2/pkg/util"
 	"github.com/devfile/registry-support/index/generator/schema"
 	gitpkg "github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 )
+
+var semverRe = regexp.MustCompile(`^(\d+)\.(\d+)\.(\d+)$`)
 
 // CloneRemoteStack downloads the stack version from a git repo outside of the registry by
 // cloning then removing the local .git folder. When git.SubDir is set, fetches specified
@@ -103,25 +123,27 @@ func CloneRemoteStack(git *schema.Git, path string, verbose bool) (err error) {
 // returns byte array of zip file and error if occurs otherwise is nil. If git.SubDir is set, then
 // zip file will contain contents of the specified subdirectory instead of the whole downloaded git repo.
 func DownloadStackFromGit(git *schema.Git, path string, verbose bool) ([]byte, error) {
-	zipPath := fmt.Sprintf("%s.zip", path)
+	cleanPath := filepath.Clean(path)
+	zipPath := fmt.Sprintf("%s.zip", cleanPath)
 
 	// Download from given git url. Downloaded result contains subDir
 	// when specified, if error return empty bytes.
-	if err := CloneRemoteStack(git, path, verbose); err != nil {
+	if err := CloneRemoteStack(git, cleanPath, verbose); err != nil {
 		return []byte{}, err
 	}
 
 	// Throw error if path was not created
-	if _, err := os.Stat(path); os.IsNotExist(err) {
+	if _, err := os.Stat(cleanPath); os.IsNotExist(err) {
 		return []byte{}, err
 	}
 
 	// Zip directory containing downloaded git repo
-	if err := ZipDir(path, zipPath); err != nil {
+	if err := ZipDir(cleanPath, zipPath); err != nil {
 		return []byte{}, err
 	}
 
 	// Read bytes from response and return, error will be nil if successful
+	/* #nosec G304 -- zipPath is constructed from a clean path */
 	return ioutil.ReadFile(zipPath)
 }
 
@@ -132,7 +154,7 @@ func DownloadStackFromZipUrl(zipUrl string, subDir string, path string) ([]byte,
 
 // downloadStackFromZipUrl downloads the zip file containing the stack at a given url
 func downloadStackFromZipUrl(zipUrl string, subDir string, path string, fs filesystem.Filesystem) ([]byte, error) {
-	zipDst := fmt.Sprintf("%s.zip", path)
+	zipDst := fmt.Sprintf("%s.zip", filepath.Clean(path))
 
 	// Create path if does not exist
 	if err := fs.MkdirAll(path, os.ModePerm); err != nil {
@@ -172,6 +194,7 @@ func downloadStackFromZipUrl(zipUrl string, subDir string, path string, fs files
 	}
 
 	// Read bytes from response and return, error will be nil if successful
+	/* #nosec G304 -- zipDest is produced using a cleaned path */
 	return ioutil.ReadFile(zipDst)
 }
 
@@ -406,4 +429,75 @@ func createZipper(writer *zip.Writer, root string, fs filesystem.Filesystem) fil
 
 		return nil
 	}
+}
+
+type Semver struct {
+	major int
+	minor int
+	patch int
+}
+
+func SortVersionByDescendingOrder(versions []schema.Version) []schema.Version {
+	semvers := make([]struct {
+		index  int
+		semver Semver
+	}, len(versions))
+
+	// convert to semver
+	for i, version := range versions {
+		matches := semverRe.FindStringSubmatch(version.Version)
+		if len(matches) != 4 {
+			fmt.Printf("error occurred while parsing semver %s", version.Version)
+		}
+
+		major, err := strconv.Atoi(matches[1])
+		if err != nil {
+			fmt.Printf("error %v occurred while parsing major version", err)
+		}
+
+		minor, err := strconv.Atoi(matches[2])
+		if err != nil {
+			fmt.Printf("error %v occurred while parsing minor version", err)
+		}
+
+		patch, err := strconv.Atoi(matches[3])
+		if err != nil {
+			fmt.Printf("error %v occurred while parsing patch version", err)
+		}
+
+		semvers[i] = struct {
+			index  int
+			semver Semver
+		}{
+			index: i,
+			semver: Semver{
+				major: major,
+				minor: minor,
+				patch: patch,
+			},
+		}
+	}
+
+	// sort semver
+	sort.SliceStable(semvers, func(i, j int) bool {
+		if semvers[i].semver.major > semvers[j].semver.major {
+			return true
+		} else if semvers[i].semver.major == semvers[j].semver.major {
+			if semvers[i].semver.minor > semvers[j].semver.minor {
+				return true
+			} else if semvers[i].semver.minor == semvers[j].semver.minor {
+				return semvers[i].semver.patch > semvers[j].semver.patch
+			}
+		}
+
+		return false
+	})
+
+	// convert back to version
+	sortedVersions := make([]schema.Version, len(versions))
+	for i, semver := range semvers {
+		sortedVersions[i] = versions[semver.index]
+	}
+
+	return sortedVersions
 }
