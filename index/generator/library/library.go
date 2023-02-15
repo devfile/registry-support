@@ -374,6 +374,33 @@ func parseStackDevfile(devfileDirPath string, stackName string, force bool, vers
 	versionComponent.Links["self"] = fmt.Sprintf("%s/%s:%s", "devfile-catalog", stackName, versionComponent.Version)
 	versionComponent.SchemaVersion = devfile.SchemaVersion
 
+	kinds := []schema.CommandGroupKind{
+		schema.BuildCommandGroupKind,
+		schema.RunCommandGroupKind,
+		schema.TestCommandGroupKind,
+		schema.DebugCommandGroupKind,
+		schema.DeployCommandGroupKind,
+	}
+
+	if versionComponent.CommandGroups == nil {
+		versionComponent.CommandGroups = make(map[schema.CommandGroupKind]bool)
+		for _, kind := range kinds {
+			versionComponent.CommandGroups[kind] = false
+		}
+	}
+
+	for _, commands := range devfile.Commands {
+		if commands.Exec.Group.Kind != "" {
+			versionComponent.CommandGroups[commands.Exec.Group.Kind] = true
+		}
+		if commands.Apply.Group.Kind != "" {
+			versionComponent.CommandGroups[commands.Apply.Group.Kind] = true
+		}
+		if commands.Composite.Group.Kind != "" {
+			versionComponent.CommandGroups[commands.Composite.Group.Kind] = true
+		}
+	}
+
 	for _, starterProject := range devfile.StarterProjects {
 		versionComponent.StarterProjects = append(versionComponent.StarterProjects, starterProject.Name)
 	}
