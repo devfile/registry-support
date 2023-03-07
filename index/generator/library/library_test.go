@@ -512,7 +512,7 @@ func TestValidateIndexComponent(t *testing.T) {
 			"Case 22: test stack component has wrong iconUrl",
 			schema.Schema{
 				Name: "nodejs",
-				Icon: "https://github.com/"
+				Icon: "https://github.com/",
 				Versions: []schema.Version{
 					{
 						Version:       "1.0.0",
