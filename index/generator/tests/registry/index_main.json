@@ -423,7 +423,7 @@
     "description": "A simple Hello World application",
     "type": "sample",
     "tags": ["NodeJS", "Express"],
-    "icon": "icon: https://nodejs.org/static/images/logos/nodejs-new-pantone-black.svg",
+    "icon": "https://nodejs.org/static/images/logos/nodejs-new-pantone-black.svg",
     "projectType": "nodejs",
     "language": "nodejs",
     "versions": [
