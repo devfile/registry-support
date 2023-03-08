@@ -56,6 +56,7 @@
     "name": "java-maven",
     "displayName": "Maven Java",
     "description": "Upstream Maven and OpenJDK 11",
+    "icon": "https://raw.githubusercontent.com/devfile-samples/devfile-stack-icons/main/java-maven.jpg",
     "type": "stack",
     "tags": [
       "Java",
@@ -74,6 +75,7 @@
         "schemaVersion": "2.1.0",
         "default": true,
         "description": "Upstream Maven and OpenJDK 11",
+        "icon": "https://raw.githubusercontent.com/devfile-samples/devfile-stack-icons/main/java-maven.jpg",
         "tags": [
           "Java",
           "Maven"
@@ -99,6 +101,7 @@
     "name": "java-quarkus",
     "displayName": "Quarkus Java",
     "description": "Quarkus with Java",
+    "icon": "https://design.jboss.org/quarkus/logo/final/SVG/quarkus_icon_rgb_default.svg",
     "type": "stack",
     "tags": [
       "Java",
@@ -115,6 +118,7 @@
         "schemaVersion": "2.0.0",
         "default": true,
         "description": "Quarkus with Java",
+        "icon": "https://design.jboss.org/quarkus/logo/final/SVG/quarkus_icon_rgb_default.svg",
         "tags": [
           "Java",
           "Quarkus"
@@ -139,6 +143,7 @@
     "name": "nodejs",
     "displayName": "NodeJS Runtime",
     "description": "Stack with NodeJS 12",
+    "icon": "https://nodejs.org/static/images/logos/nodejs-new-pantone-black.svg",
     "type": "stack",
     "tags": [
       "NodeJS",
@@ -159,6 +164,7 @@
         "schemaVersion": "2.0.0",
         "default": true,
         "description": "Stack with NodeJS 12",
+        "icon": "https://nodejs.org/static/images/logos/nodejs-new-pantone-black.svg",
         "tags": [
           "NodeJS",
           "Express",
@@ -202,7 +208,8 @@
             "origin": "https://github.com/nodeshift-starters/devfile-sample.git"
           }
         },
-        "description": "nodejs with devfile v2.2.0"
+        "description": "nodejs with devfile v2.2.0",
+        "icon": "https://nodejs.org/static/images/logos/nodejs-new-pantone-black.svg"
       }
     ]
   },
@@ -228,7 +235,8 @@
             "origin": "https://github.com/devfile-samples/devfile-sample-code-with-quarkus.git"
           }
         },
-        "description": "java quarkus with devfile v2.2.0"
+        "description": "java quarkus with devfile v2.2.0",
+        "icon": "https://design.jboss.org/quarkus/logo/final/SVG/quarkus_icon_rgb_default.svg"
       },
       {
         "version": "1.0.0",
@@ -238,7 +246,8 @@
             "origin": "https://github.com/elsony/devfile-sample-code-with-quarkus.git"
           }
         },
-        "description": "java quarkus with devfile v2.0.0"
+        "description": "java quarkus with devfile v2.0.0",
+        "icon": "https://design.jboss.org/quarkus/logo/final/SVG/quarkus_icon_rgb_default.svg"
       }
     ]
   },

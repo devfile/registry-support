@@ -3,7 +3,7 @@ samples:
   - name: nodejs-basic
     displayName: Basic NodeJS
     description: A simple Hello World application
-    icon: nodejsIcon.svg
+    icon: https://nodejs.org/static/images/logos/nodejs-new-pantone-black.svg
     tags: ["NodeJS", "Express"]
     projectType: nodejs
     language: nodejs
