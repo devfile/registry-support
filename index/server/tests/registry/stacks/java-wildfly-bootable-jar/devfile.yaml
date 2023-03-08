@@ -1,6 +1,7 @@
 schemaVersion: 2.2.0
 metadata:
   name: java-wildfly-bootable-jar
+  icon: https://design.jboss.org/wildfly/logo/final/wildfly_logomark.svg
   version: 1.0.0
   website: https://docs.wildfly.org/bootablejar/
   displayName: WildFly Bootable Jar
