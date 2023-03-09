@@ -217,6 +217,7 @@ func dirExists(dirpath string) error {
 }
 
 func iconExists(iconUrl string) bool {
+        /* #nosec G107 -- iconUrl is taken from the index file.  Stacks / Samples with URLs to a devfile icon should be vetted beforehand */
 	resp, err := http.Get(iconUrl)
 	if err != nil {
 		return false
