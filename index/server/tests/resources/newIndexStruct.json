@@ -260,7 +260,7 @@
       "Java",
       "Spring"
     ],
-    "icon": "https://raw.githubusercontent.com/devfile-samples/devfile-stack-icons/main/spring.svg",
+    "icon": "https://spring.io/images/projects/spring-edf462fec682b9d48cf628eaf9e19521.svg",
     "projectType": "springboot",
     "language": "java",
     "git": {
