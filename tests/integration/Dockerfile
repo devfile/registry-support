@@ -1,5 +1,5 @@
 #
-#   Copyright 2021-2022 Red Hat, Inc.
+#   Copyright 2021-2023 Red Hat, Inc.
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-FROM quay.io/openshift-pipeline/golang:1.15-alpine
+FROM golang:1.17-alpine
 
 WORKDIR /registry-test
 
