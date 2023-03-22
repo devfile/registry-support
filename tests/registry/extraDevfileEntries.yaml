@@ -39,7 +39,7 @@ samples:
   - name: java-springboot-basic
     displayName: Basic Spring Boot
     description: A simple Hello World Java Spring Boot application using Maven
-    icon: https://www.eclipse.org/che/images/logo-eclipseche.svg
+    icon: https://raw.githubusercontent.com/devfile-samples/devfile-stack-icons/main/spring.svg
     tags: ["Java", "Spring"]
     projectType: springboot
     language: java
