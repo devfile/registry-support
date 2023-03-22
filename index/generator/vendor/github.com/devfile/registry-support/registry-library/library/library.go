@@ -16,14 +16,12 @@ limitations under the License.
 package library
 
 import (
-	"archive/tar"
-	"compress/gzip"
-	"crypto/tls"
+	"archive/zip"
 	"encoding/json"
 	"fmt"
+	"github.com/hashicorp/go-multierror"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -53,8 +51,7 @@ const (
 
 	OwnersFile = "OWNERS"
 
-	httpRequestTimeout    = 30 * time.Second // httpRequestTimeout configures timeout of all HTTP requests
-	responseHeaderTimeout = 30 * time.Second // responseHeaderTimeout is the timeout to retrieve the server's response headers
+	httpRequestResponseTimeout = 30 * time.Second // httpRequestTimeout configures timeout of all HTTP requests
 )
 
 var (
@@ -84,7 +81,7 @@ type TelemetryData struct {
 
 type RegistryOptions struct {
 	// SkipTLSVerify is false by default which is the recommended setting for a devfile registry deployed in production.  SkipTLSVerify should only be set to true
-	// if you are testing a devfile registry that is set up with self-signed certificates in a pre-production environment.
+	// if you are testing a devfile registry or proxy server that is set up with self-signed certificates in a pre-production environment.
 	SkipTLSVerify bool
 	// Telemetry allows clients to send telemetry data to the community Devfile Registry
 	Telemetry TelemetryData
@@ -93,6 +90,8 @@ type RegistryOptions struct {
 	// NewIndexSchema is false by default, which calls GET /index and returns index of default version of each stack using the old index schema struct.
 	// If specified to true, calls GET /v2index and returns the new Index schema with multi-version support
 	NewIndexSchema bool
+	// HTTPTimeout overrides the request and response timeout values for the custom HTTP clients set by the registry library.  If unset or a negative value is specified, the default timeout of 30s will be used.
+	HTTPTimeout *int
 }
 
 type RegistryFilter struct {
@@ -174,13 +173,8 @@ func GetRegistryIndex(registryURL string, options RegistryOptions, devfileTypes 
 
 	setHeaders(&req.Header, options)
 
-	httpClient := &http.Client{
-		Transport: &http.Transport{
-			ResponseHeaderTimeout: responseHeaderTimeout,
-			TLSClientConfig:       &tls.Config{InsecureSkipVerify: options.SkipTLSVerify},
-		},
-		Timeout: httpRequestTimeout,
-	}
+	httpClient := getHTTPClient(options)
+
 	resp, err := httpClient.Do(req)
 	if err != nil {
 		return nil, err
@@ -240,69 +234,18 @@ func PrintRegistry(registryURLs string, devfileType string, options RegistryOpti
 			}
 		}
 	}
-	w.Flush()
+
+	_ = w.Flush()
 	return nil
 }
 
 // PullStackByMediaTypesFromRegistry pulls a specified stack with allowed media types from a given registry URL to the destination directory.
 // OWNERS files present in the registry will be excluded
 func PullStackByMediaTypesFromRegistry(registry string, stack string, allowedMediaTypes []string, destDir string, options RegistryOptions) error {
-	var requestVersion string
-	if strings.Contains(stack, ":") {
-		stackWithVersion := strings.Split(stack, ":")
-		stack = stackWithVersion[0]
-		requestVersion = stackWithVersion[1]
-	}
-	// Get the registry index
-	registryIndex, err := GetRegistryIndex(registry, options, indexSchema.StackDevfileType)
+	// Get stack link
+	stackLink, err := GetStackLink(registry, stack, options)
 	if err != nil {
 		return err
-	}
-
-	// Parse the index to get the specified stack's metadata in the index
-	var stackIndex indexSchema.Schema
-	exist := false
-	for _, item := range registryIndex {
-		if item.Name == stack {
-			stackIndex = item
-			exist = true
-			break
-		}
-	}
-	if !exist {
-		return fmt.Errorf("stack %s does not exist in the registry %s", stack, registry)
-	}
-	var stackLink string
-
-	if options.NewIndexSchema {
-		latestVersionIndex := 0
-		latest, err := versionpkg.NewVersion(stackIndex.Versions[latestVersionIndex].Version)
-		if err != nil {
-			return fmt.Errorf("failed to parse the stack version %s for stack %s", stackIndex.Versions[latestVersionIndex].Version, stack)
-		}
-		for index, version := range stackIndex.Versions {
-			if (requestVersion == "" && version.Default) || (version.Version == requestVersion) {
-				stackLink = version.Links["self"]
-				break
-			} else if requestVersion == "latest" {
-				current, err := versionpkg.NewVersion(version.Version)
-				if err != nil {
-					return fmt.Errorf("failed to parse the stack version %s for stack %s", version.Version, stack)
-				}
-				if current.GreaterThan(latest) {
-					latestVersionIndex = index
-					latest = current
-				}
-			}
-		}
-		if requestVersion == "latest" {
-			stackLink = stackIndex.Versions[latestVersionIndex].Links["self"]
-		}
-		if stackLink == "" {
-			return fmt.Errorf("the requested verion %s for stack %s does not exist in the registry %s", requestVersion, stack, registry)
-		}
-	} else {
-		stackLink = stackIndex.Links["self"]
 	}
 
 	// Pull stack initialization
@@ -315,11 +258,8 @@ func PullStackByMediaTypesFromRegistry(registry string, stack string, allowedMed
 	if urlObj.Scheme == "https" {
 		plainHTTP = false
 	}
-	httpClient := &http.Client{
-		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: options.SkipTLSVerify},
-		},
-	}
+	httpClient := getHTTPClient(options)
+
 	headers := make(http.Header)
 	setHeaders(&headers, options)
 
@@ -356,77 +296,276 @@ func PullStackFromRegistry(registry string, stack string, destDir string, option
 	return PullStackByMediaTypesFromRegistry(registry, stack, DevfileAllMediaTypesList, destDir, options)
 }
 
-// decompress extracts the archive file
-func decompress(targetDir string, tarFile string, excludeFiles []string) error {
-	reader, err := os.Open(tarFile)
-	if err != nil {
+// DownloadStarterProjectAsDir downloads a specified starter project archive and extracts it to given path
+func DownloadStarterProjectAsDir(path string, registryURL string, stack string, starterProject string, options RegistryOptions) error {
+	var err error
+
+	// Create temp path to download archive
+	archivePath := filepath.Join(os.TempDir(), fmt.Sprintf("%s.zip", starterProject))
+
+	// Download starter project archive to temp path
+	if err = DownloadStarterProject(archivePath, registryURL, stack, starterProject, options); err != nil {
 		return err
 	}
-	defer reader.Close()
 
-	gzReader, err := gzip.NewReader(reader)
+	// Open archive reader
+	archive, err := zip.OpenReader(archivePath)
 	if err != nil {
-		return err
+		return fmt.Errorf("error opening downloaded starter project archive: %v", err)
 	}
-	defer gzReader.Close()
+	defer archive.Close()
 
-	tarReader := tar.NewReader(gzReader)
-	for {
-		header, err := tarReader.Next()
-		if err == io.EOF {
-			break
-		} else if err != nil {
-			return err
+	// Extract files from starter project archive to specified directory path
+	cleanPath := filepath.Clean(path)
+	for _, file := range archive.File {
+		filePath := filepath.Join(cleanPath, filepath.Clean(file.Name))
+
+		// validate extracted filepath
+		if filePath != file.Name && !strings.HasPrefix(filePath, cleanPath+string(os.PathSeparator)) {
+			return fmt.Errorf("invalid file path %s", filePath)
 		}
-		if isExcluded(header.Name, excludeFiles) {
+
+		// if file is a directory, create it in destination and continue to next file
+		if file.FileInfo().IsDir() {
+			if err = os.MkdirAll(filePath, os.ModePerm); err != nil {
+				return fmt.Errorf("error creating directory %s: %v", filepath.Dir(filePath), err)
+			}
 			continue
 		}
 
-		target := path.Join(targetDir, header.Name)
-		switch header.Typeflag {
-		case tar.TypeDir:
-			err = os.MkdirAll(target, os.FileMode(header.Mode))
-			if err != nil {
-				return err
-			}
-		case tar.TypeReg:
-			w, err := os.OpenFile(target, os.O_CREATE|os.O_RDWR, os.FileMode(header.Mode))
-			if err != nil {
-				return err
-			}
-			_, err = io.Copy(w, tarReader)
-			if err != nil {
-				return err
-			}
-			w.Close()
-		default:
-			log.Printf("Unsupported type: %v", header.Typeflag)
+		// ensure parent directory of current file is created in destination
+		if err = os.MkdirAll(filepath.Dir(filePath), os.ModePerm); err != nil {
+			return fmt.Errorf("error creating parent directory %s: %v", filepath.Dir(filePath), err)
+		}
+
+		// open destination file
+		/* #nosec G304 -- filePath is produced using path.Join which cleans the dir path */
+		dstFile, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, file.Mode())
+		if err != nil {
+			return fmt.Errorf("error opening destination file at %s: %v", filePath, err)
+		}
+
+		// open source file in archive
+		srcFile, err := file.Open()
+		if err != nil {
+			return fmt.Errorf("error opening source file %s in archive %s: %v", file.Name, archivePath, err)
+		}
+
+		// extract source file to destination file
+		/* #nosec G110 -- starter projects are vetted before they are added to a registry.  Their contents can be seen before they are downloaded */
+		if _, err = io.Copy(dstFile, srcFile); err != nil {
+			return fmt.Errorf("error extracting file %s from archive %s to destination at %s: %v", file.Name, archivePath, filePath, err)
+		}
+
+		err = dstFile.Close()
+		if err != nil {
+			return err
+		}
+		err = srcFile.Close()
+		if err != nil {
+			return err
 		}
 	}
 
 	return nil
 }
 
-func isExcluded(name string, excludeFiles []string) bool {
-	basename := filepath.Base(name)
-	for _, excludeFile := range excludeFiles {
-		if basename == excludeFile {
-			return true
+// DownloadStarterProject downloads a specified starter project archive to a given path
+func DownloadStarterProject(path string, registryURL string, stack string, starterProject string, options RegistryOptions) error {
+	var fileStream *os.File
+	var returnedErr error
+
+	cleanPath := filepath.Clean(path)
+	// Download Starter Project archive bytes
+	bytes, err := DownloadStarterProjectAsBytes(registryURL, stack, starterProject, options)
+	if err != nil {
+		return err
+	}
+
+	// Error if parent directory does not exist
+	if _, err = os.Stat(filepath.Dir(cleanPath)); os.IsNotExist(err) {
+		return fmt.Errorf("parent directory '%s' does not exist: %v", filepath.Dir(path), err)
+	}
+
+	// If file does not exist, create a new one
+	// Else open existing for overwriting
+	if _, err = os.Stat(path); os.IsNotExist(err) {
+		fileStream, err = os.Create(cleanPath)
+		if err != nil {
+			return fmt.Errorf("failed to create file '%s': %v", path, err)
+		}
+	} else {
+		fileStream, err = os.OpenFile(cleanPath, os.O_WRONLY|os.O_TRUNC, os.ModePerm)
+		if err != nil {
+			return fmt.Errorf("failed to open file '%s': %v", path, err)
 		}
 	}
-	return false
+
+	defer func() {
+		if err = fileStream.Close(); err != nil {
+			returnedErr = multierror.Append(returnedErr, err)
+		}
+	}()
+
+	// Write downloaded bytes to file
+	_, err = fileStream.Write(bytes)
+	if err != nil {
+		returnedErr = multierror.Append(returnedErr, fmt.Errorf("failed writing to '%s': %v", path, err))
+		return returnedErr
+	}
+
+	return nil
 }
 
-//setHeaders sets the request headers
-func setHeaders(headers *http.Header, options RegistryOptions) {
-	t := options.Telemetry
-	if t.User != "" {
-		headers.Add("User", t.User)
+// DownloadStarterProjectAsBytes downloads the file bytes of a specified starter project archive and return these bytes
+func DownloadStarterProjectAsBytes(registryURL string, stack string, starterProject string, options RegistryOptions) ([]byte, error) {
+	stackName, _, err := SplitVersionFromStack(stack)
+	if err != nil {
+		return nil, fmt.Errorf("problem in stack/version tag: %v", err)
 	}
-	if t.Client != "" {
-		headers.Add("Client", t.Client)
+
+	exists, err := IsStarterProjectExists(registryURL, stack, starterProject, options)
+	if err != nil {
+		return nil, err
+	} else if !exists {
+		return nil, fmt.Errorf("the starter project '%s' does not exist under the stack '%s'", starterProject, stackName)
 	}
-	if t.Locale != "" {
-		headers.Add("Locale", t.Locale)
+
+	urlObj, err := url.Parse(registryURL)
+	if err != nil {
+		return nil, err
 	}
+
+	url := fmt.Sprintf("%s://%s", urlObj.Scheme, path.Join(urlObj.Host, "devfiles", stackName, "starter-projects", starterProject))
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	setHeaders(&req.Header, options)
+
+	httpClient := getHTTPClient(options)
+	resp, err := httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	// Return downloaded starter project as bytes or error if unsuccessful.
+	return ioutil.ReadAll(resp.Body)
+}
+
+// IsStarterProjectExists checks if starter project exists for a given stack
+func IsStarterProjectExists(registryURL string, stack string, starterProject string, options RegistryOptions) (bool, error) {
+	// Get stack index
+	stackIndex, err := GetStackIndex(registryURL, stack, options)
+	if err != nil {
+		return false, err
+	}
+
+	// Check if starter project exists in the stack index
+	exists := false
+	for _, sp := range stackIndex.StarterProjects {
+		if sp == starterProject {
+			exists = true
+			break
+		}
+	}
+
+	if !exists && options.NewIndexSchema {
+		var starterProjects []string
+
+		for _, version := range stackIndex.Versions {
+			starterProjects = append(starterProjects, version.StarterProjects...)
+		}
+
+		exists = false
+		for _, sp := range starterProjects {
+			if sp == starterProject {
+				exists = true
+				break
+			}
+		}
+
+		return exists, nil
+	} else {
+		return exists, nil
+	}
+}
+
+// GetStackLink returns the slug needed to pull a specified stack from a registry URL
+func GetStackLink(registryURL string, stack string, options RegistryOptions) (string, error) {
+	var stackLink string
+
+	// Get stack index
+	stackIndex, err := GetStackIndex(registryURL, stack, options)
+	if err != nil {
+		return "", err
+	}
+
+	// Split version from stack label if specified
+	stack, requestVersion, err := SplitVersionFromStack(stack)
+	if err != nil {
+		return "", fmt.Errorf("problem in stack/version tag: %v", err)
+	}
+
+	if options.NewIndexSchema {
+		latestVersionIndex := 0
+		latest, err := versionpkg.NewVersion(stackIndex.Versions[latestVersionIndex].Version)
+		if err != nil {
+			return "", fmt.Errorf("failed to parse the stack version %s for stack %s", stackIndex.Versions[latestVersionIndex].Version, stack)
+		}
+		for index, version := range stackIndex.Versions {
+			if (requestVersion == "" && version.Default) || (version.Version == requestVersion) {
+				stackLink = version.Links["self"]
+				break
+			} else if requestVersion == "latest" {
+				current, err := versionpkg.NewVersion(version.Version)
+				if err != nil {
+					return "", fmt.Errorf("failed to parse the stack version %s for stack %s", version.Version, stack)
+				}
+				if current.GreaterThan(latest) {
+					latestVersionIndex = index
+					latest = current
+				}
+			}
+		}
+		if requestVersion == "latest" {
+			stackLink = stackIndex.Versions[latestVersionIndex].Links["self"]
+		}
+		if requestVersion == "" && stackLink == "" {
+			return "", fmt.Errorf("no version specified for stack %s which no default version exists in the registry %s", stack, registryURL)
+		} else if stackLink == "" {
+			return "", fmt.Errorf("the requested version %s for stack %s does not exist in the registry %s", requestVersion, stack, registryURL)
+		}
+	} else {
+		stackLink = stackIndex.Links["self"]
+	}
+
+	return stackLink, nil
+}
+
+// GetStackIndex returns the schema index of a specified stack
+func GetStackIndex(registryURL string, stack string, options RegistryOptions) (indexSchema.Schema, error) {
+	// Get the registry index
+	registryIndex, err := GetRegistryIndex(registryURL, options, indexSchema.StackDevfileType)
+	if err != nil {
+		return indexSchema.Schema{}, err
+	}
+
+	// Prune version from stack label if specified
+	stack, _, err = SplitVersionFromStack(stack)
+	if err != nil {
+		return indexSchema.Schema{}, fmt.Errorf("problem in stack/version tag: %v", err)
+	}
+
+	// Parse the index to get the specified stack's metadata in the index
+	for _, item := range registryIndex {
+		// Return index of specified stack if found
+		if item.Name == stack {
+			return item, nil
+		}
+	}
+
+	// Return error if stack index is not found
+	return indexSchema.Schema{}, fmt.Errorf("stack %s does not exist in the registry %s", stack, registryURL)
 }
