@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Red Hat, Inc.
+// Copyright 2022-2023 Red Hat, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -27,18 +27,16 @@ import (
 	"strings"
 
 	indexSchema "github.com/devfile/registry-support/index/generator/schema"
-
-	"github.com/containerd/containerd/remotes/docker"
-	"github.com/deislabs/oras/pkg/content"
-	"github.com/deislabs/oras/pkg/oras"
-	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
+	"oras.land/oras-go/pkg/content"
+	"oras.land/oras-go/pkg/oras"
 )
 
 // pushStackToRegistry pushes the given devfile stack to the OCI registry
 func pushStackToRegistry(versionComponent indexSchema.Version, stackName string) error {
 	// Load the devfile into memory and set up the pushing resource (file name, file content, media type, ref)
-	memoryStore := content.NewMemoryStore()
-	pushContents := []ocispec.Descriptor{}
+	memoryStore := content.NewMemory()
+
+	ref := path.Join(registryService, "/", versionComponent.Links["self"])
 	for _, resource := range versionComponent.Resources {
 		if resource == "meta.yaml" || strings.HasSuffix(resource, "-offline.zip") {
 			// Some registries may still have the meta.yaml (we don't need it) or offline resources in it, so skip pushing these up
@@ -75,17 +73,27 @@ func pushStackToRegistry(versionComponent indexSchema.Version, stackName string)
 			return err
 		}
 
-		desc := memoryStore.Add(resource, mediaType, resourceContent)
-		pushContents = append(pushContents, desc)
+		desc, err := memoryStore.Add(resource, mediaType, resourceContent)
+		if err != nil {
+			return err
+		}
+		manifest, manifestDesc, config, configDesc, err := content.GenerateManifestAndConfig(nil, nil, desc)
+		if err != nil {
+			return err
+		}
+		memoryStore.Set(configDesc, config)
+		err = memoryStore.StoreManifest(ref, manifestDesc, manifest)
+		if err != nil {
+			return err
+		}
 
 	}
 
-	ref := path.Join(registryService, "/", versionComponent.Links["self"])
-
 	ctx := context.Background()
-	resolver := docker.NewResolver(docker.ResolverOptions{PlainHTTP: true})
+
 	log.Printf("Pushing %s version %s to %s...\n", stackName, versionComponent.Version, ref)
-	desc, err := oras.Push(ctx, resolver, ref, memoryStore, pushContents, oras.WithConfigMediaType(devfileConfigMediaType))
+	registry, err := content.NewRegistry(content.RegistryOptions{PlainHTTP: true})
+	desc, err := oras.Copy(ctx, memoryStore, ref, registry, "")
 	if err != nil {
 		return fmt.Errorf("failed to push %s version %s to %s: %v", stackName, versionComponent.Version, ref, err)
 	}
@@ -99,10 +107,9 @@ func pullStackFromRegistry(versionComponent indexSchema.Version) ([]byte, error)
 	ref := path.Join(registryService, "/", versionComponent.Links["self"])
 
 	ctx := context.Background()
-	resolver := docker.NewResolver(docker.ResolverOptions{PlainHTTP: true})
-
+	registry, err := content.NewRegistry(content.RegistryOptions{PlainHTTP: true})
 	// Initialize memory store
-	memoryStore := content.NewMemoryStore()
+	memoryStore := content.NewMemory()
 	allowedMediaTypes := []string{devfileMediaType}
 
 	var devfile string
@@ -117,7 +124,7 @@ func pullStackFromRegistry(versionComponent indexSchema.Version) ([]byte, error)
 		}
 	}
 	log.Printf("Pulling %s from %s...\n", devfile, ref)
-	desc, _, err := oras.Pull(ctx, resolver, ref, memoryStore, oras.WithAllowedMediaTypes(allowedMediaTypes))
+	desc, err := oras.Copy(ctx, registry, ref, memoryStore, "", oras.WithAllowedMediaTypes(allowedMediaTypes))
 	if err != nil {
 		return nil, fmt.Errorf("failed to pull %s from %s: %v", devfile, ref, err)
 	}

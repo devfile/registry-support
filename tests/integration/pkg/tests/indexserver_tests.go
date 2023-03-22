@@ -1,4 +1,4 @@
-/*   Copyright 2020-2022 Red Hat, Inc.
+/*   Copyright 2020-2023 Red Hat, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	devfilePkg "github.com/devfile/library/pkg/devfile"
-	"github.com/devfile/library/pkg/devfile/parser"
+	devfilePkg "github.com/devfile/library/v2/pkg/devfile"
+	"github.com/devfile/library/v2/pkg/devfile/parser"
 	indexSchema "github.com/devfile/registry-support/index/generator/schema"
 
 	"github.com/devfile/registry-support/tests/integration/pkg/config"
