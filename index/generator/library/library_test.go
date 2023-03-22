@@ -46,6 +46,7 @@ func TestValidateIndexComponent(t *testing.T) {
 	noVersionErr := ".*no version specified.*"
 	schemaVersionEmptyErr := ".*schema version is empty.*"
 	multipleVersionErr := ".*has multiple default versions.*"
+	iconUrlBrokenErr := ".*has broken or not existing icon.*"
 
 	tests := []struct {
 		name           string
@@ -112,6 +113,7 @@ func TestValidateIndexComponent(t *testing.T) {
 			"Case 5: test happy path for for stack component",
 			schema.Schema{
 				Name: "nodejs",
+				Icon: "https://raw.githubusercontent.com/devfile-samples/devfile-stack-icons/main/java-maven.jpg",
 				Architectures: []string{
 					"amd64",
 				},
@@ -148,6 +150,7 @@ func TestValidateIndexComponent(t *testing.T) {
 			"Case 6: test happy path for for sample component with old struct",
 			schema.Schema{
 				Name: "nodejs",
+				Icon: "https://raw.githubusercontent.com/devfile-samples/devfile-stack-icons/main/java-maven.jpg",
 				Git: &schema.Git{
 					Remotes: map[string]string{
 						"origin": "https://github.com/redhat-developer/devfile-sample",
@@ -176,10 +179,12 @@ func TestValidateIndexComponent(t *testing.T) {
 			schema.SampleDevfileType,
 			&multipleRemotesErr,
 		},
+
 		{
 			"Case 8: check for missing arch",
 			schema.Schema{
 				Name: "nodejs",
+				Icon: "https://nodejs.org/static/images/logos/nodejs-new-pantone-black.svg",
 				Git: &schema.Git{
 					Remotes: map[string]string{
 						"origin": "https://github.com/redhat-developer/devfile-sample",
@@ -195,6 +200,7 @@ func TestValidateIndexComponent(t *testing.T) {
 			"Case 9: check for missing provider",
 			schema.Schema{
 				Name: "nodejs",
+				Icon: "https://nodejs.org/static/images/logos/nodejs-new-pantone-black.svg",
 				Versions: []schema.Version{
 					{
 						Version:       "1.0.0",
@@ -220,6 +226,7 @@ func TestValidateIndexComponent(t *testing.T) {
 			"Case 10: check for missing supportUrl",
 			schema.Schema{
 				Name: "nodejs",
+				Icon: "https://nodejs.org/static/images/logos/nodejs-new-pantone-black.svg",
 				Versions: []schema.Version{
 					{
 						Version:       "1.0.0",
@@ -354,6 +361,7 @@ func TestValidateIndexComponent(t *testing.T) {
 			"Case 16: test happy path for for sample component with new struct",
 			schema.Schema{
 				Name: "nodejs",
+				Icon: "https://nodejs.org/static/images/logos/nodejs-new-pantone-black.svg",
 				Versions: []schema.Version{
 					{
 						Version:       "1.0.0",
@@ -478,6 +486,49 @@ func TestValidateIndexComponent(t *testing.T) {
 			},
 			schema.SampleDevfileType,
 			&multipleVersionErr,
+		},
+		{
+			"Case 21: test stack component missing iconUrl",
+			schema.Schema{
+				Name: "nodejs",
+				Versions: []schema.Version{
+					{
+						Version:       "1.0.0",
+						SchemaVersion: "2.0.0",
+						Default:       true,
+						Links: map[string]string{
+							"self": "devfile-catalog/java-maven:latest",
+						},
+						Resources: []string{
+							"devfile.yaml",
+						},
+					},
+				},
+			},
+			schema.StackDevfileType,
+			&iconUrlBrokenErr,
+		},
+		{
+			"Case 22: test stack component has wrong iconUrl",
+			schema.Schema{
+				Name: "nodejs",
+				Icon: "https://github.com/",
+				Versions: []schema.Version{
+					{
+						Version:       "1.0.0",
+						SchemaVersion: "2.0.0",
+						Default:       true,
+						Links: map[string]string{
+							"self": "devfile-catalog/java-maven:latest",
+						},
+						Resources: []string{
+							"devfile.yaml",
+						},
+					},
+				},
+			},
+			schema.StackDevfileType,
+			&iconUrlBrokenErr,
 		},
 	}
 

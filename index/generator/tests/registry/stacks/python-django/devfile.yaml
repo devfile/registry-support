@@ -1,6 +1,7 @@
 schemaVersion: 2.2.0
 metadata:
   name: python-django
+  icon: https://static.djangoproject.com/img/logos/django-logo-positive.svg
   version: 1.0.0
   displayName: Django
   description: Python3.7 with Django
