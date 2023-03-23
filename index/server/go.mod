@@ -4,8 +4,7 @@ go 1.18
 
 require (
 	github.com/devfile/api/v2 v2.2.0
-	github.com/devfile/library v1.2.1-0.20220308191614-f0f7e11b17de
-	github.com/devfile/library/v2 v2.2.0
+	github.com/devfile/library/v2 v2.2.1-0.20230323124903-d36e409ff94f
 	github.com/devfile/registry-support/index/generator v0.0.0-20230215135119-cdf58b183ec4
 	github.com/gin-gonic/gin v1.7.7
 	github.com/hashicorp/go-version v1.4.0

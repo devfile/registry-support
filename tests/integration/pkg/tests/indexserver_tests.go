@@ -253,9 +253,12 @@ var _ = ginkgo.Describe("[Verify index server is working properly]", func() {
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	})
 
+	//workaround to avoid library parser error
+	convertInURI := false
 	ginkgo.It("/devfiles/<devfile> endpoint should return a devfile for samples", func() {
 		parserArgs := parser.ParserArgs{
-			URL: config.Registry + "/devfiles/code-with-quarkus",
+			URL:                           config.Registry + "/devfiles/code-with-quarkus",
+			ConvertKubernetesContentInUri: &convertInURI,
 		}
 		_, _, err := devfilePkg.ParseDevfileAndValidate(parserArgs)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
