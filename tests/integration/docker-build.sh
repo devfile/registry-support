@@ -6,6 +6,6 @@
 cp -rf ../../registry-library ./
 
 # Build the container image
-podman build -t devfile-registry-integration ./
+docker build -t devfile-registry-integration ./
 
 rm -rf ./registry-library/
