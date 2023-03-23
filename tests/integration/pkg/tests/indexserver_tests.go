@@ -281,7 +281,8 @@ var _ = ginkgo.Describe("[Verify index server is working properly]", func() {
 	ginkgo.It("/devfiles/<devfile>/<version> endpoint should return a devfile for samples", func() {
 		if config.IsTestRegistry {
 			parserArgs := parser.ParserArgs{
-				URL: config.Registry + "/devfiles/code-with-quarkus/latest",
+				URL:                           config.Registry + "/devfiles/code-with-quarkus/latest",
+				ConvertKubernetesContentInUri: &convertInURI,
 			}
 			_, _, err := devfilePkg.ParseDevfileAndValidate(parserArgs)
 			gomega.Expect(err).NotTo(gomega.HaveOccurred())
