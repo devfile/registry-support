@@ -1,4 +1,4 @@
-/*   Copyright 2020-2022 Red Hat, Inc.
+/*   Copyright 2020-2023 Red Hat, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	devfilePkg "github.com/devfile/library/pkg/devfile"
-	"github.com/devfile/library/pkg/devfile/parser"
+	devfilePkg "github.com/devfile/library/v2/pkg/devfile"
+	"github.com/devfile/library/v2/pkg/devfile/parser"
 	indexSchema "github.com/devfile/registry-support/index/generator/schema"
 
 	"github.com/devfile/registry-support/tests/integration/pkg/config"
@@ -253,9 +253,12 @@ var _ = ginkgo.Describe("[Verify index server is working properly]", func() {
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	})
 
+	//workaround to avoid library parser error
+	convertInURI := false
 	ginkgo.It("/devfiles/<devfile> endpoint should return a devfile for samples", func() {
 		parserArgs := parser.ParserArgs{
-			URL: config.Registry + "/devfiles/code-with-quarkus",
+			URL:                           config.Registry + "/devfiles/code-with-quarkus",
+			ConvertKubernetesContentInUri: &convertInURI,
 		}
 		_, _, err := devfilePkg.ParseDevfileAndValidate(parserArgs)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
@@ -278,7 +281,8 @@ var _ = ginkgo.Describe("[Verify index server is working properly]", func() {
 	ginkgo.It("/devfiles/<devfile>/<version> endpoint should return a devfile for samples", func() {
 		if config.IsTestRegistry {
 			parserArgs := parser.ParserArgs{
-				URL: config.Registry + "/devfiles/code-with-quarkus/latest",
+				URL:                           config.Registry + "/devfiles/code-with-quarkus/latest",
+				ConvertKubernetesContentInUri: &convertInURI,
 			}
 			_, _, err := devfilePkg.ParseDevfileAndValidate(parserArgs)
 			gomega.Expect(err).NotTo(gomega.HaveOccurred())

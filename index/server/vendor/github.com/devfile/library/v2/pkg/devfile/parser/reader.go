@@ -29,7 +29,7 @@ import (
 	routev1 "github.com/openshift/api/route/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-	extensionsv1 "k8s.io/api/extensions/v1beta1"
+	networkingv1 "k8s.io/api/networking/v1"
 )
 
 // YamlSrc specifies the src of the yaml in either Path, URL or Data format
@@ -48,7 +48,8 @@ type KubernetesResources struct {
 	Deployments []appsv1.Deployment
 	Services    []corev1.Service
 	Routes      []routev1.Route
-	Ingresses   []extensionsv1.Ingress
+	Ingresses   []networkingv1.Ingress
+	Others      []interface{}
 }
 
 // ReadKubernetesYaml reads a yaml Kubernetes file from either the Path, URL or Data provided.
@@ -62,7 +63,8 @@ func ReadKubernetesYaml(src YamlSrc, fs *afero.Afero) ([]interface{}, error) {
 	var err error
 
 	if src.URL != "" {
-		data, err = util.DownloadFileInMemory(src.URL)
+		params := util.HTTPRequestParams{URL: src.URL}
+		data, err = util.DownloadInMemory(params)
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to download file %q", src.URL)
 		}
@@ -104,13 +106,15 @@ func ParseKubernetesYaml(values []interface{}) (KubernetesResources, error) {
 	var deployments []appsv1.Deployment
 	var services []corev1.Service
 	var routes []routev1.Route
-	var ingresses []extensionsv1.Ingress
+	var ingresses []networkingv1.Ingress
+	var otherResources []interface{}
 
 	for _, value := range values {
 		var deployment appsv1.Deployment
 		var service corev1.Service
 		var route routev1.Route
-		var ingress extensionsv1.Ingress
+		var ingress networkingv1.Ingress
+		var otherResource interface{}
 
 		byteData, err := k8yaml.Marshal(value)
 		if err != nil {
@@ -133,6 +137,9 @@ func ParseKubernetesYaml(values []interface{}) (KubernetesResources, error) {
 		case "Ingress":
 			err = k8yaml.Unmarshal(byteData, &ingress)
 			ingresses = append(ingresses, ingress)
+		default:
+			err = k8yaml.Unmarshal(byteData, &otherResource)
+			otherResources = append(otherResources, otherResource)
 		}
 
 		if err != nil {
@@ -145,5 +152,6 @@ func ParseKubernetesYaml(values []interface{}) (KubernetesResources, error) {
 		Services:    services,
 		Routes:      routes,
 		Ingresses:   ingresses,
+		Others:      otherResources,
 	}, nil
 }

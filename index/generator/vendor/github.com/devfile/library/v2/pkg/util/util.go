@@ -21,7 +21,6 @@ import (
 	"bytes"
 	"crypto/rand"
 	"fmt"
-	"github.com/go-git/go-git/v5/plumbing"
 	"io"
 	"io/ioutil"
 	"math/big"
@@ -42,6 +41,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/go-git/go-git/v5/plumbing"
+
 	"github.com/devfile/library/v2/pkg/testingutil/filesystem"
 	"github.com/fatih/color"
 	gitpkg "github.com/go-git/go-git/v5"
@@ -57,9 +58,11 @@ import (
 )
 
 const (
-	HTTPRequestResponseTimeout = 30 * time.Second // HTTPRequestTimeout configures timeout of all HTTP requests
-	ModeReadWriteFile          = 0600             // default Permission for a file
-	CredentialPrefix           = "odo-"           // CredentialPrefix is the prefix of the credential that uses to access secure registry
+	HTTPRequestResponseTimeout   = 30 * time.Second           // HTTPRequestTimeout configures timeout of all HTTP requests
+	ModeReadWriteFile            = 0600                       // default Permission for a file
+	CredentialPrefix             = "odo-"                     // CredentialPrefix is the prefix of the credential that uses to access secure registry
+	TelemetryClientName          = "devfile-library"          //TelemetryClientName is the name of the devfile library client
+	TelemetryIndirectDevfileCall = "devfile-library-indirect" //TelemetryIndirectDevfileCall is used to identify calls made to retrieve the parent or plugin devfile
 )
 
 // httpCacheDir determines directory where odo will cache HTTP respones
@@ -86,9 +89,10 @@ type ResourceRequirementInfo struct {
 
 // HTTPRequestParams holds parameters of forming http request
 type HTTPRequestParams struct {
-	URL     string
-	Token   string
-	Timeout *int
+	URL                 string
+	Token               string
+	Timeout             *int
+	TelemetryClientName string //optional client name for telemetry
 }
 
 // DownloadParams holds parameters of forming file download request
@@ -298,10 +302,10 @@ func GetAbsPath(path string) (string, error) {
 // existList: List to verify that the returned name does not already exist
 // retries: number of retries to try generating a unique name
 // Returns:
-//		1. randomname: is prefix-suffix, where:
-//				prefix: string passed as prefix or fetched current directory of length same as the passed prefixMaxLen
-//				suffix: 4 char random string
-//      2. error: if requested number of retries also failed to generate unique name
+//  1. randomname: is prefix-suffix, where:
+//     prefix: string passed as prefix or fetched current directory of length same as the passed prefixMaxLen
+//     suffix: 4 char random string
+//  2. error: if requested number of retries also failed to generate unique name
 func GetRandomName(prefix string, prefixMaxLen int, existList []string, retries int) (string, error) {
 	prefix = TruncateString(GetDNS1123Name(strings.ToLower(prefix)), prefixMaxLen)
 	name := fmt.Sprintf("%s-%s", prefix, GenerateRandomString(4))
@@ -454,7 +458,7 @@ func checkPathExistsOnFS(path string, fs filesystem.Filesystem) bool {
 // host:port even if port was not specifically specified in the origin url.
 // If port is not specified, standart port corresponding to url schema is provided.
 // example: for url https://example.com function will return "example.com:443"
-//          for url https://example.com:8443 function will return "example:8443"
+// for url https://example.com:8443 function will return "example:8443"
 func GetHostWithPort(inputURL string) (string, error) {
 	u, err := url.Parse(inputURL)
 	if err != nil {
@@ -743,6 +747,9 @@ func HTTPGetRequest(request HTTPRequestParams, cacheFor int) ([]byte, error) {
 		bearer := "Bearer " + request.Token
 		req.Header.Add("Authorization", bearer)
 	}
+
+	//add the telemetry client name
+	req.Header.Add("Client", request.TelemetryClientName)
 
 	overriddenTimeout := HTTPRequestResponseTimeout
 	timeout := request.Timeout
@@ -1056,11 +1063,40 @@ func DownloadFile(params DownloadParams) error {
 }
 
 // DownloadFileInMemory uses the url to download the file and return bytes
+// Deprecated, use DownloadInMemory() instead
 func DownloadFileInMemory(url string) ([]byte, error) {
 	var httpClient = &http.Client{Transport: &http.Transport{
 		ResponseHeaderTimeout: HTTPRequestResponseTimeout,
 	}, Timeout: HTTPRequestResponseTimeout}
 	resp, err := httpClient.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	// We have a non 1xx / 2xx status, return an error
+	if (resp.StatusCode - 300) > 0 {
+		return nil, errors.Errorf("failed to retrieve %s, %v: %s", url, resp.StatusCode, http.StatusText(resp.StatusCode))
+	}
+	defer resp.Body.Close()
+
+	return ioutil.ReadAll(resp.Body)
+}
+
+// DownloadInMemory uses HTTPRequestParams to download the file and return bytes
+func DownloadInMemory(params HTTPRequestParams) ([]byte, error) {
+
+	var httpClient = &http.Client{Transport: &http.Transport{
+		ResponseHeaderTimeout: HTTPRequestResponseTimeout,
+	}, Timeout: HTTPRequestResponseTimeout}
+
+	url := params.URL
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	//add the telemetry client name in the header
+	req.Header.Add("Client", params.TelemetryClientName)
+	resp, err := httpClient.Do(req)
 	if err != nil {
 		return nil, err
 	}

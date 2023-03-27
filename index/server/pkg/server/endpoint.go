@@ -30,9 +30,9 @@ import (
 	"strings"
 
 	"github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2"
-	"github.com/devfile/library/pkg/devfile/parser"
-	"github.com/devfile/library/pkg/devfile/parser/data/v2/common"
-	dfutil "github.com/devfile/library/pkg/util"
+	"github.com/devfile/library/v2/pkg/devfile/parser"
+	"github.com/devfile/library/v2/pkg/devfile/parser/data/v2/common"
+	dfutil "github.com/devfile/library/v2/pkg/util"
 	libutil "github.com/devfile/registry-support/index/generator/library"
 	indexSchema "github.com/devfile/registry-support/index/generator/schema"
 	"github.com/devfile/registry-support/index/server/pkg/util"
