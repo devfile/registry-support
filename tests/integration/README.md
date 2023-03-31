@@ -14,7 +14,13 @@ To build the test binary locally, run: `./build.sh`
 
 ## Custom Tests
 
+### Specific Registries
+
 Some tests like using the arch filter are registry specific. For example, the community registry may not have devfiles with archs mentioned but the test registry in this repo does. As such, run these specific tests by setting the env  `IS_TEST_REGISTRY=true`
+
+### Registry Probing
+
+Optionally, a health check probe can be run to require the target registry to be at a ready status. This can be enabled by setting the env `PROBE_TIMEOUT`, to have the probe timeout in 30 seconds set the env to `PROBE_TIMEOUT=30`.
 
 ## Run in a Container
 
