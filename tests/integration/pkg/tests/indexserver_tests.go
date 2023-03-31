@@ -73,7 +73,8 @@ var _ = ginkgo.Describe("[Verify index server is working properly]", func() {
 		gomega.Expect(body).To(gomega.ContainSubstring("<!DOCTYPE html>"))
 
 		// Verify that the registry viewer's page has been properly generated
-		gomega.Expect(body).To(gomega.ContainSubstring("A simple Hello World Node.js application"))
+		gomega.Expect(body).To(gomega.ContainSubstring("Devfile Registry"))
+		gomega.Expect(body).To(gomega.ContainSubstring("Devfile, OpenShift, Kubernetes"))
 	})
 
 	ginkgo.It("/index endpoint should return list of stacks", func() {
