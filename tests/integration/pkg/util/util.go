@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Red Hat, Inc.
+// Copyright 2022-2023 Red Hat, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,8 +17,11 @@ package util
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
+
+	"time"
 
 	indexSchema "github.com/devfile/registry-support/index/generator/schema"
 	"github.com/onsi/gomega"
@@ -26,6 +29,39 @@ import (
 
 type OCICatalog struct {
 	Repositories []string `json:"repositories,omitempty"`
+}
+
+// Probes a devfile registry to check if ready
+func ProbeRegistry(registryUrl string, timeout int) error {
+	endpointUrl := registryUrl + "/health"
+	timeoutDuration := time.Duration(timeout) * time.Second
+	probe := &http.Client{}
+
+	// Checks if registry endpoint /health is ready
+	if resp, err := probe.Get(endpointUrl); resp != nil && resp.StatusCode != http.StatusOK {
+		start := time.Now()
+
+		// Set initial request timeout to the timeout duration of probing
+		probe.Timeout = timeoutDuration
+		// Loop until exited or timeout is reached
+		for time.Since(start) < timeoutDuration {
+			// Reduce request timeout by the time elapsed probing
+			probe.Timeout -= time.Since(start)
+			resp, err = probe.Get(endpointUrl)
+			// If request errors return error
+			// Else if response is OK status then health check passes and registry is ready
+			if err != nil {
+				return err
+			} else if resp != nil && resp.StatusCode == http.StatusOK {
+				return nil
+			}
+			time.Sleep(time.Second)
+		}
+		err = fmt.Errorf("probe timeout: '%s' was not ready in time", endpointUrl)
+		return err
+	} else {
+		return err
+	}
 }
 
 // GetRegistryIndex downloads the registry index.json at the specified URL and returns it
