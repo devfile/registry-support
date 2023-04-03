@@ -19,6 +19,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/opencontainers/go-digest"
+	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 	"io/ioutil"
 	"log"
 	"os"
@@ -35,6 +37,7 @@ import (
 func pushStackToRegistry(versionComponent indexSchema.Version, stackName string) error {
 	// Load the devfile into memory and set up the pushing resource (file name, file content, media type, ref)
 	memoryStore := content.NewMemory()
+	pushContents := []ocispec.Descriptor{}
 
 	ref := path.Join(registryService, "/", versionComponent.Links["self"])
 	for _, resource := range versionComponent.Resources {
@@ -77,16 +80,25 @@ func pushStackToRegistry(versionComponent indexSchema.Version, stackName string)
 		if err != nil {
 			return err
 		}
-		manifest, manifestDesc, config, configDesc, err := content.GenerateManifestAndConfig(nil, nil, desc)
-		if err != nil {
-			return err
-		}
-		memoryStore.Set(configDesc, config)
-		err = memoryStore.StoreManifest(ref, manifestDesc, manifest)
-		if err != nil {
-			return err
-		}
+		pushContents = append(pushContents, desc)
+	}
 
+	configBytes := []byte("{}")
+	dig := digest.FromBytes(configBytes)
+	configDesc := ocispec.Descriptor{
+		MediaType: devfileConfigMediaType,
+		Digest:    dig,
+		Size:      int64(len(configBytes)),
+	}
+
+	manifest, manifestDesc, err := content.GenerateManifest(&configDesc, nil, pushContents...)
+	if err != nil {
+		return err
+	}
+	memoryStore.Set(configDesc, configBytes)
+	err = memoryStore.StoreManifest(ref, manifestDesc, manifest)
+	if err != nil {
+		return err
 	}
 
 	ctx := context.Background()
