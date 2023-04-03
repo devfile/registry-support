@@ -61,8 +61,6 @@ var _ = ginkgo.SynchronizedBeforeSuite(func() []byte {
 			fmt.Println(err)
 			panic(err)
 		}
-	} else {
-		config.IsTestRegistry = false
 	}
 
 	// If timeout duration until readiness probe runs out is set, run readiness probe
