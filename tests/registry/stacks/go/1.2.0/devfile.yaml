@@ -47,4 +47,3 @@ commands:
         kind: run
       workingDir: /project
     id: run
-
