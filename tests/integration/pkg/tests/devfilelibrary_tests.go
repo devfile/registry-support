@@ -128,6 +128,26 @@ var _ = ginkgo.Describe("[Verify registry library works with registry]", func() 
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	})
 
+	ginkgo.It("should properly retrieve a devfile with a deploy.yaml", func() {
+		tempDir := path.Join(os.TempDir(), goStack)
+		util.CmdShouldPass("registry-library", "pull", config.Registry, goStack+":latest", "--context", tempDir, "--new-index-schema")
+		devfilePath := path.Join(tempDir, "devfile.yaml")
+		_, err := os.Stat(devfilePath)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+
+		// The devfile.yaml should be valid, verify that devfile parser doesn't throw an error
+		parserArgs := parser.ParserArgs{
+			Path: devfilePath,
+		}
+		_, _, err = devfilePkg.ParseDevfileAndValidate(parserArgs)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+
+		deployPath := path.Join(tempDir, "kubernetes/deploy.yaml")
+		_, err = os.Stat(deployPath)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+
+	})
+
 	ginkgo.It("should properly download stack starter project", func() {
 		tempDir := path.Join(os.TempDir(), javaMavenStarter)
 		util.CmdShouldPass("registry-library", "download", publicDevfileRegistry, javaMavenStack, javaMavenStarter, "--context", tempDir)
