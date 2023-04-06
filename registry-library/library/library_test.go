@@ -1067,7 +1067,7 @@ func TestPullStackByMediaTypesFromRegistry(t *testing.T) {
 		},
 		{
 			name:              "Pull go:latest from registry with empty allowedMediaTypes list, all resources should be downloaded",
-			path:              filepath.Join(os.TempDir(), "go-latest"),
+			path:              filepath.Join(os.TempDir(), "go-latest2"),
 			stack:             "go:latest",
 			allowedMediaTypes: []string{},
 			options: RegistryOptions{
