@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Red Hat, Inc.
+// Copyright 2022-2023 Red Hat, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -187,7 +187,19 @@ var (
 			Name: "v2index2",
 		},
 	}
+
+	registry = getRegistry()
 )
+
+func getRegistry() string {
+	// Set the REGISTRY environment variable to the registry you want to test with.  Default registry is the staging server
+	reg := os.Getenv("REGISTRY")
+	if reg == "" {
+		reg = "https://registry.stage.devfile.io"
+	}
+
+	return reg
+}
 
 func setUpIndexHandle(indexUrl *url.URL) []indexSchema.Schema {
 	var data []indexSchema.Schema
@@ -979,5 +991,149 @@ func TestDownloadStarterProjectAsDir(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestPullStackFromRegistry(t *testing.T) {
+
+	tests := []struct {
+		name      string
+		path      string
+		stack     string
+		options   RegistryOptions
+		wantFiles []string
+		wantErr   bool
+	}{
+		{
+			name:  "Pull go:latest from registry, all resources should be downloaded",
+			path:  filepath.Join(os.TempDir(), "go-latest"),
+			stack: "go:latest",
+			options: RegistryOptions{
+				NewIndexSchema: true,
+			},
+			wantFiles: []string{"devfile.yaml", "kubernetes/deploy.yaml", "docker/Dockerfile"},
+		},
+		{
+			name:  "Pull go:default (v1.0.2) from registry with newIndexSchema should fail",
+			path:  filepath.Join(os.TempDir(), "go-default"),
+			stack: "go:default",
+			options: RegistryOptions{
+				NewIndexSchema: true,
+			},
+			wantErr: true,
+		},
+		{
+			name:      "Pull python:2.10 from registry, only devfile.yaml should be downloaded",
+			path:      filepath.Join(os.TempDir(), "python-2.10"),
+			stack:     "python:2.10",
+			options:   RegistryOptions{},
+			wantFiles: []string{"devfile.yaml"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := PullStackFromRegistry(registry, tt.stack, tt.path, tt.options)
+
+			defer func() {
+				if err := os.RemoveAll(tt.path); err != nil {
+					t.Errorf("Unexpected err: %+v", err)
+				}
+			}()
+
+			if err != nil {
+				if !tt.wantErr {
+					t.Errorf("stack should be successfully pulled")
+				}
+			} else {
+				validatePullFunctions(t, tt.wantFiles, tt.path)
+			}
+		})
+	}
+}
+
+func TestPullStackByMediaTypesFromRegistry(t *testing.T) {
+
+	tests := []struct {
+		name              string
+		path              string
+		stack             string
+		allowedMediaTypes []string
+		options           RegistryOptions
+		wantFiles         []string
+		wantErr           bool
+	}{
+		{
+			name:              "Pull go:latest from registry, only specified media type should be downloaded",
+			path:              filepath.Join(os.TempDir(), "go-latest"),
+			stack:             "go:latest",
+			allowedMediaTypes: []string{DevfileArchiveMediaType},
+			options: RegistryOptions{
+				NewIndexSchema: true,
+			},
+			wantFiles: []string{"kubernetes/deploy.yaml", "docker/Dockerfile"},
+		},
+		{
+			name:              "Pull go:latest from registry with empty allowedMediaTypes list, all resources should be downloaded",
+			path:              filepath.Join(os.TempDir(), "go-latest2"),
+			stack:             "go:latest",
+			allowedMediaTypes: []string{},
+			options: RegistryOptions{
+				NewIndexSchema: true,
+			},
+			//oras behavior allows all media types if option is not specified: https://github.com/oras-project/oras-go/blob/v1.2.2/pkg/oras/copy.go#L204-L205
+			wantFiles: []string{"devfile.yaml", "kubernetes/deploy.yaml", "docker/Dockerfile"},
+		},
+		{
+			name:              "Pull python:2.10 from registry with unsupported media type, should run successfully but no files are downloaded",
+			path:              filepath.Join(os.TempDir(), "python-2.10"),
+			stack:             "python:2.10",
+			allowedMediaTypes: []string{"faketype"},
+			options:           RegistryOptions{},
+			wantFiles:         []string{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := PullStackByMediaTypesFromRegistry(registry, tt.stack, tt.allowedMediaTypes, tt.path, tt.options)
+
+			defer func() {
+				if err := os.RemoveAll(tt.path); err != nil {
+					t.Errorf("Unexpected err: %+v", err)
+				}
+			}()
+
+			if err != nil {
+				if !tt.wantErr {
+					t.Errorf("stack should be successfully pulled")
+				}
+			} else {
+				validatePullFunctions(t, tt.wantFiles, tt.path)
+			}
+		})
+	}
+}
+
+func validatePullFunctions(t *testing.T, wantFiles []string, path string) {
+	wantNumFiles := len(wantFiles)
+	files, err := os.ReadDir(path)
+	if err != nil {
+		if wantNumFiles != 0 {
+			t.Errorf("error reading directory %s", path)
+		}
+		//If wantNumFiles is 0, then error is expected because directory is not created
+	} else {
+		//verify only the expected number of files are downloaded
+		gotNumFiles := len(files)
+		if gotNumFiles != wantNumFiles {
+			t.Errorf("The number of downloaded files do not match, want %d got %d", wantNumFiles, gotNumFiles)
+		}
+		// verify the expected resources are downloaded
+		for _, wantFile := range wantFiles {
+			if _, err = os.Stat(path + "/" + wantFile); err != nil && os.IsNotExist(err) {
+				t.Errorf("file %s should exist ", wantFile)
+			}
+		}
 	}
 }
