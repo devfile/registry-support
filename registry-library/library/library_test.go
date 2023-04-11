@@ -187,7 +187,19 @@ var (
 			Name: "v2index2",
 		},
 	}
+
+	registry = getRegistry()
 )
+
+func getRegistry() string {
+	// Set the REGISTRY environment variable to the registry you want to test with.  Default registry is the staging server
+	reg := os.Getenv("REGISTRY")
+	if reg == "" {
+		reg = "https://registry.stage.devfile.io"
+	}
+
+	return reg
+}
 
 func setUpIndexHandle(indexUrl *url.URL) []indexSchema.Schema {
 	var data []indexSchema.Schema
@@ -984,8 +996,6 @@ func TestDownloadStarterProjectAsDir(t *testing.T) {
 
 func TestPullStackFromRegistry(t *testing.T) {
 
-	registry := "https://registry.stage.devfile.io"
-
 	tests := []struct {
 		name      string
 		path      string
@@ -1043,8 +1053,6 @@ func TestPullStackFromRegistry(t *testing.T) {
 }
 
 func TestPullStackByMediaTypesFromRegistry(t *testing.T) {
-
-	registry := "https://registry.stage.devfile.io"
 
 	tests := []struct {
 		name              string
