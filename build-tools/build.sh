@@ -61,7 +61,7 @@ build_registry() {
 
   # Build the index generator/validator
   echo "Building index-generator tool"
-  ./build.sh
+  bash ./build.sh
   if [ $? -ne 0 ]; then
     echo "Failed to build index-generator tool"
     return 1
@@ -92,7 +92,7 @@ build_registry() {
   # Cache any devfile samples if needed
   if [ -f $registryRepository/extraDevfileEntries.yaml ]; then
     mkdir $outputFolder/samples
-    $buildToolsFolder/cache_samples.sh $registryRepository/extraDevfileEntries.yaml $outputFolder/samples
+    bash $buildToolsFolder/cache_samples.sh $registryRepository/extraDevfileEntries.yaml $outputFolder/samples
     if [ $? -ne 0 ]; then
       echo "Error caching the devfile samples"
       exit 1;

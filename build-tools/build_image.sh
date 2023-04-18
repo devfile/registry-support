@@ -35,7 +35,7 @@ if [ $# -ne 1 ]; then
   exit 1
 fi
 
-$buildToolsFolder/build.sh $1 $registryFolder
+bash $buildToolsFolder/build.sh $1 $registryFolder
 if [ $? -ne 0 ]; then
   echo "Failed to build the devfile registry index"
   cleanup_and_exit 1
