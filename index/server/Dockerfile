@@ -38,4 +38,4 @@ USER 1001
 
 EXPOSE 8080
 
-ENTRYPOINT ["bash /entrypoint.sh"]
+ENTRYPOINT ["/entrypoint.sh"]
