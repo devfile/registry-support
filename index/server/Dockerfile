@@ -11,6 +11,7 @@ USER root
 # Install and configure dependencies
 RUN microdnf update -y && microdnf install shadow-utils findutils && rm -rf /var/cache/yum
 COPY entrypoint.sh /
+RUN chmod +x /entrypoint.sh
 
 # Copy index server
 COPY --from=index-builder /tools/index-server /registry/index-server

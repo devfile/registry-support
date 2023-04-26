@@ -12,7 +12,7 @@ set -u
 set -x
 
 # Build the test devfile registry image
-./build_registry.sh
+bash ./build_registry.sh
 if [ $? -ne 0 ]; then
   echo "Error building devfile registry images"
   exit 1;
@@ -40,5 +40,5 @@ export REGISTRY=http://$(kubectl get ingress devfile-registry -o jsonpath="{.spe
 
 # Run the integration tests
 cd tests/integration
-./docker-build.sh
+bash ./docker-build.sh
 docker run --env REGISTRY=$REGISTRY --env IS_TEST_REGISTRY=true devfile-registry-integration

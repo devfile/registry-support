@@ -13,6 +13,6 @@ This folder contains tools for building up a Devfile Registry Repository and pac
 
 ### Building the Devfile Registry
 
-To build a devfile registry repository, run: `./build_image.sh <path-to-devfile-registry-folder>`.
+To build a devfile registry repository, run: `bash ./build_image.sh <path-to-devfile-registry-folder>`.
 
 The build script will build the index generator, generate the index.json from the specified devfile registry, and build the stacks and index.json into a devfile index container image.
