@@ -20,12 +20,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"net/http/httputil"
-	"net/url"
-	"strings"
 	"time"
-
-	"github.com/devfile/registry-support/index/server/pkg/util"
 
 	"github.com/prometheus/client_golang/prometheus"
 
@@ -37,7 +32,6 @@ import (
 	oapiMiddleware "github.com/deepmap/oapi-codegen/pkg/gin-middleware"
 	_ "github.com/devfile/registry-support/index/server/docs"
 	"github.com/gin-gonic/gin"
-	"gopkg.in/segmentio/analytics-go.v3"
 	"k8s.io/apimachinery/pkg/util/wait"
 )
 
@@ -169,82 +163,11 @@ func ServeRegistry() {
 	// Use OpenAPI validator middleware
 	router.Use(oapiMiddleware.OapiRequestValidator(swagger))
 
-	// Registry root endpoint
-	router.GET("/", ServeRootEndpoint)
-
 	// Registry REST APIs
 	router = RegisterHandlers(router, server)
-
-	// Set up a simple proxy for /v2 endpoints
-	// Only allow HEAD and GET requests
-	router.HEAD("/v2/*proxyPath", ociServerProxy)
-	router.GET("/v2/*proxyPath", ociServerProxy)
-
-	// Set up routes for the registry viewer
-	if headless {
-		router.GET("/viewer", ServeHeadlessUI)
-		router.GET("/viewer/*proxyPath", ServeHeadlessUI)
-	} else {
-		router.GET("/viewer", ServeUI)
-		router.GET("/viewer/*proxyPath", ServeUI)
-	}
 
 	// Serve static content for stacks
 	router.Static("/stacks", stacksPath)
 
 	router.Run(":8080")
-}
-
-// ociServerProxy forwards all GET requests on /v2 to the OCI registry server
-func ociServerProxy(c *gin.Context) {
-	remote, err := url.Parse(scheme + "://" + registryService + "/v2")
-	if err != nil {
-		panic(err)
-	}
-
-	proxy := httputil.NewSingleHostReverseProxy(remote)
-
-	// Set up the request to the proxy
-	// Track event for telemetry for GET requests only
-	if enableTelemetry && c.Request.Method == http.MethodGet {
-		proxyPath := c.Param("proxyPath")
-		if proxyPath != "" {
-			var name string
-			var resource string
-			parts := strings.Split(proxyPath, "/")
-			// Check proxyPath (e.g. /devfile-catalog/java-quarkus/blobs/sha256:d913cab108c3bc1bd06ce61f1e0cdb6eea2222a7884378f7e656fa26249990b9)
-			if len(parts) == 5 {
-				name = parts[2]
-				resource = parts[3]
-			}
-
-			//Ignore events from the registry-viewer and DevConsole since those are tracked on the client side.  Ignore indirect calls from clients.
-			if resource == "blobs" && !util.IsWebClient(c) && !util.IsIndirectCall(c) {
-				user := util.GetUser(c)
-				client := util.GetClient(c)
-
-				err := util.TrackEvent(analytics.Track{
-					Event:   eventTrackMap["download"],
-					UserId:  user,
-					Context: util.SetContext(c),
-					Properties: analytics.NewProperties().
-						Set("name", name).
-						Set("registry", registry).
-						Set("client", client),
-				})
-				if err != nil {
-					log.Println(err.Error())
-				}
-			}
-		}
-	}
-
-	proxy.Director = func(req *http.Request) {
-		req.Header.Add("X-Forwarded-Host", req.Host)
-		req.Header.Add("X-Origin-Host", remote.Host)
-		req.URL.Scheme = remote.Scheme
-		req.URL.Host = remote.Host
-	}
-
-	proxy.ServeHTTP(c.Writer, c.Request)
 }

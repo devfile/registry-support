@@ -1116,6 +1116,7 @@ func TestOCIServerProxy(t *testing.T) {
 	}
 	defer closeServer()
 	setupVars()
+	server := &Server{}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
@@ -1129,9 +1130,8 @@ func TestOCIServerProxy(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Did not expect error: %v", err)
 			}
-			c.Params = append(c.Params, gin.Param{Key: "proxyPath", Value: test.url})
 
-			ociServerProxy(c)
+			server.ServeOciServerProxy(c, test.url)
 
 			// Force writes response headers to combat a response recording issue
 			c.Writer.WriteHeaderNow()
@@ -1149,13 +1149,15 @@ func TestServeHeadlessUI(t *testing.T) {
 		wantCode = http.StatusBadRequest
 		wantBody = "registry viewer is not available in headless mode"
 	)
+	server := &Server{}
 
 	gin.SetMode(gin.TestMode)
 
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
 
-	ServeHeadlessUI(c)
+	headless = true
+	server.ServeUIRoot(c)
 
 	if gotStatusCode, gotBody := w.Code, w.Body.String(); !reflect.DeepEqual(gotStatusCode, wantCode) {
 		t.Errorf("Did not get expected status code, Got: %v, Expected: %v", gotStatusCode, wantCode)

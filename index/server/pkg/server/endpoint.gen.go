@@ -31,6 +31,9 @@ import (
 )
 
 type ServerInterface interface {
+	// Root endpoint of registry server.
+	// (GET /)
+	ServeRootEndpoint(c *gin.Context)
 	// Get devfile by stack name.
 	// (GET /devfiles/{stack})
 	ServeDevfile(c *gin.Context, stack string)
@@ -52,12 +55,24 @@ type ServerInterface interface {
 	// Gets index schemas of the devfiles of specific type.
 	// (GET /index/{indexType})
 	ServeDevfileIndexV1WithType(c *gin.Context, indexType string, params ServeDevfileIndexV1WithTypeParams)
+	// OCI proxy GET endpoint.
+	// (GET /v2/*{proxyPath})
+	GetOciServerProxy(c *gin.Context, proxyPath string)
+	// OCI proxy HEAD endpoint.
+	// (HEAD /v2/*{proxyPath})
+	HeadOciServerProxy(c *gin.Context, proxyPath string)
 	// Gets V2 index schemas of the stack devfiles.
 	// (GET /v2index)
 	ServeDevfileIndexV2(c *gin.Context, params ServeDevfileIndexV2Params)
 	// Gets V2 index schemas of the devfiles of specific type.
 	// (GET /v2index/{indexType})
 	ServeDevfileIndexV2WithType(c *gin.Context, indexType string, params ServeDevfileIndexV2WithTypeParams)
+	// Registry viewer proxy root endpoint
+	// (GET /viewer)
+	ServeUIRoot(c *gin.Context)
+	// Registry viewer proxy endpoints
+	// (GET /viewer/*{proxyPath})
+	ServeUI(c *gin.Context, proxyPath string)
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -67,6 +82,16 @@ type ServerInterfaceWrapper struct {
 }
 
 type MiddlewareFunc func(c *gin.Context)
+
+// ServeRootEndpoint operation middleware
+func (siw *ServerInterfaceWrapper) ServeRootEndpoint(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+	}
+
+	siw.Handler.ServeRootEndpoint(c)
+}
 
 // ServeDevfile operation middleware
 func (siw *ServerInterfaceWrapper) ServeDevfile(c *gin.Context) {
@@ -281,6 +306,48 @@ func (siw *ServerInterfaceWrapper) ServeDevfileIndexV1WithType(c *gin.Context) {
 	siw.Handler.ServeDevfileIndexV1WithType(c, indexType, params)
 }
 
+// GetOciServerProxy operation middleware
+func (siw *ServerInterfaceWrapper) GetOciServerProxy(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "proxyPath" -------------
+	var proxyPath string
+
+	err = runtime.BindStyledParameter("simple", false, "proxyPath", c.Param("proxyPath"), &proxyPath)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter proxyPath: %s", err)})
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+	}
+
+	siw.Handler.GetOciServerProxy(c, proxyPath)
+}
+
+// HeadOciServerProxy operation middleware
+func (siw *ServerInterfaceWrapper) HeadOciServerProxy(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "proxyPath" -------------
+	var proxyPath string
+
+	err = runtime.BindStyledParameter("simple", false, "proxyPath", c.Param("proxyPath"), &proxyPath)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter proxyPath: %s", err)})
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+	}
+
+	siw.Handler.HeadOciServerProxy(c, proxyPath)
+}
+
 // ServeDevfileIndexV2 operation middleware
 func (siw *ServerInterfaceWrapper) ServeDevfileIndexV2(c *gin.Context) {
 
@@ -364,6 +431,37 @@ func (siw *ServerInterfaceWrapper) ServeDevfileIndexV2WithType(c *gin.Context) {
 	siw.Handler.ServeDevfileIndexV2WithType(c, indexType, params)
 }
 
+// ServeUIRoot operation middleware
+func (siw *ServerInterfaceWrapper) ServeUIRoot(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+	}
+
+	siw.Handler.ServeUIRoot(c)
+}
+
+// ServeUI operation middleware
+func (siw *ServerInterfaceWrapper) ServeUI(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "proxyPath" -------------
+	var proxyPath string
+
+	err = runtime.BindStyledParameter("simple", false, "proxyPath", c.Param("proxyPath"), &proxyPath)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter proxyPath: %s", err)})
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+	}
+
+	siw.Handler.ServeUI(c, proxyPath)
+}
+
 // GinServerOptions provides options for the Gin server.
 type GinServerOptions struct {
 	BaseURL     string
@@ -382,6 +480,8 @@ func RegisterHandlersWithOptions(router *gin.Engine, si ServerInterface, options
 		HandlerMiddlewares: options.Middlewares,
 	}
 
+	router.GET(options.BaseURL+"/", wrapper.ServeRootEndpoint)
+
 	router.GET(options.BaseURL+"/devfiles/:stack", wrapper.ServeDevfile)
 
 	router.GET(options.BaseURL+"/devfiles/:stack/starter-projects/:starterProject", wrapper.ServeDevfileStarterProject)
@@ -396,9 +496,17 @@ func RegisterHandlersWithOptions(router *gin.Engine, si ServerInterface, options
 
 	router.GET(options.BaseURL+"/index/:indexType", wrapper.ServeDevfileIndexV1WithType)
 
+	router.GET(options.BaseURL+"/v2/*:proxyPath", wrapper.GetOciServerProxy)
+
+	router.HEAD(options.BaseURL+"/v2/*:proxyPath", wrapper.HeadOciServerProxy)
+
 	router.GET(options.BaseURL+"/v2index", wrapper.ServeDevfileIndexV2)
 
 	router.GET(options.BaseURL+"/v2index/:indexType", wrapper.ServeDevfileIndexV2WithType)
+
+	router.GET(options.BaseURL+"/viewer", wrapper.ServeUIRoot)
+
+	router.GET(options.BaseURL+"/viewer/*:proxyPath", wrapper.ServeUI)
 
 	return router
 }
@@ -406,34 +514,42 @@ func RegisterHandlersWithOptions(router *gin.Engine, si ServerInterface, options
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
+	"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",
+	"AAA=",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

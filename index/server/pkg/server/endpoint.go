@@ -44,9 +44,9 @@ import (
 type Server struct {
 }
 
-// serveRootEndpoint sets up the handler for the root (/) endpoint on the server
+// ServeRootEndpoint sets up the handler for the root (/) endpoint on the server
 // If html is requested (i.e. from a web browser), the viewer is displayed, otherwise the devfile index is served.
-func ServeRootEndpoint(c *gin.Context) {
+func (*Server) ServeRootEndpoint(c *gin.Context) {
 	// Determine if text/html was requested by the client
 	acceptHeader := c.Request.Header.Values("Accept")
 	if util.IsHtmlRequested(acceptHeader) {
@@ -93,8 +93,8 @@ func (*Server) ServeDevfileIndexV2WithType(c *gin.Context, indexType string, par
 
 // ServeHealthCheck serves endpoint `/health` for registry health check
 func (*Server) ServeHealthCheck(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{
-		"message": "the server is up and running",
+	c.JSON(http.StatusOK, HealthResponse{
+		Message: "the server is up and running",
 	})
 }
 
@@ -323,13 +323,18 @@ func (*Server) ServeDevfileStarterProjectWithVersion(c *gin.Context, name string
 	}
 }
 
-// ServeHeadlessUI handles registry viewer proxy requests in headless mode
-func ServeHeadlessUI(c *gin.Context) {
-	c.String(http.StatusBadRequest, "registry viewer is not available in headless mode")
+// ServeUIRoot handles registry viewer proxy request to root
+func (s *Server) ServeUIRoot(c *gin.Context) {
+	s.ServeUI(c, "")
 }
 
-// ServeUI handles registry viewer proxy requests in headed mode
-func ServeUI(c *gin.Context) {
+// ServeUI handles registry viewer proxy requests
+func (*Server) ServeUI(c *gin.Context, proxyPath string) {
+	if headless {
+		c.String(http.StatusBadRequest, "registry viewer is not available in headless mode")
+		return
+	}
+
 	remote, err := url.Parse(scheme + "://" + viewerService + "/viewer/")
 	if err != nil {
 		panic(err)
@@ -630,4 +635,62 @@ func fetchDevfile(c *gin.Context, name string, version string) ([]byte, indexSch
 		"status": fmt.Sprintf("the devfile of %s didn't exist", name),
 	})
 	return []byte{}, indexSchema.Schema{}
+}
+
+func (*Server) ServeOciServerProxy(c *gin.Context, proxyPath string) {
+	remote, err := url.Parse(scheme + "://" + registryService + "/v2")
+	if err != nil {
+		panic(err)
+	}
+
+	proxy := httputil.NewSingleHostReverseProxy(remote)
+
+	// Set up the request to the proxy
+	// Track event for telemetry for GET requests only
+	if enableTelemetry && c.Request.Method == http.MethodGet && proxyPath != "" {
+		var name string
+		var resource string
+		parts := strings.Split(proxyPath, "/")
+		// Check proxyPath (e.g. /devfile-catalog/java-quarkus/blobs/sha256:d913cab108c3bc1bd06ce61f1e0cdb6eea2222a7884378f7e656fa26249990b9)
+		if len(parts) == 5 {
+			name = parts[2]
+			resource = parts[3]
+		}
+
+		//Ignore events from the registry-viewer and DevConsole since those are tracked on the client side.  Ignore indirect calls from clients.
+		if resource == "blobs" && !util.IsWebClient(c) && !util.IsIndirectCall(c) {
+			user := util.GetUser(c)
+			client := util.GetClient(c)
+
+			err := util.TrackEvent(analytics.Track{
+				Event:   eventTrackMap["download"],
+				UserId:  user,
+				Context: util.SetContext(c),
+				Properties: analytics.NewProperties().
+					Set("name", name).
+					Set("registry", registry).
+					Set("client", client),
+			})
+			if err != nil {
+				log.Println(err.Error())
+			}
+		}
+	}
+
+	proxy.Director = func(req *http.Request) {
+		req.Header.Add("X-Forwarded-Host", req.Host)
+		req.Header.Add("X-Origin-Host", remote.Host)
+		req.URL.Scheme = remote.Scheme
+		req.URL.Host = remote.Host
+	}
+
+	proxy.ServeHTTP(c.Writer, c.Request)
+}
+
+func (s *Server) GetOciServerProxy(c *gin.Context, proxyPath string) {
+	s.ServeOciServerProxy(c, proxyPath)
+}
+
+func (s *Server) HeadOciServerProxy(c *gin.Context, proxyPath string) {
+	s.ServeOciServerProxy(c, proxyPath)
 }
