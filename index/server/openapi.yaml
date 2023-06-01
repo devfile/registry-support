@@ -10,6 +10,109 @@ servers:
 - url: https://registry.stage.devfile.io/
 - url: https://registry.devfile.io/
 paths:
+  /:
+    get:
+      summary: Root endpoint of registry server.
+      description: |-
+        Sets up the handler for the root (/) endpoint on the server
+        If html is requested (i.e. from a web browser), the viewer is displayed, otherwise the devfile index is served.
+      operationId: serveRootEndpoint
+      responses:
+        default:
+          description: Root response.
+          content:
+            text/html: {}
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IndexSchema'
+            application/yaml:
+              schema:
+                $ref: '#/components/schemas/IndexSchema'
+  /viewer:
+    get:
+      summary: Registry viewer proxy root endpoint
+      description: |- 
+        Handles registry viewer proxy request to root
+      operationId: serveUIRoot
+      responses:
+        400:
+          description: A bad request error response.
+          content:
+            text/html: {}
+            text/plain: {}
+        500:
+          description: An internal server error response.
+          content:
+            text/html: {}
+            text/plain: {}
+        502:
+          description: A bad gateway error response.
+          content:
+            text/html: {}
+            text/plain: {}
+        default:
+          description: A registry viewer root page.
+          content:
+            text/html: {}
+  /viewer/*{proxyPath}:
+    get:
+      summary: Registry viewer proxy endpoints
+      description: |- 
+        Handles registry viewer proxy requests
+      operationId: serveUI
+      parameters:
+        - name: proxyPath
+          in: path
+          description: URI of registry viewer route.
+          required: true
+          schema:
+            type: string
+            x-go-name: ProxyPath
+      responses:
+        400:
+          description: A bad request error response.
+          content:
+            text/html: {}
+            text/plain: {}
+        500:
+          description: An internal server error response.
+          content:
+            text/html: {}
+            text/plain: {}
+        502:
+          description: A bad gateway error response.
+          content:
+            text/html: {}
+            text/plain: {}
+        default:
+          description: A registry viewer web page.
+          content:
+            text/html: {}
+  /v2/*{proxyPath}:
+    get:
+      summary: OCI proxy GET endpoint.
+      description: Forwards all GET requests on /v2 to the OCI registry server
+      operationId: getOciServerProxy
+      responses:
+        default:
+          description: Response of OCI server request
+          content: {}
+    head:
+      summary: OCI proxy HEAD endpoint.
+      description: Forwards all HEAD requests on /v2 to the OCI registry server
+      operationId: headOciServerProxy
+      responses:
+        default:
+          description: Response of OCI server request
+          content: {}
+    parameters:
+      - name: proxyPath
+        in: path
+        description: Proxy path to OCI route.
+        required: true
+        schema:
+          type: string
+          x-go-name: ProxyPath
   /health:
     get:
       tags:
@@ -261,11 +364,15 @@ paths:
 components:
   schemas:
     Devfile:
-      allOf:
-        - $ref: 'https://raw.githubusercontent.com/devfile/api/v2.2.0/schemas/latest/devfile.json'
-        - x-go-type: v1alpha2.Devfile
-          x-go-type-import:
-            path: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+      description: Describes the structure of a cloud-native devworkspace and development environment.
+      x-go-type: v1alpha2.Devfile
+      x-go-type-import:
+        path: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+    IndexSchema:
+      description: The index file schema
+      x-go-type: schema.Schema
+      x-go-type-import:
+        path: github.com/devfile/registry-support/index/generator/schema
     IndexParams:
       description: IndexParams defines parameters for index endpoints.
       type: object
@@ -374,6 +481,8 @@ components:
               message:
                 type: string
                 x-go-name: Message
+            required:
+              - message
         application/yaml:
           schema:
             type: object
@@ -381,6 +490,8 @@ components:
               message:
                 type: string
                 x-go-name: Message
+            required:
+              - message
     indexResponse:
       description: |-
         Successful operation.
@@ -389,18 +500,10 @@ components:
       content:
         application/json:
           schema:
-            allOf:
-              - $ref: '../../schemas/index/schema.json'
-              - x-go-type: schema.Schema
-                x-go-type-import:
-                  path: github.com/devfile/registry-support/index/generator/schema
+            $ref: '#/components/schemas/IndexSchema'
         application/yaml:
           schema:
-            allOf:
-              - $ref: '../../schemas/index/schema.json'
-              - x-go-type: schema.Schema
-                x-go-type-import:
-                  path: github.com/devfile/registry-support/index/generator/schema
+            $ref: '#/components/schemas/IndexSchema'
     v2IndexResponse:
       description: |-
         Successful operation.
@@ -409,18 +512,14 @@ components:
       content:
         application/json:
           schema:
-            allOf:
-              - $ref: '../../schemas/indexv2/schema.json'
-              - x-go-type: schema.Schema
-                x-go-type-import:
-                  path: github.com/devfile/registry-support/index/generator/schema
+            x-go-type: schema.Schema
+            x-go-type-import:
+              path: github.com/devfile/registry-support/index/generator/schema
         application/yaml:
           schema:
-            allOf:
-              - $ref: '../../schemas/indexv2/schema.json'
-              - x-go-type: schema.Schema
-                x-go-type-import:
-                  path: github.com/devfile/registry-support/index/generator/schema
+            x-go-type: schema.Schema
+            x-go-type-import:
+              path: github.com/devfile/registry-support/index/generator/schema
     starterProjectResponse:
       description: |-
         Successful operation.
