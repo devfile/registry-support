@@ -24,7 +24,7 @@ import (
 // Optional list of processor architectures that the devfile supports, empty list suggests that the devfile can be used on any architecture
 type ArchParam = []string
 
-// Devfile defines model for Devfile.
+// Describes the structure of a cloud-native devworkspace and development environment.
 type Devfile v1alpha2.Devfile
 
 // Optional devfile icon, can be a URI or a relative path in the project
@@ -39,6 +39,9 @@ type IndexParams struct {
 	IconType *IconParam `json:"icon,omitempty"`
 }
 
+// The index file schema
+type IndexSchema schema.Schema
+
 // DevfileErrorResponse defines model for devfileErrorResponse.
 type DevfileErrorResponse struct {
 	Error  *string `json:"error,omitempty"`
@@ -50,16 +53,16 @@ type DevfileNotFoundResponse struct {
 	Status *string `json:"status,omitempty"`
 }
 
-// DevfileResponse defines model for devfileResponse.
+// Describes the structure of a cloud-native devworkspace and development environment.
 type DevfileResponse = Devfile
 
 // HealthResponse defines model for healthResponse.
 type HealthResponse struct {
-	Message *string `json:"message,omitempty"`
+	Message string `json:"message"`
 }
 
-// IndexResponse defines model for indexResponse.
-type IndexResponse schema.Schema
+// The index file schema
+type IndexResponse = IndexSchema
 
 // V2IndexResponse defines model for v2IndexResponse.
 type V2IndexResponse schema.Schema
