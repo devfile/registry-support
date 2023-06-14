@@ -433,7 +433,7 @@ func buildIndexAPIResponse(c *gin.Context, wantV1Index bool) {
 				matched, err := regexp.MatchString(`^([2-9])\.([0-9]+)(\.[0-9]+)?$`, minSchemaVersion)
 				if !matched || err != nil {
 					c.JSON(http.StatusBadRequest, gin.H{
-						"status": fmt.Sprintf("minSchemaVersion %s is not valid, version format should be '[major].[minor]' or '[major].[minor].[bugfix]'. %v", minSchemaVersion, err),
+						"status": fmt.Sprintf("minSchemaVersion %s is not valid, version format should be '+2.x' or '+2.x.x'. %v", minSchemaVersion, err),
 					})
 					return
 				}
@@ -442,7 +442,7 @@ func buildIndexAPIResponse(c *gin.Context, wantV1Index bool) {
 				matched, err := regexp.MatchString(`^([2-9])\.([0-9]+)(\.[0-9]+)?$`, maxSchemaVersion)
 				if !matched || err != nil {
 					c.JSON(http.StatusBadRequest, gin.H{
-						"status": fmt.Sprintf("maxSchemaVersion %s is not valid, version format should be '[major].[minor]' or '[major].[minor].[bugfix]'. %v", maxSchemaVersion, err),
+						"status": fmt.Sprintf("maxSchemaVersion %s is not valid, version format should be '+2.x' or '+2.x.x'. %v", maxSchemaVersion, err),
 					})
 					return
 				}
@@ -543,7 +543,7 @@ func fetchDevfile(c *gin.Context, name string, version string) ([]byte, indexSch
 			matched, err := regexp.MatchString(`^([2-9])\.([0-9]+)(\.[0-9]+)?$`, minSchemaVersion)
 			if !matched || err != nil {
 				c.JSON(http.StatusBadRequest, gin.H{
-					"status": fmt.Sprintf("minSchemaVersion %s is not valid, version format should be '[major].[minor]' or '[major].[minor].[bugfix]'. %v", minSchemaVersion, err),
+					"status": fmt.Sprintf("minSchemaVersion %s is not valid, version format should be '+2.x' or '+2.x.x'. %v", minSchemaVersion, err),
 				})
 				return []byte{}, indexSchema.Schema{}
 			}
@@ -552,7 +552,7 @@ func fetchDevfile(c *gin.Context, name string, version string) ([]byte, indexSch
 			matched, err := regexp.MatchString(`^([2-9])\.([0-9]+)(\.[0-9]+)?$`, maxSchemaVersion)
 			if !matched || err != nil {
 				c.JSON(http.StatusBadRequest, gin.H{
-					"status": fmt.Sprintf("maxSchemaVersion %s is not valid, version format should be '[major].[minor]' or '[major].[minor].[bugfix]'. %v", maxSchemaVersion, err),
+					"status": fmt.Sprintf("maxSchemaVersion %s is not valid, version format should be '+2.x' or '+2.x.x'. %v", maxSchemaVersion, err),
 				})
 				return []byte{}, indexSchema.Schema{}
 			}
