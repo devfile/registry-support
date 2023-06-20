@@ -234,13 +234,25 @@ var _ = ginkgo.Describe("[Verify index server is working properly]", func() {
 		}
 	})
 
-	ginkgo.It("/v2index?arch=amd64&arch=arm64 endpoint should return stacks for devfile schema version 2.1.x", func() {
+	ginkgo.It("/v2index?minSchemaVersion=2.1&maxSchemaVersion=2.1 endpoint should return stacks for devfile schema version 2.1.0", func() {
 		registryIndex := util.GetRegistryIndex(config.Registry + "/v2index/all?minSchemaVersion=2.1&maxSchemaVersion=2.1")
 
 		for _, index := range registryIndex {
 			if len(index.Versions) != 0 {
 				for _, version := range index.Versions {
-					gomega.Expect(version.SchemaVersion).Should(gomega.HavePrefix("2.1"))
+					gomega.Expect(version.SchemaVersion).Should(gomega.Equal("2.1.0"))
+				}
+			}
+		}
+	})
+
+	ginkgo.It("/v2index?minSchemaVersion=2.1.0&maxSchemaVersion=2.1.0 endpoint should return stacks for devfile schema version 2.1.0", func() {
+		registryIndex := util.GetRegistryIndex(config.Registry + "/v2index/all?minSchemaVersion=2.1.0&maxSchemaVersion=2.1.0")
+
+		for _, index := range registryIndex {
+			if len(index.Versions) != 0 {
+				for _, version := range index.Versions {
+					gomega.Expect(version.SchemaVersion).Should(gomega.Equal("2.1.0"))
 				}
 			}
 		}

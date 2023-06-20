@@ -428,21 +428,21 @@ func buildIndexAPIResponse(c *gin.Context, wantV1Index bool) {
 		maxSchemaVersion := c.Query("maxSchemaVersion")
 		if maxSchemaVersion != "" || minSchemaVersion != "" {
 			// check if schema version filters are in valid format.
-			// should only include major and minor version. e.g. 2.1
+			// should include major and minor versions as well as an optional bugfix version. e.g. 2.1 or 2.1.0
 			if minSchemaVersion != "" {
-				matched, err := regexp.MatchString(`^([2-9])\.([0-9]+)$`, minSchemaVersion)
+				matched, err := regexp.MatchString(`^([2-9])\.([0-9]+)(\.[0-9]+)?$`, minSchemaVersion)
 				if !matched || err != nil {
-					c.JSON(http.StatusInternalServerError, gin.H{
-						"status": fmt.Sprintf("minSchemaVersion %s is not valid, should only include major and minor version. %v", minSchemaVersion, err),
+					c.JSON(http.StatusBadRequest, gin.H{
+						"status": fmt.Sprintf("minSchemaVersion %s is not valid, version format should be '+2.x' or '+2.x.x'. %v", minSchemaVersion, err),
 					})
 					return
 				}
 			}
 			if maxSchemaVersion != "" {
-				matched, err := regexp.MatchString(`^([2-9])\.([0-9]+)$`, maxSchemaVersion)
+				matched, err := regexp.MatchString(`^([2-9])\.([0-9]+)(\.[0-9]+)?$`, maxSchemaVersion)
 				if !matched || err != nil {
-					c.JSON(http.StatusInternalServerError, gin.H{
-						"status": fmt.Sprintf("maxSchemaVersion %s is not valid, should only include major and minor version. %v", maxSchemaVersion, err),
+					c.JSON(http.StatusBadRequest, gin.H{
+						"status": fmt.Sprintf("maxSchemaVersion %s is not valid, version format should be '+2.x' or '+2.x.x'. %v", maxSchemaVersion, err),
 					})
 					return
 				}
@@ -538,21 +538,21 @@ func fetchDevfile(c *gin.Context, name string, version string) ([]byte, indexSch
 		minSchemaVersion := c.Query("minSchemaVersion")
 		maxSchemaVersion := c.Query("maxSchemaVersion")
 		// check if schema version filters are in valid format.
-		// should only include major and minor version. e.g. 2.1
+		// should include major and minor versions as well as an optional bugfix version. e.g. 2.1 or 2.1.0
 		if minSchemaVersion != "" {
-			matched, err := regexp.MatchString(`^([2-9])\.([0-9]+)$`, minSchemaVersion)
+			matched, err := regexp.MatchString(`^([2-9])\.([0-9]+)(\.[0-9]+)?$`, minSchemaVersion)
 			if !matched || err != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{
-					"status": fmt.Sprintf("minSchemaVersion %s is not valid, should only include major and minor version. %v", minSchemaVersion, err),
+				c.JSON(http.StatusBadRequest, gin.H{
+					"status": fmt.Sprintf("minSchemaVersion %s is not valid, version format should be '+2.x' or '+2.x.x'. %v", minSchemaVersion, err),
 				})
 				return []byte{}, indexSchema.Schema{}
 			}
 		}
 		if maxSchemaVersion != "" {
-			matched, err := regexp.MatchString(`^([2-9])\.([0-9]+)$`, maxSchemaVersion)
+			matched, err := regexp.MatchString(`^([2-9])\.([0-9]+)(\.[0-9]+)?$`, maxSchemaVersion)
 			if !matched || err != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{
-					"status": fmt.Sprintf("maxSchemaVersion %s is not valid, should only include major and minor version. %v", maxSchemaVersion, err),
+				c.JSON(http.StatusBadRequest, gin.H{
+					"status": fmt.Sprintf("maxSchemaVersion %s is not valid, version format should be '+2.x' or '+2.x.x'. %v", maxSchemaVersion, err),
 				})
 				return []byte{}, indexSchema.Schema{}
 			}

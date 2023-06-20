@@ -26,6 +26,7 @@ import (
 	"log"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -508,6 +509,7 @@ func TestServeDevfileIndexV2WithType(t *testing.T) {
 	tests := []struct {
 		name     string
 		params   gin.Params
+		query    url.Values
 		wantCode int
 	}{
 		{
@@ -532,6 +534,50 @@ func TestServeDevfileIndexV2WithType(t *testing.T) {
 			wantCode: http.StatusOK,
 		},
 		{
+			name: "GET /v2index/all?minSchemaVersion=2.1.0&maxSChemaVersion=2.2 - Successful Response Test",
+			params: gin.Params{
+				gin.Param{Key: "type", Value: "all"},
+			},
+			query: url.Values{
+				"minSchemaVersion": []string{"2.1.0"},
+				"maxSchemaVersion": []string{"2.2"},
+			},
+			wantCode: http.StatusOK,
+		},
+		{
+			name: "GET /v2index/all?minSchemaVersion=1.0&maxSChemaVersion=2.2 - Bad Request Response Test",
+			params: gin.Params{
+				gin.Param{Key: "type", Value: "all"},
+			},
+			query: url.Values{
+				"minSchemaVersion": []string{"1.0"},
+				"maxSchemaVersion": []string{"2.2"},
+			},
+			wantCode: http.StatusBadRequest,
+		},
+		{
+			name: "GET /v2index/all?minSchemaVersion=2.0.0.0&maxSChemaVersion=2.2 - Bad Request Response Test",
+			params: gin.Params{
+				gin.Param{Key: "type", Value: "all"},
+			},
+			query: url.Values{
+				"minSchemaVersion": []string{"2.0.0.0"},
+				"maxSchemaVersion": []string{"2.2"},
+			},
+			wantCode: http.StatusBadRequest,
+		},
+		{
+			name: "GET /v2index/all?minSchemaVersion=2.0.0&maxSChemaVersion=test - Bad Request Response Test",
+			params: gin.Params{
+				gin.Param{Key: "type", Value: "all"},
+			},
+			query: url.Values{
+				"minSchemaVersion": []string{"2.0.0"},
+				"maxSchemaVersion": []string{"test"},
+			},
+			wantCode: http.StatusBadRequest,
+		},
+		{
 			name: "GET /v2index/notatype - Type Not Found Response Test",
 			params: gin.Params{
 				gin.Param{Key: "type", Value: "notatype"},
@@ -547,7 +593,9 @@ func TestServeDevfileIndexV2WithType(t *testing.T) {
 			w := httptest.NewRecorder()
 			c, _ := gin.CreateTestContext(w)
 
+			c.Request = httptest.NewRequest(http.MethodGet, "/v2index", nil)
 			c.Params = append(c.Params, test.params...)
+			c.Request.URL.RawQuery = test.query.Encode()
 
 			serveDevfileIndexV2WithType(c)
 
@@ -623,7 +671,7 @@ func TestServeDevfile(t *testing.T) {
 				}
 
 				if gotSchemaVersion := content.Data.GetSchemaVersion(); !reflect.DeepEqual(gotSchemaVersion, test.wantSchemaVersion) {
-					t.Errorf("Did not get expected status code, Got: %v, Expected: %v", gotSchemaVersion, test.wantSchemaVersion)
+					t.Errorf("Did not get expected schema version, Got: %v, Expected: %v", gotSchemaVersion, test.wantSchemaVersion)
 				}
 			}
 		})
@@ -635,12 +683,13 @@ func TestServeDevfileWithVersion(t *testing.T) {
 	tests := []struct {
 		name              string
 		params            gin.Params
+		query             url.Values
 		wantCode          int
 		wantSchemaVersion string
 		wantError         bool
 	}{
 		{
-			name: "GET /devfiles/go/default - Fetch Go Devfile With Default Version",
+			name: "GET /devfiles/go/default - Fetch Go Devfile With Default Stack Version",
 			params: gin.Params{
 				gin.Param{Key: "name", Value: "go"},
 				gin.Param{Key: "version", Value: "default"},
@@ -649,13 +698,61 @@ func TestServeDevfileWithVersion(t *testing.T) {
 			wantSchemaVersion: "2.0.0",
 		},
 		{
-			name: "GET /devfiles/go/latest - Fetch Go Devfile With Latest Version",
+			name: "GET /devfiles/go/latest - Fetch Go Devfile With Latest Stack Version",
 			params: gin.Params{
 				gin.Param{Key: "name", Value: "go"},
 				gin.Param{Key: "version", Value: "latest"},
 			},
 			wantCode:          http.StatusOK,
 			wantSchemaVersion: "2.1.0",
+		},
+		{
+			name: "GET /devfiles/go/latest?minSchemaVersion=2.1 - Fetch Go Devfile With Latest Devfile 2.1.0 Stack Version",
+			params: gin.Params{
+				gin.Param{Key: "name", Value: "go"},
+				gin.Param{Key: "version", Value: "latest"},
+			},
+			query: url.Values{
+				"minSchemaVersion": []string{"2.1"},
+			},
+			wantCode:          http.StatusOK,
+			wantSchemaVersion: "2.1.0",
+		},
+		{
+			name: "GET /devfiles/go/latest?maxSchemaVersion=2.0.0 - Fetch Go Devfile With Latest Devfile 2.0.0 Stack Version",
+			params: gin.Params{
+				gin.Param{Key: "name", Value: "go"},
+				gin.Param{Key: "version", Value: "latest"},
+			},
+			query: url.Values{
+				"maxSchemaVersion": []string{"2.0.0"},
+			},
+			wantCode:          http.StatusOK,
+			wantSchemaVersion: "2.0.0",
+		},
+		{
+			name: "GET /devfiles/go/latest?maxSchemaVersion=1.0 - Invalid Schema Version Fetch Go Devfile With Latest Stack Version",
+			params: gin.Params{
+				gin.Param{Key: "name", Value: "go"},
+				gin.Param{Key: "version", Value: "latest"},
+			},
+			query: url.Values{
+				"maxSchemaVersion": []string{"1.0"},
+			},
+			wantCode:  http.StatusBadRequest,
+			wantError: true,
+		},
+		{
+			name: "GET /devfiles/go/latest?minSchemaVersion=test - Invalid Schema Version Fetch Go Devfile With Latest Stack Version",
+			params: gin.Params{
+				gin.Param{Key: "name", Value: "go"},
+				gin.Param{Key: "version", Value: "latest"},
+			},
+			query: url.Values{
+				"minSchemaVersion": []string{"test"},
+			},
+			wantCode:  http.StatusBadRequest,
+			wantError: true,
 		},
 		{
 			name: "GET /devfiles/go/1.2.0 - Fetch Go Devfile With Specific Version",
@@ -667,7 +764,7 @@ func TestServeDevfileWithVersion(t *testing.T) {
 			wantSchemaVersion: "2.1.0",
 		},
 		{
-			name: "GET /devfiles/not-exist/latest - Fetch Non-Existent Devfile With Latest Version",
+			name: "GET /devfiles/not-exist/latest - Fetch Non-Existent Devfile With Latest Stack Version",
 			params: gin.Params{
 				gin.Param{Key: "name", Value: "not-exist"},
 				gin.Param{Key: "version", Value: "latest"},
@@ -676,7 +773,7 @@ func TestServeDevfileWithVersion(t *testing.T) {
 			wantError: true,
 		},
 		{
-			name: "GET /devfiles/java-maven/not-exist - Fetch Java Maven Devfile With Non-Existent Version",
+			name: "GET /devfiles/java-maven/not-exist - Fetch Java Maven Devfile With Non-Existent Stack Version",
 			params: gin.Params{
 				gin.Param{Key: "name", Value: "java-maven"},
 				gin.Param{Key: "version", Value: "non-exist"},
@@ -701,7 +798,9 @@ func TestServeDevfileWithVersion(t *testing.T) {
 			w := httptest.NewRecorder()
 			c, _ := gin.CreateTestContext(w)
 
+			c.Request = httptest.NewRequest(http.MethodGet, "/devfiles", nil)
 			c.Params = append(c.Params, test.params...)
+			c.Request.URL.RawQuery = test.query.Encode()
 
 			serveDevfileWithVersion(c)
 
@@ -715,7 +814,7 @@ func TestServeDevfileWithVersion(t *testing.T) {
 				}
 
 				if gotSchemaVersion := content.Data.GetSchemaVersion(); !reflect.DeepEqual(gotSchemaVersion, test.wantSchemaVersion) {
-					t.Errorf("Did not get expected status code, Got: %v, Expected: %v", gotSchemaVersion, test.wantSchemaVersion)
+					t.Errorf("Did not get expected schema version, Got: %v, Expected: %v", gotSchemaVersion, test.wantSchemaVersion)
 				}
 			}
 		})
