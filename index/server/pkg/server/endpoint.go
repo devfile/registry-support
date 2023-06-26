@@ -573,7 +573,7 @@ func fetchDevfile(c *gin.Context, name string, version string) ([]byte, indexSch
 			var bytes []byte
 			if devfileIndex.Versions == nil || len(devfileIndex.Versions) == 0 {
 				if devfileIndex.Type == indexSchema.SampleDevfileType {
-					sampleDevfilePath = path.Join(samplesPath, devfileIndex.Name, name)
+					sampleDevfilePath = path.Join(samplesPath, devfileIndex.Name, devfileName)
 				}
 			} else {
 				versionMap, err := util.MakeVersionMap(devfileIndex)
@@ -598,7 +598,7 @@ func fetchDevfile(c *gin.Context, name string, version string) ([]byte, indexSch
 						}
 					} else {
 						// Retrieve the sample devfile stored under /registry/samples/<devfile>
-						sampleDevfilePath = path.Join(samplesPath, devfileIndex.Name, foundVersion.Version, name)
+						sampleDevfilePath = path.Join(samplesPath, devfileIndex.Name, foundVersion.Version, devfileName)
 					}
 				} else {
 					c.JSON(http.StatusNotFound, gin.H{
