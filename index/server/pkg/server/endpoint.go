@@ -323,13 +323,8 @@ func (*Server) ServeDevfileStarterProjectWithVersion(c *gin.Context, name string
 	}
 }
 
-// ServeUIRoot handles registry viewer proxy request to root
-func (s *Server) ServeUIRoot(c *gin.Context) {
-	s.ServeUI(c, "")
-}
-
 // ServeUI handles registry viewer proxy requests
-func (*Server) ServeUI(c *gin.Context, proxyPath string) {
+func ServeUI(c *gin.Context) {
 	if headless {
 		c.String(http.StatusBadRequest, "registry viewer is not available in headless mode")
 		return
@@ -637,7 +632,8 @@ func fetchDevfile(c *gin.Context, name string, version string) ([]byte, indexSch
 	return []byte{}, indexSchema.Schema{}
 }
 
-func (*Server) ServeOciServerProxy(c *gin.Context, proxyPath string) {
+func ServeOciProxy(c *gin.Context) {
+	proxyPath := c.Param("proxyPath")
 	remote, err := url.Parse(scheme + "://" + registryService + "/v2")
 	if err != nil {
 		panic(err)
@@ -685,12 +681,4 @@ func (*Server) ServeOciServerProxy(c *gin.Context, proxyPath string) {
 	}
 
 	proxy.ServeHTTP(c.Writer, c.Request)
-}
-
-func (s *Server) GetOciServerProxy(c *gin.Context, proxyPath string) {
-	s.ServeOciServerProxy(c, proxyPath)
-}
-
-func (s *Server) HeadOciServerProxy(c *gin.Context, proxyPath string) {
-	s.ServeOciServerProxy(c, proxyPath)
 }

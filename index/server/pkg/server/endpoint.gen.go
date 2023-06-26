@@ -55,24 +55,12 @@ type ServerInterface interface {
 	// Gets index schemas of the devfiles of specific type.
 	// (GET /index/{indexType})
 	ServeDevfileIndexV1WithType(c *gin.Context, indexType string, params ServeDevfileIndexV1WithTypeParams)
-	// OCI proxy GET endpoint.
-	// (GET /v2/*{proxyPath})
-	GetOciServerProxy(c *gin.Context, proxyPath string)
-	// OCI proxy HEAD endpoint.
-	// (HEAD /v2/*{proxyPath})
-	HeadOciServerProxy(c *gin.Context, proxyPath string)
 	// Gets V2 index schemas of the stack devfiles.
 	// (GET /v2index)
 	ServeDevfileIndexV2(c *gin.Context, params ServeDevfileIndexV2Params)
 	// Gets V2 index schemas of the devfiles of specific type.
 	// (GET /v2index/{indexType})
 	ServeDevfileIndexV2WithType(c *gin.Context, indexType string, params ServeDevfileIndexV2WithTypeParams)
-	// Registry viewer proxy root endpoint
-	// (GET /viewer)
-	ServeUIRoot(c *gin.Context)
-	// Registry viewer proxy endpoints
-	// (GET /viewer/*{proxyPath})
-	ServeUI(c *gin.Context, proxyPath string)
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -306,48 +294,6 @@ func (siw *ServerInterfaceWrapper) ServeDevfileIndexV1WithType(c *gin.Context) {
 	siw.Handler.ServeDevfileIndexV1WithType(c, indexType, params)
 }
 
-// GetOciServerProxy operation middleware
-func (siw *ServerInterfaceWrapper) GetOciServerProxy(c *gin.Context) {
-
-	var err error
-
-	// ------------- Path parameter "proxyPath" -------------
-	var proxyPath string
-
-	err = runtime.BindStyledParameter("simple", false, "proxyPath", c.Param("proxyPath"), &proxyPath)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter proxyPath: %s", err)})
-		return
-	}
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		middleware(c)
-	}
-
-	siw.Handler.GetOciServerProxy(c, proxyPath)
-}
-
-// HeadOciServerProxy operation middleware
-func (siw *ServerInterfaceWrapper) HeadOciServerProxy(c *gin.Context) {
-
-	var err error
-
-	// ------------- Path parameter "proxyPath" -------------
-	var proxyPath string
-
-	err = runtime.BindStyledParameter("simple", false, "proxyPath", c.Param("proxyPath"), &proxyPath)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter proxyPath: %s", err)})
-		return
-	}
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		middleware(c)
-	}
-
-	siw.Handler.HeadOciServerProxy(c, proxyPath)
-}
-
 // ServeDevfileIndexV2 operation middleware
 func (siw *ServerInterfaceWrapper) ServeDevfileIndexV2(c *gin.Context) {
 
@@ -431,37 +377,6 @@ func (siw *ServerInterfaceWrapper) ServeDevfileIndexV2WithType(c *gin.Context) {
 	siw.Handler.ServeDevfileIndexV2WithType(c, indexType, params)
 }
 
-// ServeUIRoot operation middleware
-func (siw *ServerInterfaceWrapper) ServeUIRoot(c *gin.Context) {
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		middleware(c)
-	}
-
-	siw.Handler.ServeUIRoot(c)
-}
-
-// ServeUI operation middleware
-func (siw *ServerInterfaceWrapper) ServeUI(c *gin.Context) {
-
-	var err error
-
-	// ------------- Path parameter "proxyPath" -------------
-	var proxyPath string
-
-	err = runtime.BindStyledParameter("simple", false, "proxyPath", c.Param("proxyPath"), &proxyPath)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter proxyPath: %s", err)})
-		return
-	}
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		middleware(c)
-	}
-
-	siw.Handler.ServeUI(c, proxyPath)
-}
-
 // GinServerOptions provides options for the Gin server.
 type GinServerOptions struct {
 	BaseURL     string
@@ -496,17 +411,9 @@ func RegisterHandlersWithOptions(router *gin.Engine, si ServerInterface, options
 
 	router.GET(options.BaseURL+"/index/:indexType", wrapper.ServeDevfileIndexV1WithType)
 
-	router.GET(options.BaseURL+"/v2/*:proxyPath", wrapper.GetOciServerProxy)
-
-	router.HEAD(options.BaseURL+"/v2/*:proxyPath", wrapper.HeadOciServerProxy)
-
 	router.GET(options.BaseURL+"/v2index", wrapper.ServeDevfileIndexV2)
 
 	router.GET(options.BaseURL+"/v2index/:indexType", wrapper.ServeDevfileIndexV2WithType)
-
-	router.GET(options.BaseURL+"/viewer", wrapper.ServeUIRoot)
-
-	router.GET(options.BaseURL+"/viewer/*:proxyPath", wrapper.ServeUI)
 
 	return router
 }
@@ -514,42 +421,37 @@ func RegisterHandlersWithOptions(router *gin.Engine, si ServerInterface, options
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
-	"AAA=",
+	"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",
+	"pI6d6SeEB2K3u/8HAAD//3S/j8Q0KQAA",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

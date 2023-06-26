@@ -160,11 +160,23 @@ func ServeRegistry() {
 	// Start the server and serve requests and index.json
 	router := gin.Default()
 
-	// Use OpenAPI validator middleware
-	router.Use(oapiMiddleware.OapiRequestValidator(swagger))
+	// Register Devfile Registry REST APIs and use OpenAPI validator middleware
+	router = RegisterHandlersWithOptions(router, server, GinServerOptions{
+		Middlewares: []MiddlewareFunc{
+			func(c *gin.Context) {
+				oapiMiddleware.OapiRequestValidator(swagger)(c)
+			},
+		},
+	})
 
-	// Registry REST APIs
-	router = RegisterHandlers(router, server)
+	// Set up a simple proxy for /v2 endpoints
+	// Only allow HEAD and GET requests
+	router.HEAD("/v2/*proxyPath", ServeOciProxy)
+	router.GET("/v2/*proxyPath", ServeOciProxy)
+
+	// Set up routes for the registry viewer
+	router.GET("/viewer", ServeUI)
+	router.GET("/viewer/*proxyPath", ServeUI)
 
 	// Serve static content for stacks
 	router.Static("/stacks", stacksPath)
