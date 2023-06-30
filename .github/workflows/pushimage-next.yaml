@@ -1,5 +1,5 @@
 #
-#   Copyright 2020-2022 Red Hat, Inc.
+#   Copyright 2020-2023 Red Hat, Inc.
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -27,6 +27,10 @@ jobs:
     steps:
       - name: Check out registry support source code
         uses: actions/checkout@v2
+      - name: Setup Go environment
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.18
       - name: Login to Quay
         uses: docker/login-action@v1
         with:
@@ -34,7 +38,11 @@ jobs:
           username: ${{ secrets.QUAY_USERNAME }}
           password: ${{ secrets.QUAY_PASSWORD }}
       - name: Build the index server base image
-        run: cd index/server && bash ./build.sh
+        run: | 
+          cd index/server
+          export GOPATH=$(go env GOPATH)
+          go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@v1.12.4
+          bash ./build.sh
       - name: Push the index server base image
         run: cd index/server && bash ./push.sh quay.io/devfile/devfile-index-base:next
 
