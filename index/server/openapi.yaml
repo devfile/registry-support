@@ -293,14 +293,13 @@ components:
       type: object
       properties:
         icon:
-          $ref: '#/components/schemas/IconParam'
+          $ref: '#/components/schemas/Icon'
         arch:
-          $ref: '#/components/schemas/ArchParam'
-    IconParam:
+          $ref: '#/components/schemas/Architectures'
+    Icon:
       description: Optional devfile icon, can be a URI or a relative path in the project
       type: string
-      x-go-name: IconType
-    ArchParam:
+    Architectures:
       description: Optional list of processor architectures that the devfile supports, empty list suggests that the devfile can be used on any architecture
       type: array
       uniqueItems: false
@@ -312,7 +311,6 @@ components:
           - "arm64"
           - "ppc64le"
           - "s390x"
-      x-go-name: Archs
   parameters:
     iconParam:
       name: icon
@@ -320,16 +318,14 @@ components:
       description: The icon type filter
       required: false
       schema:
-        $ref: '#/components/schemas/IconParam'
-      x-go-name: IconType
+        $ref: '#/components/schemas/Icon'
     archParam:
       name: arch
       in: query
       description: The target architecture filter
       required: false
       schema:
-        $ref: '#/components/schemas/ArchParam'
-      x-go-name: Archs
+        $ref: '#/components/schemas/Architectures'
   responses:
     devfileErrorResponse:
       description: Failed to get the devfile.
