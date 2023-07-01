@@ -361,12 +361,12 @@ func buildIndexAPIResponse(c *gin.Context, indexType string, wantV1Index bool, p
 	iconType := ""
 	archs := []string{}
 
-	if params.IconType != nil {
-		iconType = *params.IconType
+	if params.Icon != nil {
+		iconType = *params.Icon
 	}
 
-	if params.Archs != nil {
-		archs = append(archs, *params.Archs...)
+	if params.Arch != nil {
+		archs = append(archs, *params.Arch...)
 	}
 
 	var bytes []byte
