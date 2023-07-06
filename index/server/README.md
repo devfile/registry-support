@@ -6,12 +6,42 @@ Provides REST API support for devfile registries and serves [devfile registry vi
 
 For more information on REST API docs: [registry-REST-API.adoc](registry-REST-API.adoc)
 
+## Defining Endpoints
+
+Edit the OpenAPI spec `openapi.yaml`, under `paths` you can define your endpoint, e.g. `GET /foo`:
+
+```yaml
+paths:
+    /foo:
+        get:
+            summary: <short summary of what your endpoint does>
+            description: <a long description of what your endpoint does>
+            # 'serveFoo' points to handler function 'ServeFoo'
+            operationId: serveFoo
+            parameters: # the OpenAPI specifications of the endpoint parameters 
+                # spec for passing a bar query parameter /foo?bar=<string>
+                - name: bar
+                  in: query
+                  description: <description for parameter>
+                  required: false
+                  schema:
+                      type: string
+            responses: # the OpenAPI specifications for the endpoint responses
+                default:
+                    description: <description of the response>
+                    content:
+                        # Content type(s)
+                        text/html: {}
+```
+
+See [swagger.io/docs](https://swagger.io/docs/specification/paths-and-operations) for more information.
+
 ## Build
 
 The registry index server is built into a container image, `devfile-index-base:latest`, by running the following script:
 
 ```sh
-bash index/server/build.sh
+bash build.sh
 ```
 
 You retag it with one of the two command:
@@ -31,14 +61,31 @@ podman tag devfile-index-base:latest <new-image-tag>
 Push your image into the an image repository with the following:
 
 ```sh
-bash index/server/push.sh <new-image-tag>
+bash push.sh <new-image-tag>
 ```
 
 For example, if the image repository is quay.io then use the pattern `quay.io/<user>/devfile-index-base`:
 
 ```sh
-bash index/server/push.sh quay.io/someuser/devfile-index-base
+bash push.sh quay.io/someuser/devfile-index-base
 ```
+
+### Source Generation
+
+Index server build uses the CLI tool `oapi-codegen` to generate the schema types `pkg/server/types.gen.go` and endpoint definition `pkg/server/endpoint.gen.go` sources. When changing the OpenAPI specification, such as [defining endpoints](#defining-endpoints), it is required to regenerate these changes into the source. 
+
+The source generation can be done by manually building the index server with: 
+
+```bash
+bash build.sh
+```
+or to just generate the source files by running:
+
+```bash
+bash codegen.sh
+```
+
+**Important**: When committing to this repository, it is *required* to include the up to date source generation in your pull requests. Not including up to date source generation will lead to the PR check to fail.
 
 ## Testing
 

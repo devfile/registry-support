@@ -28,6 +28,11 @@ followed by
 docker push <registry>/<username>/devfile-index:latest
 ```
 
+See the following for more on the component specific build process:
+
+- [Building the OCI Registry](oci-registry/README.md#build)
+- [Building the Index Server](index/server/README.md#build)
+
 ## Deploy
 
 ### Via the Devfile Registry Operator
