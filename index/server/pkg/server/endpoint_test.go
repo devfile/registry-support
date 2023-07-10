@@ -368,10 +368,11 @@ func TestServeHealthCheck(t *testing.T) {
 
 	setupVars()
 
+	server := &Server{}
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
 
-	serveHealthCheck(c)
+	server.ServeHealthCheck(c)
 
 	wantStatusCode := http.StatusOK
 	if gotStatusCode := w.Code; !reflect.DeepEqual(gotStatusCode, wantStatusCode) {
@@ -416,10 +417,11 @@ func TestServeDevfileIndexV1(t *testing.T) {
 
 	gin.SetMode(gin.TestMode)
 
+	server := &Server{}
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
 
-	serveDevfileIndexV1(c)
+	server.ServeDevfileIndexV1(c, ServeDevfileIndexV1Params{})
 
 	if gotStatusCode := w.Code; !reflect.DeepEqual(gotStatusCode, wantStatusCode) {
 		t.Errorf("Did not get expected status code, Got: %v, Expected: %v", gotStatusCode, wantStatusCode)
@@ -464,6 +466,7 @@ func TestServeDevfileIndexV1WithType(t *testing.T) {
 			wantCode: http.StatusNotFound,
 		},
 	}
+	server := &Server{}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
@@ -474,7 +477,9 @@ func TestServeDevfileIndexV1WithType(t *testing.T) {
 
 			c.Params = append(c.Params, test.params...)
 
-			serveDevfileIndexV1WithType(c)
+			indexType, _ := c.Params.Get("type")
+
+			server.ServeDevfileIndexV1WithType(c, indexType, ServeDevfileIndexV1WithTypeParams{})
 
 			if gotStatusCode := w.Code; !reflect.DeepEqual(gotStatusCode, test.wantCode) {
 				t.Errorf("Did not get expected status code, Got: %v, Expected: %v", gotStatusCode, test.wantCode)
@@ -492,10 +497,11 @@ func TestServeDevfileIndexV2(t *testing.T) {
 
 	gin.SetMode(gin.TestMode)
 
+	server := &Server{}
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
 
-	serveDevfileIndexV2(c)
+	server.ServeDevfileIndexV2(c, ServeDevfileIndexV2Params{})
 
 	if gotStatusCode := w.Code; !reflect.DeepEqual(gotStatusCode, wantStatusCode) {
 		t.Errorf("Did not get expected status code, Got: %v, Expected: %v", gotStatusCode, wantStatusCode)
@@ -585,6 +591,7 @@ func TestServeDevfileIndexV2WithType(t *testing.T) {
 			wantCode: http.StatusNotFound,
 		},
 	}
+	server := &Server{}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
@@ -597,7 +604,9 @@ func TestServeDevfileIndexV2WithType(t *testing.T) {
 			c.Params = append(c.Params, test.params...)
 			c.Request.URL.RawQuery = test.query.Encode()
 
-			serveDevfileIndexV2WithType(c)
+			indexType, _ := c.Params.Get("type")
+
+			server.ServeDevfileIndexV2WithType(c, indexType, ServeDevfileIndexV2WithTypeParams{})
 
 			if gotStatusCode := w.Code; !reflect.DeepEqual(gotStatusCode, test.wantCode) {
 				t.Errorf("Did not get expected status code, Got: %v, Expected: %v", gotStatusCode, test.wantCode)
@@ -649,6 +658,7 @@ func TestServeDevfile(t *testing.T) {
 	}
 	defer closeServer()
 	setupVars()
+	server := &Server{}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
@@ -659,7 +669,8 @@ func TestServeDevfile(t *testing.T) {
 
 			c.Params = append(c.Params, test.params...)
 
-			serveDevfile(c)
+			name, _ := c.Params.Get("name")
+			server.ServeDevfile(c, name)
 
 			if gotStatusCode := w.Code; !reflect.DeepEqual(gotStatusCode, test.wantCode) {
 				t.Errorf("Did not get expected status code, Got: %v, Expected: %v", gotStatusCode, test.wantCode)
@@ -790,6 +801,7 @@ func TestServeDevfileWithVersion(t *testing.T) {
 	}
 	defer closeServer()
 	setupVars()
+	server := &Server{}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
@@ -802,7 +814,9 @@ func TestServeDevfileWithVersion(t *testing.T) {
 			c.Params = append(c.Params, test.params...)
 			c.Request.URL.RawQuery = test.query.Encode()
 
-			serveDevfileWithVersion(c)
+			name, _ := c.Params.Get("name")
+			version, _ := c.Params.Get("version")
+			server.ServeDevfileWithVersion(c, name, version)
 
 			if gotStatusCode := w.Code; !reflect.DeepEqual(gotStatusCode, test.wantCode) {
 				t.Errorf("Did not get expected status code, Got: %v, Expected: %v", gotStatusCode, test.wantCode)
@@ -897,6 +911,7 @@ func TestServeDevfileStarterProject(t *testing.T) {
 	}
 	defer closeServer()
 	setupVars()
+	server := &Server{}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
@@ -907,7 +922,10 @@ func TestServeDevfileStarterProject(t *testing.T) {
 
 			c.Params = append(c.Params, test.params...)
 
-			serveDevfileStarterProject(c)
+			name, _ := c.Params.Get("name")
+			starterProject, _ := c.Params.Get("starterProjectName")
+
+			server.ServeDevfileStarterProject(c, name, starterProject)
 
 			if gotStatusCode := w.Code; !reflect.DeepEqual(gotStatusCode, test.wantCode) {
 				t.Errorf("Did not get expected status code, Got: %v, Expected: %v", gotStatusCode, test.wantCode)
@@ -999,6 +1017,7 @@ func TestServeDevfileStarterProjectWithVersion(t *testing.T) {
 	}
 	defer closeServer()
 	setupVars()
+	server := &Server{}
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
@@ -1009,7 +1028,11 @@ func TestServeDevfileStarterProjectWithVersion(t *testing.T) {
 
 			c.Params = append(c.Params, test.params...)
 
-			serveDevfileStarterProjectWithVersion(c)
+			name, _ := c.Params.Get("name")
+			version, _ := c.Params.Get("version")
+			starterProject, _ := c.Params.Get("starterProjectName")
+
+			server.ServeDevfileStarterProjectWithVersion(c, name, version, starterProject)
 
 			if gotStatusCode := w.Code; !reflect.DeepEqual(gotStatusCode, test.wantCode) {
 				t.Errorf("Did not get expected status code, Got: %v, Expected: %v", gotStatusCode, test.wantCode)
@@ -1106,9 +1129,8 @@ func TestOCIServerProxy(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Did not expect error: %v", err)
 			}
-			c.Params = append(c.Params, gin.Param{Key: "proxyPath", Value: test.url})
 
-			ociServerProxy(c)
+			ServeOciProxy(c)
 
 			// Force writes response headers to combat a response recording issue
 			c.Writer.WriteHeaderNow()
@@ -1132,7 +1154,8 @@ func TestServeHeadlessUI(t *testing.T) {
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
 
-	serveHeadlessUI(c)
+	headless = true
+	ServeUI(c)
 
 	if gotStatusCode, gotBody := w.Code, w.Body.String(); !reflect.DeepEqual(gotStatusCode, wantCode) {
 		t.Errorf("Did not get expected status code, Got: %v, Expected: %v", gotStatusCode, wantCode)

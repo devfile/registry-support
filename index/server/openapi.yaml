@@ -1,0 +1,447 @@
+openapi: 3.0.1
+info:
+  title: Devfile registry REST API.
+  description: |-
+    Documentation of devfile registry REST API.
+
+    The devfile registry REST API is used for interacting with devfile registry. In this documentation, the host is serving the public devfile registry, you can change it to your own host if you want to use private devfile registry.
+  version: 1.0.1
+servers:
+- url: https://registry.stage.devfile.io/
+- url: https://registry.devfile.io/
+paths:
+  /:
+    get:
+      summary: Root endpoint of registry server.
+      description: |-
+        Sets up the handler for the root (/) endpoint on the server
+        If html is requested (i.e. from a web browser), the viewer is displayed, otherwise the devfile index is served.
+      operationId: serveRootEndpoint
+      responses:
+        default:
+          description: Root response.
+          content:
+            text/html: {}
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IndexSchema'
+            application/yaml:
+              schema:
+                $ref: '#/components/schemas/IndexSchema'
+  /health:
+    get:
+      tags:
+        - server
+      summary: Get health status.
+      description: Return the devfile registry health status.
+      operationId: serveHealthCheck
+      responses:
+        200:
+          $ref: '#/components/responses/healthResponse'
+        404:
+          description: 'Page not found.'
+          content: {}
+  /index:
+    get:
+      tags:
+        - devfile
+      summary: Gets index schemas of the stack devfiles.
+      description: |-
+        Fetches the registry index file content of stack devfile type 
+        from HTTP response
+      operationId: serveDevfileIndexV1
+      requestBody:
+        description: The request body must be empty.
+        content: {}
+      parameters:
+        - $ref: '#/components/parameters/archParam'
+        - $ref: '#/components/parameters/iconParam'
+      responses:
+        200:
+          $ref: '#/components/responses/indexResponse'
+        404:
+          description: 'Page not found.'
+          content: {}
+  /index/{indexType}:
+    get:
+      tags:
+        - devfile
+      summary: Gets index schemas of the devfiles of specific type.
+      description: |-
+        Fetches the registry index file content of specific devfile type 
+        from HTTP response
+      operationId: serveDevfileIndexV1WithType
+      requestBody:
+        description: The request body must be empty.
+        content: {}
+      parameters:
+        - name: indexType
+          in: path
+          description: The devfile type filter
+          required: true
+          schema:
+            type: string
+            x-go-name: IndexType
+          x-go-name: IndexType
+        - $ref: '#/components/parameters/archParam'
+        - $ref: '#/components/parameters/iconParam'
+      responses:
+        200:
+          $ref: '#/components/responses/indexResponse'
+        404:
+          description: 'Page not found.'
+          content: {}
+  /v2index:
+    get:
+      tags:
+        - devfile
+      summary: Gets V2 index schemas of the stack devfiles.
+      description: |-
+        Fetches the registry version 2 index file content of 
+        stack devfile type from HTTP response
+      operationId: serveDevfileIndexV2
+      requestBody:
+        description: The request body must be empty.
+        content: {}
+      parameters:
+        - $ref: '#/components/parameters/archParam'
+        - $ref: '#/components/parameters/iconParam'
+      responses:
+        200:
+          $ref: '#/components/responses/v2IndexResponse'
+        404:
+          description: 'Page not found.'
+          content: {}
+  /v2index/{indexType}:
+    get:
+      tags:
+        - devfile
+      summary: Gets V2 index schemas of the devfiles of specific type.
+      description: |-
+        Fetches the registry version 2 index file content 
+        of specific devfile type from HTTP response
+      operationId: serveDevfileIndexV2WithType
+      requestBody:
+        description: The request body must be empty.
+        content: {}
+      parameters:
+        - name: indexType
+          in: path
+          description: The devfile type filter
+          required: true
+          schema:
+            type: string
+            x-go-name: IndexType
+          x-go-name: IndexType
+        - $ref: '#/components/parameters/archParam'
+        - $ref: '#/components/parameters/iconParam'        
+      responses:
+        200:
+          $ref: '#/components/responses/v2IndexResponse'
+        404:
+          description: 'Page not found.'
+          content: {}
+  /devfiles/{stack}:
+    get:
+      tags:
+        - devfile
+      summary: Get devfile by stack name.
+      description: Return the specific stack devfile content of devfile registry.
+      operationId: serveDevfile
+      parameters:
+        - name: stack
+          in: path
+          description: The stack name
+          required: true
+          schema:
+            type: string
+            x-go-name: Stack
+          x-go-name: Stack
+      requestBody:
+        description: The request body must be empty.
+        content: {}
+      responses:
+        200:
+          $ref: '#/components/responses/devfileResponse'
+        404:
+          $ref: '#/components/responses/devfileNotFoundResponse'
+        500:
+          $ref: '#/components/responses/devfileErrorResponse'
+  /devfiles/{stack}/{version}:
+    get:
+      tags:
+        - devfile
+      summary: Get devfile by stack name.
+      description: Return the specific stack devfile content of devfile registry.
+      operationId: serveDevfileWithVersion
+      parameters:
+        - name: stack
+          in: path
+          description: The stack name
+          required: true
+          schema:
+            type: string
+            x-go-name: Stack
+          x-go-name: Stack
+        - name: version
+          in: path
+          description: The version of the stack
+          required: true
+          schema:
+            type: string
+            x-go-name: Version
+          x-go-name: Version
+      requestBody:
+        description: The request body must be empty.
+        content: {}
+      responses:
+        200:
+          $ref: '#/components/responses/devfileResponse'
+        404:
+          $ref: '#/components/responses/devfileNotFoundResponse'
+        500:
+          $ref: '#/components/responses/devfileErrorResponse'
+  /devfiles/{stack}/starter-projects/{starterProject}:
+    get:
+      summary: Fetches starter project by stack and project name
+      description: |-
+        Fetches starter project specified in requested registry stack devfile with 
+        version's content and provides an archive (zip) file download as the HTTP response.
+      operationId: serveDevfileStarterProject
+      parameters:
+        - name: stack
+          in: path
+          description: The stack name
+          required: true
+          schema:
+            type: string
+            x-go-name: Stack
+          x-go-name: Stack
+        - name:  starterProject
+          in: path
+          description: The starter project name in the stack devfile
+          required: true
+          schema:
+            type: string
+            x-go-name: StarterProject
+          x-go-name: StarterProject
+      responses:
+        '200':
+          $ref: '#/components/responses/starterProjectResponse'
+        '404':
+          description: 'Page not found.'
+          content: {}
+        '500':
+          description: Failed to get the devfile or starter project.
+          $ref: '#/components/responses/devfileErrorResponse'
+  /devfiles/{stack}/{version}/starter-projects/{starterProject}:
+    get:
+      summary: Fetches starter project by stack name, stack version, and project name
+      description: |-
+        Fetches starter project specified in requested registry stack devfile with 
+        version's content and provides an archive (zip) file download as the HTTP response.
+      operationId: serveDevfileStarterProjectWithVersion
+      parameters:
+        - name: stack
+          in: path
+          description: The stack name
+          required: true
+          schema:
+            type: string
+            x-go-name: Stack
+          x-go-name: Stack
+        - name: version
+          in: path
+          description: The version of the stack
+          required: true
+          schema:
+            type: string
+            x-go-name: Version
+          x-go-name: Version
+        - name:  starterProject
+          in: path
+          description: The starter project name in the stack devfile
+          required: true
+          schema:
+            type: string
+            x-go-name: StarterProject
+          x-go-name: StarterProject
+      responses:
+        '200':
+          $ref: '#/components/responses/starterProjectResponse'
+        '404':
+          description: 'Page not found.'
+          content: {}
+        '500':
+          description: Failed to get the devfile or starter project.
+          $ref: '#/components/responses/devfileErrorResponse'
+
+components:
+  schemas:
+    Devfile:
+      description: Describes the structure of a cloud-native devworkspace and development environment.
+      x-go-type: v1alpha2.Devfile
+      x-go-type-import:
+        path: github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
+    IndexSchema:
+      description: The index file schema
+      x-go-type: schema.Schema
+      x-go-type-import:
+        path: github.com/devfile/registry-support/index/generator/schema
+    IndexParams:
+      description: IndexParams defines parameters for index endpoints.
+      type: object
+      properties:
+        icon:
+          $ref: '#/components/schemas/Icon'
+        arch:
+          $ref: '#/components/schemas/Architectures'
+    Icon:
+      description: Optional devfile icon, can be a URI or a relative path in the project
+      type: string
+    Architectures:
+      description: Optional list of processor architectures that the devfile supports, empty list suggests that the devfile can be used on any architecture
+      type: array
+      uniqueItems: false
+      items:
+        description: Architecture describes the architecture type
+        type: string
+        enum: 
+          - "amd64"
+          - "arm64"
+          - "ppc64le"
+          - "s390x"
+  parameters:
+    iconParam:
+      name: icon
+      in: query
+      description: The icon type filter
+      required: false
+      schema:
+        $ref: '#/components/schemas/Icon'
+    archParam:
+      name: arch
+      in: query
+      description: The target architecture filter
+      required: false
+      schema:
+        $ref: '#/components/schemas/Architectures'
+  responses:
+    devfileErrorResponse:
+      description: Failed to get the devfile.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                x-go-name: Error
+              status:
+                type: string
+                x-go-name: Status
+        application/yaml:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                x-go-name: Error
+              status:
+                type: string
+                x-go-name: Status
+    devfileNotFoundResponse:
+      description: Failed to find the devfile.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                x-go-name: Status
+        application/yaml:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                x-go-name: Status
+    devfileResponse:
+      description: |-
+        Successful operation.
+
+        Stack devfile content.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Devfile'
+        application/yaml:
+          schema:
+            $ref: '#/components/schemas/Devfile'
+    healthResponse:
+      description: |-
+        Successful operation.
+
+        Health status.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                x-go-name: Message
+            required:
+              - message
+        application/yaml:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                x-go-name: Message
+            required:
+              - message
+    indexResponse:
+      description: |-
+        Successful operation.
+
+        Index content.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/IndexSchema'
+        application/yaml:
+          schema:
+            $ref: '#/components/schemas/IndexSchema'
+    v2IndexResponse:
+      description: |-
+        Successful operation.
+
+        V2 Index content.
+      content:
+        application/json:
+          schema:
+            x-go-type: schema.Schema
+            x-go-type-import:
+              path: github.com/devfile/registry-support/index/generator/schema
+        application/yaml:
+          schema:
+            x-go-type: schema.Schema
+            x-go-type-import:
+              path: github.com/devfile/registry-support/index/generator/schema
+    starterProjectResponse:
+      description: |-
+        Successful operation.
+
+        File bytes to download.
+      content:
+        application/zip:
+          schema:
+            type: string
+            format: binary
+  securitySchemes:
+    basic:
+      type: http
+      scheme: basic

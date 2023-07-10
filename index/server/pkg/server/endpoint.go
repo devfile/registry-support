@@ -41,28 +41,31 @@ import (
 	"gopkg.in/segmentio/analytics-go.v3"
 )
 
-// serveRootEndpoint sets up the handler for the root (/) endpoint on the server
+type Server struct {
+}
+
+// ServeRootEndpoint sets up the handler for the root (/) endpoint on the server
 // If html is requested (i.e. from a web browser), the viewer is displayed, otherwise the devfile index is served.
-func serveRootEndpoint(c *gin.Context) {
+func (*Server) ServeRootEndpoint(c *gin.Context) {
 	// Determine if text/html was requested by the client
 	acceptHeader := c.Request.Header.Values("Accept")
 	if util.IsHtmlRequested(acceptHeader) {
 		c.Redirect(http.StatusFound, "/viewer")
 	} else {
-		serveDevfileIndex(c, true)
+		c.Redirect(http.StatusFound, "/index")
 	}
 }
 
-func serveDevfileIndexV1(c *gin.Context) {
-	serveDevfileIndex(c, true)
+func (*Server) ServeDevfileIndexV1(c *gin.Context, params ServeDevfileIndexV1Params) {
+	ServeDevfileIndex(c, true, IndexParams(params))
 }
 
-func serveDevfileIndexV2(c *gin.Context) {
-	serveDevfileIndex(c, false)
+func (*Server) ServeDevfileIndexV2(c *gin.Context, params ServeDevfileIndexV2Params) {
+	ServeDevfileIndex(c, false, IndexParams(params))
 }
 
-// serveDevfileIndex serves the index.json file located in the container at `serveDevfileIndex`
-func serveDevfileIndex(c *gin.Context, wantV1Index bool) {
+// ServeDevfileIndex serves the index.json file located in the container at `ServeDevfileIndex`
+func ServeDevfileIndex(c *gin.Context, wantV1Index bool, params IndexParams) {
 	// Start the counter for the request
 	var status string
 	timer := prometheus.NewTimer(prometheus.ObserverFunc(func(v float64) {
@@ -72,35 +75,30 @@ func serveDevfileIndex(c *gin.Context, wantV1Index bool) {
 		timer.ObserveDuration()
 	}()
 
-	// append the devfile type, for endpoint /index without type
-	c.Params = append(c.Params, gin.Param{Key: "type", Value: string(indexSchema.StackDevfileType)})
-
 	// Serve the index.json file
-	buildIndexAPIResponse(c, wantV1Index)
+	buildIndexAPIResponse(c, string(indexSchema.StackDevfileType), wantV1Index, params)
 }
 
-func serveDevfileIndexV1WithType(c *gin.Context) {
+func (*Server) ServeDevfileIndexV1WithType(c *gin.Context, indexType string, params ServeDevfileIndexV1WithTypeParams) {
 
 	// Serve the index with type
-	buildIndexAPIResponse(c, true)
+	buildIndexAPIResponse(c, indexType, true, IndexParams(params))
 }
 
-func serveDevfileIndexV2WithType(c *gin.Context) {
+func (*Server) ServeDevfileIndexV2WithType(c *gin.Context, indexType string, params ServeDevfileIndexV2WithTypeParams) {
 
 	// Serve the index with type
-	buildIndexAPIResponse(c, false)
+	buildIndexAPIResponse(c, indexType, false, IndexParams(params))
 }
 
-// serveHealthCheck serves endpoint `/health` for registry health check
-func serveHealthCheck(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{
-		"message": "the server is up and running",
+// ServeHealthCheck serves endpoint `/health` for registry health check
+func (*Server) ServeHealthCheck(c *gin.Context) {
+	c.JSON(http.StatusOK, HealthResponse{
+		Message: "the server is up and running",
 	})
 }
 
-func serveDevfileWithVersion(c *gin.Context) {
-	name := c.Param("name")
-	version := c.Param("version")
+func (*Server) ServeDevfileWithVersion(c *gin.Context, name string, version string) {
 	bytes, devfileIndex := fetchDevfile(c, name, version)
 
 	if len(bytes) != 0 {
@@ -128,27 +126,22 @@ func serveDevfileWithVersion(c *gin.Context) {
 	}
 }
 
-// serveDevfile returns the devfile content
-func serveDevfile(c *gin.Context) {
+// ServeDevfile returns the devfile content
+func (s *Server) ServeDevfile(c *gin.Context, name string) {
 	// append the stack version, for endpoint /devfiles/name without version
-	c.Params = append(c.Params, gin.Param{Key: "version", Value: "default"})
-	serveDevfileWithVersion(c)
+	s.ServeDevfileWithVersion(c, name, "default")
 }
 
-// serveDevfileStarterProject returns the starter project content for the devfile using default version
-func serveDevfileStarterProject(c *gin.Context) {
-	c.Params = append(c.Params, gin.Param{Key: "version", Value: "default"})
-	serveDevfileStarterProjectWithVersion(c)
+// ServeDevfileStarterProject returns the starter project content for the devfile using default version
+func (s *Server) ServeDevfileStarterProject(c *gin.Context, name string, starterProject string) {
+	s.ServeDevfileStarterProjectWithVersion(c, name, "default", starterProject)
 }
 
-// serveDevfileStarterProject returns the starter project content for the devfile using specified version
-func serveDevfileStarterProjectWithVersion(c *gin.Context) {
-	devfileName := c.Param("name")
-	version := c.Param("version")
-	starterProjectName := c.Param("starterProjectName")
-	downloadTmpLoc := path.Join("/tmp", starterProjectName)
-	stackLoc := path.Join(stacksPath, devfileName)
-	devfileBytes, devfileIndex := fetchDevfile(c, devfileName, version)
+// ServeDevfileStarterProject returns the starter project content for the devfile using specified version
+func (*Server) ServeDevfileStarterProjectWithVersion(c *gin.Context, name string, version string, starterProject string) {
+	downloadTmpLoc := path.Join("/tmp", starterProject)
+	stackLoc := path.Join(stacksPath, name)
+	devfileBytes, devfileIndex := fetchDevfile(c, name, version)
 
 	if len(devfileIndex.Versions) > 1 {
 		versionMap, err := util.MakeVersionMap(devfileIndex)
@@ -170,7 +163,7 @@ func serveDevfileStarterProjectWithVersion(c *gin.Context) {
 	} else {
 		content, err := parser.ParseFromData(devfileBytes)
 		filterOptions := common.DevfileOptions{
-			FilterByName: starterProjectName,
+			FilterByName: starterProject,
 		}
 		var starterProjects []v1alpha2.StarterProject
 		var downloadBytes []byte
@@ -179,7 +172,7 @@ func serveDevfileStarterProjectWithVersion(c *gin.Context) {
 			log.Print(err.Error())
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"error":  err.Error(),
-				"status": fmt.Sprintf("failed to parse the devfile of %s", devfileName),
+				"status": fmt.Sprintf("failed to parse the devfile of %s", name),
 			})
 			return
 		}
@@ -189,28 +182,28 @@ func serveDevfileStarterProjectWithVersion(c *gin.Context) {
 			log.Print(err.Error())
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"error":  err.Error(),
-				"status": fmt.Sprintf("problem in reading starter project %s of devfile %s", starterProjectName, devfileName),
+				"status": fmt.Sprintf("problem in reading starter project %s of devfile %s", starterProject, name),
 			})
 			return
 		} else if len(starterProjects) == 0 {
 			c.JSON(http.StatusNotFound, gin.H{
-				"status": fmt.Sprintf("the starter project named %s does not exist in the %s devfile", starterProjectName, devfileName),
+				"status": fmt.Sprintf("the starter project named %s does not exist in the %s devfile", starterProject, name),
 			})
 			return
 		}
 
-		if starterProject := starterProjects[0]; starterProject.Git != nil {
+		if selStarterProject := starterProjects[0]; selStarterProject.Git != nil {
 			gitScheme := indexSchema.Git{
-				Remotes:    starterProject.Git.Remotes,
+				Remotes:    selStarterProject.Git.Remotes,
 				RemoteName: "origin",
-				SubDir:     starterProject.SubDir,
+				SubDir:     selStarterProject.SubDir,
 			}
 
-			if starterProject.Git.CheckoutFrom != nil {
-				if starterProject.Git.CheckoutFrom.Remote != "" {
-					gitScheme.RemoteName = starterProject.Git.CheckoutFrom.Remote
+			if selStarterProject.Git.CheckoutFrom != nil {
+				if selStarterProject.Git.CheckoutFrom.Remote != "" {
+					gitScheme.RemoteName = selStarterProject.Git.CheckoutFrom.Remote
 				}
-				gitScheme.Revision = starterProject.Git.CheckoutFrom.Revision
+				gitScheme.Revision = selStarterProject.Git.CheckoutFrom.Revision
 			}
 
 			gitScheme.Url = gitScheme.Remotes[gitScheme.RemoteName]
@@ -220,18 +213,18 @@ func serveDevfileStarterProjectWithVersion(c *gin.Context) {
 				c.JSON(http.StatusInternalServerError, gin.H{
 					"error": err.Error(),
 					"status": fmt.Sprintf("Problem with downloading starter project %s from location: %s",
-						starterProjectName, gitScheme.Url),
+						starterProject, gitScheme.Url),
 				})
 				return
 			}
-		} else if starterProject.Zip != nil {
-			if _, err = url.ParseRequestURI(starterProject.Zip.Location); err != nil {
-				localLoc := path.Join(stackLoc, starterProject.Zip.Location)
+		} else if selStarterProject.Zip != nil {
+			if _, err = url.ParseRequestURI(selStarterProject.Zip.Location); err != nil {
+				localLoc := path.Join(stackLoc, selStarterProject.Zip.Location)
 				log.Printf("zip location is not a valid http url: %v\nTrying local path %s..", err, localLoc)
 
 				// If subdirectory is specified for starter project download then extract subdirectory
 				// and create new archive for download.
-				if starterProject.SubDir != "" {
+				if selStarterProject.SubDir != "" {
 					downloadFilePath := fmt.Sprintf("%s.zip", downloadTmpLoc)
 
 					if _, err = os.Stat(downloadTmpLoc); os.IsExist(err) {
@@ -242,20 +235,20 @@ func serveDevfileStarterProjectWithVersion(c *gin.Context) {
 								"error": err.Error(),
 								"status": fmt.Sprintf("Problem removing existing temporary download directory '%s' for starter project %s",
 									downloadTmpLoc,
-									starterProjectName),
+									starterProject),
 							})
 							return
 						}
 					}
 
-					_, err = dfutil.Unzip(localLoc, downloadTmpLoc, starterProject.SubDir)
+					_, err = dfutil.Unzip(localLoc, downloadTmpLoc, selStarterProject.SubDir)
 					if err != nil {
 						log.Print(err.Error())
 						c.JSON(http.StatusInternalServerError, gin.H{
 							"error": err.Error(),
 							"status": fmt.Sprintf("Problem with reading subDir '%s' of starter project %s at %s",
-								starterProject.SubDir,
-								starterProjectName,
+								selStarterProject.SubDir,
+								starterProject,
 								localLoc),
 						})
 						return
@@ -267,8 +260,8 @@ func serveDevfileStarterProjectWithVersion(c *gin.Context) {
 						c.JSON(http.StatusInternalServerError, gin.H{
 							"error": err.Error(),
 							"status": fmt.Sprintf("Problem with archiving subDir '%s' of starter project %s at %s",
-								starterProject.SubDir,
-								starterProjectName,
+								selStarterProject.SubDir,
+								starterProject,
 								downloadFilePath),
 						})
 						return
@@ -282,25 +275,25 @@ func serveDevfileStarterProjectWithVersion(c *gin.Context) {
 					log.Print(err.Error())
 					c.JSON(http.StatusInternalServerError, gin.H{
 						"error": err.Error(),
-						"status": fmt.Sprintf("Problem with reading starter project %s at %s", starterProjectName,
+						"status": fmt.Sprintf("Problem with reading starter project %s at %s", starterProject,
 							localLoc),
 					})
 					return
 				}
 			} else {
-				downloadBytes, err = libutil.DownloadStackFromZipUrl(starterProject.Zip.Location, starterProject.SubDir, downloadTmpLoc)
+				downloadBytes, err = libutil.DownloadStackFromZipUrl(selStarterProject.Zip.Location, selStarterProject.SubDir, downloadTmpLoc)
 				if err != nil {
 					log.Print(err.Error())
 					c.JSON(http.StatusInternalServerError, gin.H{
 						"error":  err.Error(),
-						"status": fmt.Sprintf("Problem with downloading starter project %s", starterProjectName),
+						"status": fmt.Sprintf("Problem with downloading starter project %s", starterProject),
 					})
 					return
 				}
 			}
 		} else {
 			c.JSON(http.StatusBadRequest, gin.H{
-				"status": fmt.Sprintf("Starter project %s has no source to download from", starterProjectName),
+				"status": fmt.Sprintf("Starter project %s has no source to download from", starterProject),
 			})
 			return
 		}
@@ -317,7 +310,7 @@ func serveDevfileStarterProjectWithVersion(c *gin.Context) {
 				Context: util.SetContext(c),
 				Properties: analytics.NewProperties().
 					Set("devfile", devfileName).
-					Set("starterProject", starterProjectName).
+					Set("starterProject", starterProject).
 					Set("client", client),
 			})
 			if err != nil {
@@ -325,18 +318,18 @@ func serveDevfileStarterProjectWithVersion(c *gin.Context) {
 			}
 		}
 
-		c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s.zip\"", starterProjectName))
+		c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s.zip\"", starterProject))
 		c.Data(http.StatusAccepted, starterProjectMediaType, downloadBytes)
 	}
 }
 
-// serveHeadlessUI handles registry viewer proxy requests in headless mode
-func serveHeadlessUI(c *gin.Context) {
-	c.String(http.StatusBadRequest, "registry viewer is not available in headless mode")
-}
+// ServeUI handles registry viewer proxy requests
+func ServeUI(c *gin.Context) {
+	if headless {
+		c.String(http.StatusBadRequest, "registry viewer is not available in headless mode")
+		return
+	}
 
-// serveUI handles registry viewer proxy requests in headed mode
-func serveUI(c *gin.Context) {
 	remote, err := url.Parse(scheme + "://" + viewerService + "/viewer/")
 	if err != nil {
 		panic(err)
@@ -363,11 +356,18 @@ func serveUI(c *gin.Context) {
 }
 
 // buildIndexAPIResponse builds the response of the REST API of getting the devfile index
-func buildIndexAPIResponse(c *gin.Context, wantV1Index bool) {
+func buildIndexAPIResponse(c *gin.Context, indexType string, wantV1Index bool, params IndexParams) {
 
-	indexType := c.Param("type")
-	iconType := c.Query("icon")
-	archs := c.QueryArray("arch")
+	iconType := ""
+	archs := []string{}
+
+	if params.Icon != nil {
+		iconType = *params.Icon
+	}
+
+	if params.Arch != nil {
+		archs = append(archs, *params.Arch...)
+	}
 
 	var bytes []byte
 	var responseIndexPath, responseBase64IndexPath string
@@ -630,4 +630,55 @@ func fetchDevfile(c *gin.Context, name string, version string) ([]byte, indexSch
 		"status": fmt.Sprintf("the devfile of %s didn't exist", name),
 	})
 	return []byte{}, indexSchema.Schema{}
+}
+
+func ServeOciProxy(c *gin.Context) {
+	proxyPath := c.Param("proxyPath")
+	remote, err := url.Parse(scheme + "://" + registryService + "/v2")
+	if err != nil {
+		panic(err)
+	}
+
+	proxy := httputil.NewSingleHostReverseProxy(remote)
+
+	// Set up the request to the proxy
+	// Track event for telemetry for GET requests only
+	if enableTelemetry && c.Request.Method == http.MethodGet && proxyPath != "" {
+		var name string
+		var resource string
+		parts := strings.Split(proxyPath, "/")
+		// Check proxyPath (e.g. /devfile-catalog/java-quarkus/blobs/sha256:d913cab108c3bc1bd06ce61f1e0cdb6eea2222a7884378f7e656fa26249990b9)
+		if len(parts) == 5 {
+			name = parts[2]
+			resource = parts[3]
+		}
+
+		//Ignore events from the registry-viewer and DevConsole since those are tracked on the client side.  Ignore indirect calls from clients.
+		if resource == "blobs" && !util.IsWebClient(c) && !util.IsIndirectCall(c) {
+			user := util.GetUser(c)
+			client := util.GetClient(c)
+
+			err := util.TrackEvent(analytics.Track{
+				Event:   eventTrackMap["download"],
+				UserId:  user,
+				Context: util.SetContext(c),
+				Properties: analytics.NewProperties().
+					Set("name", name).
+					Set("registry", registry).
+					Set("client", client),
+			})
+			if err != nil {
+				log.Println(err.Error())
+			}
+		}
+	}
+
+	proxy.Director = func(req *http.Request) {
+		req.Header.Add("X-Forwarded-Host", req.Host)
+		req.Header.Add("X-Origin-Host", remote.Host)
+		req.URL.Scheme = remote.Scheme
+		req.URL.Host = remote.Host
+	}
+
+	proxy.ServeHTTP(c.Writer, c.Request)
 }

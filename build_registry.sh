@@ -5,11 +5,15 @@
 # and want to test all of the components together
 shopt -s expand_aliases
 set -eux
+
+# Set base registry support directory
+BASE_DIR=$(dirname $0)
+
 #set the docker alias if necessary
-. ./setenv.sh
+. ${BASE_DIR}/setenv.sh
 
 # Build the index server base image
-. ./index/server/build.sh
+. ${BASE_DIR}/index/server/build.sh
 
 # Build the test devfile registry image
-docker build -t devfile-index:latest -f .ci/Dockerfile .
+docker build -t devfile-index:latest -f ${BASE_DIR}/.ci/Dockerfile ${BASE_DIR}
