@@ -5,11 +5,26 @@
 # The downloaded samples are cached under /registry/samples in the devfile registry container
 set -eu
 
-# download_sample takes in a given sample name (e.g. nodejs-basic), and git clones its corresponding repository
+# clone_sample_repo clones a given git repository to the sampleDir. Before cloning it checks
+# whether or not a revision exists.
+# Parameters:
+# 1: gitRepository  (git repository url)
+# 2: sampleDir      (output directory of the clone command)
+# 3: revision       (the prefered revision of the git repo we want to clone)
+function clone_sample_repo() {
+  local repoUrl="$1"
+  local repoOutputDir="$2"
+  local repoRevision="$3"
+  git clone $repoUrl $repoOutputDir
+  if [[ $repoRevision != "null" ]]; then
+    cd $repoOutputDir && git checkout $repoRevision && cd -
+  fi
+}
+
+# cache_sample takes in a given sample name (e.g. nodejs-basic), and git clones its corresponding repository
 # Parameters:
 # 1: Sample name (e.g. nodejs-basic)
-# 2: Path to extraDevfileEntries.yaml
-# 3: Output directory
+# 2: Output directory
 function cache_sample() {
     local sampleName="$1"
     local outputDir="$2"
@@ -18,15 +33,17 @@ function cache_sample() {
 
     # Git clone the sample project
     gitRepository="$(yq e '(.samples[] | select(.name == "'${sampleName}'")' $devfileEntriesFile | yq e '(.git.remotes.origin)' -)"
+    revision="$(yq e '(.samples[] | select(.name == "'${sampleName}'")' $devfileEntriesFile | yq e '(.git.checkoutFrom.revision)' -)"
     if [[ $gitRepository == "null" ]]; then
         for version in $(yq e '(.samples[] | select(.name == "'${sampleName}'")' $devfileEntriesFile | yq e '(.versions[].version)' -); do
           gitRepository="$(yq e '(.samples[] | select(.name == "'${sampleName}'")' $devfileEntriesFile | yq e '(.versions[] | select(.version == "'${version}'")' -| yq e '.git.remotes.origin' -)"
-          git clone "$gitRepository" "$sampleDir/$version"
+          revision="$(yq e '(.samples[] | select(.name == "'${sampleName}'")' $devfileEntriesFile | yq e '(.versions[] | select(.version == "'${version}'")' -| yq e '.git.checkoutFrom.revision' -)"
+          clone_sample_repo $gitRepository $sampleDir/$version $revision
           mkdir $outputDir/$version
           cache_devfile $sampleDir/$version $outputDir/$version $sampleName
         done
     else
-      git clone "$gitRepository" "$sampleDir"
+      clone_sample_repo $gitRepository $sampleDir $revision
       cache_devfile $sampleDir $outputDir/ $sampleName
     fi
 
