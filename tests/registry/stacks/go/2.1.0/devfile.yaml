@@ -1,0 +1,14 @@
+schemaVersion: 2.2.0
+metadata:
+  description: "Go is an open source programming language that makes it easy to build simple, reliable, and efficient software."
+  displayName: Go Runtime
+  icon: https://raw.githubusercontent.com/devfile-samples/devfile-stack-icons/main/golang.svg
+  name: go
+  projectType: Go
+  provider: Red Hat
+  language: Go
+  tags:
+    - Go
+  version: 2.1.0
+parent:
+  uri: https://registry.devfile.io/devfiles/go/2.1.0
