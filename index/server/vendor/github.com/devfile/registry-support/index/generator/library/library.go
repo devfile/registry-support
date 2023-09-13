@@ -19,9 +19,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 
 	devfileParser "github.com/devfile/library/v2/pkg/devfile"
 	"github.com/devfile/library/v2/pkg/devfile/parser"
@@ -35,6 +37,7 @@ const (
 	extraDevfileEntries = "extraDevfileEntries.yaml"
 	stackYaml           = "stack.yaml"
 	ownersFile          = "OWNERS"
+	imageHeaderKeyword  = "image/"
 )
 
 // MissingArchError is an error if the architecture list is empty
@@ -62,6 +65,14 @@ type MissingSupportUrlError struct {
 
 func (e *MissingSupportUrlError) Error() string {
 	return fmt.Sprintf("the %s devfile has no supportUrl mentioned\n", e.devfile)
+}
+
+type IconUrlBrokenError struct {
+	devfile string
+}
+
+func (e *IconUrlBrokenError) Error() string {
+	return fmt.Sprintf("Devfile %s has broken or not existing icon\n", e.devfile)
 }
 
 // GenerateIndexStruct parses registry then generates index struct according to the schema
@@ -170,6 +181,9 @@ func validateIndexComponent(indexComponent schema.Schema, componentType schema.D
 	}
 
 	// Fields to be validated for both stacks and samples
+	if !iconExists(indexComponent.Icon) {
+		return &IconUrlBrokenError{devfile: indexComponent.Name}
+	}
 	if indexComponent.Provider == "" {
 		return &MissingProviderError{devfile: indexComponent.Name}
 	}
@@ -200,6 +214,28 @@ func dirExists(dirpath string) error {
 		return fmt.Errorf("%s is not a directory", dirpath)
 	}
 	return nil
+}
+
+func iconExists(iconUrl string) bool {
+        /* #nosec G107 -- iconUrl is taken from the index file.  Stacks / Samples with URLs to a devfile icon should be vetted beforehand */
+	resp, err := http.Get(iconUrl)
+	if err != nil {
+		return false
+	}
+
+	if resp.StatusCode != 200 {
+		return false
+	}
+
+	// Ensure that the content of response is image related
+	headers := resp.Header["Content-Type"]
+	for _, header := range headers {
+		if strings.Contains(header, imageHeaderKeyword) {
+			return true
+		}
+	}
+
+	return false
 }
 
 func parseDevfileRegistry(registryDirPath string, force bool) ([]schema.Schema, error) {

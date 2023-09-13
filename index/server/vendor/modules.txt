@@ -85,8 +85,8 @@ github.com/devfile/library/v2/pkg/devfile/parser/data/v2/common
 github.com/devfile/library/v2/pkg/devfile/validate
 github.com/devfile/library/v2/pkg/testingutil/filesystem
 github.com/devfile/library/v2/pkg/util
-# github.com/devfile/registry-support/index/generator v0.0.0-20230215135119-cdf58b183ec4
-## explicit; go 1.14
+# github.com/devfile/registry-support/index/generator v0.0.0-20230912204017-0907df86a611 => ../generator
+## explicit; go 1.18
 github.com/devfile/registry-support/index/generator/library
 github.com/devfile/registry-support/index/generator/schema
 # github.com/devfile/registry-support/registry-library v0.0.0-20221018213054-47b3ffaeadba
@@ -804,3 +804,4 @@ sigs.k8s.io/structured-merge-diff/v4/value
 # sigs.k8s.io/yaml v1.3.0
 ## explicit; go 1.12
 sigs.k8s.io/yaml
+# github.com/devfile/registry-support/index/generator => ../generator

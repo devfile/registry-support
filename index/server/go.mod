@@ -6,7 +6,7 @@ require (
 	github.com/deepmap/oapi-codegen v1.12.4
 	github.com/devfile/api/v2 v2.2.0
 	github.com/devfile/library/v2 v2.2.1-0.20230323124903-d36e409ff94f
-	github.com/devfile/registry-support/index/generator v0.0.0-20230215135119-cdf58b183ec4
+	github.com/devfile/registry-support/index/generator v0.0.0-20230912204017-0907df86a611
 	github.com/getkin/kin-openapi v0.117.0
 	github.com/gin-gonic/gin v1.8.1
 	github.com/hashicorp/go-version v1.4.0
@@ -135,3 +135,5 @@ require (
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
+
+replace github.com/devfile/registry-support/index/generator => ../generator
