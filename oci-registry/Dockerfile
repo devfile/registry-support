@@ -15,15 +15,24 @@
 FROM registry:2 as registry
 
 FROM registry.access.redhat.com/ubi8-minimal:8.2
+
+# Install dependencies
 RUN microdnf update -y && rm -rf /var/cache/yum && microdnf install ca-certificates httpd-tools
 
 # Create a non-root user to run the server as
 RUN set -x ; \
     adduser registry -u 1001 -G root && exit 0
 
+# Copy config file to myconfig.yml if specified
+COPY ./config.yml /etc/docker/registry/myconfig.yml
+
 COPY --from=registry --chown=registry:0 /bin/registry /bin/registry
 # Copy default config
-COPY --from=registry --chown=registry:0 /etc/docker/registry/config.yml /etc/docker/registry/config.yml
+COPY --from=registry --chown=registry:0 /etc/docker/registry/config.yml /etc/docker/registry/default.yml
+
+# Copy myconfig.yml, if exists, to config.yml
+RUN if [ -f /etc/docker/registry/myconfig.yml ]; then cp /etc/docker/registry/myconfig.yml /etc/docker/registry/config.yml; else cp /etc/docker/registry/default.yml /etc/docker/registry/config.yml; fi
+
 USER 1001
 EXPOSE 5000
 ENTRYPOINT ["registry"]
