@@ -1,0 +1,137 @@
+# 
+# Copyright 2023 Red Hat, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+schemaVersion: 2.2.0
+metadata:
+  name: devfile-registry
+components:
+  - name: devfile-index-base-builder
+    image:
+      imageName: quay.io/{{profile}}/{{devfileIndexBaseImage}}
+      autoBuild: true
+      dockerfile:
+        uri: index/server/Dockerfile
+        buildContext: index/server
+  - name: devfile-index-image-builder
+    image:
+      imageName: quay.io/{{profile}}/{{devfileIndexImage}}
+      autoBuild: true
+      dockerfile:
+        uri: .ci/Dockerfile
+        buildContext: .
+  - name: oci-registry-builder
+    image:
+      imageName: "{{ociRegistryImage}}"
+      dockerfile:
+        uri: oci-registry/Dockerfile
+        buildContext: oci-registry
+  - name: devfile-registry-storage
+    volume:
+      ephemeral: true
+  - name: config
+    volume:
+      ephemeral: true
+  - name: devfile-registry
+    attributes:
+      container-overrides:
+        securityContext:
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          capabilities:
+            drop: ["ALL"]
+          seccompProfile:
+            type: "RuntimeDefault"
+    container:
+      image: quay.io/{{profile}}/{{devfileIndexImage}}
+      memoryLimit: "{{devfileIndexMemoryLimit}}"
+      command:
+        - /entrypoint.sh
+      endpoints:
+        - exposure: public
+          name: http-8080
+          protocol: http
+          targetPort: 8080
+      env:
+        - name: REGISTRY_HEADLESS
+          value: "true"
+  - name: oci-registry
+    attributes:
+      container-overrides:
+        securityContext:
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          capabilities:
+            drop: ["ALL"]
+          seccompProfile:
+            type: "RuntimeDefault"
+    container:
+      image: "{{ociRegistryImage}}"
+      memoryLimit: "{{ociRegistryMemoryLimit}}"
+      command:
+        - registry
+        - serve
+        - /etc/docker/registry/config.yml
+      mountSources: false
+      volumeMounts:
+        - name: devfile-registry-storage
+          path: /var/lib/registry
+commands:
+  - id: build-devfile-index-base-image
+    apply:
+      component: devfile-index-base-builder
+  - id: build-devfile-index-image
+    apply:
+      component: devfile-index-image-builder
+  - id: build-oci-registry
+    apply:
+      component: oci-registry-builder
+  - id: build
+    composite:
+      commands:
+        - build-devfile-index-base-image
+        - build-devfile-index-image
+      group:
+        isDefault: true
+        kind: build
+  - id: build-all
+    composite:
+      commands:
+        - build-oci-registry
+        - build-devfile-index-base-image
+        - build-devfile-index-image
+      group:
+        kind: build
+  - id: run-devfile-index
+    apply:
+      component: devfile-registry
+  - id: run-oci-registry
+    apply:
+      component: oci-registry
+  - id: run
+    composite:
+      commands:
+        - run-oci-registry
+        - run-devfile-index
+      parallel: true
+      group:
+        isDefault: true
+        kind: run
+variables:
+  profile: devfile
+  devfileIndexBaseImage: devfile-index-base:latest
+  devfileIndexImage: devfile-index:latest
+  ociRegistryImage: quay.io/devfile/oci-registry:next
+  devfileIndexMemoryLimit: 256Mi
+  ociRegistryMemoryLimit: 256Mi

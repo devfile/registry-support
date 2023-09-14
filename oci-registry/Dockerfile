@@ -22,6 +22,8 @@ RUN set -x ; \
     adduser registry -u 1001 -G root && exit 0
 
 COPY --from=registry --chown=registry:0 /bin/registry /bin/registry
+# Copy default config
+COPY --from=registry --chown=registry:0 /etc/docker/registry/config.yml /etc/docker/registry/config.yml
 USER 1001
 EXPOSE 5000
 ENTRYPOINT ["registry"]
