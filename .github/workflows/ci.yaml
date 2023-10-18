@@ -44,14 +44,14 @@ jobs:
 
       - name: Check index-server code generation
         run: |
-          cd index/server
           export GOPATH=$(go env GOPATH)
           go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@v1.12.4
-          bash codegen.sh
+          bash index/server/codegen.sh
           GEN_DIFFS=$(git diff --name-only --diff-filter=ACMRT | grep .gen.go$ | xargs)
           if [[ ! -z "${GEN_DIFFS}" ]]
           then
             echo "generated source does not match current changes "
+            for f in ${GEN_DIFFS}; do git diff HEAD -- $f; done
             exit 1
           fi
 
