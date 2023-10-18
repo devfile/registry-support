@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Red Hat, Inc.
+// Copyright Red Hat
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ const (
 
 var telemetryKey = GetOptionalEnv("TELEMETRY_KEY", "").(string)
 
-//TrackEvent tracks event for telemetry
+// TrackEvent tracks event for telemetry
 func TrackEvent(event analytics.Message) error {
 	// Initialize client for telemetry
 	client := analytics.New(telemetryKey)
@@ -47,7 +47,7 @@ func TrackEvent(event analytics.Message) error {
 	return nil
 }
 
-//GetUser gets the user
+// GetUser gets the user
 func GetUser(c *gin.Context) string {
 	user := GetClient(c)
 	if len(c.Request.Header["User"]) != 0 {
@@ -67,7 +67,7 @@ func GetClient(c *gin.Context) string {
 	return client
 }
 
-//SetContext suppresses the collection of IP addresses in Segment but infers the country code from the HTTP `Accept-Language` header
+// SetContext suppresses the collection of IP addresses in Segment but infers the country code from the HTTP `Accept-Language` header
 func SetContext(c *gin.Context) *analytics.Context {
 	aContext := analytics.Context{}
 	aContext.IP = net.IPv4(0, 0, 0, 0)
@@ -115,7 +115,7 @@ func getRegion(c *gin.Context) string {
 
 }
 
-//IsWebClient determines if the event is coming from the registry viewer or DevConsole client.
+// IsWebClient determines if the event is coming from the registry viewer or DevConsole client.
 func IsWebClient(c *gin.Context) bool {
 	client := GetClient(c)
 	userId := GetUser(c)
@@ -126,7 +126,7 @@ func IsWebClient(c *gin.Context) bool {
 	return false
 }
 
-//IsIndirectCall determines if a request is made from an internal client
+// IsIndirectCall determines if a request is made from an internal client
 func IsIndirectCall(c *gin.Context) bool {
 	client := GetClient(c)
 	if client == registryLibrary || client == devfileLibraryIndirect {

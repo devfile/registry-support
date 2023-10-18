@@ -1,17 +1,17 @@
-/*   Copyright 2020-2022 Red Hat, Inc.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-   http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
+//
+// Copyright Red Hat
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package library
 
@@ -20,7 +20,6 @@ import (
 	"compress/gzip"
 	"crypto/tls"
 	"fmt"
-	"github.com/hashicorp/go-multierror"
 	"io"
 	"log"
 	"net/http"
@@ -30,6 +29,8 @@ import (
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/hashicorp/go-multierror"
 )
 
 // SplitVersionFromStack takes a stack/version tag and splits the stack name from the version
@@ -156,7 +157,7 @@ func isExcluded(name string, excludeFiles []string) bool {
 	return false
 }
 
-//setHeaders sets the request headers
+// setHeaders sets the request headers
 func setHeaders(headers *http.Header, options RegistryOptions) {
 	t := options.Telemetry
 	if t.User != "" {
@@ -170,7 +171,7 @@ func setHeaders(headers *http.Header, options RegistryOptions) {
 	}
 }
 
-//getHTTPClient returns a new http client object
+// getHTTPClient returns a new http client object
 func getHTTPClient(options RegistryOptions) *http.Client {
 
 	overriddenTimeout := httpRequestResponseTimeout

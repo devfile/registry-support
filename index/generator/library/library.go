@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Red Hat, Inc.
+// Copyright Red Hat
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -217,7 +217,7 @@ func dirExists(dirpath string) error {
 }
 
 func iconExists(iconUrl string) bool {
-        /* #nosec G107 -- iconUrl is taken from the index file.  Stacks / Samples with URLs to a devfile icon should be vetted beforehand */
+	/* #nosec G107 -- iconUrl is taken from the index file.  Stacks / Samples with URLs to a devfile icon should be vetted beforehand */
 	resp, err := http.Get(iconUrl)
 	if err != nil {
 		return false
