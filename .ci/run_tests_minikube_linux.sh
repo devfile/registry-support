@@ -30,7 +30,14 @@ helm install devfile-registry ./deploy/chart/devfile-registry --set global.ingre
 # Wait for the registry to become ready
 kubectl wait deploy/devfile-registry --for=condition=Available --timeout=600s
 if [ $? -ne 0 ]; then
-  kubectl get pods
+  # Return the logs of the 3 containers in case the condition is not met
+  echo "devfile-registry container logs:"
+  kubectl logs -l app=devfile-registry --container devfile-registry
+  echo "oci-registry container logs:"
+  kubectl logs -l app=devfile-registry --container oci-registry
+  echo "registry-viewer container logs:"
+  kubectl logs -l app=devfile-registry --container registry-viewer
+  # Return the description of every pod
   kubectl describe pods
   exit 1
 fi
