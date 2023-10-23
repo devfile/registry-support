@@ -1,5 +1,20 @@
 #!/bin/bash
 
+#
+# Copyright Red Hat
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 # NOTE: This script assumes that minikube is installed and running, and using the docker driver on Linux
 # Due to networking issues with the docker driver and ingress on macOS/Windows, this script must be run on Linux
 
@@ -30,7 +45,14 @@ helm install devfile-registry ./deploy/chart/devfile-registry --set global.ingre
 # Wait for the registry to become ready
 kubectl wait deploy/devfile-registry --for=condition=Available --timeout=600s
 if [ $? -ne 0 ]; then
-  kubectl get pods
+  # Return the logs of the 3 containers in case the condition is not met
+  echo "devfile-registry container logs:"
+  kubectl logs -l app=devfile-registry --container devfile-registry
+  echo "oci-registry container logs:"
+  kubectl logs -l app=devfile-registry --container oci-registry
+  echo "registry-viewer container logs:"
+  kubectl logs -l app=devfile-registry --container registry-viewer
+  # Return the description of every pod
   kubectl describe pods
   exit 1
 fi

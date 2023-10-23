@@ -1,5 +1,5 @@
 //
-// Copyright 2022 Red Hat, Inc.
+// Copyright Red Hat
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,16 +16,17 @@
 package util
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/kylelemons/godebug/pretty"
-	"gopkg.in/segmentio/analytics-go.v3"
 	"net"
 	"net/http"
 	"reflect"
 	"testing"
+
+	"github.com/gin-gonic/gin"
+	"github.com/kylelemons/godebug/pretty"
+	"gopkg.in/segmentio/analytics-go.v3"
 )
 
-//TestGetUser also tests GetClient indirectly
+// TestGetUser also tests GetClient indirectly
 func TestGetUser(t *testing.T) {
 	tests := []struct {
 		name    string
