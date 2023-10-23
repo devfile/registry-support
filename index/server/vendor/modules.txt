@@ -62,7 +62,7 @@ github.com/davecgh/go-spew/spew
 github.com/deepmap/oapi-codegen/pkg/gin-middleware
 github.com/deepmap/oapi-codegen/pkg/runtime
 github.com/deepmap/oapi-codegen/pkg/types
-# github.com/devfile/api/v2 v2.2.0
+# github.com/devfile/api/v2 v2.2.1
 ## explicit; go 1.18
 github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
 github.com/devfile/api/v2/pkg/attributes
@@ -71,8 +71,8 @@ github.com/devfile/api/v2/pkg/utils/overriding
 github.com/devfile/api/v2/pkg/utils/unions
 github.com/devfile/api/v2/pkg/validation
 github.com/devfile/api/v2/pkg/validation/variables
-# github.com/devfile/library/v2 v2.2.1-0.20230323124903-d36e409ff94f
-## explicit; go 1.15
+# github.com/devfile/library/v2 v2.2.1
+## explicit; go 1.18
 github.com/devfile/library/v2/pkg/devfile
 github.com/devfile/library/v2/pkg/devfile/parser
 github.com/devfile/library/v2/pkg/devfile/parser/context
@@ -92,6 +92,9 @@ github.com/devfile/registry-support/index/generator/schema
 # github.com/devfile/registry-support/registry-library v0.0.0-20221018213054-47b3ffaeadba
 ## explicit; go 1.14
 github.com/devfile/registry-support/registry-library/library
+# github.com/distribution/distribution/v3 v3.0.0-20221208165359-362910506bc2
+## explicit; go 1.18
+github.com/distribution/distribution/v3/reference
 # github.com/docker/cli v20.10.21+incompatible
 ## explicit
 github.com/docker/cli/cli/config
