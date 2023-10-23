@@ -3,8 +3,8 @@ module github.com/devfile/registry-support/index/generator
 go 1.18
 
 require (
-	github.com/devfile/api/v2 v2.2.0
-	github.com/devfile/library/v2 v2.2.1-0.20230323124903-d36e409ff94f
+	github.com/devfile/api/v2 v2.2.1
+	github.com/devfile/library/v2 v2.2.1
 	github.com/go-git/go-git/v5 v5.4.2
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/nsf/jsondiff v0.0.0-20210926074059-1e845ec5d249
@@ -25,6 +25,7 @@ require (
 	github.com/containerd/containerd v1.5.9 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/devfile/registry-support/registry-library v0.0.0-20221018213054-47b3ffaeadba // indirect
+	github.com/distribution/distribution/v3 v3.0.0-20211118083504-a29a3c99a684 // indirect
 	github.com/docker/cli v20.10.11+incompatible // indirect
 	github.com/docker/distribution v2.7.1+incompatible // indirect
 	github.com/docker/docker v20.10.11+incompatible // indirect

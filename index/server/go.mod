@@ -4,8 +4,8 @@ go 1.18
 
 require (
 	github.com/deepmap/oapi-codegen v1.12.4
-	github.com/devfile/api/v2 v2.2.0
-	github.com/devfile/library/v2 v2.2.1-0.20230323124903-d36e409ff94f
+	github.com/devfile/api/v2 v2.2.1
+	github.com/devfile/library/v2 v2.2.1
 	github.com/devfile/registry-support/index/generator v0.0.0-20230215135119-cdf58b183ec4
 	github.com/getkin/kin-openapi v0.117.0
 	github.com/gin-gonic/gin v1.8.1
@@ -31,6 +31,7 @@ require (
 	github.com/containerd/containerd v1.6.12 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/devfile/registry-support/registry-library v0.0.0-20221018213054-47b3ffaeadba // indirect
+	github.com/distribution/distribution/v3 v3.0.0-20221208165359-362910506bc2 // indirect
 	github.com/docker/cli v20.10.21+incompatible // indirect
 	github.com/docker/distribution v2.8.1+incompatible // indirect
 	github.com/docker/docker v20.10.21+incompatible // indirect
