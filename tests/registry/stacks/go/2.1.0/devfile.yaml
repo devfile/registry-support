@@ -11,4 +11,4 @@ metadata:
     - Go
   version: 2.1.0
 parent:
-  uri: https://registry.devfile.io/devfiles/go/2.1.0
+  uri: https://raw.githubusercontent.com/devfile/registry/main/stacks/go/2.1.0/devfile.yaml
