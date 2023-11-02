@@ -48,11 +48,11 @@ function cache_sample() {
 
     # Git clone the sample project
     gitRepository="$(yq e '(.samples[] | select(.name == "'${sampleName}'")' $devfileEntriesFile | yq e '(.git.remotes.origin)' -)"
-    revision="$(yq e '(.samples[] | select(.name == "'${sampleName}'")' $devfileEntriesFile | yq e '(.git.checkoutFrom.revision)' -)"
+    revision="$(yq e '(.samples[] | select(.name == "'${sampleName}'")' $devfileEntriesFile | yq e '(.git.revision)' -)"
     if [[ $gitRepository == "null" ]]; then
         for version in $(yq e '(.samples[] | select(.name == "'${sampleName}'")' $devfileEntriesFile | yq e '(.versions[].version)' -); do
           gitRepository="$(yq e '(.samples[] | select(.name == "'${sampleName}'")' $devfileEntriesFile | yq e '(.versions[] | select(.version == "'${version}'")' -| yq e '.git.remotes.origin' -)"
-          revision="$(yq e '(.samples[] | select(.name == "'${sampleName}'")' $devfileEntriesFile | yq e '(.versions[] | select(.version == "'${version}'")' -| yq e '.git.checkoutFrom.revision' -)"
+          revision="$(yq e '(.samples[] | select(.name == "'${sampleName}'")' $devfileEntriesFile | yq e '(.versions[] | select(.version == "'${version}'")' -| yq e '.git.revision' -)"
           clone_sample_repo $gitRepository $sampleDir/$version $revision
           mkdir $outputDir/$version
           cache_devfile $sampleDir/$version $outputDir/$version $sampleName
