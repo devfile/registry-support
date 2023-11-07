@@ -16,7 +16,7 @@ Issue tracking repo: https://github.com/devfile/api with label area/registry
 The current release relies on [oapi-codegen 1.12.4](https://github.com/deepmap/oapi-codegen/tree/v1.12.4) for OpenAPI source generation. See the [Index Server README](index/server/README.md#source-generation) for more information.
 
 To install, run:
-`go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@1.12.4`
+`go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@v1.12.4`
 
 ### Instructions
 If you want to run the build scripts with Podman, set the environment variable
