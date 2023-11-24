@@ -15,6 +15,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Environment variable which enables http2 protocol
+ENABLE_HTTP2 ?= false
+
 # Build the index container for the registry
 buildfolder="$(realpath $(dirname ${BASH_SOURCE[0]}))"
 
@@ -22,4 +25,4 @@ buildfolder="$(realpath $(dirname ${BASH_SOURCE[0]}))"
 bash ${buildfolder}/codegen.sh
 
 # Build the index server
-docker build -t devfile-index-base:latest $buildfolder
+docker build -t devfile-index-base:latest $buildfolder --build-arg ENABLE_HTTP2=${ENABLE_HTTP2}
