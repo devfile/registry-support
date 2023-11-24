@@ -81,7 +81,11 @@ func ServeRegistry() {
 		Handler:      handler,
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 10 * time.Second,
-		TLSNextProto: make(map[string]func(*http.Server, *tls.Conn, http.Handler)),
+	}
+
+	// Disable HTTP2 by default
+	if enableHTTP2 == "false" {
+		indexServer.TLSNextProto = make(map[string]func(*http.Server, *tls.Conn, http.Handler))
 	}
 
 	// Disable HTTP2 by default
