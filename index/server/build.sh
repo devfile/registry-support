@@ -25,4 +25,4 @@ buildfolder="$(realpath $(dirname ${BASH_SOURCE[0]}))"
 bash ${buildfolder}/codegen.sh
 
 # Build the index server
-docker build -t devfile-index-base:latest $buildfolder --build-arg ENABLE_HTTP2=${ENABLE_HTTP2}
+docker build -t devfile-index-base:latest --build-arg ENABLE_HTTP2=${ENABLE_HTTP2} $buildfolder

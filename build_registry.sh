@@ -28,7 +28,7 @@ BASE_DIR=$(dirname $0)
 . ${BASE_DIR}/setenv.sh
 
 # Build the index server base image
-. ${BASE_DIR}/index/server/build.sh
+ENABLE_HTTP2="false" . ${BASE_DIR}/index/server/build.sh
 
 # Build the test devfile registry image
 docker build -t devfile-index:latest -f ${BASE_DIR}/.ci/Dockerfile ${BASE_DIR}
