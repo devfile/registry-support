@@ -103,7 +103,7 @@ jobs:
           cd index/server
           export GOPATH=$(go env GOPATH)
           go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@v1.12.4
-          ENABLE_HTTP2="false" bash ./build.sh
+          bash ./build.sh
 
       - name: Test index server
         run: cd index/server && go test ./... -coverprofile cover.out
