@@ -19,7 +19,7 @@
 # This can be useful if developing components within this repository (such as the index server or build tools)
 # and want to test all of the components together
 shopt -s expand_aliases
-set -eux
+set -ex
 
 # Set base registry support directory
 BASE_DIR=$(dirname $0)
@@ -28,7 +28,7 @@ BASE_DIR=$(dirname $0)
 . ${BASE_DIR}/setenv.sh
 
 # Build the index server base image
-ENABLE_HTTP2="false" . ${BASE_DIR}/index/server/build.sh
+ENABLE_HTTP2=${ENABLE_HTTP2} . ${BASE_DIR}/index/server/build.sh
 
 # Build the test devfile registry image
 docker build -t devfile-index:latest -f ${BASE_DIR}/.ci/Dockerfile ${BASE_DIR}
