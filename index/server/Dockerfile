@@ -40,6 +40,10 @@ RUN set -x ; \
 # Modify the permissions on the necessary files to allow the container to properly run as a non-root UID
 RUN mkdir -p /www/data && chmod -R g+rwx /www/data
 
+# disable http/2 on the index server by default
+ARG ENABLE_HTTP2=false
+ENV ENABLE_HTTP2=${ENABLE_HTTP2}
+
 # Set env vars for the locations of the devfile stacks and index.json
 ENV DEVFILE_STACKS /registry/stacks
 ENV DEVFILE_SAMPLES /registry/samples
