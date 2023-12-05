@@ -441,9 +441,11 @@ func parseStackDevfile(devfileDirPath string, stackName string, force bool, vers
 		versionComponent.StarterProjects = append(versionComponent.StarterProjects, starterProject.Name)
 	}
 
-	for _, tag := range versionComponent.Tags {
-		if !inArray(indexComponent.Tags, tag) {
-			indexComponent.Tags = append(indexComponent.Tags, tag)
+	if versionComponent.Default {
+		for _, tag := range versionComponent.Tags {
+			if !inArray(indexComponent.Tags, tag) {
+				indexComponent.Tags = append(indexComponent.Tags, tag)
+			}
 		}
 	}
 
