@@ -295,12 +295,11 @@ func parseDevfileRegistry(registryDirPath string, force bool) ([]schema.Schema, 
 				}
 			}
 		} else { // if stack.yaml not exist, old stack repo struct, directly lookfor & parse devfile.yaml
-			versionComponent := schema.Version{}
+			versionComponent := schema.Version{Default: true}
 			err := parseStackDevfile(stackFolderPath, stackFolderDir.Name(), force, &versionComponent, &indexComponent)
 			if err != nil {
 				return nil, err
 			}
-			versionComponent.Default = true
 			indexComponent.Versions = append(indexComponent.Versions, versionComponent)
 		}
 		indexComponent.Type = schema.StackDevfileType
