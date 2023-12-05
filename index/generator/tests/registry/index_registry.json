@@ -4,7 +4,7 @@
     "displayName": "Go Runtime",
     "description": "Stack with the latest Go version",
     "type": "stack",
-    "tags": ["testtag", "Go"],
+    "tags": ["testtag"],
     "icon": "https://raw.githubusercontent.com/devfile-samples/devfile-stack-icons/main/golang.svg",
     "projectType": "go",
     "language": "go",
