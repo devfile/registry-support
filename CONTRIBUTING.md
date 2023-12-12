@@ -17,7 +17,7 @@ contribution. See the [DCO](./DCO) file for details.
 
 ### Issues
 
-If you spot a problem with the devfile registry, [search if an issue already exists](https://github.com/devfile/api/issues). If a related issue doesn't exist, you can open a new issue using a relevant [issue form](https://github.com/devfile/api/issues/new/choose).
+If you spot a problem with the devfile registry, [search if an issue already exists](https://github.com/devfile/api/issues?q=is%3Aissue+is%3Aopen+label%3Aarea%2Fregistry). If a related issue doesn't exist, you can open a new issue using a relevant [issue form](https://github.com/devfile/api/issues/new/choose).
 
 You can tag Devfile Registry related issues with the `/area registry` text in your issue.
 
@@ -34,7 +34,6 @@ The `registry-support` repository for the devfile registry is a mono-repo of sor
 - [OCI Registry Server](./oci-registry) - The OCI registry server, the second of two servers that the devfile registry runs.
 
 Each of these individual components will have their own readme with instructions for consuming or developing the component, and it's recommended to consult them before development.
-
 
 #### Building All Components Together
 
@@ -59,21 +58,21 @@ To run these tests, consult the integration test's [readme](./tests/integration)
 ### Submitting Pull Request
 
 **Note:** All commits must be signed off with the footer:
+
 ```
 Signed-off-by: First Lastname <email@email.com>
 ```
 
 You can easily add this footer to your commits by adding `-s` when running `git commit`. When you think the code is ready for review, create a pull request and link the issue associated with it.
 
-Owners of the repository will watch out for and review new PRs. 
+Owners of the repository will watch out for new PRs and provide reviews to them.
 
-By default for each change in the PR, GitHub Actions and OpenShift CI will run checks against your changes (linting, unit testing, and integration tests).
+For each change in the PR, GitHub Actions and OpenShift CI will run by default checks against your changes (linting, unit testing, and integration tests).
 
 If comments have been given in a review, they have to be addressed before merging.
 
-After addressing review comments, don’t forget to add a comment in the PR afterward, so everyone gets notified by Github and know to re-review.
-
+After addressing review comments, don't forget to add a comment in the PR with the reviewer mentioned afterward, so they get notified by Github to provide a re-review.
 
 # Contact us
 
-If you have questions, please visit us on `#devfile` in the [Kubernetes Slack](https://slack.k8s.io).
+If you have any questions, please visit us the `#devfile` channel under the [Kubernetes Slack](https://slack.k8s.io) workspace.
