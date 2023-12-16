@@ -1,5 +1,5 @@
-# 
-# Copyright 2023 Red Hat, Inc.
+#
+# Copyright Red Hat
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,25 +15,40 @@
 #
 schemaVersion: 2.2.0
 metadata:
-  name: devfile-registry
+  name: registry-support
+  displayName: Devfile Registry Support
+  website: https://devfile.io
+  provider: Red Hat
+  supportUrl: https://kubernetes.slack.com/archives/C02SX9E5B55
+  architectures:
+    - amd64
+  tags:
+    - devfile
+    - registry
+    - http
+    - oci
+    - rest
+  icon: https://landscape.cncf.io/logos/devfile.svg
+  version: 0.0.1
+  description: Workspace for developing the devfile registry support services
 components:
-  - name: devfile-index-base-builder
+  - name: index-base-builder
     image:
-      imageName: quay.io/{{profile}}/{{devfileIndexBaseImage}}
+      imageName: "{{indexBaseImageName}}:{{indexBaseImageTag}}"
       autoBuild: true
       dockerfile:
         uri: index/server/Dockerfile
         buildContext: index/server
   - name: devfile-index-image-builder
     image:
-      imageName: quay.io/{{profile}}/{{devfileIndexImage}}
+      imageName: "{{indexImageName}}:{{indexImageTag}}"
       autoBuild: true
       dockerfile:
         uri: .ci/Dockerfile
         buildContext: .
   - name: oci-registry-builder
     image:
-      imageName: quay.io/{{profile}}/{{ociRegistryImage}}
+      imageName: "{{ociImageName}}:{{ociImageTag}}"
       autoBuild: true
       dockerfile:
         uri: oci-registry/Dockerfile
@@ -55,8 +70,8 @@ components:
           seccompProfile:
             type: "RuntimeDefault"
     container:
-      image: quay.io/{{profile}}/{{devfileIndexImage}}
-      memoryLimit: "{{devfileIndexMemoryLimit}}"
+      image: "{{indexImageName}}:{{indexImageTag}}"
+      memoryLimit: "{{indexMemoryLimit}}"
       command:
         - /entrypoint.sh
       endpoints:
@@ -80,8 +95,8 @@ components:
           seccompProfile:
             type: "RuntimeDefault"
     container:
-      image: quay.io/{{profile}}/{{ociRegistryImage}}
-      memoryLimit: "{{ociRegistryMemoryLimit}}"
+      image: "{{ociImageName}}:{{ociImageTag}}"
+      memoryLimit: "{{ociMemoryLimit}}"
       command:
         - registry
         - serve
@@ -95,32 +110,44 @@ components:
           name: http-5000
           protocol: http
           targetPort: 5000
+# Devfile Registry Deployment resource
+  - name: devfile-registry-deployment
+    kubernetes:
+      uri: deploy/devfile-resources/deployment.yaml
+# Devfile Registry Service resource
+  - name: devfile-registry-service
+    kubernetes:
+      uri: deploy/devfile-resources/service.yaml
+# Devfile Registry ConfigMap resource
+  - name: devfile-registry-configmap
+    kubernetes:
+      uri: deploy/devfile-resources/configmap.yaml
+# Devfile Registry Ingress (k8s) resource
+  - name: devfile-registry-ingress
+    kubernetes:
+      uri: deploy/devfile-resources/ingress.yaml
+# Devfile Registry Route (Red Hat OpenShift) resource
+  - name: devfile-registry-route
+    openshift:
+      uri: deploy/devfile-resources/route.yaml
 commands:
-  - id: build-devfile-index-base-image
+  - id: build-index-base-image
     apply:
-      component: devfile-index-base-builder
-  - id: build-devfile-index-image
+      component: index-base-builder
+  - id: build-index-image
     apply:
       component: devfile-index-image-builder
-  - id: build-oci-registry
+  - id: build-oci-image
     apply:
       component: oci-registry-builder
   - id: build
     composite:
       commands:
-        - build-oci-registry
-        - build-devfile-index-base-image
-        - build-devfile-index-image
+        - build-oci-image
+        - build-index-base-image
+        - build-index-image
       group:
         isDefault: true
-        kind: build
-  - id: build-all
-    composite:
-      commands:
-        - build-oci-registry
-        - build-devfile-index-base-image
-        - build-devfile-index-image
-      group:
         kind: build
   - id: run-devfile-index
     apply:
@@ -137,10 +164,85 @@ commands:
       group:
         isDefault: true
         kind: run
+# Apply Deployment spec
+  - id: apply-deployment
+    apply:
+      component: devfile-registry-deployment
+# Apply Service spec
+  - id: apply-service
+    apply:
+      component: devfile-registry-service
+# Apply ConfigMap spec
+  - id: apply-configmap
+    apply:
+      component: devfile-registry-configmap
+# Apply Ingress spec
+  - id: apply-ingress
+    apply:
+      component: devfile-registry-ingress
+# Apply Route spec
+  - id: apply-route
+    apply:
+      component: devfile-registry-route
+# Build & deploy Devfile Registry to Kubernetes
+  - id: build-deploy-registry-k8s
+    composite:
+      commands:
+        - apply-deployment
+        - apply-service
+        - apply-configmap
+        - apply-ingress
+      group:
+        isDefault: true
+        kind: deploy
+# Build & deploy Devfile Registry to Red Hat OpenShift
+  - id: build-deploy-registry-openshift
+    composite:
+      commands:
+        - apply-deployment
+        - apply-service
+        - apply-configmap
+        - apply-route
+      group:
+        kind: deploy
 variables:
-  profile: devfile
-  devfileIndexBaseImage: devfile-index-base:latest
-  devfileIndexImage: devfile-index:latest
-  ociRegistryImage: oci-registry:latest
-  devfileIndexMemoryLimit: 256Mi
-  ociRegistryMemoryLimit: 256Mi
+# The number of replicas for the hosted devfile registry service
+  replicas: "1"
+# Devfile registry index base docker image, contains support services such as REST API & proxy server. Defaults to quay.io/devfile/devfile-index
+  indexBaseImageName: localhost/devfile-index-base
+# Devfile registry index base version which defaults to latest
+  indexBaseImageTag: latest
+# Devfile registry index docker image. Defaults to quay.io/devfile/devfile-index
+  indexImageName: localhost/devfile-index
+# Devfile registry version which defaults to latest
+  indexImageTag: latest
+# Never pull index image by default.
+  indexPullPolicy: Never
+# Maximum amount of memory the devfile registry index container can use. Defaults 256Mi
+  indexMemoryLimit: 256Mi
+# Devfile registry viewer docker image. Defaults to quay.io/devfile/registry-viewer
+  viewerImageName: quay.io/devfile/registry-viewer
+# Devfile registry viewer version which defaults to next
+  viewerImageTag: next
+# Always pull registry viewer image by default.
+  viewerPullPolicy: Always
+# Maximum amount of memory the registry viewer container can use. Defaults 256Mi
+  viewerMemoryLimit: 256Mi
+# OCI registry index docker image. Defaults to quay.io/devfile/devfile-index
+  ociImageName: localhost/oci-registry
+# OCI registry version which defaults to latest
+  ociImageTag: latest
+# Never pull oci registry image by default.
+  ociPullPolicy: Never
+# Maximum amount of memory the OCI registry container can use. Defaults 256Mi
+  ociMemoryLimit: 256Mi
+# The registry name that is used as identifier for devfile telemetry
+  registryName: test-registry
+# The public write key to send registry analytics to segment.io
+  telemetryKey: ""
+# The public write key to send viewer analytics to segment.io
+  analyticsWriteKey: ""
+# The hostname alias to pass in to the devfile registry viewer's config
+  hostAlias: https://registry.stage.devfile.io
+# Hostname for the devfile registry service. Defaults to cluster's router.
+  hostName: ""
