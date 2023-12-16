@@ -6,4 +6,6 @@
 
 # Ignore the registry-viewer repo that we clone
 registry-viewer
+
+# Ignore odo files
 .odo
