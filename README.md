@@ -3,6 +3,9 @@
 <div id="header">
 
 [![Apache2.0 License](https://img.shields.io/badge/license-Apache2.0-brightgreen.svg)](LICENSE)
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/8257/badge)](https://www.bestpractices.dev/projects/8257)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/devfile/registry-support/badge)](https://securityscorecards.dev/viewer/?uri=github.com/devfile/registry-support)
+
 </div>
 
 Provide support for devfile registries
