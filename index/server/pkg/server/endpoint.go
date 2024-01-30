@@ -68,7 +68,7 @@ func (*Server) DeleteRootEndpoint(c *gin.Context) {
 }
 
 func (*Server) ServeDevfileIndexV1(c *gin.Context, params ServeDevfileIndexV1Params) {
-	ServeDevfileIndex(c, true, IndexParams(params))
+	ServeDevfileIndex(c, true, params.toIndexParams())
 }
 
 func (*Server) PostDevfileIndexV1(c *gin.Context) {
@@ -84,7 +84,7 @@ func (*Server) DeleteDevfileIndexV1(c *gin.Context) {
 }
 
 func (*Server) ServeDevfileIndexV2(c *gin.Context, params ServeDevfileIndexV2Params) {
-	ServeDevfileIndex(c, false, IndexParams(params))
+	ServeDevfileIndex(c, false, params.toIndexParams())
 }
 
 func (*Server) PostDevfileIndexV2(c *gin.Context) {
@@ -117,7 +117,7 @@ func ServeDevfileIndex(c *gin.Context, wantV1Index bool, params IndexParams) {
 func (*Server) ServeDevfileIndexV1WithType(c *gin.Context, indexType string, params ServeDevfileIndexV1WithTypeParams) {
 
 	// Serve the index with type
-	buildIndexAPIResponse(c, indexType, true, IndexParams(params))
+	buildIndexAPIResponse(c, indexType, true, params.toIndexParams())
 }
 
 func (*Server) PostDevfileIndexV1WithType(c *gin.Context, indexType string, params PostDevfileIndexV1WithTypeParams) {
@@ -135,7 +135,7 @@ func (*Server) DeleteDevfileIndexV1WithType(c *gin.Context, indexType string, pa
 func (*Server) ServeDevfileIndexV2WithType(c *gin.Context, indexType string, params ServeDevfileIndexV2WithTypeParams) {
 
 	// Serve the index with type
-	buildIndexAPIResponse(c, indexType, false, IndexParams(params))
+	buildIndexAPIResponse(c, indexType, false, params.toIndexParams())
 }
 
 func (*Server) PostDevfileIndexV2WithType(c *gin.Context, indexType string, params PostDevfileIndexV2WithTypeParams) {
