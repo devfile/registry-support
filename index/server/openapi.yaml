@@ -98,8 +98,29 @@ paths:
         description: The request body must be empty.
         content: {}
       parameters:
+        - $ref: '#/components/parameters/nameParam'
+        - $ref: '#/components/parameters/displayNameParam'
+        - $ref: '#/components/parameters/descriptionParam'
+        - $ref: '#/components/parameters/attributeNamesParam'
+        - $ref: '#/components/parameters/tagsParam'
         - $ref: '#/components/parameters/archParam'
         - $ref: '#/components/parameters/iconParam'
+        - $ref: '#/components/parameters/projectTypeParam'
+        - $ref: '#/components/parameters/languageParam'
+        - $ref: '#/components/parameters/minSchemaVersionParam'
+        - $ref: '#/components/parameters/maxSchemaVersionParam'
+        - $ref: '#/components/parameters/resourcesParam'
+        - $ref: '#/components/parameters/starterProjectsParam'
+        - $ref: '#/components/parameters/linkNamesParam'
+        - $ref: '#/components/parameters/linksParam'
+        - $ref: '#/components/parameters/gitRemoteNamesParam'
+        - $ref: '#/components/parameters/gitRemotesParam'
+        - $ref: '#/components/parameters/gitUrlParam'
+        - $ref: '#/components/parameters/gitRemoteNameParam'
+        - $ref: '#/components/parameters/gitSubDirParam'
+        - $ref: '#/components/parameters/gitRevisionParam'
+        - $ref: '#/components/parameters/providerParam'
+        - $ref: '#/components/parameters/supportUrlParam'
       responses:
         200:
           $ref: '#/components/responses/indexResponse'
@@ -142,8 +163,29 @@ paths:
             type: string
             x-go-name: IndexType
           x-go-name: IndexType
+        - $ref: '#/components/parameters/nameParam'
+        - $ref: '#/components/parameters/displayNameParam'
+        - $ref: '#/components/parameters/descriptionParam'
+        - $ref: '#/components/parameters/attributeNamesParam'
+        - $ref: '#/components/parameters/tagsParam'
         - $ref: '#/components/parameters/archParam'
         - $ref: '#/components/parameters/iconParam'
+        - $ref: '#/components/parameters/projectTypeParam'
+        - $ref: '#/components/parameters/languageParam'
+        - $ref: '#/components/parameters/minSchemaVersionParam'
+        - $ref: '#/components/parameters/maxSchemaVersionParam'
+        - $ref: '#/components/parameters/resourcesParam'
+        - $ref: '#/components/parameters/starterProjectsParam'
+        - $ref: '#/components/parameters/linkNamesParam'
+        - $ref: '#/components/parameters/linksParam'
+        - $ref: '#/components/parameters/gitRemoteNamesParam'
+        - $ref: '#/components/parameters/gitRemotesParam'
+        - $ref: '#/components/parameters/gitUrlParam'
+        - $ref: '#/components/parameters/gitRemoteNameParam'
+        - $ref: '#/components/parameters/gitSubDirParam'
+        - $ref: '#/components/parameters/gitRevisionParam'
+        - $ref: '#/components/parameters/providerParam'
+        - $ref: '#/components/parameters/supportUrlParam'
       responses:
         200:
           $ref: '#/components/responses/indexResponse'
@@ -211,8 +253,33 @@ paths:
         description: The request body must be empty.
         content: {}
       parameters:
+        - $ref: '#/components/parameters/nameParam'
+        - $ref: '#/components/parameters/displayNameParam'
+        - $ref: '#/components/parameters/descriptionParam'
+        - $ref: '#/components/parameters/attributeNamesParam'
+        - $ref: '#/components/parameters/tagsParam'
         - $ref: '#/components/parameters/archParam'
         - $ref: '#/components/parameters/iconParam'
+        - $ref: '#/components/parameters/projectTypeParam'
+        - $ref: '#/components/parameters/languageParam'
+        - $ref: '#/components/parameters/minVersionParam'
+        - $ref: '#/components/parameters/maxVersionParam'
+        - $ref: '#/components/parameters/minSchemaVersionParam'
+        - $ref: '#/components/parameters/maxSchemaVersionParam'
+        - $ref: '#/components/parameters/defaultParam'
+        - $ref: '#/components/parameters/resourcesParam'
+        - $ref: '#/components/parameters/starterProjectsParam'
+        - $ref: '#/components/parameters/linkNamesParam'
+        - $ref: '#/components/parameters/linksParam'
+        - $ref: '#/components/parameters/commandGroupsParam'
+        - $ref: '#/components/parameters/gitRemoteNamesParam'
+        - $ref: '#/components/parameters/gitRemotesParam'
+        - $ref: '#/components/parameters/gitUrlParam'
+        - $ref: '#/components/parameters/gitRemoteNameParam'
+        - $ref: '#/components/parameters/gitSubDirParam'
+        - $ref: '#/components/parameters/gitRevisionParam'
+        - $ref: '#/components/parameters/providerParam'
+        - $ref: '#/components/parameters/supportUrlParam'
       responses:
         200:
           $ref: '#/components/responses/v2IndexResponse'
@@ -255,8 +322,33 @@ paths:
             type: string
             x-go-name: IndexType
           x-go-name: IndexType
+        - $ref: '#/components/parameters/nameParam'
+        - $ref: '#/components/parameters/displayNameParam'
+        - $ref: '#/components/parameters/descriptionParam'
+        - $ref: '#/components/parameters/attributeNamesParam'
+        - $ref: '#/components/parameters/tagsParam'
         - $ref: '#/components/parameters/archParam'
-        - $ref: '#/components/parameters/iconParam'        
+        - $ref: '#/components/parameters/iconParam'
+        - $ref: '#/components/parameters/projectTypeParam'
+        - $ref: '#/components/parameters/languageParam'
+        - $ref: '#/components/parameters/minVersionParam'
+        - $ref: '#/components/parameters/maxVersionParam'
+        - $ref: '#/components/parameters/minSchemaVersionParam'
+        - $ref: '#/components/parameters/maxSchemaVersionParam'
+        - $ref: '#/components/parameters/defaultParam'
+        - $ref: '#/components/parameters/resourcesParam'
+        - $ref: '#/components/parameters/starterProjectsParam'
+        - $ref: '#/components/parameters/linkNamesParam'
+        - $ref: '#/components/parameters/linksParam'
+        - $ref: '#/components/parameters/commandGroupsParam'
+        - $ref: '#/components/parameters/gitRemoteNamesParam'
+        - $ref: '#/components/parameters/gitRemotesParam'
+        - $ref: '#/components/parameters/gitUrlParam'
+        - $ref: '#/components/parameters/gitRemoteNameParam'
+        - $ref: '#/components/parameters/gitSubDirParam'
+        - $ref: '#/components/parameters/gitRevisionParam'
+        - $ref: '#/components/parameters/providerParam'
+        - $ref: '#/components/parameters/supportUrlParam'
       responses:
         200:
           $ref: '#/components/responses/v2IndexResponse'
@@ -726,10 +818,83 @@ components:
       description: IndexParams defines parameters for index endpoints.
       type: object
       properties:
+        name:
+          $ref: '#/components/schemas/Name'
+        displayName:
+          $ref: '#/components/schemas/DisplayName'
+        description:
+          $ref: '#/components/schemas/Description'
+        attributeNames:
+          $ref: '#/components/schemas/AttributeNames'
+        tags:
+          $ref: '#/components/schemas/Tags'
         icon:
           $ref: '#/components/schemas/Icon'
         arch:
           $ref: '#/components/schemas/Architectures'
+        projectType:
+          $ref: '#/components/schemas/ProjectType'
+        language:
+          $ref: '#/components/schemas/Language'
+        minVersion:
+          $ref: '#/components/schemas/Version'
+        maxVersion:
+          $ref: '#/components/schemas/Version'
+        minSchemaVersion:
+          $ref: '#/components/schemas/SchemaVersion'
+        maxSchemaVersion:
+          $ref: '#/components/schemas/SchemaVersion'
+        default:
+          $ref: '#/components/schemas/Default'
+        resources:
+          $ref: '#/components/schemas/Resources'
+        starterProjects:
+          $ref: '#/components/schemas/StarterProjects'
+        linkNames:
+          $ref: '#/components/schemas/LinkNames'
+        links:
+          $ref: '#/components/schemas/Links'
+        commandGroups:
+          $ref: '#/components/schemas/CommandGroups'
+        gitRemoteNames:
+          $ref: '#/components/schemas/GitRemoteNames'
+        gitRemotes:
+          $ref: '#/components/schemas/GitRemotes'
+        gitUrl:
+          $ref: '#/components/schemas/Url'
+        gitRemoteName:
+          $ref: '#/components/schemas/GitRemoteName'
+        gitSubDir:
+          $ref: '#/components/schemas/GitSubDir'
+        gitRevision:
+          $ref: '#/components/schemas/GitRevision'
+        provider:
+          $ref: '#/components/schemas/Provider'
+        supportUrl:
+          $ref: '#/components/schemas/Url'
+    Name:
+      description: Name of devfile registry entry
+      type: string
+    DisplayName:
+      description: User readable name of devfile registry entry
+      type: string
+    Description:
+      description: Description of devfile registry entry
+      type: string
+    AttributeNames:
+      description: List of the YAML free-form attribute names
+      type: array
+      uniqueItems: true
+      items:
+        description: YAML free-form attribute name
+        type: string
+    Tags:
+      description: List of devfile subject tags
+      type: array
+      uniqueItems: false
+      items:
+        description: A subject tag to describe the devfile workspace
+        type: string
     Icon:
       description: Optional devfile icon, can be a URI or a relative path in the project
       type: string
@@ -745,7 +910,124 @@ components:
           - "arm64"
           - "ppc64le"
           - "s390x"
+    ProjectType:
+      description: Type of project the devfile supports
+      type: string
+    Language:
+      description: Programming language of the devfile workspace
+      type: string
+    Version:
+      description: Devfile registry entry version number
+      type: string
+      pattern: '^[0-9]+\.[0-9]+\.[0-9]+$'
+      example: 1.4.0
+    SchemaVersion:
+      description: Devfile schema version number
+      type: string
+      pattern: '^[0-9]+\.[0-9]+\.[0-9]+(\-alpha)?$'
+      example: 2.2.0, 2.2.3-alpha
+    Default:
+      description: Flag for default devfile registry entry version 
+      type: boolean
+    Resources:
+      description: List of file resources for the devfile
+      type: array
+      uniqueItems: false
+      items:
+        type: string
+    StarterProjects:
+      description: List of starter project names
+      type: array
+      uniqueItems: true
+      items:
+        description: Name of starter project resources
+        type: string
+    Url:
+      description: Url field type
+      type: string
+    LinkNames:
+      description: Names of devfile links
+      type: array
+      uniqueItems: true
+      items:
+        type: string
+    Links:
+      description: List of devfile links
+      type: array
+      uniqueItems: false
+      items:
+        $ref: '#/components/schemas/Url'
+    CommandGroups:
+      description: List of command groups defined in devfile
+      type: array
+      uniqueItems: true
+      items:
+        type: string
+        enum:
+          - build
+          - run
+          - test
+          - debug
+          - deploy
+    GitRemoteName:
+      description: Git repository remote name
+      type: string
+    GitRemoteNames:
+      description: List of git repository remote names
+      type: array
+      uniqueItems: true
+      items:
+        $ref: '#/components/schemas/GitRemoteName'
+    GitRemotes:
+      description: List of git repository remote urls
+      type: array
+      uniqueItems: false
+      items:
+        $ref: '#/components/schemas/Url'
+    GitSubDir:
+      description: Subdirectory of git repository to use as reference
+      type: string
+    GitRevision:
+      description: Branch, tag, or commit reference
+      type: string
+    Provider:
+      description: Name of provider of the devfile registry entry
+      type: string
   parameters:
+    nameParam:
+      name: name
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/Name'
+    displayNameParam:
+      name: displayName
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/DisplayName'
+    descriptionParam:
+      name: description
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/Description'
+    attributeNamesParam:
+      name: attributeNames
+      in: query
+      required: false
+      schema:
+        type: array
+        items:
+          type: string
+    tagsParam:
+      name: tags
+      in: query
+      required: false
+      schema:
+        type: array
+        items:
+          type: string
     iconParam:
       name: icon
       in: query
@@ -760,6 +1042,126 @@ components:
       required: false
       schema:
         $ref: '#/components/schemas/Architectures'
+    projectTypeParam:
+      name: projectType
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/ProjectType'
+    languageParam:
+      name: language
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/Language'
+    minVersionParam:
+      name: minVersion
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/Version'
+    maxVersionParam:
+      name: maxVersion
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/Version'
+    minSchemaVersionParam:
+      name: minSchemaVersion
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/SchemaVersion'
+    maxSchemaVersionParam:
+      name: maxSchemaVersion
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/SchemaVersion'
+    defaultParam:
+      name: default
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/Default'
+    resourcesParam:
+      name: resources
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/Resources'
+    starterProjectsParam:
+      name: starterProjects
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/StarterProjects'
+    linkNamesParam:
+      name: linkNames
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/LinkNames'
+    linksParam:
+      name: links
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/Links'
+    commandGroupsParam:
+      name: commandGroups
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/CommandGroups'
+    gitRemoteNamesParam:
+      name: gitRemoteNames
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/GitRemoteNames'
+    gitRemotesParam:
+      name: gitRemotes
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/GitRemotes'
+    gitUrlParam:
+      name: gitUrl
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/Url'
+    gitRemoteNameParam:
+      name: gitRemoteName
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/GitRemoteName'
+    gitSubDirParam:
+      name: gitSubDir
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/GitSubDir'
+    gitRevisionParam:
+      name: gitRevision
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/GitRevision'
+    providerParam:
+      name: provider
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/Provider'
+    supportUrlParam:
+      name: supportUrl
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/Url'
   responses:
     devfileErrorResponse:
       description: Failed to get the devfile.
