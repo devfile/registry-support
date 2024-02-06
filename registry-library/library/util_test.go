@@ -18,6 +18,7 @@ package library
 import (
 	"reflect"
 	"testing"
+	"strings"
 )
 
 func TestValidateStackVersionTag(t *testing.T) {
@@ -126,6 +127,85 @@ func TestSplitVersionFromStack(t *testing.T) {
 				t.Errorf("Expected Stack Name: %+v, \nGot Stack Name: %+v", test.wantStack, gotStack)
 			} else if !reflect.DeepEqual(gotVersion, test.wantVersion) {
 				t.Errorf("Expected Version: %+v, \nGot Version: %+v", test.wantVersion, gotVersion)
+			}
+		})
+	}
+}
+
+func TestCleanFilepath(t *testing.T) {
+	tests := []struct {
+		name       		string
+		parentPath   	string
+		childPath 		string
+		expectedPath 	string
+	}{
+		{
+			name:       "Absolute child path with leading slash",
+			parentPath: ".",
+			childPath: "/test/tmp",
+			expectedPath: "test/tmp",
+		},
+		{
+			name:       "Absolute child path without leading slash",
+			parentPath: ".",
+			childPath: "test/tmp",
+			expectedPath: "test/tmp",
+		},
+		{
+			name:       "Relative child path without leading slash",
+			parentPath: ".",
+			childPath: "../../../../test/tmp",
+			expectedPath: "test/tmp",
+		},
+		{
+			name:       "Relative child path with leading slash",
+			parentPath: ".",
+			childPath: "/../../../../test/tmp",
+			expectedPath: "test/tmp",
+		},
+		{
+			name:       "Absolute child path with leading slash and escape capabilities",
+			parentPath: ".",
+			childPath: "/home/../../../../test/tmp",
+			expectedPath: "test/tmp",
+		},
+		{
+			name:       "Absolute child path with leading slash and escape capabilities (parent path not current dir)",
+			parentPath: "newHome/dir",
+			childPath: "/home/../../../../test/tmp",
+			expectedPath: "newHome/dir/test/tmp",
+		},
+		{
+			name:       "Relative child path without leading slash and escape capabilities (parent path not current dir)",
+			parentPath: "newHome/dir",
+			childPath: "../home/../../../../test/tmp",
+			expectedPath: "newHome/dir/test/tmp",
+		},
+		{
+			name:       "Blank child path",
+			parentPath: "dir",
+			childPath: "",
+			expectedPath: "dir",
+		},
+		{
+			name:       "Child path only escape characters",
+			parentPath: "dir",
+			childPath: "../../../../../",
+			expectedPath: "dir",
+		},
+		{
+			name:       "Single file as child path",
+			parentPath: "dir",
+			childPath: "test.txt",
+			expectedPath: "dir/test.txt",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			path:= CleanFilepath(test.parentPath, test.childPath)
+			if !strings.EqualFold(test.expectedPath, path) {
+				t.Errorf("Expected: %s, Got: %s", test.expectedPath, path)
 			}
 		})
 	}
