@@ -122,7 +122,6 @@ func decompress(targetDir string, tarFile string, excludeFiles []string) error {
 				return returnedErr
 			}
 		case tar.TypeReg:
-			/* #nosec G304 -- target is produced using path.Join which cleans the dir path */
 			w, err := os.OpenFile(target, os.O_CREATE|os.O_RDWR, os.FileMode(header.Mode))
 			if err != nil {
 				returnedErr = multierror.Append(returnedErr, err)
