@@ -581,7 +581,7 @@ func buildIndexAPIResponse(c *gin.Context, indexType string, wantV1Index bool, p
 	}
 	// Filter the index if archs has been requested
 	if len(archs) > 0 {
-		index = util.FilterDevfileArchitectures(index, archs, wantV1Index)
+		index = util.FilterDevfileStrArrayField(index, util.ARRAY_PARAM_ARCHITECTURES, archs, wantV1Index)
 	}
 	bytes, err = json.MarshalIndent(&index, "", "  ")
 	if err != nil {

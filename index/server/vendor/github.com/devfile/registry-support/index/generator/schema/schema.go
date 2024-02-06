@@ -16,6 +16,9 @@
 package schema
 
 import (
+	"fmt"
+	"reflect"
+
 	apiext "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 )
 
@@ -253,4 +256,205 @@ type Version struct {
 	CommandGroups   map[CommandGroupKind]bool `yaml:"commandGroups,omitempty" json:"commandGroups,omitempty"`
 	Resources       []string                  `yaml:"resources,omitempty" json:"resources,omitempty"`
 	StarterProjects []string                  `yaml:"starterProjects,omitempty" json:"starterProjects,omitempty"`
+}
+
+func GetName(s *Schema) (string, error) {
+	if s != nil {
+		return s.Name, nil
+	}
+
+	return "", fmt.Errorf("invalid memory address or nil pointer dereference")
+}
+
+func GetDisplayName(s *Schema) (string, error) {
+	if s != nil {
+		return s.DisplayName, nil
+	}
+
+	return "", fmt.Errorf("invalid memory address or nil pointer dereference")
+}
+
+func GetDescription(s interface{}) (string, error) {
+	if s != nil {
+		switch typedSchema := s.(type) {
+		case *Schema:
+			return typedSchema.Description, nil
+		case *Version:
+			return typedSchema.Description, nil
+		default:
+			return "", fmt.Errorf("incorrect type, expected: *Schema or *Version, got: %s", reflect.TypeOf(typedSchema).String())
+		}
+	}
+
+	return "", fmt.Errorf("invalid memory address or nil pointer dereference")
+}
+
+func GetIcon(s interface{}) (string, error) {
+	if s != nil {
+		switch typedSchema := s.(type) {
+		case *Schema:
+			return typedSchema.Icon, nil
+		case *Version:
+			return typedSchema.Icon, nil
+		default:
+			return "", fmt.Errorf("incorrect type, expected: *Schema or *Version, got: %s", reflect.TypeOf(typedSchema).String())
+		}
+	}
+
+	return "", fmt.Errorf("invalid memory address or nil pointer dereference")
+}
+
+func GetProjectType(s *Schema) (string, error) {
+	if s != nil {
+		return s.ProjectType, nil
+	}
+
+	return "", fmt.Errorf("invalid memory address or nil pointer dereference")
+}
+
+func GetLanguage(s *Schema) (string, error) {
+	if s != nil {
+		return s.Language, nil
+	}
+
+	return "", fmt.Errorf("invalid memory address or nil pointer dereference")
+}
+
+func GetVersion(s interface{}) (string, error) {
+	if s != nil {
+		switch typedSchema := s.(type) {
+		case *Schema:
+			return typedSchema.Version, nil
+		case *Version:
+			return typedSchema.Version, nil
+		default:
+			return "", fmt.Errorf("incorrect type, expected: *Schema or *Version, got: %s", reflect.TypeOf(typedSchema).String())
+		}
+	}
+
+	return "", fmt.Errorf("invalid memory address or nil pointer dereference")
+}
+
+func GetSchemaVersion(s *Version) (string, error) {
+	if s != nil {
+		return s.SchemaVersion, nil
+	}
+
+	return "", fmt.Errorf("invalid memory address or nil pointer dereference")
+}
+
+func IsDefault(s *Version) (bool, error) {
+	if s != nil {
+		return s.Default, nil
+	}
+
+	return false, fmt.Errorf("invalid memory address or nil pointer dereference")
+}
+
+func GetGlobalMemoryLimit(s *Schema) (string, error) {
+	if s != nil {
+		return s.GlobalMemoryLimit, nil
+	}
+
+	return "", fmt.Errorf("invalid memory address or nil pointer dereference")
+}
+
+func GetGitUrl(s interface{}) (string, error) {
+	if s != nil {
+		switch typedSchema := s.(type) {
+		case *Schema:
+			if typedSchema.Git != nil {
+				return typedSchema.Git.Url, nil
+			}
+			return "", nil
+		case *Version:
+			if typedSchema.Git != nil {
+				return typedSchema.Git.Url, nil
+			}
+			return "", nil
+		default:
+			return "", fmt.Errorf("incorrect type, expected: *Schema or *Version, got: %s", reflect.TypeOf(typedSchema).String())
+		}
+	}
+
+	return "", fmt.Errorf("invalid memory address or nil pointer dereference")
+}
+
+func GetGitRemoteName(s interface{}) (string, error) {
+	if s != nil {
+		switch typedSchema := s.(type) {
+		case *Schema:
+			if typedSchema.Git != nil {
+				return typedSchema.Git.RemoteName, nil
+			}
+			return "", nil
+		case *Version:
+			if typedSchema.Git != nil {
+				return typedSchema.Git.RemoteName, nil
+			}
+			return "", nil
+		default:
+			return "", fmt.Errorf("incorrect type, expected: *Schema or *Version, got: %s", reflect.TypeOf(typedSchema).String())
+		}
+	}
+
+	return "", fmt.Errorf("invalid memory address or nil pointer dereference")
+}
+
+func GetGitSubDir(s interface{}) (string, error) {
+	if s != nil {
+		switch typedSchema := s.(type) {
+		case *Schema:
+			if typedSchema.Git != nil {
+				return typedSchema.Git.SubDir, nil
+			}
+			return "", nil
+		case *Version:
+			if typedSchema.Git != nil {
+				return typedSchema.Git.SubDir, nil
+			}
+			return "", nil
+		default:
+			return "", fmt.Errorf("incorrect type, expected: *Schema or *Version, got: %s", reflect.TypeOf(typedSchema).String())
+		}
+	}
+
+	return "", fmt.Errorf("invalid memory address or nil pointer dereference")
+}
+
+func GetGitRevision(s interface{}) (string, error) {
+	if s != nil {
+		switch typedSchema := s.(type) {
+		case *Schema:
+			if typedSchema.Git != nil {
+				return typedSchema.Git.Revision, nil
+			}
+			return "", nil
+		case *Version:
+			if typedSchema.Git != nil {
+				return typedSchema.Git.Revision, nil
+			}
+			return "", nil
+		default:
+			return "", fmt.Errorf("incorrect type, expected: *Schema or *Version, got: %s", reflect.TypeOf(typedSchema).String())
+		}
+	}
+
+	return "", fmt.Errorf("invalid memory address or nil pointer dereference")
+}
+
+func GetProvider(s *Schema) (string, error) {
+	if s != nil {
+		return s.Provider, nil
+	}
+
+	return "", fmt.Errorf("invalid memory address or nil pointer dereference")
+}
+
+func GetSupportUrl(s *Schema) (string, error) {
+	if s != nil {
+		return s.SupportUrl, nil
+	}
+
+	return "", fmt.Errorf("invalid memory address or nil pointer dereference")
 }
