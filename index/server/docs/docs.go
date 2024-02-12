@@ -152,3 +152,13 @@ type HealthResponse struct {
 		Message string `json:"message"`
 	}
 }
+
+// Method used is not supported.
+//
+// swagger:response methodNotAllowedResponse
+type MethodNotAllowedResponse struct {
+	// in: body
+	Payload struct {
+		Message string `json:"message"`
+	}
+}
