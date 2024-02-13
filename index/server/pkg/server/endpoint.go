@@ -56,12 +56,66 @@ func (*Server) ServeRootEndpoint(c *gin.Context) {
 	}
 }
 
+func (*Server) PostRootEndpoint(c *gin.Context) {
+	c.JSON(http.StatusMethodNotAllowed, MethodNotAllowedResponse{
+		Message: "Only GET requests are supported.",
+	})
+}
+
+func (*Server) PutRootEndpoint(c *gin.Context) {
+	c.JSON(http.StatusMethodNotAllowed, MethodNotAllowedResponse{
+		Message: "Only GET requests are supported.",
+	})
+}
+
+func (*Server) DeleteRootEndpoint(c *gin.Context) {
+	c.JSON(http.StatusMethodNotAllowed, MethodNotAllowedResponse{
+		Message: "Only GET requests are supported.",
+	})
+}
+
 func (*Server) ServeDevfileIndexV1(c *gin.Context, params ServeDevfileIndexV1Params) {
 	ServeDevfileIndex(c, true, IndexParams(params))
 }
 
+func (*Server) PostDevfileIndexV1(c *gin.Context) {
+	c.JSON(http.StatusMethodNotAllowed, MethodNotAllowedResponse{
+		Message: "Only GET requests are supported.",
+	})
+}
+
+func (*Server) PutDevfileIndexV1(c *gin.Context) {
+	c.JSON(http.StatusMethodNotAllowed, MethodNotAllowedResponse{
+		Message: "Only GET requests are supported.",
+	})
+}
+
+func (*Server) DeleteDevfileIndexV1(c *gin.Context) {
+	c.JSON(http.StatusMethodNotAllowed, MethodNotAllowedResponse{
+		Message: "Only GET requests are supported.",
+	})
+}
+
 func (*Server) ServeDevfileIndexV2(c *gin.Context, params ServeDevfileIndexV2Params) {
 	ServeDevfileIndex(c, false, IndexParams(params))
+}
+
+func (*Server) PostDevfileIndexV2(c *gin.Context) {
+	c.JSON(http.StatusMethodNotAllowed, MethodNotAllowedResponse{
+		Message: "Only GET requests are supported.",
+	})
+}
+
+func (*Server) PutDevfileIndexV2(c *gin.Context) {
+	c.JSON(http.StatusMethodNotAllowed, MethodNotAllowedResponse{
+		Message: "Only GET requests are supported.",
+	})
+}
+
+func (*Server) DeleteDevfileIndexV2(c *gin.Context) {
+	c.JSON(http.StatusMethodNotAllowed, MethodNotAllowedResponse{
+		Message: "Only GET requests are supported.",
+	})
 }
 
 // ServeDevfileIndex serves the index.json file located in the container at `ServeDevfileIndex`
@@ -85,16 +139,70 @@ func (*Server) ServeDevfileIndexV1WithType(c *gin.Context, indexType string, par
 	buildIndexAPIResponse(c, indexType, true, IndexParams(params))
 }
 
+func (*Server) PostDevfileIndexV1WithType(c *gin.Context, indexType string, params PostDevfileIndexV1WithTypeParams){
+	c.JSON(http.StatusMethodNotAllowed, MethodNotAllowedResponse{
+		Message: "Only GET requests are supported.",
+	})
+}
+
+func (*Server) PutDevfileIndexV1WithType(c *gin.Context, indexType string, params PutDevfileIndexV1WithTypeParams){
+	c.JSON(http.StatusMethodNotAllowed, MethodNotAllowedResponse{
+		Message: "Only GET requests are supported.",
+	})
+}
+
+func (*Server) DeleteDevfileIndexV1WithType(c *gin.Context, indexType string, params DeleteDevfileIndexV1WithTypeParams){
+	c.JSON(http.StatusMethodNotAllowed, MethodNotAllowedResponse{
+		Message: "Only GET requests are supported.",
+	})
+}
+
 func (*Server) ServeDevfileIndexV2WithType(c *gin.Context, indexType string, params ServeDevfileIndexV2WithTypeParams) {
 
 	// Serve the index with type
 	buildIndexAPIResponse(c, indexType, false, IndexParams(params))
 }
 
-// ServeHealthCheck serves endpoint `/health` for registry health check
+func (*Server) PostDevfileIndexV2WithType(c *gin.Context, indexType string, params PostDevfileIndexV2WithTypeParams) {
+	c.JSON(http.StatusMethodNotAllowed, MethodNotAllowedResponse{
+		Message: "Only GET requests are supported.",
+	})
+}
+
+func (*Server) PutDevfileIndexV2WithType(c *gin.Context, indexType string, params PutDevfileIndexV2WithTypeParams) {
+	c.JSON(http.StatusMethodNotAllowed, MethodNotAllowedResponse{
+		Message: "Only GET requests are supported.",
+	})
+}
+
+func (*Server) DeleteDevfileIndexV2WithType(c *gin.Context, indexType string, params DeleteDevfileIndexV2WithTypeParams) {
+	c.JSON(http.StatusMethodNotAllowed, MethodNotAllowedResponse{
+		Message: "Only GET requests are supported.",
+	})
+}
+
+// ServeHealthCheck serves endpoint `/health` for registry health check with GET request
 func (*Server) ServeHealthCheck(c *gin.Context) {
 	c.JSON(http.StatusOK, HealthResponse{
 		Message: "the server is up and running",
+	})
+}
+// PostHealthCheck serves endpoint `/health` for registry health check with POST request
+func (*Server) PostHealthCheck(c *gin.Context) {
+	c.JSON(http.StatusMethodNotAllowed, MethodNotAllowedResponse{
+		Message: "Only GET requests are supported.",
+	})
+}
+// PutHealthCheck serves endpoint `/health` for registry health check with PUT request
+func (*Server) PutHealthCheck(c *gin.Context) {
+	c.JSON(http.StatusMethodNotAllowed, MethodNotAllowedResponse{
+		Message: "Only GET requests are supported.",
+	})
+}
+// DeleteHealthCheck serves endpoint `/health` for registry health check with DELETE request
+func (*Server) DeleteHealthCheck(c *gin.Context) {
+	c.JSON(http.StatusMethodNotAllowed, MethodNotAllowedResponse{
+		Message: "Only GET requests are supported.",
 	})
 }
 
@@ -126,15 +234,69 @@ func (*Server) ServeDevfileWithVersion(c *gin.Context, name string, version stri
 	}
 }
 
+func (*Server) PostDevfileWithVersion(c *gin.Context, name string, version string){
+	c.JSON(http.StatusMethodNotAllowed, MethodNotAllowedResponse{
+		Message: "Only GET requests are supported.",
+	})
+}
+
+func (*Server) PutDevfileWithVersion(c *gin.Context, name string, version string){
+	c.JSON(http.StatusMethodNotAllowed, MethodNotAllowedResponse{
+		Message: "Only GET requests are supported.",
+	})
+}
+
+func (*Server) DeleteDevfileWithVersion(c *gin.Context, name string, version string){
+	c.JSON(http.StatusMethodNotAllowed, MethodNotAllowedResponse{
+		Message: "Only GET requests are supported.",
+	})
+}
+
 // ServeDevfile returns the devfile content
 func (s *Server) ServeDevfile(c *gin.Context, name string) {
 	// append the stack version, for endpoint /devfiles/name without version
 	s.ServeDevfileWithVersion(c, name, "default")
 }
 
+func (s *Server) PostDevfile(c *gin.Context, name string) {
+	c.JSON(http.StatusMethodNotAllowed, MethodNotAllowedResponse{
+		Message: "Only GET requests are supported.",
+	})
+}
+
+func (s *Server) PutDevfile(c *gin.Context, name string) {
+	c.JSON(http.StatusMethodNotAllowed, MethodNotAllowedResponse{
+		Message: "Only GET requests are supported.",
+	})
+}
+
+func (s *Server) DeleteDevfile(c *gin.Context, name string) {
+	c.JSON(http.StatusMethodNotAllowed, MethodNotAllowedResponse{
+		Message: "Only GET requests are supported.",
+	})
+}
+
 // ServeDevfileStarterProject returns the starter project content for the devfile using default version
 func (s *Server) ServeDevfileStarterProject(c *gin.Context, name string, starterProject string) {
 	s.ServeDevfileStarterProjectWithVersion(c, name, "default", starterProject)
+}
+
+func (s *Server) PostDevfileStarterProject(c *gin.Context, name string, starterProject string) {
+	c.JSON(http.StatusMethodNotAllowed, MethodNotAllowedResponse{
+		Message: "Only GET requests are supported.",
+	})
+}
+
+func (s *Server) PutDevfileStarterProject(c *gin.Context, name string, starterProject string) {
+	c.JSON(http.StatusMethodNotAllowed, MethodNotAllowedResponse{
+		Message: "Only GET requests are supported.",
+	})
+}
+
+func (s *Server) DeleteDevfileStarterProject(c *gin.Context, name string, starterProject string) {
+	c.JSON(http.StatusMethodNotAllowed, MethodNotAllowedResponse{
+		Message: "Only GET requests are supported.",
+	})
 }
 
 // ServeDevfileStarterProject returns the starter project content for the devfile using specified version
@@ -321,6 +483,24 @@ func (*Server) ServeDevfileStarterProjectWithVersion(c *gin.Context, name string
 		c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s.zip\"", starterProject))
 		c.Data(http.StatusAccepted, starterProjectMediaType, downloadBytes)
 	}
+}
+
+func (*Server) PostDevfileStarterProjectWithVersion(c *gin.Context, name string, version string, starterProject string){
+	c.JSON(http.StatusMethodNotAllowed, MethodNotAllowedResponse{
+		Message: "Only GET requests are supported.",
+	})
+}
+
+func (*Server) PutDevfileStarterProjectWithVersion(c *gin.Context, name string, version string, starterProject string){
+	c.JSON(http.StatusMethodNotAllowed, MethodNotAllowedResponse{
+		Message: "Only GET requests are supported.",
+	})
+}
+
+func (*Server) DeleteDevfileStarterProjectWithVersion(c *gin.Context, name string, version string, starterProject string){
+	c.JSON(http.StatusMethodNotAllowed, MethodNotAllowedResponse{
+		Message: "Only GET requests are supported.",
+	})
 }
 
 // ServeUI handles registry viewer proxy requests

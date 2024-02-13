@@ -30,36 +30,126 @@ import (
 )
 
 type ServerInterface interface {
+
+	// (DELETE /)
+	DeleteRootEndpoint(c *gin.Context)
 	// Root endpoint of registry server.
 	// (GET /)
 	ServeRootEndpoint(c *gin.Context)
+
+	// (POST /)
+	PostRootEndpoint(c *gin.Context)
+
+	// (PUT /)
+	PutRootEndpoint(c *gin.Context)
+
+	// (DELETE /devfiles/{stack})
+	DeleteDevfile(c *gin.Context, stack string)
 	// Get devfile by stack name.
 	// (GET /devfiles/{stack})
 	ServeDevfile(c *gin.Context, stack string)
+
+	// (POST /devfiles/{stack})
+	PostDevfile(c *gin.Context, stack string)
+
+	// (PUT /devfiles/{stack})
+	PutDevfile(c *gin.Context, stack string)
+
+	// (DELETE /devfiles/{stack}/starter-projects/{starterProject})
+	DeleteDevfileStarterProject(c *gin.Context, stack string, starterProject string)
 	// Fetches starter project by stack and project name
 	// (GET /devfiles/{stack}/starter-projects/{starterProject})
 	ServeDevfileStarterProject(c *gin.Context, stack string, starterProject string)
+
+	// (POST /devfiles/{stack}/starter-projects/{starterProject})
+	PostDevfileStarterProject(c *gin.Context, stack string, starterProject string)
+
+	// (PUT /devfiles/{stack}/starter-projects/{starterProject})
+	PutDevfileStarterProject(c *gin.Context, stack string, starterProject string)
+
+	// (DELETE /devfiles/{stack}/{version})
+	DeleteDevfileWithVersion(c *gin.Context, stack string, version string)
 	// Get devfile by stack name.
 	// (GET /devfiles/{stack}/{version})
 	ServeDevfileWithVersion(c *gin.Context, stack string, version string)
+
+	// (POST /devfiles/{stack}/{version})
+	PostDevfileWithVersion(c *gin.Context, stack string, version string)
+
+	// (PUT /devfiles/{stack}/{version})
+	PutDevfileWithVersion(c *gin.Context, stack string, version string)
+
+	// (DELETE /devfiles/{stack}/{version}/starter-projects/{starterProject})
+	DeleteDevfileStarterProjectWithVersion(c *gin.Context, stack string, version string, starterProject string)
 	// Fetches starter project by stack name, stack version, and project name
 	// (GET /devfiles/{stack}/{version}/starter-projects/{starterProject})
 	ServeDevfileStarterProjectWithVersion(c *gin.Context, stack string, version string, starterProject string)
+
+	// (POST /devfiles/{stack}/{version}/starter-projects/{starterProject})
+	PostDevfileStarterProjectWithVersion(c *gin.Context, stack string, version string, starterProject string)
+
+	// (PUT /devfiles/{stack}/{version}/starter-projects/{starterProject})
+	PutDevfileStarterProjectWithVersion(c *gin.Context, stack string, version string, starterProject string)
+
+	// (DELETE /health)
+	DeleteHealthCheck(c *gin.Context)
 	// Get health status.
 	// (GET /health)
 	ServeHealthCheck(c *gin.Context)
+
+	// (POST /health)
+	PostHealthCheck(c *gin.Context)
+
+	// (PUT /health)
+	PutHealthCheck(c *gin.Context)
+
+	// (DELETE /index)
+	DeleteDevfileIndexV1(c *gin.Context)
 	// Gets index schemas of the stack devfiles.
 	// (GET /index)
 	ServeDevfileIndexV1(c *gin.Context, params ServeDevfileIndexV1Params)
+
+	// (POST /index)
+	PostDevfileIndexV1(c *gin.Context)
+
+	// (PUT /index)
+	PutDevfileIndexV1(c *gin.Context)
+
+	// (DELETE /index/{indexType})
+	DeleteDevfileIndexV1WithType(c *gin.Context, indexType string, params DeleteDevfileIndexV1WithTypeParams)
 	// Gets index schemas of the devfiles of specific type.
 	// (GET /index/{indexType})
 	ServeDevfileIndexV1WithType(c *gin.Context, indexType string, params ServeDevfileIndexV1WithTypeParams)
+
+	// (POST /index/{indexType})
+	PostDevfileIndexV1WithType(c *gin.Context, indexType string, params PostDevfileIndexV1WithTypeParams)
+
+	// (PUT /index/{indexType})
+	PutDevfileIndexV1WithType(c *gin.Context, indexType string, params PutDevfileIndexV1WithTypeParams)
+
+	// (DELETE /v2index)
+	DeleteDevfileIndexV2(c *gin.Context)
 	// Gets V2 index schemas of the stack devfiles.
 	// (GET /v2index)
 	ServeDevfileIndexV2(c *gin.Context, params ServeDevfileIndexV2Params)
+
+	// (POST /v2index)
+	PostDevfileIndexV2(c *gin.Context)
+
+	// (PUT /v2index)
+	PutDevfileIndexV2(c *gin.Context)
+
+	// (DELETE /v2index/{indexType})
+	DeleteDevfileIndexV2WithType(c *gin.Context, indexType string, params DeleteDevfileIndexV2WithTypeParams)
 	// Gets V2 index schemas of the devfiles of specific type.
 	// (GET /v2index/{indexType})
 	ServeDevfileIndexV2WithType(c *gin.Context, indexType string, params ServeDevfileIndexV2WithTypeParams)
+
+	// (POST /v2index/{indexType})
+	PostDevfileIndexV2WithType(c *gin.Context, indexType string, params PostDevfileIndexV2WithTypeParams)
+
+	// (PUT /v2index/{indexType})
+	PutDevfileIndexV2WithType(c *gin.Context, indexType string, params PutDevfileIndexV2WithTypeParams)
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -71,6 +161,16 @@ type ServerInterfaceWrapper struct {
 
 type MiddlewareFunc func(c *gin.Context)
 
+// DeleteRootEndpoint operation middleware
+func (siw *ServerInterfaceWrapper) DeleteRootEndpoint(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+	}
+
+	siw.Handler.DeleteRootEndpoint(c)
+}
+
 // ServeRootEndpoint operation middleware
 func (siw *ServerInterfaceWrapper) ServeRootEndpoint(c *gin.Context) {
 
@@ -79,6 +179,47 @@ func (siw *ServerInterfaceWrapper) ServeRootEndpoint(c *gin.Context) {
 	}
 
 	siw.Handler.ServeRootEndpoint(c)
+}
+
+// PostRootEndpoint operation middleware
+func (siw *ServerInterfaceWrapper) PostRootEndpoint(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+	}
+
+	siw.Handler.PostRootEndpoint(c)
+}
+
+// PutRootEndpoint operation middleware
+func (siw *ServerInterfaceWrapper) PutRootEndpoint(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+	}
+
+	siw.Handler.PutRootEndpoint(c)
+}
+
+// DeleteDevfile operation middleware
+func (siw *ServerInterfaceWrapper) DeleteDevfile(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "stack" -------------
+	var stack string
+
+	err = runtime.BindStyledParameter("simple", false, "stack", c.Param("stack"), &stack)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter stack: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+	}
+
+	siw.Handler.DeleteDevfile(c, stack)
 }
 
 // ServeDevfile operation middleware
@@ -100,6 +241,78 @@ func (siw *ServerInterfaceWrapper) ServeDevfile(c *gin.Context) {
 	}
 
 	siw.Handler.ServeDevfile(c, stack)
+}
+
+// PostDevfile operation middleware
+func (siw *ServerInterfaceWrapper) PostDevfile(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "stack" -------------
+	var stack string
+
+	err = runtime.BindStyledParameter("simple", false, "stack", c.Param("stack"), &stack)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter stack: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+	}
+
+	siw.Handler.PostDevfile(c, stack)
+}
+
+// PutDevfile operation middleware
+func (siw *ServerInterfaceWrapper) PutDevfile(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "stack" -------------
+	var stack string
+
+	err = runtime.BindStyledParameter("simple", false, "stack", c.Param("stack"), &stack)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter stack: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+	}
+
+	siw.Handler.PutDevfile(c, stack)
+}
+
+// DeleteDevfileStarterProject operation middleware
+func (siw *ServerInterfaceWrapper) DeleteDevfileStarterProject(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "stack" -------------
+	var stack string
+
+	err = runtime.BindStyledParameter("simple", false, "stack", c.Param("stack"), &stack)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter stack: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Path parameter "starterProject" -------------
+	var starterProject string
+
+	err = runtime.BindStyledParameter("simple", false, "starterProject", c.Param("starterProject"), &starterProject)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter starterProject: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+	}
+
+	siw.Handler.DeleteDevfileStarterProject(c, stack, starterProject)
 }
 
 // ServeDevfileStarterProject operation middleware
@@ -132,6 +345,96 @@ func (siw *ServerInterfaceWrapper) ServeDevfileStarterProject(c *gin.Context) {
 	siw.Handler.ServeDevfileStarterProject(c, stack, starterProject)
 }
 
+// PostDevfileStarterProject operation middleware
+func (siw *ServerInterfaceWrapper) PostDevfileStarterProject(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "stack" -------------
+	var stack string
+
+	err = runtime.BindStyledParameter("simple", false, "stack", c.Param("stack"), &stack)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter stack: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Path parameter "starterProject" -------------
+	var starterProject string
+
+	err = runtime.BindStyledParameter("simple", false, "starterProject", c.Param("starterProject"), &starterProject)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter starterProject: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+	}
+
+	siw.Handler.PostDevfileStarterProject(c, stack, starterProject)
+}
+
+// PutDevfileStarterProject operation middleware
+func (siw *ServerInterfaceWrapper) PutDevfileStarterProject(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "stack" -------------
+	var stack string
+
+	err = runtime.BindStyledParameter("simple", false, "stack", c.Param("stack"), &stack)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter stack: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Path parameter "starterProject" -------------
+	var starterProject string
+
+	err = runtime.BindStyledParameter("simple", false, "starterProject", c.Param("starterProject"), &starterProject)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter starterProject: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+	}
+
+	siw.Handler.PutDevfileStarterProject(c, stack, starterProject)
+}
+
+// DeleteDevfileWithVersion operation middleware
+func (siw *ServerInterfaceWrapper) DeleteDevfileWithVersion(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "stack" -------------
+	var stack string
+
+	err = runtime.BindStyledParameter("simple", false, "stack", c.Param("stack"), &stack)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter stack: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Path parameter "version" -------------
+	var version string
+
+	err = runtime.BindStyledParameter("simple", false, "version", c.Param("version"), &version)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter version: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+	}
+
+	siw.Handler.DeleteDevfileWithVersion(c, stack, version)
+}
+
 // ServeDevfileWithVersion operation middleware
 func (siw *ServerInterfaceWrapper) ServeDevfileWithVersion(c *gin.Context) {
 
@@ -160,6 +463,105 @@ func (siw *ServerInterfaceWrapper) ServeDevfileWithVersion(c *gin.Context) {
 	}
 
 	siw.Handler.ServeDevfileWithVersion(c, stack, version)
+}
+
+// PostDevfileWithVersion operation middleware
+func (siw *ServerInterfaceWrapper) PostDevfileWithVersion(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "stack" -------------
+	var stack string
+
+	err = runtime.BindStyledParameter("simple", false, "stack", c.Param("stack"), &stack)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter stack: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Path parameter "version" -------------
+	var version string
+
+	err = runtime.BindStyledParameter("simple", false, "version", c.Param("version"), &version)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter version: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+	}
+
+	siw.Handler.PostDevfileWithVersion(c, stack, version)
+}
+
+// PutDevfileWithVersion operation middleware
+func (siw *ServerInterfaceWrapper) PutDevfileWithVersion(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "stack" -------------
+	var stack string
+
+	err = runtime.BindStyledParameter("simple", false, "stack", c.Param("stack"), &stack)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter stack: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Path parameter "version" -------------
+	var version string
+
+	err = runtime.BindStyledParameter("simple", false, "version", c.Param("version"), &version)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter version: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+	}
+
+	siw.Handler.PutDevfileWithVersion(c, stack, version)
+}
+
+// DeleteDevfileStarterProjectWithVersion operation middleware
+func (siw *ServerInterfaceWrapper) DeleteDevfileStarterProjectWithVersion(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "stack" -------------
+	var stack string
+
+	err = runtime.BindStyledParameter("simple", false, "stack", c.Param("stack"), &stack)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter stack: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Path parameter "version" -------------
+	var version string
+
+	err = runtime.BindStyledParameter("simple", false, "version", c.Param("version"), &version)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter version: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Path parameter "starterProject" -------------
+	var starterProject string
+
+	err = runtime.BindStyledParameter("simple", false, "starterProject", c.Param("starterProject"), &starterProject)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter starterProject: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+	}
+
+	siw.Handler.DeleteDevfileStarterProjectWithVersion(c, stack, version, starterProject)
 }
 
 // ServeDevfileStarterProjectWithVersion operation middleware
@@ -201,6 +603,94 @@ func (siw *ServerInterfaceWrapper) ServeDevfileStarterProjectWithVersion(c *gin.
 	siw.Handler.ServeDevfileStarterProjectWithVersion(c, stack, version, starterProject)
 }
 
+// PostDevfileStarterProjectWithVersion operation middleware
+func (siw *ServerInterfaceWrapper) PostDevfileStarterProjectWithVersion(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "stack" -------------
+	var stack string
+
+	err = runtime.BindStyledParameter("simple", false, "stack", c.Param("stack"), &stack)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter stack: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Path parameter "version" -------------
+	var version string
+
+	err = runtime.BindStyledParameter("simple", false, "version", c.Param("version"), &version)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter version: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Path parameter "starterProject" -------------
+	var starterProject string
+
+	err = runtime.BindStyledParameter("simple", false, "starterProject", c.Param("starterProject"), &starterProject)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter starterProject: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+	}
+
+	siw.Handler.PostDevfileStarterProjectWithVersion(c, stack, version, starterProject)
+}
+
+// PutDevfileStarterProjectWithVersion operation middleware
+func (siw *ServerInterfaceWrapper) PutDevfileStarterProjectWithVersion(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "stack" -------------
+	var stack string
+
+	err = runtime.BindStyledParameter("simple", false, "stack", c.Param("stack"), &stack)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter stack: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Path parameter "version" -------------
+	var version string
+
+	err = runtime.BindStyledParameter("simple", false, "version", c.Param("version"), &version)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter version: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Path parameter "starterProject" -------------
+	var starterProject string
+
+	err = runtime.BindStyledParameter("simple", false, "starterProject", c.Param("starterProject"), &starterProject)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter starterProject: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+	}
+
+	siw.Handler.PutDevfileStarterProjectWithVersion(c, stack, version, starterProject)
+}
+
+// DeleteHealthCheck operation middleware
+func (siw *ServerInterfaceWrapper) DeleteHealthCheck(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+	}
+
+	siw.Handler.DeleteHealthCheck(c)
+}
+
 // ServeHealthCheck operation middleware
 func (siw *ServerInterfaceWrapper) ServeHealthCheck(c *gin.Context) {
 
@@ -209,6 +699,36 @@ func (siw *ServerInterfaceWrapper) ServeHealthCheck(c *gin.Context) {
 	}
 
 	siw.Handler.ServeHealthCheck(c)
+}
+
+// PostHealthCheck operation middleware
+func (siw *ServerInterfaceWrapper) PostHealthCheck(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+	}
+
+	siw.Handler.PostHealthCheck(c)
+}
+
+// PutHealthCheck operation middleware
+func (siw *ServerInterfaceWrapper) PutHealthCheck(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+	}
+
+	siw.Handler.PutHealthCheck(c)
+}
+
+// DeleteDevfileIndexV1 operation middleware
+func (siw *ServerInterfaceWrapper) DeleteDevfileIndexV1(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+	}
+
+	siw.Handler.DeleteDevfileIndexV1(c)
 }
 
 // ServeDevfileIndexV1 operation middleware
@@ -240,6 +760,66 @@ func (siw *ServerInterfaceWrapper) ServeDevfileIndexV1(c *gin.Context) {
 	}
 
 	siw.Handler.ServeDevfileIndexV1(c, params)
+}
+
+// PostDevfileIndexV1 operation middleware
+func (siw *ServerInterfaceWrapper) PostDevfileIndexV1(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+	}
+
+	siw.Handler.PostDevfileIndexV1(c)
+}
+
+// PutDevfileIndexV1 operation middleware
+func (siw *ServerInterfaceWrapper) PutDevfileIndexV1(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+	}
+
+	siw.Handler.PutDevfileIndexV1(c)
+}
+
+// DeleteDevfileIndexV1WithType operation middleware
+func (siw *ServerInterfaceWrapper) DeleteDevfileIndexV1WithType(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "indexType" -------------
+	var indexType string
+
+	err = runtime.BindStyledParameter("simple", false, "indexType", c.Param("indexType"), &indexType)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter indexType: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params DeleteDevfileIndexV1WithTypeParams
+
+	// ------------- Optional query parameter "arch" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "arch", c.Request.URL.Query(), &params.Arch)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter arch: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "icon" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "icon", c.Request.URL.Query(), &params.Icon)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter icon: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+	}
+
+	siw.Handler.DeleteDevfileIndexV1WithType(c, indexType, params)
 }
 
 // ServeDevfileIndexV1WithType operation middleware
@@ -282,6 +862,96 @@ func (siw *ServerInterfaceWrapper) ServeDevfileIndexV1WithType(c *gin.Context) {
 	siw.Handler.ServeDevfileIndexV1WithType(c, indexType, params)
 }
 
+// PostDevfileIndexV1WithType operation middleware
+func (siw *ServerInterfaceWrapper) PostDevfileIndexV1WithType(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "indexType" -------------
+	var indexType string
+
+	err = runtime.BindStyledParameter("simple", false, "indexType", c.Param("indexType"), &indexType)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter indexType: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params PostDevfileIndexV1WithTypeParams
+
+	// ------------- Optional query parameter "arch" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "arch", c.Request.URL.Query(), &params.Arch)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter arch: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "icon" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "icon", c.Request.URL.Query(), &params.Icon)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter icon: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+	}
+
+	siw.Handler.PostDevfileIndexV1WithType(c, indexType, params)
+}
+
+// PutDevfileIndexV1WithType operation middleware
+func (siw *ServerInterfaceWrapper) PutDevfileIndexV1WithType(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "indexType" -------------
+	var indexType string
+
+	err = runtime.BindStyledParameter("simple", false, "indexType", c.Param("indexType"), &indexType)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter indexType: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params PutDevfileIndexV1WithTypeParams
+
+	// ------------- Optional query parameter "arch" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "arch", c.Request.URL.Query(), &params.Arch)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter arch: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "icon" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "icon", c.Request.URL.Query(), &params.Icon)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter icon: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+	}
+
+	siw.Handler.PutDevfileIndexV1WithType(c, indexType, params)
+}
+
+// DeleteDevfileIndexV2 operation middleware
+func (siw *ServerInterfaceWrapper) DeleteDevfileIndexV2(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+	}
+
+	siw.Handler.DeleteDevfileIndexV2(c)
+}
+
 // ServeDevfileIndexV2 operation middleware
 func (siw *ServerInterfaceWrapper) ServeDevfileIndexV2(c *gin.Context) {
 
@@ -311,6 +981,66 @@ func (siw *ServerInterfaceWrapper) ServeDevfileIndexV2(c *gin.Context) {
 	}
 
 	siw.Handler.ServeDevfileIndexV2(c, params)
+}
+
+// PostDevfileIndexV2 operation middleware
+func (siw *ServerInterfaceWrapper) PostDevfileIndexV2(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+	}
+
+	siw.Handler.PostDevfileIndexV2(c)
+}
+
+// PutDevfileIndexV2 operation middleware
+func (siw *ServerInterfaceWrapper) PutDevfileIndexV2(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+	}
+
+	siw.Handler.PutDevfileIndexV2(c)
+}
+
+// DeleteDevfileIndexV2WithType operation middleware
+func (siw *ServerInterfaceWrapper) DeleteDevfileIndexV2WithType(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "indexType" -------------
+	var indexType string
+
+	err = runtime.BindStyledParameter("simple", false, "indexType", c.Param("indexType"), &indexType)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter indexType: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params DeleteDevfileIndexV2WithTypeParams
+
+	// ------------- Optional query parameter "arch" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "arch", c.Request.URL.Query(), &params.Arch)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter arch: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "icon" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "icon", c.Request.URL.Query(), &params.Icon)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter icon: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+	}
+
+	siw.Handler.DeleteDevfileIndexV2WithType(c, indexType, params)
 }
 
 // ServeDevfileIndexV2WithType operation middleware
@@ -353,6 +1083,86 @@ func (siw *ServerInterfaceWrapper) ServeDevfileIndexV2WithType(c *gin.Context) {
 	siw.Handler.ServeDevfileIndexV2WithType(c, indexType, params)
 }
 
+// PostDevfileIndexV2WithType operation middleware
+func (siw *ServerInterfaceWrapper) PostDevfileIndexV2WithType(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "indexType" -------------
+	var indexType string
+
+	err = runtime.BindStyledParameter("simple", false, "indexType", c.Param("indexType"), &indexType)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter indexType: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params PostDevfileIndexV2WithTypeParams
+
+	// ------------- Optional query parameter "arch" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "arch", c.Request.URL.Query(), &params.Arch)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter arch: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "icon" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "icon", c.Request.URL.Query(), &params.Icon)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter icon: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+	}
+
+	siw.Handler.PostDevfileIndexV2WithType(c, indexType, params)
+}
+
+// PutDevfileIndexV2WithType operation middleware
+func (siw *ServerInterfaceWrapper) PutDevfileIndexV2WithType(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "indexType" -------------
+	var indexType string
+
+	err = runtime.BindStyledParameter("simple", false, "indexType", c.Param("indexType"), &indexType)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter indexType: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params PutDevfileIndexV2WithTypeParams
+
+	// ------------- Optional query parameter "arch" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "arch", c.Request.URL.Query(), &params.Arch)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter arch: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "icon" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "icon", c.Request.URL.Query(), &params.Icon)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter icon: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+	}
+
+	siw.Handler.PutDevfileIndexV2WithType(c, indexType, params)
+}
+
 // GinServerOptions provides options for the Gin server.
 type GinServerOptions struct {
 	BaseURL      string
@@ -382,25 +1192,85 @@ func RegisterHandlersWithOptions(router *gin.Engine, si ServerInterface, options
 		ErrorHandler:       errorHandler,
 	}
 
+	router.DELETE(options.BaseURL+"/", wrapper.DeleteRootEndpoint)
+
 	router.GET(options.BaseURL+"/", wrapper.ServeRootEndpoint)
+
+	router.POST(options.BaseURL+"/", wrapper.PostRootEndpoint)
+
+	router.PUT(options.BaseURL+"/", wrapper.PutRootEndpoint)
+
+	router.DELETE(options.BaseURL+"/devfiles/:stack", wrapper.DeleteDevfile)
 
 	router.GET(options.BaseURL+"/devfiles/:stack", wrapper.ServeDevfile)
 
+	router.POST(options.BaseURL+"/devfiles/:stack", wrapper.PostDevfile)
+
+	router.PUT(options.BaseURL+"/devfiles/:stack", wrapper.PutDevfile)
+
+	router.DELETE(options.BaseURL+"/devfiles/:stack/starter-projects/:starterProject", wrapper.DeleteDevfileStarterProject)
+
 	router.GET(options.BaseURL+"/devfiles/:stack/starter-projects/:starterProject", wrapper.ServeDevfileStarterProject)
+
+	router.POST(options.BaseURL+"/devfiles/:stack/starter-projects/:starterProject", wrapper.PostDevfileStarterProject)
+
+	router.PUT(options.BaseURL+"/devfiles/:stack/starter-projects/:starterProject", wrapper.PutDevfileStarterProject)
+
+	router.DELETE(options.BaseURL+"/devfiles/:stack/:version", wrapper.DeleteDevfileWithVersion)
 
 	router.GET(options.BaseURL+"/devfiles/:stack/:version", wrapper.ServeDevfileWithVersion)
 
+	router.POST(options.BaseURL+"/devfiles/:stack/:version", wrapper.PostDevfileWithVersion)
+
+	router.PUT(options.BaseURL+"/devfiles/:stack/:version", wrapper.PutDevfileWithVersion)
+
+	router.DELETE(options.BaseURL+"/devfiles/:stack/:version/starter-projects/:starterProject", wrapper.DeleteDevfileStarterProjectWithVersion)
+
 	router.GET(options.BaseURL+"/devfiles/:stack/:version/starter-projects/:starterProject", wrapper.ServeDevfileStarterProjectWithVersion)
+
+	router.POST(options.BaseURL+"/devfiles/:stack/:version/starter-projects/:starterProject", wrapper.PostDevfileStarterProjectWithVersion)
+
+	router.PUT(options.BaseURL+"/devfiles/:stack/:version/starter-projects/:starterProject", wrapper.PutDevfileStarterProjectWithVersion)
+
+	router.DELETE(options.BaseURL+"/health", wrapper.DeleteHealthCheck)
 
 	router.GET(options.BaseURL+"/health", wrapper.ServeHealthCheck)
 
+	router.POST(options.BaseURL+"/health", wrapper.PostHealthCheck)
+
+	router.PUT(options.BaseURL+"/health", wrapper.PutHealthCheck)
+
+	router.DELETE(options.BaseURL+"/index", wrapper.DeleteDevfileIndexV1)
+
 	router.GET(options.BaseURL+"/index", wrapper.ServeDevfileIndexV1)
+
+	router.POST(options.BaseURL+"/index", wrapper.PostDevfileIndexV1)
+
+	router.PUT(options.BaseURL+"/index", wrapper.PutDevfileIndexV1)
+
+	router.DELETE(options.BaseURL+"/index/:indexType", wrapper.DeleteDevfileIndexV1WithType)
 
 	router.GET(options.BaseURL+"/index/:indexType", wrapper.ServeDevfileIndexV1WithType)
 
+	router.POST(options.BaseURL+"/index/:indexType", wrapper.PostDevfileIndexV1WithType)
+
+	router.PUT(options.BaseURL+"/index/:indexType", wrapper.PutDevfileIndexV1WithType)
+
+	router.DELETE(options.BaseURL+"/v2index", wrapper.DeleteDevfileIndexV2)
+
 	router.GET(options.BaseURL+"/v2index", wrapper.ServeDevfileIndexV2)
 
+	router.POST(options.BaseURL+"/v2index", wrapper.PostDevfileIndexV2)
+
+	router.PUT(options.BaseURL+"/v2index", wrapper.PutDevfileIndexV2)
+
+	router.DELETE(options.BaseURL+"/v2index/:indexType", wrapper.DeleteDevfileIndexV2WithType)
+
 	router.GET(options.BaseURL+"/v2index/:indexType", wrapper.ServeDevfileIndexV2WithType)
+
+	router.POST(options.BaseURL+"/v2index/:indexType", wrapper.PostDevfileIndexV2WithType)
+
+	router.PUT(options.BaseURL+"/v2index/:indexType", wrapper.PutDevfileIndexV2WithType)
 
 	return router
 }
@@ -408,37 +1278,41 @@ func RegisterHandlersWithOptions(router *gin.Engine, si ServerInterface, options
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
-	"//s8zlfcKAAA",
+	"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",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file
