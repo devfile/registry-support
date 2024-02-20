@@ -42,6 +42,21 @@ paths:
             application/yaml:
               schema:
                 $ref: '#/components/schemas/IndexSchema'
+    post:
+      operationId: postRootEndpoint
+      responses:
+        405:
+          $ref: '#/components/responses/methodNotAllowedResponse'
+    put:
+      operationId: putRootEndpoint
+      responses:
+        405:
+          $ref: '#/components/responses/methodNotAllowedResponse'
+    delete:
+      operationId: deleteRootEndpoint
+      responses:
+        405:
+          $ref: '#/components/responses/methodNotAllowedResponse'
   /health:
     get:
       tags:
@@ -55,6 +70,21 @@ paths:
         404:
           description: 'Page not found.'
           content: {}
+    post:
+      operationId: postHealthCheck
+      responses:
+        405:
+          $ref: '#/components/responses/methodNotAllowedResponse'
+    put:
+      operationId: putHealthCheck
+      responses:
+        405:
+          $ref: '#/components/responses/methodNotAllowedResponse'
+    delete:
+      operationId: deleteHealthCheck
+      responses:
+        405:
+          $ref: '#/components/responses/methodNotAllowedResponse'
   /index:
     get:
       tags:
@@ -76,6 +106,21 @@ paths:
         404:
           description: 'Page not found.'
           content: {}
+    post:
+      operationId: postDevfileIndexV1
+      responses:
+        405:
+          $ref: '#/components/responses/methodNotAllowedResponse'
+    put:
+      operationId: putDevfileIndexV1
+      responses:
+        405:
+          $ref: '#/components/responses/methodNotAllowedResponse'
+    delete:
+      operationId: deleteDevfileIndexV1
+      responses:
+        405:
+          $ref: '#/components/responses/methodNotAllowedResponse'
   /index/{indexType}:
     get:
       tags:
@@ -105,6 +150,54 @@ paths:
         404:
           description: 'Page not found.'
           content: {}
+    post:
+      operationId: postDevfileIndexV1WithType
+      parameters:
+        - name: indexType
+          in: path
+          description: The devfile type filter
+          required: true
+          schema:
+            type: string
+            x-go-name: IndexType
+          x-go-name: IndexType
+        - $ref: '#/components/parameters/archParam'
+        - $ref: '#/components/parameters/iconParam'
+      responses:
+        405:
+          $ref: '#/components/responses/methodNotAllowedResponse'
+    put:
+      operationId: putDevfileIndexV1WithType
+      parameters:
+        - name: indexType
+          in: path
+          description: The devfile type filter
+          required: true
+          schema:
+            type: string
+            x-go-name: IndexType
+          x-go-name: IndexType
+        - $ref: '#/components/parameters/archParam'
+        - $ref: '#/components/parameters/iconParam'
+      responses:
+        405:
+          $ref: '#/components/responses/methodNotAllowedResponse'
+    delete:
+      operationId: deleteDevfileIndexV1WithType
+      parameters:
+        - name: indexType
+          in: path
+          description: The devfile type filter
+          required: true
+          schema:
+            type: string
+            x-go-name: IndexType
+          x-go-name: IndexType
+        - $ref: '#/components/parameters/archParam'
+        - $ref: '#/components/parameters/iconParam'
+      responses:
+        405:
+          $ref: '#/components/responses/methodNotAllowedResponse'
   /v2index:
     get:
       tags:
@@ -126,6 +219,21 @@ paths:
         404:
           description: 'Page not found.'
           content: {}
+    post:
+      operationId: postDevfileIndexV2
+      responses:
+        405:
+          $ref: '#/components/responses/methodNotAllowedResponse'
+    put:
+      operationId: putDevfileIndexV2
+      responses:
+        405:
+          $ref: '#/components/responses/methodNotAllowedResponse'
+    delete:
+      operationId: deleteDevfileIndexV2
+      responses:
+        405:
+          $ref: '#/components/responses/methodNotAllowedResponse'
   /v2index/{indexType}:
     get:
       tags:
@@ -155,6 +263,54 @@ paths:
         404:
           description: 'Page not found.'
           content: {}
+    post:
+      operationId: postDevfileIndexV2WithType
+      parameters:
+        - name: indexType
+          in: path
+          description: The devfile type filter
+          required: true
+          schema:
+            type: string
+            x-go-name: IndexType
+          x-go-name: IndexType
+        - $ref: '#/components/parameters/archParam'
+        - $ref: '#/components/parameters/iconParam' 
+      responses:
+        405:
+          $ref: '#/components/responses/methodNotAllowedResponse'
+    put:
+      operationId: putDevfileIndexV2WithType
+      parameters:
+        - name: indexType
+          in: path
+          description: The devfile type filter
+          required: true
+          schema:
+            type: string
+            x-go-name: IndexType
+          x-go-name: IndexType
+        - $ref: '#/components/parameters/archParam'
+        - $ref: '#/components/parameters/iconParam' 
+      responses:
+        405:
+          $ref: '#/components/responses/methodNotAllowedResponse'
+    delete:
+      operationId: deleteDevfileIndexV2WithType
+      parameters:
+        - name: indexType
+          in: path
+          description: The devfile type filter
+          required: true
+          schema:
+            type: string
+            x-go-name: IndexType
+          x-go-name: IndexType
+        - $ref: '#/components/parameters/archParam'
+        - $ref: '#/components/parameters/iconParam' 
+      responses:
+        405:
+          $ref: '#/components/responses/methodNotAllowedResponse'
   /devfiles/{stack}:
     get:
       tags:
@@ -181,6 +337,48 @@ paths:
           $ref: '#/components/responses/devfileNotFoundResponse'
         500:
           $ref: '#/components/responses/devfileErrorResponse'
+    post:
+      operationId: postDevfile
+      parameters:
+        - name: stack
+          in: path
+          description: The stack name
+          required: true
+          schema:
+            type: string
+            x-go-name: Stack
+          x-go-name: Stack
+      responses:
+        405:
+          $ref: '#/components/responses/methodNotAllowedResponse'
+    put:
+      operationId: putDevfile
+      parameters:
+        - name: stack
+          in: path
+          description: The stack name
+          required: true
+          schema:
+            type: string
+            x-go-name: Stack
+          x-go-name: Stack
+      responses:
+        405:
+          $ref: '#/components/responses/methodNotAllowedResponse'
+    delete:
+      operationId: deleteDevfile
+      parameters:
+        - name: stack
+          in: path
+          description: The stack name
+          required: true
+          schema:
+            type: string
+            x-go-name: Stack
+          x-go-name: Stack
+      responses:
+        405:
+          $ref: '#/components/responses/methodNotAllowedResponse'
   /devfiles/{stack}/{version}:
     get:
       tags:
@@ -215,6 +413,72 @@ paths:
           $ref: '#/components/responses/devfileNotFoundResponse'
         500:
           $ref: '#/components/responses/devfileErrorResponse'
+    post:
+      operationId: postDevfileWithVersion
+      parameters:
+        - name: stack
+          in: path
+          description: The stack name
+          required: true
+          schema:
+            type: string
+            x-go-name: Stack
+          x-go-name: Stack
+        - name: version
+          in: path
+          description: The version of the stack
+          required: true
+          schema:
+            type: string
+            x-go-name: Version
+          x-go-name: Version
+      responses:
+        405:
+          $ref: '#/components/responses/methodNotAllowedResponse'
+    put:
+      operationId: putDevfileWithVersion
+      parameters:
+        - name: stack
+          in: path
+          description: The stack name
+          required: true
+          schema:
+            type: string
+            x-go-name: Stack
+          x-go-name: Stack
+        - name: version
+          in: path
+          description: The version of the stack
+          required: true
+          schema:
+            type: string
+            x-go-name: Version
+          x-go-name: Version
+      responses:
+        405:
+          $ref: '#/components/responses/methodNotAllowedResponse'
+    delete:
+      operationId: deleteDevfileWithVersion
+      parameters:
+        - name: stack
+          in: path
+          description: The stack name
+          required: true
+          schema:
+            type: string
+            x-go-name: Stack
+          x-go-name: Stack
+        - name: version
+          in: path
+          description: The version of the stack
+          required: true
+          schema:
+            type: string
+            x-go-name: Version
+          x-go-name: Version
+      responses:
+        405:
+          $ref: '#/components/responses/methodNotAllowedResponse'
   /devfiles/{stack}/starter-projects/{starterProject}:
     get:
       summary: Fetches starter project by stack and project name
@@ -248,6 +512,72 @@ paths:
         '500':
           description: Failed to get the devfile or starter project.
           $ref: '#/components/responses/devfileErrorResponse'
+    post:
+      operationId: postDevfileStarterProject
+      parameters:
+        - name: stack
+          in: path
+          description: The stack name
+          required: true
+          schema:
+            type: string
+            x-go-name: Stack
+          x-go-name: Stack
+        - name:  starterProject
+          in: path
+          description: The starter project name in the stack devfile
+          required: true
+          schema:
+            type: string
+            x-go-name: StarterProject
+          x-go-name: StarterProject
+      responses:
+        405:
+          $ref: '#/components/responses/methodNotAllowedResponse'
+    put:
+      operationId: putDevfileStarterProject
+      parameters:
+        - name: stack
+          in: path
+          description: The stack name
+          required: true
+          schema:
+            type: string
+            x-go-name: Stack
+          x-go-name: Stack
+        - name:  starterProject
+          in: path
+          description: The starter project name in the stack devfile
+          required: true
+          schema:
+            type: string
+            x-go-name: StarterProject
+          x-go-name: StarterProject
+      responses:
+        405:
+          $ref: '#/components/responses/methodNotAllowedResponse'
+    delete:
+      operationId: deleteDevfileStarterProject
+      parameters:
+        - name: stack
+          in: path
+          description: The stack name
+          required: true
+          schema:
+            type: string
+            x-go-name: Stack
+          x-go-name: Stack
+        - name:  starterProject
+          in: path
+          description: The starter project name in the stack devfile
+          required: true
+          schema:
+            type: string
+            x-go-name: StarterProject
+          x-go-name: StarterProject
+      responses:
+        405:
+          $ref: '#/components/responses/methodNotAllowedResponse'
   /devfiles/{stack}/{version}/starter-projects/{starterProject}:
     get:
       summary: Fetches starter project by stack name, stack version, and project name
@@ -289,6 +619,96 @@ paths:
         '500':
           description: Failed to get the devfile or starter project.
           $ref: '#/components/responses/devfileErrorResponse'
+    post:
+      operationId: postDevfileStarterProjectWithVersion
+      parameters:
+        - name: stack
+          in: path
+          description: The stack name
+          required: true
+          schema:
+            type: string
+            x-go-name: Stack
+          x-go-name: Stack
+        - name: version
+          in: path
+          description: The version of the stack
+          required: true
+          schema:
+            type: string
+            x-go-name: Version
+          x-go-name: Version
+        - name:  starterProject
+          in: path
+          description: The starter project name in the stack devfile
+          required: true
+          schema:
+            type: string
+            x-go-name: StarterProject
+          x-go-name: StarterProject
+      responses:
+        405:
+          $ref: '#/components/responses/methodNotAllowedResponse'
+    put:
+      operationId: putDevfileStarterProjectWithVersion
+      parameters:
+        - name: stack
+          in: path
+          description: The stack name
+          required: true
+          schema:
+            type: string
+            x-go-name: Stack
+          x-go-name: Stack
+        - name: version
+          in: path
+          description: The version of the stack
+          required: true
+          schema:
+            type: string
+            x-go-name: Version
+          x-go-name: Version
+        - name:  starterProject
+          in: path
+          description: The starter project name in the stack devfile
+          required: true
+          schema:
+            type: string
+            x-go-name: StarterProject
+          x-go-name: StarterProject
+      responses:
+        405:
+          $ref: '#/components/responses/methodNotAllowedResponse'
+    delete:
+      operationId: deleteDevfileStarterProjectWithVersion
+      parameters:
+        - name: stack
+          in: path
+          description: The stack name
+          required: true
+          schema:
+            type: string
+            x-go-name: Stack
+          x-go-name: Stack
+        - name: version
+          in: path
+          description: The version of the stack
+          required: true
+          schema:
+            type: string
+            x-go-name: Version
+          x-go-name: Version
+        - name:  starterProject
+          in: path
+          description: The starter project name in the stack devfile
+          required: true
+          schema:
+            type: string
+            x-go-name: StarterProject
+          x-go-name: StarterProject
+      responses:
+        405:
+          $ref: '#/components/responses/methodNotAllowedResponse'
 
 components:
   schemas:
@@ -455,6 +875,27 @@ components:
           schema:
             type: string
             format: binary
+    methodNotAllowedResponse:
+      description: Method used is not supported.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                x-go-name: Message
+            required:
+              - message
+        application/yaml:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                x-go-name: Message
+            required:
+              - message
   securitySchemes:
     basic:
       type: http

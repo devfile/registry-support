@@ -69,11 +69,25 @@ type HealthResponse struct {
 // IndexResponse The index file schema
 type IndexResponse = IndexSchema
 
+// MethodNotAllowedResponse defines model for methodNotAllowedResponse.
+type MethodNotAllowedResponse struct {
+	Message string `json:"message"`
+}
+
 // V2IndexResponse defines model for v2IndexResponse.
 type V2IndexResponse = schema.Schema
 
 // ServeDevfileIndexV1Params defines parameters for ServeDevfileIndexV1.
 type ServeDevfileIndexV1Params struct {
+	// Arch The target architecture filter
+	Arch *ArchParam `form:"arch,omitempty" json:"arch,omitempty"`
+
+	// Icon The icon type filter
+	Icon *IconParam `form:"icon,omitempty" json:"icon,omitempty"`
+}
+
+// DeleteDevfileIndexV1WithTypeParams defines parameters for DeleteDevfileIndexV1WithType.
+type DeleteDevfileIndexV1WithTypeParams struct {
 	// Arch The target architecture filter
 	Arch *ArchParam `form:"arch,omitempty" json:"arch,omitempty"`
 
@@ -90,6 +104,24 @@ type ServeDevfileIndexV1WithTypeParams struct {
 	Icon *IconParam `form:"icon,omitempty" json:"icon,omitempty"`
 }
 
+// PostDevfileIndexV1WithTypeParams defines parameters for PostDevfileIndexV1WithType.
+type PostDevfileIndexV1WithTypeParams struct {
+	// Arch The target architecture filter
+	Arch *ArchParam `form:"arch,omitempty" json:"arch,omitempty"`
+
+	// Icon The icon type filter
+	Icon *IconParam `form:"icon,omitempty" json:"icon,omitempty"`
+}
+
+// PutDevfileIndexV1WithTypeParams defines parameters for PutDevfileIndexV1WithType.
+type PutDevfileIndexV1WithTypeParams struct {
+	// Arch The target architecture filter
+	Arch *ArchParam `form:"arch,omitempty" json:"arch,omitempty"`
+
+	// Icon The icon type filter
+	Icon *IconParam `form:"icon,omitempty" json:"icon,omitempty"`
+}
+
 // ServeDevfileIndexV2Params defines parameters for ServeDevfileIndexV2.
 type ServeDevfileIndexV2Params struct {
 	// Arch The target architecture filter
@@ -99,8 +131,35 @@ type ServeDevfileIndexV2Params struct {
 	Icon *IconParam `form:"icon,omitempty" json:"icon,omitempty"`
 }
 
+// DeleteDevfileIndexV2WithTypeParams defines parameters for DeleteDevfileIndexV2WithType.
+type DeleteDevfileIndexV2WithTypeParams struct {
+	// Arch The target architecture filter
+	Arch *ArchParam `form:"arch,omitempty" json:"arch,omitempty"`
+
+	// Icon The icon type filter
+	Icon *IconParam `form:"icon,omitempty" json:"icon,omitempty"`
+}
+
 // ServeDevfileIndexV2WithTypeParams defines parameters for ServeDevfileIndexV2WithType.
 type ServeDevfileIndexV2WithTypeParams struct {
+	// Arch The target architecture filter
+	Arch *ArchParam `form:"arch,omitempty" json:"arch,omitempty"`
+
+	// Icon The icon type filter
+	Icon *IconParam `form:"icon,omitempty" json:"icon,omitempty"`
+}
+
+// PostDevfileIndexV2WithTypeParams defines parameters for PostDevfileIndexV2WithType.
+type PostDevfileIndexV2WithTypeParams struct {
+	// Arch The target architecture filter
+	Arch *ArchParam `form:"arch,omitempty" json:"arch,omitempty"`
+
+	// Icon The icon type filter
+	Icon *IconParam `form:"icon,omitempty" json:"icon,omitempty"`
+}
+
+// PutDevfileIndexV2WithTypeParams defines parameters for PutDevfileIndexV2WithType.
+type PutDevfileIndexV2WithTypeParams struct {
 	// Arch The target architecture filter
 	Arch *ArchParam `form:"arch,omitempty" json:"arch,omitempty"`
 
