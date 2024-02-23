@@ -24,19 +24,19 @@ func TestStrArrayToSetMap(t *testing.T) {
 	tests := []struct {
 		name       string
 		strArray   []string
-		wantSetMap SetMap
+		wantSetMap SetMap[string]
 	}{
 		{
 			name:     "convert single element string array into setmap",
 			strArray: []string{"go"},
-			wantSetMap: SetMap{
+			wantSetMap: SetMap[string]{
 				"go": true,
 			},
 		},
 		{
 			name:     "convert multi-element string array into setmap",
 			strArray: []string{"go", "python", "typescript"},
-			wantSetMap: SetMap{
+			wantSetMap: SetMap[string]{
 				"go":         true,
 				"python":     true,
 				"typescript": true,
@@ -45,7 +45,7 @@ func TestStrArrayToSetMap(t *testing.T) {
 		{
 			name:       "empty string array into setmap",
 			strArray:   []string{},
-			wantSetMap: SetMap{},
+			wantSetMap: SetMap[string]{},
 		},
 	}
 
@@ -62,13 +62,13 @@ func TestStrArrayToSetMap(t *testing.T) {
 func TestSetMapHas(t *testing.T) {
 	tests := []struct {
 		name   string
-		setMap SetMap
+		setMap SetMap[string]
 		value  string
 		want   bool
 	}{
 		{
 			name: "value is in setmap",
-			setMap: SetMap{
+			setMap: SetMap[string]{
 				"go":         true,
 				"python":     true,
 				"typescript": true,
@@ -78,7 +78,7 @@ func TestSetMapHas(t *testing.T) {
 		},
 		{
 			name: "value is not in setmap",
-			setMap: SetMap{
+			setMap: SetMap[string]{
 				"go":         true,
 				"python":     true,
 				"typescript": true,
@@ -88,7 +88,7 @@ func TestSetMapHas(t *testing.T) {
 		},
 		{
 			name:   "empty setmap",
-			setMap: SetMap{},
+			setMap: SetMap[string]{},
 			value:  "python",
 			want:   false,
 		},
@@ -96,7 +96,72 @@ func TestSetMapHas(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			got := test.setMap.SetMapHas(test.value)
+			got := test.setMap.Has(test.value)
+			if !reflect.DeepEqual(got, test.want) {
+				t.Errorf("Got: %v, Expected: %v", got, test.want)
+			}
+		})
+	}
+}
+
+func TestSetMapUnion(t *testing.T) {
+	tests := []struct {
+		name    string
+		aSetMap SetMap[string]
+		bSetMap SetMap[string]
+		want    SetMap[string]
+	}{
+		{
+			name: "Union of strings",
+			aSetMap: SetMap[string]{
+				"java":   true,
+				"python": true,
+			},
+			bSetMap: SetMap[string]{
+				"cpp":  true,
+				"java": true,
+			},
+			want: SetMap[string]{
+				"cpp":    true,
+				"java":   true,
+				"python": true,
+			},
+		},
+		{
+			name:    "Left empty union",
+			aSetMap: SetMap[string]{},
+			bSetMap: SetMap[string]{
+				"cpp":  true,
+				"java": true,
+			},
+			want: SetMap[string]{
+				"cpp":  true,
+				"java": true,
+			},
+		},
+		{
+			name: "Right empty union",
+			aSetMap: SetMap[string]{
+				"java":   true,
+				"python": true,
+			},
+			bSetMap: SetMap[string]{},
+			want: SetMap[string]{
+				"java":   true,
+				"python": true,
+			},
+		},
+		{
+			name:    "Empty union",
+			aSetMap: SetMap[string]{},
+			bSetMap: SetMap[string]{},
+			want:    SetMap[string]{},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got := test.aSetMap.Union(test.bSetMap)
 			if !reflect.DeepEqual(got, test.want) {
 				t.Errorf("Got: %v, Expected: %v", got, test.want)
 			}

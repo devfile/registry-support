@@ -15,19 +15,55 @@
 
 package util
 
-// A map type with any typed keys and boolean values (to use as a set type)
-type SetMap map[any]bool
+// A map type with keys and boolean values (to use as a set type)
+type SetMap[T comparable] map[T]bool
 
 // SetMapHas checks if a value v is in a SetMap
-func (setMap SetMap) SetMapHas(v any) bool {
+func (setMap SetMap[T]) Has(v T) bool {
 	_, found := setMap[v]
 
 	return found
 }
 
+func (setMap SetMap[T]) Union(other SetMap[T]) SetMap[T] {
+	union := SetMap[T]{}
+
+	for k, v := range setMap {
+		union[k] = v
+	}
+
+	for k, v := range other {
+		union[k] = v
+	}
+
+	return union
+}
+
+// ToArray converts the SetMap into an array
+func (setMap SetMap[T]) ToArray() []T {
+	arr := []T{}
+
+	for v := range setMap {
+		arr = append(arr, v)
+	}
+
+	return arr
+}
+
+// ArrayToSetMap converts an array into SetMap
+func ArrayToSetMap[T comparable](arr []T) SetMap[T] {
+	setMap := SetMap[T]{}
+
+	for _, v := range arr {
+		setMap[v] = true
+	}
+
+	return setMap
+}
+
 // StrArrayToSetMap converts a string array into SetMap
-func StrArrayToSetMap(strArr []string) SetMap {
-	setMap := SetMap{}
+func StrArrayToSetMap(strArr []string) SetMap[string] {
+	setMap := SetMap[string]{}
 
 	for _, v := range strArr {
 		setMap[v] = true
