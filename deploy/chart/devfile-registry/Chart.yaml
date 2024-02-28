@@ -18,4 +18,11 @@ name: "devfile-registry"
 version: "0.0.1"
 home: "https://devfile.io/"
 maintainers:
-- name: John Collier
+  - email: mvaldron@redhat.com
+    name: Michael Valdron
+  - email: jcollier@redhat.com
+    name: John Collier
+  - email: tpetkos@redhat.com
+    name: Theofanis Petkos
+  - email: jdubrick@redhat.com
+    name: Jordan Dubrick
