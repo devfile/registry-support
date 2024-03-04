@@ -482,6 +482,7 @@ func buildIndexAPIResponse(c *gin.Context, indexType string, wantV1Index bool, p
 
 	iconType := ""
 	archs := []string{}
+	var result util.FilterResult
 
 	if params.Icon != nil {
 		iconType = *params.Icon
@@ -570,18 +571,26 @@ func buildIndexAPIResponse(c *gin.Context, indexType string, wantV1Index bool, p
 				}
 			}
 
-			index, err = util.FilterDevfileSchemaVersion(index, minSchemaVersion, maxSchemaVersion)
-			if err != nil {
+			result = util.FilterDevfileSchemaVersion(index, minSchemaVersion, maxSchemaVersion)
+			if result.Error != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{
-					"status": fmt.Sprintf("failed to apply schema version filter: %v", err),
+					"status": fmt.Sprintf("failed to apply schema version filter: %v", result.Error),
 				})
 				return
 			}
+			index = result.Index
 		}
 	}
 	// Filter the index if archs has been requested
 	if len(archs) > 0 {
-		index = util.FilterDevfileStrArrayField(index, util.ARRAY_PARAM_ARCHITECTURES, archs, wantV1Index)
+		result = util.FilterDevfileStrArrayField(index, util.ARRAY_PARAM_ARCHITECTURES, archs, wantV1Index)
+		if result.Error != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"status": fmt.Sprintf("failed to apply archs filter: %v", result.Error),
+			})
+			return
+		}
+		index = result.Index
 	}
 	bytes, err = json.MarshalIndent(&index, "", "  ")
 	if err != nil {
@@ -680,13 +689,14 @@ func fetchDevfile(c *gin.Context, name string, version string) ([]byte, indexSch
 			}
 		}
 
-		index, err = util.FilterDevfileSchemaVersion(index, minSchemaVersion, maxSchemaVersion)
-		if err != nil {
+		result := util.FilterDevfileSchemaVersion(index, minSchemaVersion, maxSchemaVersion)
+		if result.Error != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
-				"status": fmt.Sprintf("failed to apply schema version filter: %v", err),
+				"status": fmt.Sprintf("failed to apply schema version filter: %v", result.Error),
 			})
 			return []byte{}, indexSchema.Schema{}
 		}
+		index = result.Index
 	}
 
 	for _, devfileIndex := range index {

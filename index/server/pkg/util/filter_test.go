@@ -16,7 +16,9 @@
 package util
 
 import (
+	"fmt"
 	"reflect"
+	"sort"
 	"strings"
 	"testing"
 
@@ -433,9 +435,9 @@ func TestFilterDevfileArchitectures(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			gotIndex := filterDevfileArchitectures(test.index, test.archs, test.v1Index)
-			if !reflect.DeepEqual(gotIndex, test.wantIndex) {
-				t.Errorf("Got: %v, Expected: %v", gotIndex, test.wantIndex)
+			gotResult := filterDevfileArchitectures(test.index, test.archs, test.v1Index)
+			if !reflect.DeepEqual(gotResult.Index, test.wantIndex) {
+				t.Errorf("Got: %v, Expected: %v", gotResult.Index, test.wantIndex)
 			}
 		})
 	}
@@ -621,9 +623,9 @@ func TestFilterDevfileTags(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			gotIndex := filterDevfileTags(test.index, test.tags, test.v1Index)
-			if !reflect.DeepEqual(gotIndex, test.wantIndex) {
-				t.Errorf("Got: %v, Expected: %v", gotIndex, test.wantIndex)
+			gotResult := filterDevfileTags(test.index, test.tags, test.v1Index)
+			if !reflect.DeepEqual(gotResult.Index, test.wantIndex) {
+				t.Errorf("Got: %v, Expected: %v", gotResult.Index, test.wantIndex)
 			}
 		})
 	}
@@ -798,12 +800,12 @@ func TestFilterDevfileSchemaVersion(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			gotIndex, err := FilterDevfileSchemaVersion(test.index, test.minSchemaVersion, test.maxSchemaVersion)
-			if err != nil {
-				t.Errorf("Unexpected error: %v", err)
+			gotResult := FilterDevfileSchemaVersion(test.index, test.minSchemaVersion, test.maxSchemaVersion)
+			if gotResult.Error != nil {
+				t.Errorf("Unexpected error: %v", gotResult.Error)
 			}
-			if !reflect.DeepEqual(gotIndex, test.wantIndex) {
-				t.Errorf("Got: %v, Expected: %v", gotIndex, test.wantIndex)
+			if !reflect.DeepEqual(gotResult.Index, test.wantIndex) {
+				t.Errorf("Got: %v, Expected: %v", gotResult.Index, test.wantIndex)
 			}
 		})
 	}
@@ -964,9 +966,9 @@ func TestFilterDevfileStrArrayField(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			gotIndex := FilterDevfileStrArrayField(test.index, test.fieldName, test.values, test.v1Index)
-			if !reflect.DeepEqual(gotIndex, test.wantIndex) {
-				t.Errorf("Got: %v, Expected: %v", gotIndex, test.wantIndex)
+			gotResult := FilterDevfileStrArrayField(test.index, test.fieldName, test.values, test.v1Index)
+			if !reflect.DeepEqual(gotResult.Index, test.wantIndex) {
+				t.Errorf("Got: %v, Expected: %v", gotResult.Index, test.wantIndex)
 			}
 		})
 	}
@@ -1459,11 +1461,608 @@ func TestFilterDevfileStrField(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			gotIndex, err := FilterDevfileStrField(test.index, test.fieldName, test.value, test.v1Index)
-			if !test.wantErr && !reflect.DeepEqual(gotIndex, test.wantIndex) {
-				t.Errorf("Got: %v, Expected: %v", gotIndex, test.wantIndex)
-			} else if test.wantErr && !strings.HasPrefix(err.Error(), test.wantErrStr) {
-				t.Errorf("Got: %v, Expected: %v", err.Error(), test.wantErrStr)
+			gotResult := FilterDevfileStrField(test.index, test.fieldName, test.value, test.v1Index)
+			if !test.wantErr && !reflect.DeepEqual(gotResult.Index, test.wantIndex) {
+				t.Errorf("Got: %v, Expected: %v", gotResult.Index, test.wantIndex)
+			} else if test.wantErr && !strings.HasPrefix(gotResult.Error.Error(), test.wantErrStr) {
+				t.Errorf("Got: %v, Expected: %v", gotResult.Error.Error(), test.wantErrStr)
+			}
+		})
+	}
+}
+
+func TestAndFilter(t *testing.T) {
+	tests := []struct {
+		name       string
+		filters    []FilterResult
+		wantIndex  []indexSchema.Schema
+		wantErr    bool
+		wantErrStr string
+	}{
+		{
+			name: "Test Valid And with same results",
+			filters: []FilterResult{
+				{
+					Index: []indexSchema.Schema{
+						{
+							Name:        "go",
+							DisplayName: "Go",
+							Description: "Go Gin Project",
+						},
+						{
+							Name:        "python",
+							DisplayName: "Python Flask",
+							Description: "Python Flask project",
+						},
+					},
+				},
+				{
+					Index: []indexSchema.Schema{
+						{
+							Name:        "go",
+							DisplayName: "Go",
+							Description: "Go Gin Project",
+						},
+						{
+							Name:        "python",
+							DisplayName: "Python Flask",
+							Description: "Python Flask project",
+						},
+					},
+				},
+			},
+			wantIndex: []indexSchema.Schema{
+				{
+					Name:        "go",
+					DisplayName: "Go",
+					Description: "Go Gin Project",
+				},
+				{
+					Name:        "python",
+					DisplayName: "Python Flask",
+					Description: "Python Flask project",
+				},
+			},
+		},
+		{
+			name: "Test Valid And with same results v2",
+			filters: []FilterResult{
+				{
+					Index: []indexSchema.Schema{
+						{
+							Name:        "go",
+							DisplayName: "Go",
+							Description: "Go Gin Project",
+							Versions: []indexSchema.Version{
+								{
+									Version:       "1.0.0",
+									SchemaVersion: "2.2.0",
+									Description:   "Go Gin Project",
+									Tags: []string{
+										"Go",
+										"Gin",
+									},
+								},
+							},
+						},
+						{
+							Name:        "python",
+							DisplayName: "Python Flask",
+							Description: "Python Flask project",
+							Versions: []indexSchema.Version{
+								{
+									Version:       "1.0.0",
+									SchemaVersion: "2.2.0",
+									Description:   "Python Flask project",
+									Tags: []string{
+										"Python",
+										"Flask",
+									},
+								},
+								{
+									Version:       "1.1.0",
+									SchemaVersion: "2.2.0",
+									Description:   "Python Flask backend-web project",
+									Tags: []string{
+										"Python",
+										"Flask",
+									},
+								},
+							},
+						},
+					},
+				},
+				{
+					Index: []indexSchema.Schema{
+						{
+							Name:        "go",
+							DisplayName: "Go",
+							Description: "Go Gin Project",
+							Versions: []indexSchema.Version{
+								{
+									Version:       "1.0.0",
+									SchemaVersion: "2.2.0",
+									Description:   "Go Gin Project",
+									Tags: []string{
+										"Go",
+										"Gin",
+									},
+								},
+							},
+						},
+						{
+							Name:        "python",
+							DisplayName: "Python Flask",
+							Description: "Python Flask project",
+							Versions: []indexSchema.Version{
+								{
+									Version:       "1.0.0",
+									SchemaVersion: "2.2.0",
+									Description:   "Python Flask project",
+									Tags: []string{
+										"Python",
+										"Flask",
+									},
+								},
+								{
+									Version:       "1.1.0",
+									SchemaVersion: "2.2.0",
+									Description:   "Python Flask backend-web project",
+									Tags: []string{
+										"Python",
+										"Flask",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			wantIndex: []indexSchema.Schema{
+				{
+					Name:        "go",
+					DisplayName: "Go",
+					Description: "Go Gin Project",
+					Versions: []indexSchema.Version{
+						{
+							Version:       "1.0.0",
+							SchemaVersion: "2.2.0",
+							Description:   "Go Gin Project",
+							Tags: []string{
+								"Go",
+								"Gin",
+							},
+						},
+					},
+				},
+				{
+					Name:        "python",
+					DisplayName: "Python Flask",
+					Description: "Python Flask project",
+					Versions: []indexSchema.Version{
+						{
+							Version:       "1.0.0",
+							SchemaVersion: "2.2.0",
+							Description:   "Python Flask project",
+							Tags: []string{
+								"Python",
+								"Flask",
+							},
+						},
+						{
+							Version:       "1.1.0",
+							SchemaVersion: "2.2.0",
+							Description:   "Python Flask backend-web project",
+							Tags: []string{
+								"Python",
+								"Flask",
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "Test Valid And with overlapping results",
+			filters: []FilterResult{
+				{
+					Index: []indexSchema.Schema{
+						{
+							Name:        "go",
+							DisplayName: "Go",
+							Description: "Go Gin Project",
+						},
+						{
+							Name:        "python",
+							DisplayName: "Python Flask",
+							Description: "Python Flask project",
+						},
+					},
+				},
+				{
+					Index: []indexSchema.Schema{
+						{
+							Name:        "go",
+							DisplayName: "Go",
+							Description: "Go Gin Project",
+						},
+					},
+				},
+			},
+			wantIndex: []indexSchema.Schema{
+				{
+					Name:        "go",
+					DisplayName: "Go",
+					Description: "Go Gin Project",
+				},
+			},
+		},
+		{
+			name: "Test Valid And with overlapping results v2",
+			filters: []FilterResult{
+				{
+					Index: []indexSchema.Schema{
+						{
+							Name:        "go",
+							DisplayName: "Go",
+							Description: "Go Gin Project",
+							Versions: []indexSchema.Version{
+								{
+									Version:       "1.0.0",
+									SchemaVersion: "2.2.0",
+									Description:   "Go Gin Project",
+									Tags: []string{
+										"Go",
+										"Gin",
+									},
+								},
+							},
+						},
+					},
+				},
+				{
+					Index: []indexSchema.Schema{
+						{
+							Name:        "go",
+							DisplayName: "Go",
+							Description: "Go Gin Project",
+							Versions: []indexSchema.Version{
+								{
+									Version:       "1.0.0",
+									SchemaVersion: "2.2.0",
+									Description:   "Go Gin Project",
+									Tags: []string{
+										"Go",
+										"Gin",
+									},
+								},
+							},
+						},
+						{
+							Name:        "python",
+							DisplayName: "Python Flask",
+							Description: "Python Flask project",
+							Versions: []indexSchema.Version{
+								{
+									Version:       "1.0.0",
+									SchemaVersion: "2.2.0",
+									Description:   "Python Flask project",
+									Tags: []string{
+										"Python",
+										"Flask",
+									},
+								},
+								{
+									Version:       "1.1.0",
+									SchemaVersion: "2.2.0",
+									Description:   "Python Flask backend-web project",
+									Tags: []string{
+										"Python",
+										"Flask",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			wantIndex: []indexSchema.Schema{
+				{
+					Name:        "go",
+					DisplayName: "Go",
+					Description: "Go Gin Project",
+					Versions: []indexSchema.Version{
+						{
+							Version:       "1.0.0",
+							SchemaVersion: "2.2.0",
+							Description:   "Go Gin Project",
+							Tags: []string{
+								"Go",
+								"Gin",
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "Test Valid And with overlapping results and versions v2",
+			filters: []FilterResult{
+				{
+					Index: []indexSchema.Schema{
+						{
+							Name:        "go",
+							DisplayName: "Go",
+							Description: "Go Gin Project",
+							Versions: []indexSchema.Version{
+								{
+									Version:       "1.0.0",
+									SchemaVersion: "2.2.0",
+									Description:   "Go Gin Project",
+									Tags: []string{
+										"Go",
+										"Gin",
+									},
+								},
+							},
+						},
+					},
+				},
+				{
+					Index: []indexSchema.Schema{
+						{
+							Name:        "go",
+							DisplayName: "Go",
+							Description: "Go Gin Project",
+							Versions: []indexSchema.Version{
+								{
+									Version:       "1.0.0",
+									SchemaVersion: "2.2.0",
+									Description:   "Go Gin Project",
+									Tags: []string{
+										"Go",
+										"Gin",
+									},
+								},
+								{
+									Version:       "2.0.0",
+									SchemaVersion: "2.2.0",
+									Description:   "Go Gin Backend Project",
+									Tags: []string{
+										"Go",
+										"Gin",
+										"MySQL",
+									},
+								},
+							},
+						},
+						{
+							Name:        "python",
+							DisplayName: "Python Flask",
+							Description: "Python Flask project",
+							Versions: []indexSchema.Version{
+								{
+									Version:       "1.0.0",
+									SchemaVersion: "2.2.0",
+									Description:   "Python Flask project",
+									Tags: []string{
+										"Python",
+										"Flask",
+									},
+								},
+								{
+									Version:       "1.1.0",
+									SchemaVersion: "2.2.0",
+									Description:   "Python Flask backend-web project",
+									Tags: []string{
+										"Python",
+										"Flask",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			wantIndex: []indexSchema.Schema{
+				{
+					Name:        "go",
+					DisplayName: "Go",
+					Description: "Go Gin Project",
+					Versions: []indexSchema.Version{
+						{
+							Version:       "1.0.0",
+							SchemaVersion: "2.2.0",
+							Description:   "Go Gin Project",
+							Tags: []string{
+								"Go",
+								"Gin",
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name:      "Test Valid And with no results",
+			filters:   []FilterResult{},
+			wantIndex: []indexSchema.Schema{},
+		},
+		{
+			name: "Test Invalid And with single error",
+			filters: []FilterResult{
+				{
+					Error: fmt.Errorf("A test error"),
+				},
+			},
+			wantIndex:  []indexSchema.Schema{},
+			wantErr:    true,
+			wantErrStr: "A test error",
+		},
+		{
+			name: "Test Invalid And with multiple errors",
+			filters: []FilterResult{
+				{
+					Error: fmt.Errorf("First test error"),
+				},
+				{
+					Error: fmt.Errorf("Second test error"),
+				},
+				{
+					Error: fmt.Errorf("Third test error"),
+				},
+			},
+			wantIndex:  []indexSchema.Schema{},
+			wantErr:    true,
+			wantErrStr: "First test error",
+		},
+		{
+			name: "Test Invalid And with valid filters and errors",
+			filters: []FilterResult{
+				{
+					Index: []indexSchema.Schema{
+						{
+							Name:        "go",
+							DisplayName: "Go",
+							Description: "Go Gin Project",
+						},
+						{
+							Name:        "python",
+							DisplayName: "Python Flask",
+							Description: "Python Flask project",
+						},
+					},
+				},
+				{
+					Error: fmt.Errorf("First test error"),
+				},
+				{
+					Index: []indexSchema.Schema{
+						{
+							Name:        "go",
+							DisplayName: "Go",
+							Description: "Go Gin Project",
+						},
+					},
+				},
+				{
+					Error: fmt.Errorf("Second test error"),
+				},
+				{
+					Error: fmt.Errorf("Third test error"),
+				},
+			},
+			wantIndex:  []indexSchema.Schema{},
+			wantErr:    true,
+			wantErrStr: "First test error",
+		},
+		{
+			name: "Test Invalid And with valid filters and errors v2",
+			filters: []FilterResult{
+				{
+					Index: []indexSchema.Schema{
+						{
+							Name:        "go",
+							DisplayName: "Go",
+							Description: "Go Gin Project",
+							Versions: []indexSchema.Version{
+								{
+									Version:       "1.0.0",
+									SchemaVersion: "2.2.0",
+									Description:   "Go Gin Project",
+									Tags: []string{
+										"Go",
+										"Gin",
+									},
+								},
+								{
+									Version:       "2.0.0",
+									SchemaVersion: "2.2.0",
+									Description:   "Go Gin Backend Project",
+									Tags: []string{
+										"Go",
+										"Gin",
+										"MySQL",
+									},
+								},
+							},
+						},
+						{
+							Name:        "python",
+							DisplayName: "Python Flask",
+							Description: "Python Flask project",
+							Versions: []indexSchema.Version{
+								{
+									Version:       "1.0.0",
+									SchemaVersion: "2.2.0",
+									Description:   "Python Flask project",
+									Tags: []string{
+										"Python",
+										"Flask",
+									},
+								},
+								{
+									Version:       "1.1.0",
+									SchemaVersion: "2.2.0",
+									Description:   "Python Flask backend-web project",
+									Tags: []string{
+										"Python",
+										"Flask",
+									},
+								},
+							},
+						},
+					},
+				},
+				{
+					Error: fmt.Errorf("First test error"),
+				},
+				{
+					Index: []indexSchema.Schema{
+						{
+							Name:        "go",
+							DisplayName: "Go",
+							Description: "Go Gin Project",
+							Versions: []indexSchema.Version{
+								{
+									Version:       "1.0.0",
+									SchemaVersion: "2.2.0",
+									Description:   "Go Gin Project",
+									Tags: []string{
+										"Go",
+										"Gin",
+									},
+								},
+							},
+						},
+					},
+				},
+				{
+					Error: fmt.Errorf("Second test error"),
+				},
+				{
+					Error: fmt.Errorf("Third test error"),
+				},
+			},
+			wantIndex:  []indexSchema.Schema{},
+			wantErr:    true,
+			wantErrStr: "First test error",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			gotResult := AndFilter(test.filters...)
+			sort.SliceStable(gotResult.Index, func(i, j int) bool {
+				return gotResult.Index[i].Name < gotResult.Index[j].Name
+			})
+			sort.SliceStable(test.wantIndex, func(i, j int) bool {
+				return test.wantIndex[i].Name < test.wantIndex[j].Name
+			})
+			if !test.wantErr && !reflect.DeepEqual(gotResult.Index, test.wantIndex) {
+				t.Errorf("Got: %v, Expected: %v", gotResult.Index, test.wantIndex)
+			} else if test.wantErr && !strings.HasPrefix(gotResult.Error.Error(), test.wantErrStr) {
+				t.Errorf("Got: %v, Expected: %v", gotResult.Error.Error(), test.wantErrStr)
 			}
 		})
 	}
