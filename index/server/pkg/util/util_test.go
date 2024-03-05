@@ -396,3 +396,55 @@ func TestMakeVersionMapOnBadVersion(t *testing.T) {
 		}
 	})
 }
+
+func TestStructToMap(t *testing.T) {
+	tests := []struct {
+		name        string
+		inputStruct any
+		wantMap     map[string]any
+	}{
+		{
+			name: "Test struct type with map conversion",
+			inputStruct: struct {
+				Language     string
+				Stack        string
+				CreationYear int
+			}{
+				Language:     "python",
+				Stack:        "flask",
+				CreationYear: 2011,
+			},
+			wantMap: map[string]any{
+				"language":     "python",
+				"stack":        "flask",
+				"creationYear": 2011,
+			},
+		},
+		{
+			name: "Test schema type with map conversion",
+			inputStruct: indexSchema.Schema{
+				Name:        "go",
+				DisplayName: "Go",
+				Description: "A Go project.",
+				Version:     "1.0.0",
+				Tags:        []string{"Go", "Gin"},
+			},
+			wantMap: map[string]any{
+				"name":        "go",
+				"displayName": "Go",
+				"description": "A Go project.",
+				"version":     "1.0.0",
+				"tags":        []string{"Go", "Gin"},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			gotMap := StructToMap(test.inputStruct)
+			if !reflect.DeepEqual(test.wantMap, gotMap) {
+				t.Errorf("Got: %v, Expected: %v", gotMap, test.wantMap)
+			}
+		})
+	}
+}
