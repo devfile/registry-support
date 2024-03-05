@@ -436,7 +436,12 @@ func TestFilterDevfileArchitectures(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			gotResult := filterDevfileArchitectures(test.index, test.archs, test.v1Index)
-			if !reflect.DeepEqual(gotResult.Index, test.wantIndex) {
+			gotResult.Eval()
+			if !gotResult.IsEval {
+				t.Errorf("Got unexpected unevaluated result: %v", gotResult)
+			} else if gotResult.Error != nil {
+				t.Errorf("Unexpected error: %v", gotResult.Error)
+			} else if !reflect.DeepEqual(gotResult.Index, test.wantIndex) {
 				t.Errorf("Got: %v, Expected: %v", gotResult.Index, test.wantIndex)
 			}
 		})
@@ -624,7 +629,12 @@ func TestFilterDevfileTags(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			gotResult := filterDevfileTags(test.index, test.tags, test.v1Index)
-			if !reflect.DeepEqual(gotResult.Index, test.wantIndex) {
+			gotResult.Eval()
+			if !gotResult.IsEval {
+				t.Errorf("Got unexpected unevaluated result: %v", gotResult)
+			} else if gotResult.Error != nil {
+				t.Errorf("Unexpected error: %v", gotResult.Error)
+			} else if !reflect.DeepEqual(gotResult.Index, test.wantIndex) {
 				t.Errorf("Got: %v, Expected: %v", gotResult.Index, test.wantIndex)
 			}
 		})
@@ -801,10 +811,12 @@ func TestFilterDevfileSchemaVersion(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			gotResult := FilterDevfileSchemaVersion(test.index, test.minSchemaVersion, test.maxSchemaVersion)
-			if gotResult.Error != nil {
+			gotResult.Eval()
+			if !gotResult.IsEval {
+				t.Errorf("Got unexpected unevaluated result: %v", gotResult)
+			} else if gotResult.Error != nil {
 				t.Errorf("Unexpected error: %v", gotResult.Error)
-			}
-			if !reflect.DeepEqual(gotResult.Index, test.wantIndex) {
+			} else if !reflect.DeepEqual(gotResult.Index, test.wantIndex) {
 				t.Errorf("Got: %v, Expected: %v", gotResult.Index, test.wantIndex)
 			}
 		})
@@ -967,7 +979,12 @@ func TestFilterDevfileStrArrayField(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			gotResult := FilterDevfileStrArrayField(test.index, test.fieldName, test.values, test.v1Index)
-			if !reflect.DeepEqual(gotResult.Index, test.wantIndex) {
+			gotResult.Eval()
+			if !gotResult.IsEval {
+				t.Errorf("Got unexpected unevaluated result: %v", gotResult)
+			} else if gotResult.Error != nil {
+				t.Errorf("Unexpected error: %v", gotResult.Error)
+			} else if !reflect.DeepEqual(gotResult.Index, test.wantIndex) {
 				t.Errorf("Got: %v, Expected: %v", gotResult.Index, test.wantIndex)
 			}
 		})
@@ -1462,7 +1479,12 @@ func TestFilterDevfileStrField(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			gotResult := FilterDevfileStrField(test.index, test.fieldName, test.value, test.v1Index)
-			if !test.wantErr && !reflect.DeepEqual(gotResult.Index, test.wantIndex) {
+			gotResult.Eval()
+			if !gotResult.IsEval {
+				t.Errorf("Got unexpected unevaluated result: %v", gotResult)
+			} else if !test.wantErr && gotResult.Error != nil {
+				t.Errorf("Unexpected error: %v", gotResult.Error)
+			} else if !test.wantErr && !reflect.DeepEqual(gotResult.Index, test.wantIndex) {
 				t.Errorf("Got: %v, Expected: %v", gotResult.Index, test.wantIndex)
 			} else if test.wantErr && !strings.HasPrefix(gotResult.Error.Error(), test.wantErrStr) {
 				t.Errorf("Got: %v, Expected: %v", gotResult.Error.Error(), test.wantErrStr)
@@ -1473,11 +1495,12 @@ func TestFilterDevfileStrField(t *testing.T) {
 
 func TestAndFilter(t *testing.T) {
 	tests := []struct {
-		name       string
-		filters    []FilterResult
-		wantIndex  []indexSchema.Schema
-		wantErr    bool
-		wantErrStr string
+		name        string
+		filters     []FilterResult
+		wantIndex   []indexSchema.Schema
+		wantNotEval bool
+		wantErr     bool
+		wantErrStr  string
 	}{
 		{
 			name: "Test Valid And with same results",
@@ -1495,6 +1518,7 @@ func TestAndFilter(t *testing.T) {
 							Description: "Python Flask project",
 						},
 					},
+					IsEval: true,
 				},
 				{
 					Index: []indexSchema.Schema{
@@ -1509,6 +1533,7 @@ func TestAndFilter(t *testing.T) {
 							Description: "Python Flask project",
 						},
 					},
+					IsEval: true,
 				},
 			},
 			wantIndex: []indexSchema.Schema{
@@ -1571,6 +1596,7 @@ func TestAndFilter(t *testing.T) {
 							},
 						},
 					},
+					IsEval: true,
 				},
 				{
 					Index: []indexSchema.Schema{
@@ -1616,6 +1642,7 @@ func TestAndFilter(t *testing.T) {
 							},
 						},
 					},
+					IsEval: true,
 				},
 			},
 			wantIndex: []indexSchema.Schema{
@@ -1678,6 +1705,7 @@ func TestAndFilter(t *testing.T) {
 							Description: "Python Flask project",
 						},
 					},
+					IsEval: true,
 				},
 				{
 					Index: []indexSchema.Schema{
@@ -1687,6 +1715,7 @@ func TestAndFilter(t *testing.T) {
 							Description: "Go Gin Project",
 						},
 					},
+					IsEval: true,
 				},
 			},
 			wantIndex: []indexSchema.Schema{
@@ -1719,6 +1748,7 @@ func TestAndFilter(t *testing.T) {
 							},
 						},
 					},
+					IsEval: true,
 				},
 				{
 					Index: []indexSchema.Schema{
@@ -1764,6 +1794,7 @@ func TestAndFilter(t *testing.T) {
 							},
 						},
 					},
+					IsEval: true,
 				},
 			},
 			wantIndex: []indexSchema.Schema{
@@ -1807,6 +1838,7 @@ func TestAndFilter(t *testing.T) {
 							},
 						},
 					},
+					IsEval: true,
 				},
 				{
 					Index: []indexSchema.Schema{
@@ -1862,6 +1894,7 @@ func TestAndFilter(t *testing.T) {
 							},
 						},
 					},
+					IsEval: true,
 				},
 			},
 			wantIndex: []indexSchema.Schema{
@@ -1892,7 +1925,8 @@ func TestAndFilter(t *testing.T) {
 			name: "Test Invalid And with single error",
 			filters: []FilterResult{
 				{
-					Error: fmt.Errorf("A test error"),
+					Error:  fmt.Errorf("A test error"),
+					IsEval: true,
 				},
 			},
 			wantIndex:  []indexSchema.Schema{},
@@ -1903,13 +1937,16 @@ func TestAndFilter(t *testing.T) {
 			name: "Test Invalid And with multiple errors",
 			filters: []FilterResult{
 				{
-					Error: fmt.Errorf("First test error"),
+					Error:  fmt.Errorf("First test error"),
+					IsEval: true,
 				},
 				{
-					Error: fmt.Errorf("Second test error"),
+					Error:  fmt.Errorf("Second test error"),
+					IsEval: true,
 				},
 				{
-					Error: fmt.Errorf("Third test error"),
+					Error:  fmt.Errorf("Third test error"),
+					IsEval: true,
 				},
 			},
 			wantIndex:  []indexSchema.Schema{},
@@ -1932,9 +1969,11 @@ func TestAndFilter(t *testing.T) {
 							Description: "Python Flask project",
 						},
 					},
+					IsEval: true,
 				},
 				{
-					Error: fmt.Errorf("First test error"),
+					Error:  fmt.Errorf("First test error"),
+					IsEval: true,
 				},
 				{
 					Index: []indexSchema.Schema{
@@ -1944,12 +1983,15 @@ func TestAndFilter(t *testing.T) {
 							Description: "Go Gin Project",
 						},
 					},
+					IsEval: true,
 				},
 				{
-					Error: fmt.Errorf("Second test error"),
+					Error:  fmt.Errorf("Second test error"),
+					IsEval: true,
 				},
 				{
-					Error: fmt.Errorf("Third test error"),
+					Error:  fmt.Errorf("Third test error"),
+					IsEval: true,
 				},
 			},
 			wantIndex:  []indexSchema.Schema{},
@@ -2013,9 +2055,11 @@ func TestAndFilter(t *testing.T) {
 							},
 						},
 					},
+					IsEval: true,
 				},
 				{
-					Error: fmt.Errorf("First test error"),
+					Error:  fmt.Errorf("First test error"),
+					IsEval: true,
 				},
 				{
 					Index: []indexSchema.Schema{
@@ -2036,30 +2080,88 @@ func TestAndFilter(t *testing.T) {
 							},
 						},
 					},
+					IsEval: true,
 				},
 				{
-					Error: fmt.Errorf("Second test error"),
+					Error:  fmt.Errorf("Second test error"),
+					IsEval: true,
 				},
 				{
-					Error: fmt.Errorf("Third test error"),
+					Error:  fmt.Errorf("Third test error"),
+					IsEval: true,
 				},
 			},
 			wantIndex:  []indexSchema.Schema{},
 			wantErr:    true,
 			wantErrStr: "First test error",
 		},
+		{
+			name: "Test Unevaluated FilterResult entities with And filter",
+			filters: []FilterResult{
+				{
+					filterFn: func(fr *FilterResult) {
+						newIndex := []indexSchema.Schema{}
+						for _, schema := range fr.Index {
+							if schema.Name != "python" {
+								newIndex = append(newIndex, schema)
+							}
+						}
+						fr.Index = newIndex
+					},
+					Index: []indexSchema.Schema{
+						{
+							Name:        "go",
+							DisplayName: "Go",
+							Description: "Go Gin Project",
+						},
+						{
+							Name:        "python",
+							DisplayName: "Python Flask",
+							Description: "Python Flask project",
+						},
+					},
+				},
+			},
+			wantIndex: []indexSchema.Schema{
+				{
+					Name:        "go",
+					DisplayName: "Go",
+					Description: "Go Gin Project",
+				},
+			},
+			wantNotEval: true,
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			// Fail if a child filter is not evaluated and test case does not expect this
+			for _, filter := range test.filters {
+				if !test.wantNotEval && !filter.IsEval {
+					t.Errorf("Got unexpected unevaluated result: %v", filter)
+					return
+				}
+			}
+
 			gotResult := AndFilter(test.filters...)
+			gotResult.Eval()
+
+			if !gotResult.IsEval {
+				t.Errorf("Got unexpected unevaluated result: %v", gotResult)
+				return
+			}
+
+			// sort result and expected as sorting of result is not consistent
 			sort.SliceStable(gotResult.Index, func(i, j int) bool {
 				return gotResult.Index[i].Name < gotResult.Index[j].Name
 			})
 			sort.SliceStable(test.wantIndex, func(i, j int) bool {
 				return test.wantIndex[i].Name < test.wantIndex[j].Name
 			})
-			if !test.wantErr && !reflect.DeepEqual(gotResult.Index, test.wantIndex) {
+
+			if !test.wantErr && gotResult.Error != nil {
+				t.Errorf("Unexpected error: %v", gotResult.Error)
+			} else if !test.wantErr && !reflect.DeepEqual(gotResult.Index, test.wantIndex) {
 				t.Errorf("Got: %v, Expected: %v", gotResult.Index, test.wantIndex)
 			} else if test.wantErr && !strings.HasPrefix(gotResult.Error.Error(), test.wantErrStr) {
 				t.Errorf("Got: %v, Expected: %v", gotResult.Error.Error(), test.wantErrStr)

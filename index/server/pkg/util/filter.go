@@ -88,8 +88,21 @@ const (
 
 // FilterResult result entity of filtering the index schema
 type FilterResult struct {
+	filterFn func(*FilterResult)
+	children []FilterResult
+
+	// Index schema result
 	Index []indexSchema.Schema
+	// First error returned in result
 	Error error
+	// Is the FilterResult evaluated
+	IsEval bool
+}
+
+// Eval evaluates the filter results
+func (fr *FilterResult) Eval() {
+	fr.filterFn(fr)
+	fr.IsEval = true
 }
 
 // filterOut filters out element at i in a given referenced array,
@@ -107,6 +120,7 @@ func filterOut[T any](arr *[]T, i *int) {
 	*i--
 }
 
+// trimExtraSpace Trims extra whitespace from string
 func trimExtraSpace(s string) string {
 	re := regexp.MustCompile(`\s+`)
 	splitStr := re.Split(strings.TrimSpace(s), -1)
@@ -118,12 +132,13 @@ func trimExtraSpace(s string) string {
 	return strings.Join(splitStr, " ")
 }
 
+// trimPunc Trims punctuation from a string
 func trimPunc(s string) string {
 	re := regexp.MustCompile(`[^a-zA-Z0-9 ]+`)
 	return strings.TrimSpace(re.ReplaceAllString(s, " "))
 }
 
-// fuzzyMatch
+// fuzzyMatch fuzzy compare function
 func fuzzyMatch(a string, b string) bool {
 	aLower, bLower := strings.ToLower(a), strings.ToLower(b)
 	aTrim, bTrim := trimPunc(trimExtraSpace(aLower)), trimPunc(trimExtraSpace(bLower))
@@ -133,223 +148,243 @@ func fuzzyMatch(a string, b string) bool {
 // filterDevfileFieldFuzzy filters devfiles based on fuzzy filtering of string fields
 func filterDevfileFieldFuzzy(index []indexSchema.Schema, requestedValue string, getIndexValue func(*indexSchema.Schema) (string, error),
 	getVersionValue func(*indexSchema.Version) (string, error), v1Index bool) FilterResult {
+	return FilterResult{
+		filterFn: func(fr *FilterResult) {
+			filteredIndex := deepcopy.Copy(index).([]indexSchema.Schema)
 
-	filteredIndex := deepcopy.Copy(index).([]indexSchema.Schema)
+			if getIndexValue != nil || getVersionValue != nil {
+				for i := 0; i < len(filteredIndex); i++ {
+					toFilterOutIndex := false
 
-	if getIndexValue != nil || getVersionValue != nil {
-		for i := 0; i < len(filteredIndex); i++ {
-			toFilterOutIndex := false
+					if getIndexValue != nil {
+						indexValue, err := getIndexValue(&filteredIndex[i])
+						if err != nil {
+							fr.Error = err
+							return
+						} else if !fuzzyMatch(indexValue, requestedValue) {
+							toFilterOutIndex = true
+						}
+					} else {
+						toFilterOutIndex = true
+					}
 
-			if getIndexValue != nil {
-				indexValue, err := getIndexValue(&filteredIndex[i])
-				if err != nil {
-					return FilterResult{Error: err}
-				} else if !fuzzyMatch(indexValue, requestedValue) {
-					toFilterOutIndex = true
-				}
-			} else {
-				toFilterOutIndex = true
-			}
+					if !v1Index && getVersionValue != nil {
+						filteredVersions := deepcopy.Copy(filteredIndex[i].Versions).([]indexSchema.Version)
+						for versionIndex := 0; versionIndex < len(filteredVersions); versionIndex++ {
+							versionValue, err := getVersionValue(&filteredVersions[versionIndex])
+							if err != nil {
+								fr.Error = err
+								return
+							} else if !fuzzyMatch(versionValue, requestedValue) {
+								filterOut(&filteredVersions, &versionIndex)
+							}
+						}
 
-			if !v1Index && getVersionValue != nil {
-				filteredVersions := deepcopy.Copy(filteredIndex[i].Versions).([]indexSchema.Version)
-				for versionIndex := 0; versionIndex < len(filteredVersions); versionIndex++ {
-					versionValue, err := getVersionValue(&filteredVersions[versionIndex])
-					if err != nil {
-						return FilterResult{Error: err}
-					} else if !fuzzyMatch(versionValue, requestedValue) {
-						filterOut(&filteredVersions, &versionIndex)
+						if len(filteredVersions) != 0 {
+							filteredIndex[i].Versions = filteredVersions
+							toFilterOutIndex = false
+						}
+					}
+
+					if toFilterOutIndex {
+						filterOut(&filteredIndex, &i)
 					}
 				}
-
-				if len(filteredVersions) != 0 {
-					filteredIndex[i].Versions = filteredVersions
-					toFilterOutIndex = false
-				}
 			}
 
-			if toFilterOutIndex {
-				filterOut(&filteredIndex, &i)
-			}
-		}
+			fr.Index = filteredIndex
+		},
 	}
-
-	return FilterResult{Index: filteredIndex}
 }
 
 // filterDevfileTags filters devfiles based on tags
 func filterDevfileTags(index []indexSchema.Schema, tags []string, v1Index bool) FilterResult {
-	filteredIndex := deepcopy.Copy(index).([]indexSchema.Schema)
-	for i := 0; i < len(filteredIndex); i++ {
-		if len(tags) != 0 && len(filteredIndex[i].Tags) == 0 {
-			// If tags are requested and a stack has no tags mentioned, then filter out entry
-			filterOut(&filteredIndex, &i)
-			continue
-		}
-
-		filterIn := true
-		tagsInIndex := StrArrayToSetMap(filteredIndex[i].Tags)
-
-		for _, requestedTag := range tags {
-			if !tagsInIndex.Has(requestedTag) {
-				filterIn = false
-				break
-			}
-		}
-
-		if !filterIn {
-			filterOut(&filteredIndex, &i)
-			continue
-		}
-
-		// go through each version's tags if multi-version stack is supported
-		if !v1Index {
-			for versionIndex := 0; versionIndex < len(filteredIndex[i].Versions); versionIndex++ {
-				versionTags := filteredIndex[i].Versions[versionIndex].Tags
-				if len(tags) != 0 && len(versionTags) == 0 {
+	return FilterResult{
+		filterFn: func(fr *FilterResult) {
+			filteredIndex := deepcopy.Copy(index).([]indexSchema.Schema)
+			for i := 0; i < len(filteredIndex); i++ {
+				if len(tags) != 0 && len(filteredIndex[i].Tags) == 0 {
 					// If tags are requested and a stack has no tags mentioned, then filter out entry
-					filterOut(&filteredIndex[i].Versions, &versionIndex)
+					filterOut(&filteredIndex, &i)
 					continue
 				}
-				filterVersion := true
-				tagsInVersion := StrArrayToSetMap(filteredIndex[i].Versions[versionIndex].Tags)
+
+				filterIn := true
+				tagsInIndex := StrArrayToSetMap(filteredIndex[i].Tags)
 
 				for _, requestedTag := range tags {
-					if !tagsInVersion.Has(requestedTag) {
-						filterVersion = false
+					if !tagsInIndex.Has(requestedTag) {
+						filterIn = false
 						break
 					}
 				}
 
-				if !filterVersion {
-					filterOut(&filteredIndex[i].Versions, &versionIndex)
+				if !filterIn {
+					filterOut(&filteredIndex, &i)
+					continue
 				}
 
-			}
-		}
-	}
+				// go through each version's tags if multi-version stack is supported
+				if !v1Index {
+					for versionIndex := 0; versionIndex < len(filteredIndex[i].Versions); versionIndex++ {
+						versionTags := filteredIndex[i].Versions[versionIndex].Tags
+						if len(tags) != 0 && len(versionTags) == 0 {
+							// If tags are requested and a stack has no tags mentioned, then filter out entry
+							filterOut(&filteredIndex[i].Versions, &versionIndex)
+							continue
+						}
+						filterVersion := true
+						tagsInVersion := StrArrayToSetMap(filteredIndex[i].Versions[versionIndex].Tags)
 
-	return FilterResult{Index: filteredIndex}
+						for _, requestedTag := range tags {
+							if !tagsInVersion.Has(requestedTag) {
+								filterVersion = false
+								break
+							}
+						}
+
+						if !filterVersion {
+							filterOut(&filteredIndex[i].Versions, &versionIndex)
+						}
+
+					}
+				}
+			}
+
+			fr.Index = filteredIndex
+		},
+	}
 }
 
 // filterDevfileArchitectures filters devfiles based on architectures
 func filterDevfileArchitectures(index []indexSchema.Schema, archs []string, v1Index bool) FilterResult {
-	filteredIndex := deepcopy.Copy(index).([]indexSchema.Schema)
-	for i := 0; i < len(filteredIndex); i++ {
-		if len(filteredIndex[i].Architectures) == 0 {
-			// If a stack has no architectures mentioned, then it supports all architectures
-			continue
-		}
-
-		filterIn := true
-
-		for _, requestedArch := range archs {
-			isArchPresent := false
-			for _, devfileArch := range filteredIndex[i].Architectures {
-				if requestedArch == devfileArch {
-					isArchPresent = true
-					break
-				}
-			}
-
-			if !isArchPresent {
-				// if one of the arch requested is not present, no need to search for the others
-				filterIn = false
-				break
-			}
-		}
-
-		if !filterIn {
-			filterOut(&filteredIndex, &i)
-			continue
-		}
-
-		// go through each version's architecture if multi-version stack is supported
-		if !v1Index {
-			for versionIndex := 0; versionIndex < len(filteredIndex[i].Versions); versionIndex++ {
-				versionArchs := filteredIndex[i].Versions[versionIndex].Architectures
-				if len(versionArchs) == 0 {
-					// If a devfile has no architectures mentioned, then it supports all architectures
+	return FilterResult{
+		filterFn: func(fr *FilterResult) {
+			filteredIndex := deepcopy.Copy(index).([]indexSchema.Schema)
+			for i := 0; i < len(filteredIndex); i++ {
+				if len(filteredIndex[i].Architectures) == 0 {
+					// If a stack has no architectures mentioned, then it supports all architectures
 					continue
 				}
-				archInVersion := true
+
+				filterIn := true
+
 				for _, requestedArch := range archs {
-					archPresentInVersion := false
-					for _, versionArch := range versionArchs {
-						if requestedArch == versionArch {
-							archPresentInVersion = true
+					isArchPresent := false
+					for _, devfileArch := range filteredIndex[i].Architectures {
+						if requestedArch == devfileArch {
+							isArchPresent = true
 							break
 						}
 					}
-					if !archPresentInVersion {
+
+					if !isArchPresent {
 						// if one of the arch requested is not present, no need to search for the others
-						archInVersion = false
+						filterIn = false
 						break
 					}
 				}
 
-				if !archInVersion {
-					filterOut(&filteredIndex[i].Versions, &versionIndex)
+				if !filterIn {
+					filterOut(&filteredIndex, &i)
+					continue
 				}
 
-			}
-		}
-	}
+				// go through each version's architecture if multi-version stack is supported
+				if !v1Index {
+					for versionIndex := 0; versionIndex < len(filteredIndex[i].Versions); versionIndex++ {
+						versionArchs := filteredIndex[i].Versions[versionIndex].Architectures
+						if len(versionArchs) == 0 {
+							// If a devfile has no architectures mentioned, then it supports all architectures
+							continue
+						}
+						archInVersion := true
+						for _, requestedArch := range archs {
+							archPresentInVersion := false
+							for _, versionArch := range versionArchs {
+								if requestedArch == versionArch {
+									archPresentInVersion = true
+									break
+								}
+							}
+							if !archPresentInVersion {
+								// if one of the arch requested is not present, no need to search for the others
+								archInVersion = false
+								break
+							}
+						}
 
-	return FilterResult{Index: filteredIndex}
+						if !archInVersion {
+							filterOut(&filteredIndex[i].Versions, &versionIndex)
+						}
+
+					}
+				}
+			}
+
+			fr.Index = filteredIndex
+		},
+	}
 }
 
 // FilterDevfileSchemaVersion filters devfiles based on schema version
 func FilterDevfileSchemaVersion(index []indexSchema.Schema, minSchemaVersion string, maxSchemaVersion string) FilterResult {
-	for i := 0; i < len(index); i++ {
-		for versionIndex := 0; versionIndex < len(index[i].Versions); versionIndex++ {
-			currectSchemaVersion := index[i].Versions[versionIndex].SchemaVersion
-			schemaVersionWithoutServiceVersion := currectSchemaVersion[:strings.LastIndex(currectSchemaVersion, ".")]
-			curVersion, err := versionpkg.NewVersion(schemaVersionWithoutServiceVersion)
-			if err != nil {
-				return FilterResult{Error: fmt.Errorf("failed to parse schemaVersion %s for stack: %s, version %s. Error: %v", currectSchemaVersion, index[i].Name, index[i].Versions[versionIndex].Version, err)}
+	return FilterResult{
+		filterFn: func(fr *FilterResult) {
+			for i := 0; i < len(index); i++ {
+				for versionIndex := 0; versionIndex < len(index[i].Versions); versionIndex++ {
+					currectSchemaVersion := index[i].Versions[versionIndex].SchemaVersion
+					schemaVersionWithoutServiceVersion := currectSchemaVersion[:strings.LastIndex(currectSchemaVersion, ".")]
+					curVersion, err := versionpkg.NewVersion(schemaVersionWithoutServiceVersion)
+					if err != nil {
+						fr.Error = fmt.Errorf("failed to parse schemaVersion %s for stack: %s, version %s. Error: %v", currectSchemaVersion, index[i].Name, index[i].Versions[versionIndex].Version, err)
+						return
+					}
+
+					versionInRange := true
+					if minSchemaVersion != "" {
+						minVersion, err := versionpkg.NewVersion(minSchemaVersion)
+						if err != nil {
+							fr.Error = fmt.Errorf("failed to parse minSchemaVersion %s. Error: %v", minSchemaVersion, err)
+							return
+						}
+						if minVersion.GreaterThan(curVersion) {
+							versionInRange = false
+						}
+					}
+					if versionInRange && maxSchemaVersion != "" {
+						maxVersion, err := versionpkg.NewVersion(maxSchemaVersion)
+						if err != nil {
+							fr.Error = fmt.Errorf("failed to parse maxSchemaVersion %s. Error: %v", maxSchemaVersion, err)
+							return
+						}
+						if maxVersion.LessThan(curVersion) {
+							versionInRange = false
+						}
+					}
+					if !versionInRange {
+						// if schemaVersion is not in requested range, filter it out
+						index[i].Versions = append(index[i].Versions[:versionIndex], index[i].Versions[versionIndex+1:]...)
+
+						// decrement counter, since we shifted the array
+						versionIndex--
+					}
+				}
+				if len(index[i].Versions) == 0 {
+					// if versions list is empty after filter, remove this index
+					index = append(index[:i], index[i+1:]...)
+
+					// decrement counter, since we shifted the array
+					i--
+				}
 			}
 
-			versionInRange := true
-			if minSchemaVersion != "" {
-				minVersion, err := versionpkg.NewVersion(minSchemaVersion)
-				if err != nil {
-					return FilterResult{Error: fmt.Errorf("failed to parse minSchemaVersion %s. Error: %v", minSchemaVersion, err)}
-				}
-				if minVersion.GreaterThan(curVersion) {
-					versionInRange = false
-				}
-			}
-			if versionInRange && maxSchemaVersion != "" {
-				maxVersion, err := versionpkg.NewVersion(maxSchemaVersion)
-				if err != nil {
-					return FilterResult{Error: fmt.Errorf("failed to parse maxSchemaVersion %s. Error: %v", maxSchemaVersion, err)}
-				}
-				if maxVersion.LessThan(curVersion) {
-					versionInRange = false
-				}
-			}
-			if !versionInRange {
-				// if schemaVersion is not in requested range, filter it out
-				index[i].Versions = append(index[i].Versions[:versionIndex], index[i].Versions[versionIndex+1:]...)
-
-				// decrement counter, since we shifted the array
-				versionIndex--
-			}
-		}
-		if len(index[i].Versions) == 0 {
-			// if versions list is empty after filter, remove this index
-			index = append(index[:i], index[i+1:]...)
-
-			// decrement counter, since we shifted the array
-			i--
-		}
+			fr.Index = index
+		},
 	}
-
-	return FilterResult{Index: index}
 }
 
-// FilterDevfileStrField
+// FilterDevfileStrField filters by given string field, returns unchanged index if given parameter name is unrecognized
 func FilterDevfileStrField(index []indexSchema.Schema, paramName string, requestedValue string, v1Index bool) FilterResult {
 	var getIndexValue func(*indexSchema.Schema) (string, error)
 	var getVersionValue func(*indexSchema.Version) (string, error)
@@ -445,49 +480,73 @@ func FilterDevfileStrField(index []indexSchema.Schema, paramName string, request
 		getIndexValue = indexSchema.GetSupportUrl
 		getVersionValue = nil
 	default:
-		return FilterResult{Index: index}
+		return FilterResult{
+			filterFn: func(fr *FilterResult) {
+				fr.Index = index
+			},
+		}
 	}
 
 	return filterDevfileFieldFuzzy(index, requestedValue, getIndexValue, getVersionValue, v1Index)
 }
 
+// AndFilter filters results of given filters to only overlapping results
 func AndFilter(results ...FilterResult) FilterResult {
-	andResultsMap := map[string]*struct {
-		count  int
-		schema indexSchema.Schema
-	}{}
-	andResults := []indexSchema.Schema{}
+	return FilterResult{
+		children: results,
+		filterFn: func(fr *FilterResult) {
+			andResultsMap := map[string]*struct {
+				count  int
+				schema indexSchema.Schema
+			}{}
+			andResults := []indexSchema.Schema{}
 
-	for _, result := range results {
-		if result.Error != nil {
-			return FilterResult{Error: result.Error}
-		}
-		for _, schema := range result.Index {
-			andResult, found := andResultsMap[schema.Name]
-			if !found {
-				andResultsMap[schema.Name] = &struct {
-					count  int
-					schema indexSchema.Schema
-				}{
-					count:  1,
-					schema: schema,
+			for _, result := range fr.children {
+
+				// Evaluates filter if not already evaluated
+				if !result.IsEval {
+					result.Eval()
 				}
-			} else {
-				andResultsMap[schema.Name].count += 1
-				if len(schema.Versions) < len(andResult.schema.Version) {
-					andResultsMap[schema.Name].schema = schema
+
+				// If a filter returns an error, return as overall result
+				if result.Error != nil {
+					fr.Error = result.Error
+					return
+				}
+
+				for _, schema := range result.Index {
+					andResult, found := andResultsMap[schema.Name]
+					// if not found, initize is a seen counter of one and the current seen schema
+					// else increment seen counter and re-assign current seen schema if versions have been filtered
+					if !found {
+						andResultsMap[schema.Name] = &struct {
+							count  int
+							schema indexSchema.Schema
+						}{
+							count:  1,
+							schema: schema,
+						}
+					} else {
+						andResultsMap[schema.Name].count += 1
+						if len(schema.Versions) < len(andResult.schema.Version) {
+							andResultsMap[schema.Name].schema = schema
+						}
+					}
 				}
 			}
-		}
-	}
 
-	for _, v := range andResultsMap {
-		if v.count == len(results) {
-			andResults = append(andResults, v.schema)
-		}
-	}
+			// build results of filters into new index schema
+			for _, v := range andResultsMap {
+				// if result is in every filter result then add to array
+				if v.count == len(results) {
+					andResults = append(andResults, v.schema)
+				}
+			}
 
-	return FilterResult{Index: andResults}
+			// set new index schema as the and filter result
+			fr.Index = andResults
+		},
+	}
 }
 
 // FilterDevfileStrArrayField filters devfiles based on an array field
@@ -498,6 +557,10 @@ func FilterDevfileStrArrayField(index []indexSchema.Schema, paramName string, re
 	case ARRAY_PARAM_TAGS:
 		return filterDevfileTags(index, requestedValues, v1Index)
 	default:
-		return FilterResult{Index: index}
+		return FilterResult{
+			filterFn: func(fr *FilterResult) {
+				fr.Index = index
+			},
+		}
 	}
 }
