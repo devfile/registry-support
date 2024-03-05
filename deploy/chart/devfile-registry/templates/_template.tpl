@@ -17,6 +17,15 @@
 {{- .Values.hostnameOverride | default (printf "devfile-registry-%s" .Release.Namespace) -}}
 {{- end -}}
 
+{{- define "devfileregistry.ingressUrl" -}}
+{{- $hostname := .Values.hostnameOverride | default (printf "devfile-registry-%s" .Release.Namespace) -}}
+{{- if .Values.global.tlsEnabled -}}
+{{- .Values.global.ingress.domain | printf "https://%s.%s" $hostname -}}
+{{- else -}}
+{{- .Values.global.ingress.domain | printf "http://%s.%s" $hostname -}}
+{{- end -}}
+{{- end -}}
+
 {{- define "devfileregistry.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
 {{- end -}}

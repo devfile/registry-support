@@ -26,7 +26,7 @@ metadata:
     kubernetes.io/ingress.class: {{ .Values.global.ingress.class }}
 spec:
   rules:
-  - host: {{ template "devfileregistry.hostname" . -}} . {{- .Values.global.ingress.domain }}
+  - host: {{ template "devfileregistry.ingressUrl" . }}
     http:
       paths:
       - path: /
