@@ -21,6 +21,7 @@ import (
 	"strings"
 
 	indexSchema "github.com/devfile/registry-support/index/generator/schema"
+	sets "github.com/hashicorp/go-set"
 	versionpkg "github.com/hashicorp/go-version"
 	"github.com/mohae/deepcopy"
 )
@@ -210,10 +211,10 @@ func filterDevfileTags(index []indexSchema.Schema, tags []string, v1Index bool) 
 				}
 
 				filterIn := true
-				tagsInIndex := StrArrayToSetMap(filteredIndex[i].Tags)
+				tagsInIndex := sets.From(filteredIndex[i].Tags)
 
 				for _, requestedTag := range tags {
-					if !tagsInIndex.Has(requestedTag) {
+					if !tagsInIndex.Contains(requestedTag) {
 						filterIn = false
 						break
 					}
@@ -234,10 +235,10 @@ func filterDevfileTags(index []indexSchema.Schema, tags []string, v1Index bool) 
 							continue
 						}
 						filterVersion := true
-						tagsInVersion := StrArrayToSetMap(filteredIndex[i].Versions[versionIndex].Tags)
+						tagsInVersion := sets.From(filteredIndex[i].Versions[versionIndex].Tags)
 
 						for _, requestedTag := range tags {
-							if !tagsInVersion.Has(requestedTag) {
+							if !tagsInVersion.Contains(requestedTag) {
 								filterVersion = false
 								break
 							}
