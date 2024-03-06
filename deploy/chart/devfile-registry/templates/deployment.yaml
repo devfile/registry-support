@@ -142,9 +142,9 @@ spec:
             value: |
               [
                 {
-                  "name": "Community",
+                  "name": "{{ template "devfileregistry.name" . }}",
                   "url": "http://localhost:8080",
-                  "fqdn": "http://{{ .Release.Name }}-{{ .Release.Namespace }}.{{ .Values.global.ingress.domain }}"
+                  "fqdn": "{{ template "devfileregistry.ingressUrl" . }}"
                 }
               ]
         volumeMounts:
