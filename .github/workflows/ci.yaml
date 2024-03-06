@@ -31,7 +31,7 @@ jobs:
       - name: Setup Go environment
         uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe # v4.1.0
         with:
-          go-version: 1.18
+          go-version: 1.19
 
       - name: Check if index-generator build is working
         run: cd index/generator && bash ./build.sh
@@ -83,7 +83,7 @@ jobs:
       - name: Setup Go environment
         uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe # v4.1.0
         with:
-          go-version: 1.18
+          go-version: 1.19
 
       - name: Check license
         run: |
@@ -127,7 +127,7 @@ jobs:
       - name: Setup Go environment
         uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe # v4.1.0
         with:
-          go-version: 1.18
+          go-version: 1.19
       - name: Setup Minikube
         uses: manusa/actions-setup-minikube@3856c6fa039819f1c8e7e248b1fc5a8564e354c9 # v2.9.0
         with:
@@ -151,7 +151,7 @@ jobs:
       - name: Setup Go environment
         uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe # v4.1.0
         with:
-          go-version: 1.18
+          go-version: 1.19
       - name: Run the devfile registry integration tests
         run: |
           # Run the integration tests

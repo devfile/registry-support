@@ -14,7 +14,7 @@
 # limitations under the License.
 
 # Index Server build stage
-FROM golang:1.18-alpine AS index-builder
+FROM golang:1.19-alpine AS index-builder
 WORKDIR /tools
 COPY . .
 RUN CGO_ENABLED=0 go build -mod=vendor -o index-server main.go
