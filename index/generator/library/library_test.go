@@ -18,7 +18,7 @@ package library
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"reflect"
 	"testing"
 
@@ -547,7 +547,7 @@ func TestValidateIndexComponent(t *testing.T) {
 func TestParseDevfileRegistry(t *testing.T) {
 	registryDirPath := "../tests/registry"
 	wantIndexFilePath := "../tests/registry/index_registry.json"
-	bytes, err := ioutil.ReadFile(wantIndexFilePath)
+	bytes, err := os.ReadFile(wantIndexFilePath)
 	if err != nil {
 		t.Errorf("Failed to read index_registry.json: %v", err)
 	}
@@ -579,7 +579,7 @@ func TestParseDevfileRegistry(t *testing.T) {
 func TestParseExtraDevfileEntries(t *testing.T) {
 	registryDirPath := "../tests/registry"
 	wantIndexFilePath := "../tests/registry/index_extra.json"
-	bytes, err := ioutil.ReadFile(wantIndexFilePath)
+	bytes, err := os.ReadFile(wantIndexFilePath)
 	if err != nil {
 		t.Errorf("Failed to read index_extra.json: %v", err)
 	}
@@ -611,7 +611,7 @@ func TestParseExtraDevfileEntries(t *testing.T) {
 func TestGenerateIndexStruct(t *testing.T) {
 	registryDirPath := "../tests/registry"
 	wantIndexFilePath := "../tests/registry/index_main.json"
-	bytes, err := ioutil.ReadFile(wantIndexFilePath)
+	bytes, err := os.ReadFile(wantIndexFilePath)
 	if err != nil {
 		t.Errorf("Failed to read index_main.json: %v", err)
 	}
