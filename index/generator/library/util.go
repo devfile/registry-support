@@ -19,7 +19,6 @@ import (
 	"archive/zip"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -71,7 +70,7 @@ func CloneRemoteStack(git *schema.Git, path string, verbose bool) (err error) {
 	originalPath := ""
 	if git.SubDir != "" {
 		originalPath = path
-		path, err = ioutil.TempDir("", "")
+		path, err = os.MkdirTemp("", "")
 		if err != nil {
 			return err
 		}
@@ -144,7 +143,7 @@ func DownloadStackFromGit(git *schema.Git, path string, verbose bool) ([]byte, e
 
 	// Read bytes from response and return, error will be nil if successful
 	/* #nosec G304 -- zipPath is constructed from a clean path */
-	return ioutil.ReadFile(zipPath)
+	return os.ReadFile(zipPath)
 }
 
 // DownloadStackFromZipUrl downloads the zip file containing the stack at a given url, uses default filesystem
@@ -195,7 +194,7 @@ func downloadStackFromZipUrl(zipUrl string, subDir string, path string, fs files
 
 	// Read bytes from response and return, error will be nil if successful
 	/* #nosec G304 -- zipDest is produced using a cleaned path */
-	return ioutil.ReadFile(zipDst)
+	return os.ReadFile(zipDst)
 }
 
 // GitSubDir handles subDir for git components using the default filesystem

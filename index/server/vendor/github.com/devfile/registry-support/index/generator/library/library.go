@@ -18,7 +18,7 @@ package library
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io/fs"
 	"net/http"
 	"os"
 	"path"
@@ -104,7 +104,7 @@ func CreateIndexFile(index []schema.Schema, indexFilePath string) error {
 	}
 
 	/* #nosec G306 -- index file does not contain any sensitive data*/
-	err = ioutil.WriteFile(indexFilePath, bytes, 0644)
+	err = os.WriteFile(indexFilePath, bytes, 0644)
 	if err != nil {
 		return fmt.Errorf("failed to write %s: %v", indexFilePath, err)
 	}
@@ -242,10 +242,20 @@ func parseDevfileRegistry(registryDirPath string, force bool) ([]schema.Schema, 
 
 	var index []schema.Schema
 	stackDirPath := path.Join(registryDirPath, "stacks")
-	stackDir, err := ioutil.ReadDir(stackDirPath)
+	dirEntries, err := os.ReadDir(stackDirPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read stack directory %s: %v", stackDirPath, err)
 	}
+
+	stackDir := make([]fs.FileInfo, 0, len(dirEntries))
+	for _, dirEntry := range dirEntries {
+		info, err := dirEntry.Info()
+		if err != nil {
+			return nil, fmt.Errorf("failed to read stack directory info for %s: %v", stackDirPath, err)
+		}
+		stackDir = append(stackDir, info)
+	}
+
 	for _, stackFolderDir := range stackDir {
 		if !stackFolderDir.IsDir() {
 			continue
@@ -295,12 +305,11 @@ func parseDevfileRegistry(registryDirPath string, force bool) ([]schema.Schema, 
 				}
 			}
 		} else { // if stack.yaml not exist, old stack repo struct, directly lookfor & parse devfile.yaml
-			versionComponent := schema.Version{}
+			versionComponent := schema.Version{Default: true}
 			err := parseStackDevfile(stackFolderPath, stackFolderDir.Name(), force, &versionComponent, &indexComponent)
 			if err != nil {
 				return nil, err
 			}
-			versionComponent.Default = true
 			indexComponent.Versions = append(indexComponent.Versions, versionComponent)
 		}
 		indexComponent.Type = schema.StackDevfileType
@@ -353,7 +362,7 @@ func parseStackDevfile(devfileDirPath string, stackName string, force bool, vers
 	}
 
 	/* #nosec G304 -- devfilePath is produced using filepath.Join which cleans the input path */
-	bytes, err := ioutil.ReadFile(devfilePath)
+	bytes, err := os.ReadFile(devfilePath)
 	if err != nil {
 		return fmt.Errorf("failed to read %s: %v", devfilePath, err)
 	}
@@ -441,9 +450,11 @@ func parseStackDevfile(devfileDirPath string, stackName string, force bool, vers
 		versionComponent.StarterProjects = append(versionComponent.StarterProjects, starterProject.Name)
 	}
 
-	for _, tag := range versionComponent.Tags {
-		if !inArray(indexComponent.Tags, tag) {
-			indexComponent.Tags = append(indexComponent.Tags, tag)
+	if versionComponent.Default {
+		for _, tag := range versionComponent.Tags {
+			if !inArray(indexComponent.Tags, tag) {
+				indexComponent.Tags = append(indexComponent.Tags, tag)
+			}
 		}
 	}
 
@@ -454,10 +465,22 @@ func parseStackDevfile(devfileDirPath string, stackName string, force bool, vers
 	}
 
 	// Get the files in the stack folder
-	stackFiles, err := ioutil.ReadDir(devfileDirPath)
+	fileEntries, err := os.ReadDir(devfileDirPath)
 	if err != nil {
 		return err
 	}
+
+	stackFiles := make([]fs.FileInfo, 0, len(fileEntries))
+
+	for _, fileEntry := range fileEntries {
+		info, err := fileEntry.Info()
+		if err != nil {
+			return err
+		}
+
+		stackFiles = append(stackFiles, info)
+	}
+
 	for _, stackFile := range stackFiles {
 		// The registry build should have already packaged any folders and miscellaneous files into an archive.tar file
 		// But, add this check as a safeguard, as OCI doesn't support unarchived folders being pushed up.
@@ -472,7 +495,7 @@ func parseExtraDevfileEntries(registryDirPath string, force bool) ([]schema.Sche
 	var index []schema.Schema
 	extraDevfileEntriesPath := path.Join(registryDirPath, extraDevfileEntries)
 	/* #nosec G304 -- extraDevfileEntriesPath is produced using path.Join which cleans the input path */
-	bytes, err := ioutil.ReadFile(extraDevfileEntriesPath)
+	bytes, err := os.ReadFile(extraDevfileEntriesPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read %s: %v", extraDevfileEntriesPath, err)
 	}
@@ -562,7 +585,7 @@ func parseExtraDevfileEntries(registryDirPath string, force bool) ([]schema.Sche
 /* #nosec G304 -- stackYamlPath is produced from file.Join which cleans the input path */
 func parseStackInfo(stackYamlPath string) (schema.Schema, error) {
 	var index schema.Schema
-	bytes, err := ioutil.ReadFile(stackYamlPath)
+	bytes, err := os.ReadFile(stackYamlPath)
 	if err != nil {
 		return schema.Schema{}, fmt.Errorf("failed to read %s: %v", stackYamlPath, err)
 	}

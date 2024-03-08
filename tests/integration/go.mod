@@ -1,6 +1,6 @@
 module github.com/devfile/registry-support/tests/integration
 
-go 1.18
+go 1.19
 
 require (
 	github.com/devfile/library/v2 v2.2.1-0.20230323124903-d36e409ff94f

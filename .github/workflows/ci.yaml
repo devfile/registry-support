@@ -20,6 +20,10 @@ on:
   pull_request:
     branches: [main]
 
+env:
+  GO_VERSION: 1.19
+  OAPI_CODEGEN_VERSION: v1.12.4
+
 jobs:
   go:
     name: Check go tools build
@@ -31,7 +35,7 @@ jobs:
       - name: Setup Go environment
         uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe # v4.1.0
         with:
-          go-version: 1.18
+          go-version: ${{ env.GO_VERSION }}
 
       - name: Check if index-generator build is working
         run: cd index/generator && bash ./build.sh
@@ -45,7 +49,7 @@ jobs:
       - name: Check index-server code generation
         run: |
           export GOPATH=$(go env GOPATH)
-          go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@v1.12.4
+          go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@${{ env.OAPI_CODEGEN_VERSION }}
           bash index/server/codegen.sh
           GEN_DIFFS=$(git diff --name-only --diff-filter=ACMRT | grep .gen.go$ | xargs)
           if [[ ! -z "${GEN_DIFFS}" ]]
@@ -83,7 +87,7 @@ jobs:
       - name: Setup Go environment
         uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe # v4.1.0
         with:
-          go-version: 1.18
+          go-version: ${{ env.GO_VERSION }}
 
       - name: Check license
         run: |
@@ -102,7 +106,7 @@ jobs:
         run: |
           cd index/server
           export GOPATH=$(go env GOPATH)
-          go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@v1.12.4
+          go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@${{ env.OAPI_CODEGEN_VERSION }}
           bash ./build.sh
 
       - name: Test index server
@@ -127,7 +131,7 @@ jobs:
       - name: Setup Go environment
         uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe # v4.1.0
         with:
-          go-version: 1.18
+          go-version: ${{ env.GO_VERSION }}
       - name: Setup Minikube
         uses: manusa/actions-setup-minikube@3856c6fa039819f1c8e7e248b1fc5a8564e354c9 # v2.9.0
         with:
@@ -139,7 +143,7 @@ jobs:
       - name: Run the devfile registry integration tests
         run: | 
           export GOPATH=$(go env GOPATH)
-          go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@v1.12.4
+          go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@${{ env.OAPI_CODEGEN_VERSION }}
           bash .ci/run_tests_minikube_linux.sh
 
   test_staging:
@@ -151,7 +155,7 @@ jobs:
       - name: Setup Go environment
         uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe # v4.1.0
         with:
-          go-version: 1.18
+          go-version: ${{ env.GO_VERSION }}
       - name: Run the devfile registry integration tests
         run: |
           # Run the integration tests
