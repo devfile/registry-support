@@ -12,6 +12,9 @@ github.com/Microsoft/go-winio/internal/fs
 github.com/Microsoft/go-winio/internal/socket
 github.com/Microsoft/go-winio/internal/stringbuffer
 github.com/Microsoft/go-winio/pkg/guid
+# github.com/Microsoft/hcsshim v0.9.10
+## explicit; go 1.13
+github.com/Microsoft/hcsshim/osversion
 # github.com/ProtonMail/go-crypto v0.0.0-20230828082145-3c4c8a2d2371
 ## explicit; go 1.13
 github.com/ProtonMail/go-crypto/bitcurves
@@ -52,8 +55,8 @@ github.com/cloudflare/circl/math/mlsbset
 github.com/cloudflare/circl/sign
 github.com/cloudflare/circl/sign/ed25519
 github.com/cloudflare/circl/sign/ed448
-# github.com/containerd/containerd v1.5.9
-## explicit; go 1.16
+# github.com/containerd/containerd v1.6.26
+## explicit; go 1.19
 github.com/containerd/containerd/archive/compression
 github.com/containerd/containerd/content
 github.com/containerd/containerd/content/local
@@ -62,6 +65,7 @@ github.com/containerd/containerd/filters
 github.com/containerd/containerd/images
 github.com/containerd/containerd/labels
 github.com/containerd/containerd/log
+github.com/containerd/containerd/pkg/randutil
 github.com/containerd/containerd/platforms
 github.com/containerd/containerd/reference
 github.com/containerd/containerd/remotes
@@ -70,6 +74,9 @@ github.com/containerd/containerd/remotes/docker/auth
 github.com/containerd/containerd/remotes/docker/schema1
 github.com/containerd/containerd/remotes/errors
 github.com/containerd/containerd/version
+# github.com/containerd/log v0.1.0
+## explicit; go 1.20
+github.com/containerd/log
 # github.com/cyphar/filepath-securejoin v0.2.4
 ## explicit; go 1.13
 github.com/cyphar/filepath-securejoin
@@ -161,7 +168,7 @@ github.com/docker/go-metrics
 # github.com/docker/go-units v0.4.0
 ## explicit
 github.com/docker/go-units
-# github.com/emicklei/go-restful/v3 v3.9.0
+# github.com/emicklei/go-restful/v3 v3.10.1
 ## explicit; go 1.13
 github.com/emicklei/go-restful/v3
 github.com/emicklei/go-restful/v3/log
@@ -312,7 +319,7 @@ github.com/gorilla/mux
 ## explicit
 github.com/gregjones/httpcache
 github.com/gregjones/httpcache/diskcache
-# github.com/hashicorp/errwrap v1.0.0
+# github.com/hashicorp/errwrap v1.1.0
 ## explicit
 github.com/hashicorp/errwrap
 # github.com/hashicorp/go-multierror v1.1.1
@@ -374,7 +381,7 @@ github.com/mattn/go-colorable
 # github.com/mattn/go-isatty v0.0.17
 ## explicit; go 1.15
 github.com/mattn/go-isatty
-# github.com/matttproud/golang_protobuf_extensions v1.0.2
+# github.com/matttproud/golang_protobuf_extensions v1.0.4
 ## explicit; go 1.9
 github.com/matttproud/golang_protobuf_extensions/pbutil
 # github.com/mitchellh/go-homedir v1.1.0
@@ -411,8 +418,8 @@ github.com/nsf/jsondiff
 # github.com/opencontainers/go-digest v1.0.0
 ## explicit; go 1.13
 github.com/opencontainers/go-digest
-# github.com/opencontainers/image-spec v1.0.2
-## explicit
+# github.com/opencontainers/image-spec v1.1.0-rc2.0.20221005185240-3a7f492d3f1b
+## explicit; go 1.17
 github.com/opencontainers/image-spec/specs-go
 github.com/opencontainers/image-spec/specs-go/v1
 # github.com/openshift/api v0.0.0-20200930075302-db52bc4ef99f
@@ -466,7 +473,7 @@ github.com/sagikazarmark/slog-shim
 # github.com/sergi/go-diff v1.1.0
 ## explicit; go 1.12
 github.com/sergi/go-diff/diffmatchpatch
-# github.com/sirupsen/logrus v1.9.0
+# github.com/sirupsen/logrus v1.9.3
 ## explicit; go 1.13
 github.com/sirupsen/logrus
 # github.com/skeema/knownhosts v1.2.1
