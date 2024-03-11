@@ -38,6 +38,13 @@ spec:
         release: "{{ .Release.Name }}"
         heritage: "{{ .Release.Service }}"
     spec:
+      {{- if .Values.persistence.enabled }}
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        runAsGroup: 2001
+        fsGroup: 3001
+      {{- end }}
       volumes:
         - name: devfile-registry-storage
         {{- if .Values.persistence.enabled }}
@@ -52,12 +59,6 @@ spec:
             items:
               - key: registry-config.yml
                 path: config.yml
-        - name: viewer-env-file
-          configMap:
-            name: {{ template "devfileregistry.fullname" . }}
-            items:
-              - key: .env.registry-viewer
-                path: .env.production
       containers:
       - image: "{{ .Values.devfileIndex.image }}:{{ .Values.devfileIndex.tag }}"
         imagePullPolicy: {{ .Values.devfileIndex.imagePullPolicy }}
@@ -87,8 +88,8 @@ spec:
             port: 3000
             scheme: HTTP
           initialDelaySeconds: 30
-          periodSeconds: 1
-          timeoutSeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 20
         {{- end }}
         resources:
           limits:
@@ -121,7 +122,7 @@ spec:
             scheme: HTTP
           initialDelaySeconds: 15
           periodSeconds: 10
-          timeoutSeconds: 3
+          timeoutSeconds: 20
         readinessProbe:
           httpGet:
             path: /viewer
@@ -129,7 +130,7 @@ spec:
             scheme: HTTP
           initialDelaySeconds: 15
           periodSeconds: 10
-          timeoutSeconds: 3
+          timeoutSeconds: 20
         resources:
           limits:
             memory: {{ .Values.registryViewer.memoryLimit }}
@@ -147,11 +148,6 @@ spec:
                   "fqdn": "{{ template "devfileregistry.ingressUrl" . }}"
                 }
               ]
-        volumeMounts:
-          - name: viewer-env-file
-            mountPath: /app/.env.production
-            subPath: .env.production
-            readOnly: true
         securityContext:
           allowPrivilegeEscalation: false
           runAsNonRoot: true
