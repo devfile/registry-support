@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/containerd/containerd v1.6.12
-	github.com/devfile/registry-support/index/generator v0.0.0
+	github.com/devfile/registry-support/index/generator v0.0.0-20240228144139-dd51121eae68
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/hashicorp/go-version v1.4.0
 	github.com/mitchellh/go-homedir v1.1.0
@@ -75,4 +75,4 @@ require (
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect
 )
 
-replace github.com/devfile/registry-support/index/generator v0.0.0 => ../index/generator
+replace github.com/devfile/registry-support/index/generator v0.0.0-20240228144139-dd51121eae68 => ../index/generator
