@@ -26,7 +26,7 @@ github.com/containerd/containerd/remotes/docker/auth
 github.com/containerd/containerd/remotes/docker/schema1
 github.com/containerd/containerd/remotes/errors
 github.com/containerd/containerd/version
-# github.com/devfile/registry-support/index/generator v0.0.0 => ../index/generator
+# github.com/devfile/registry-support/index/generator v0.0.0-20240228144139-dd51121eae68 => ../index/generator
 ## explicit; go 1.18
 github.com/devfile/registry-support/index/generator/schema
 # github.com/docker/cli v20.10.21+incompatible
