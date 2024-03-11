@@ -1,8 +1,8 @@
 # github.com/AdaLogics/go-fuzz-headers v0.0.0-20230811130428-ced1acdcaa24
 ## explicit; go 1.20
 github.com/AdaLogics/go-fuzz-headers
-# github.com/Microsoft/hcsshim v0.12.0
-## explicit; go 1.21
+# github.com/Microsoft/hcsshim v0.11.4
+## explicit; go 1.18
 github.com/Microsoft/hcsshim/osversion
 # github.com/beorn7/perks v1.0.1
 ## explicit; go 1.11
@@ -10,8 +10,6 @@ github.com/beorn7/perks/quantile
 # github.com/cespare/xxhash/v2 v2.2.0
 ## explicit; go 1.11
 github.com/cespare/xxhash/v2
-# github.com/containerd/cgroups/v3 v3.0.3
-## explicit; go 1.18
 # github.com/containerd/containerd v1.7.13
 ## explicit; go 1.19
 github.com/containerd/containerd/archive/compression
@@ -38,8 +36,8 @@ github.com/containerd/containerd/version
 # github.com/containerd/log v0.1.0
 ## explicit; go 1.20
 github.com/containerd/log
-# github.com/devfile/registry-support/index/generator v0.0.0 => ../index/generator
-## explicit; go 1.18
+# github.com/devfile/registry-support/index/generator v0.0.0-20240311135803-6215550f93d4 => ../index/generator
+## explicit; go 1.19
 github.com/devfile/registry-support/index/generator/schema
 # github.com/distribution/reference v0.5.0
 ## explicit; go 1.20
@@ -203,6 +201,8 @@ github.com/prometheus/common/model
 github.com/prometheus/procfs
 github.com/prometheus/procfs/internal/fs
 github.com/prometheus/procfs/internal/util
+# github.com/rogpeppe/go-internal v1.11.0
+## explicit; go 1.19
 # github.com/sagikazarmark/locafero v0.4.0
 ## explicit; go 1.20
 github.com/sagikazarmark/locafero
@@ -297,7 +297,6 @@ golang.org/x/sync/semaphore
 golang.org/x/sys/execabs
 golang.org/x/sys/unix
 golang.org/x/sys/windows
-golang.org/x/sys/windows/registry
 # golang.org/x/text v0.14.0
 ## explicit; go 1.18
 golang.org/x/text/encoding
@@ -363,6 +362,8 @@ google.golang.org/protobuf/types/descriptorpb
 google.golang.org/protobuf/types/gofeaturespb
 google.golang.org/protobuf/types/known/anypb
 google.golang.org/protobuf/types/known/timestamppb
+# gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c
+## explicit; go 1.11
 # gopkg.in/inf.v0 v0.9.1
 ## explicit
 gopkg.in/inf.v0
@@ -375,6 +376,8 @@ gopkg.in/yaml.v2
 # gopkg.in/yaml.v3 v3.0.1
 ## explicit
 gopkg.in/yaml.v3
+# gotest.tools/v3 v3.5.1
+## explicit; go 1.17
 # k8s.io/apiextensions-apiserver v0.26.10
 ## explicit; go 1.19
 k8s.io/apiextensions-apiserver/pkg/apis/apiextensions
