@@ -147,8 +147,8 @@ func fuzzyMatch(a string, b string) bool {
 }
 
 // filterDevfileFieldFuzzy filters devfiles based on fuzzy filtering of string fields
-func filterDevfileFieldFuzzy(index []indexSchema.Schema, requestedValue string, getIndexValue func(*indexSchema.Schema) (string, error),
-	getVersionValue func(*indexSchema.Version) (string, error), v1Index bool) FilterResult {
+func filterDevfileFieldFuzzy(index []indexSchema.Schema, requestedValue string, getIndexValue func(*indexSchema.Schema) string,
+	getVersionValue func(*indexSchema.Version) string, v1Index bool) FilterResult {
 	return FilterResult{
 		filterFn: func(fr *FilterResult) {
 			filteredIndex := deepcopy.Copy(index).([]indexSchema.Schema)
@@ -158,11 +158,8 @@ func filterDevfileFieldFuzzy(index []indexSchema.Schema, requestedValue string, 
 					toFilterOutIndex := false
 
 					if getIndexValue != nil {
-						indexValue, err := getIndexValue(&filteredIndex[i])
-						if err != nil {
-							fr.Error = err
-							return
-						} else if !fuzzyMatch(indexValue, requestedValue) {
+						indexValue := getIndexValue(&filteredIndex[i])
+						if !fuzzyMatch(indexValue, requestedValue) {
 							toFilterOutIndex = true
 						}
 					} else {
@@ -172,11 +169,8 @@ func filterDevfileFieldFuzzy(index []indexSchema.Schema, requestedValue string, 
 					if !v1Index && getVersionValue != nil {
 						filteredVersions := deepcopy.Copy(filteredIndex[i].Versions).([]indexSchema.Version)
 						for versionIndex := 0; versionIndex < len(filteredVersions); versionIndex++ {
-							versionValue, err := getVersionValue(&filteredVersions[versionIndex])
-							if err != nil {
-								fr.Error = err
-								return
-							} else if !fuzzyMatch(versionValue, requestedValue) {
+							versionValue := getVersionValue(&filteredVersions[versionIndex])
+							if !fuzzyMatch(versionValue, requestedValue) {
 								filterOut(&filteredVersions, &versionIndex)
 							}
 						}
@@ -387,98 +381,92 @@ func FilterDevfileSchemaVersion(index []indexSchema.Schema, minSchemaVersion str
 
 // FilterDevfileStrField filters by given string field, returns unchanged index if given parameter name is unrecognized
 func FilterDevfileStrField(index []indexSchema.Schema, paramName string, requestedValue string, v1Index bool) FilterResult {
-	var getIndexValue func(*indexSchema.Schema) (string, error)
-	var getVersionValue func(*indexSchema.Version) (string, error)
+	var getIndexValue func(*indexSchema.Schema) string
+	var getVersionValue func(*indexSchema.Version) string
 	switch paramName {
 	case PARAM_NAME:
-		getIndexValue = indexSchema.GetName
+		getIndexValue = func(s *indexSchema.Schema) string {
+			return s.Name
+		}
 		getVersionValue = nil
 	case PARAM_DISPLAY_NAME:
-		getIndexValue = indexSchema.GetDisplayName
+		getIndexValue = func(s *indexSchema.Schema) string {
+			return s.DisplayName
+		}
 		getVersionValue = nil
 	case PARAM_DESCRIPTION:
-		getIndexValue = func(s *indexSchema.Schema) (string, error) {
-			description, err := indexSchema.GetDescription(s)
-			if err != nil {
-				return "", err
-			}
-
-			return description, nil
+		getIndexValue = func(s *indexSchema.Schema) string {
+			return s.Description
 		}
-		getVersionValue = func(v *indexSchema.Version) (string, error) {
-			description, err := indexSchema.GetDescription(v)
-			if err != nil {
-				return "", err
-			}
-
-			return description, nil
+		getVersionValue = func(v *indexSchema.Version) string {
+			return v.Description
 		}
 	case PARAM_ICON:
-		getIndexValue = func(s *indexSchema.Schema) (string, error) {
-			icon, err := indexSchema.GetIcon(s)
-			if err != nil {
-				return "", err
-			}
-
-			return icon, nil
+		getIndexValue = func(s *indexSchema.Schema) string {
+			return s.Icon
 		}
-		getVersionValue = func(v *indexSchema.Version) (string, error) {
-			icon, err := indexSchema.GetIcon(v)
-			if err != nil {
-				return "", err
-			}
-
-			return icon, nil
+		getVersionValue = func(v *indexSchema.Version) string {
+			return v.Icon
 		}
 	case PARAM_PROJECT_TYPE:
-		getIndexValue = indexSchema.GetProjectType
+		getIndexValue = func(s *indexSchema.Schema) string {
+			return s.ProjectType
+		}
 		getVersionValue = nil
 	case PARAM_LANGUAGE:
-		getIndexValue = indexSchema.GetLanguage
+		getIndexValue = func(s *indexSchema.Schema) string {
+			return s.Language
+		}
 		getVersionValue = nil
 	case PARAM_VERSION:
-		getIndexValue = func(s *indexSchema.Schema) (string, error) {
-			return indexSchema.GetVersion(s)
+		getIndexValue = func(s *indexSchema.Schema) string {
+			return s.Version
 		}
-		getVersionValue = func(v *indexSchema.Version) (string, error) {
-			return indexSchema.GetVersion(v)
+		getVersionValue = func(v *indexSchema.Version) string {
+			return v.Version
 		}
 	case PARAM_SCHEMA_VERSION:
 		getIndexValue = nil
-		getVersionValue = indexSchema.GetSchemaVersion
-	case PARAM_GIT_URL:
-		getIndexValue = func(s *indexSchema.Schema) (string, error) {
-			return indexSchema.GetGitUrl(s)
+		getVersionValue = func(v *indexSchema.Version) string {
+			return v.SchemaVersion
 		}
-		getVersionValue = func(v *indexSchema.Version) (string, error) {
-			return indexSchema.GetGitUrl(v)
+	case PARAM_GIT_URL:
+		getIndexValue = func(s *indexSchema.Schema) string {
+			return s.Git.Url
+		}
+		getVersionValue = func(v *indexSchema.Version) string {
+			return v.Git.Url
 		}
 	case PARAM_GIT_REMOTE_NAME:
-		getIndexValue = func(s *indexSchema.Schema) (string, error) {
-			return indexSchema.GetGitRemoteName(s)
+		getIndexValue = func(s *indexSchema.Schema) string {
+			return s.Git.RemoteName
 		}
-		getVersionValue = func(v *indexSchema.Version) (string, error) {
-			return indexSchema.GetGitRemoteName(v)
+		getVersionValue = func(v *indexSchema.Version) string {
+			return v.Git.RemoteName
 		}
 	case PARAM_GIT_SUBDIR:
-		getIndexValue = func(s *indexSchema.Schema) (string, error) {
-			return indexSchema.GetGitSubDir(s)
+		getIndexValue = func(s *indexSchema.Schema) string {
+			return s.Git.SubDir
 		}
-		getVersionValue = func(v *indexSchema.Version) (string, error) {
-			return indexSchema.GetGitSubDir(v)
+		getVersionValue = func(v *indexSchema.Version) string {
+			return v.Git.SubDir
 		}
 	case PARAM_GIT_REVISION:
-		getIndexValue = func(s *indexSchema.Schema) (string, error) {
-			return indexSchema.GetGitRevision(s)
+		getIndexValue = func(s *indexSchema.Schema) string {
+			return s.Git.Revision
 		}
-		getVersionValue = func(v *indexSchema.Version) (string, error) {
-			return indexSchema.GetGitRevision(v)
+		getVersionValue = func(v *indexSchema.Version) string {
+			return v.Git.Revision
 		}
 	case PARAM_PROVIDER:
-		getIndexValue = indexSchema.GetProvider
+		getIndexValue = func(s *indexSchema.Schema) string {
+			return s.Provider
+		}
 		getVersionValue = nil
 	case PARAM_SUPPORT_URL:
-		getIndexValue = indexSchema.GetSupportUrl
+		getIndexValue = func(s *indexSchema.Schema) string {
+			return s.SupportUrl
+		}
 		getVersionValue = nil
 	default:
 		return FilterResult{
