@@ -18,7 +18,7 @@ package util
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	"time"
@@ -70,7 +70,7 @@ func GetRegistryIndex(url string) []indexSchema.Schema {
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	gomega.Expect(resp.StatusCode).To(gomega.Equal(http.StatusOK))
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
 	var registryIndex []indexSchema.Schema

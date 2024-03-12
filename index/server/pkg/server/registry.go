@@ -19,7 +19,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"path"
@@ -72,7 +71,7 @@ func pushStackToRegistry(versionComponent indexSchema.Version, stackName string)
 			resourcePath = filepath.Join(stacksPath, stackName, resource)
 		}
 		/* #nosec G304 -- resourcePath is constructed from filepath.Join which cleans the input paths */
-		resourceContent, err := ioutil.ReadFile(resourcePath)
+		resourceContent, err := os.ReadFile(resourcePath)
 		if err != nil {
 			return err
 		}

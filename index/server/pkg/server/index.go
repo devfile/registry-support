@@ -18,7 +18,6 @@ package server
 import (
 	"crypto/tls"
 	"encoding/json"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -116,7 +115,7 @@ func ServeRegistry() {
 	}
 
 	// Load index file
-	bytes, err := ioutil.ReadFile(indexPath)
+	bytes, err := os.ReadFile(indexPath)
 	if err != nil {
 		log.Fatalf("failed to read index file: %s", err.Error())
 	}

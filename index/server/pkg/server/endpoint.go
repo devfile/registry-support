@@ -18,7 +18,6 @@ package server
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"net/http/httputil"
@@ -121,15 +120,15 @@ func (*Server) ServeDevfileIndexV1WithType(c *gin.Context, indexType string, par
 	buildIndexAPIResponse(c, indexType, true, IndexParams(params))
 }
 
-func (*Server) PostDevfileIndexV1WithType(c *gin.Context, indexType string, params PostDevfileIndexV1WithTypeParams){
+func (*Server) PostDevfileIndexV1WithType(c *gin.Context, indexType string, params PostDevfileIndexV1WithTypeParams) {
 	SetMethodNotAllowedJSONResponse(c)
 }
 
-func (*Server) PutDevfileIndexV1WithType(c *gin.Context, indexType string, params PutDevfileIndexV1WithTypeParams){
+func (*Server) PutDevfileIndexV1WithType(c *gin.Context, indexType string, params PutDevfileIndexV1WithTypeParams) {
 	SetMethodNotAllowedJSONResponse(c)
 }
 
-func (*Server) DeleteDevfileIndexV1WithType(c *gin.Context, indexType string, params DeleteDevfileIndexV1WithTypeParams){
+func (*Server) DeleteDevfileIndexV1WithType(c *gin.Context, indexType string, params DeleteDevfileIndexV1WithTypeParams) {
 	SetMethodNotAllowedJSONResponse(c)
 }
 
@@ -157,14 +156,17 @@ func (*Server) ServeHealthCheck(c *gin.Context) {
 		Message: "the server is up and running",
 	})
 }
+
 // PostHealthCheck serves endpoint `/health` for registry health check with POST request
 func (*Server) PostHealthCheck(c *gin.Context) {
 	SetMethodNotAllowedJSONResponse(c)
 }
+
 // PutHealthCheck serves endpoint `/health` for registry health check with PUT request
 func (*Server) PutHealthCheck(c *gin.Context) {
 	SetMethodNotAllowedJSONResponse(c)
 }
+
 // DeleteHealthCheck serves endpoint `/health` for registry health check with DELETE request
 func (*Server) DeleteHealthCheck(c *gin.Context) {
 	SetMethodNotAllowedJSONResponse(c)
@@ -198,15 +200,15 @@ func (*Server) ServeDevfileWithVersion(c *gin.Context, name string, version stri
 	}
 }
 
-func (*Server) PostDevfileWithVersion(c *gin.Context, name string, version string){
+func (*Server) PostDevfileWithVersion(c *gin.Context, name string, version string) {
 	SetMethodNotAllowedJSONResponse(c)
 }
 
-func (*Server) PutDevfileWithVersion(c *gin.Context, name string, version string){
+func (*Server) PutDevfileWithVersion(c *gin.Context, name string, version string) {
 	SetMethodNotAllowedJSONResponse(c)
 }
 
-func (*Server) DeleteDevfileWithVersion(c *gin.Context, name string, version string){
+func (*Server) DeleteDevfileWithVersion(c *gin.Context, name string, version string) {
 	SetMethodNotAllowedJSONResponse(c)
 }
 
@@ -378,7 +380,7 @@ func (*Server) ServeDevfileStarterProjectWithVersion(c *gin.Context, name string
 					localLoc = downloadFilePath
 				}
 
-				downloadBytes, err = ioutil.ReadFile(filepath.Clean(localLoc))
+				downloadBytes, err = os.ReadFile(filepath.Clean(localLoc))
 				if err != nil {
 					log.Print(err.Error())
 					c.JSON(http.StatusInternalServerError, gin.H{
@@ -431,15 +433,15 @@ func (*Server) ServeDevfileStarterProjectWithVersion(c *gin.Context, name string
 	}
 }
 
-func (*Server) PostDevfileStarterProjectWithVersion(c *gin.Context, name string, version string, starterProject string){
+func (*Server) PostDevfileStarterProjectWithVersion(c *gin.Context, name string, version string, starterProject string) {
 	SetMethodNotAllowedJSONResponse(c)
 }
 
-func (*Server) PutDevfileStarterProjectWithVersion(c *gin.Context, name string, version string, starterProject string){
+func (*Server) PutDevfileStarterProjectWithVersion(c *gin.Context, name string, version string, starterProject string) {
 	SetMethodNotAllowedJSONResponse(c)
 }
 
-func (*Server) DeleteDevfileStarterProjectWithVersion(c *gin.Context, name string, version string, starterProject string){
+func (*Server) DeleteDevfileStarterProjectWithVersion(c *gin.Context, name string, version string, starterProject string) {
 	SetMethodNotAllowedJSONResponse(c)
 }
 
@@ -634,7 +636,7 @@ func buildProxyErrorResponse(w http.ResponseWriter, r *http.Request, err error, 
 // schema from `indexPath` given by server.
 func fetchDevfile(c *gin.Context, name string, version string) ([]byte, indexSchema.Schema) {
 	var index []indexSchema.Schema
-	bytes, err := ioutil.ReadFile(indexPath)
+	bytes, err := os.ReadFile(indexPath)
 	if err != nil {
 		log.Print(err.Error())
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -730,7 +732,7 @@ func fetchDevfile(c *gin.Context, name string, version string) ([]byte, indexSch
 			if sampleDevfilePath != "" {
 				if _, err = os.Stat(sampleDevfilePath); err == nil {
 					/* #nosec G304 -- sampleDevfilePath is constructed from path.Join which cleans the input paths */
-					bytes, err = ioutil.ReadFile(sampleDevfilePath)
+					bytes, err = os.ReadFile(sampleDevfilePath)
 				}
 				if err != nil {
 					log.Print(err.Error())
@@ -803,7 +805,7 @@ func ServeOciProxy(c *gin.Context) {
 	proxy.ServeHTTP(c.Writer, c.Request)
 }
 
-func SetMethodNotAllowedJSONResponse(c *gin.Context){
+func SetMethodNotAllowedJSONResponse(c *gin.Context) {
 	c.JSON(http.StatusMethodNotAllowed, MethodNotAllowedResponse{
 		Message: "Only GET requests are supported.",
 	})
