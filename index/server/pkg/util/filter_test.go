@@ -24,6 +24,7 @@ import (
 
 	indexSchema "github.com/devfile/registry-support/index/generator/schema"
 	"github.com/mohae/deepcopy"
+	apiext "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 )
 
 // filterDevfileStrArrayFieldTestCase type of test case to be used with FilterDevfileStrArrayField
@@ -52,8 +53,140 @@ var (
 	// ============================================
 	// Filter Devfile String Array Field Test Cases
 	// ============================================
-	filterAttributeNamesTestCases = []filterDevfileStrArrayFieldTestCase{}
-	filterArchitecturesTestCases  = []filterDevfileStrArrayFieldTestCase{
+	filterAttributeNamesTestCases = []filterDevfileStrArrayFieldTestCase{
+		{
+			Name:      "two attribute filters",
+			FieldName: ARRAY_PARAM_ATTRIBUTE_NAMES,
+			Index: []indexSchema.Schema{
+				{
+					Name: "devfileA",
+					Attributes: map[string]apiext.JSON{
+						"attributeA": {},
+						"attributeB": {},
+						"attributeC": {},
+						"attributeD": {},
+					},
+				},
+				{
+					Name: "devfileB",
+					Attributes: map[string]apiext.JSON{
+						"attributeA": {},
+						"attributeC": {},
+						"attributeD": {},
+						"attributeE": {},
+					},
+				},
+				{
+					Name: "devfileC",
+					Attributes: map[string]apiext.JSON{
+						"attributeB": {},
+						"attributeC": {},
+						"attributeD": {},
+						"attributeE": {},
+					},
+				},
+				{
+					Name: "devfileD",
+				},
+			},
+			Values:  []string{"attributeB", "attributeD"},
+			V1Index: true,
+			WantIndex: []indexSchema.Schema{
+				{
+					Name: "devfileA",
+					Attributes: map[string]apiext.JSON{
+						"attributeA": {},
+						"attributeB": {},
+						"attributeC": {},
+						"attributeD": {},
+					},
+				},
+				{
+					Name: "devfileC",
+					Attributes: map[string]apiext.JSON{
+						"attributeB": {},
+						"attributeC": {},
+						"attributeD": {},
+						"attributeE": {},
+					},
+				},
+			},
+		},
+		{
+			Name:      "two attribute filters v2",
+			FieldName: ARRAY_PARAM_ATTRIBUTE_NAMES,
+			Index: []indexSchema.Schema{
+				{
+					Name: "devfileA",
+					Attributes: map[string]apiext.JSON{
+						"attributeA": {},
+						"attributeB": {},
+						"attributeC": {},
+						"attributeD": {},
+					},
+					Versions: []indexSchema.Version{
+						{
+							Version: "v1.0.0",
+						},
+						{
+							Version: "v1.1.0",
+						},
+					},
+				},
+				{
+					Name: "devfileB",
+					Attributes: map[string]apiext.JSON{
+						"attributeA": {},
+						"attributeC": {},
+						"attributeD": {},
+						"attributeE": {},
+					},
+				},
+				{
+					Name: "devfileC",
+					Attributes: map[string]apiext.JSON{
+						"attributeB": {},
+						"attributeC": {},
+						"attributeD": {},
+						"attributeE": {},
+					},
+				},
+				{
+					Name: "devfileD",
+				},
+			},
+			Values: []string{"attributeB", "attributeD"},
+			WantIndex: []indexSchema.Schema{
+				{
+					Name: "devfileA",
+					Attributes: map[string]apiext.JSON{
+						"attributeA": {},
+						"attributeB": {},
+						"attributeC": {},
+						"attributeD": {},
+					},
+					Versions: []indexSchema.Version{
+						{
+							Version: "v1.0.0",
+						},
+						{
+							Version: "v1.1.0",
+						},
+					},
+				},
+				{
+					Name: "devfileC",
+					Attributes: map[string]apiext.JSON{
+						"attributeB": {},
+						"attributeC": {},
+						"attributeD": {},
+						"attributeE": {},
+					},
+				},
+			},
+		},
+	}
+	filterArchitecturesTestCases = []filterDevfileStrArrayFieldTestCase{
 		{
 			Name:      "two arch filters",
 			FieldName: ARRAY_PARAM_ARCHITECTURES,

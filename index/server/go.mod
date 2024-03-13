@@ -18,6 +18,7 @@ require (
 	github.com/prometheus/client_golang v1.14.0
 	golang.org/x/text v0.14.0
 	gopkg.in/segmentio/analytics-go.v3 v3.1.0
+	k8s.io/apiextensions-apiserver v0.26.10
 	k8s.io/apimachinery v0.26.10
 	oras.land/oras-go v1.2.5
 )
@@ -144,7 +145,6 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/api v0.26.10 // indirect
-	k8s.io/apiextensions-apiserver v0.26.10 // indirect
 	k8s.io/client-go v0.26.10 // indirect
 	k8s.io/klog v1.0.0 // indirect
 	k8s.io/klog/v2 v2.90.1 // indirect
