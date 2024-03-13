@@ -26,6 +26,673 @@ import (
 	"github.com/mohae/deepcopy"
 )
 
+// filterDevfileStrArrayFieldTestCase type of test case to be used with FilterDevfileStrArrayField
+type filterDevfileStrArrayFieldTestCase struct {
+	Name      string
+	Index     []indexSchema.Schema
+	FieldName string
+	Values    []string
+	V1Index   bool
+	WantIndex []indexSchema.Schema
+}
+
+// filterDevfileStrFieldTestCase type of test case to be used with FilterDevfileStrField
+type filterDevfileStrFieldTestCase struct {
+	Name       string
+	Index      []indexSchema.Schema
+	FieldName  string
+	Value      string
+	V1Index    bool
+	WantIndex  []indexSchema.Schema
+	WantErr    bool
+	WantErrStr string
+}
+
+var (
+	// ============================================
+	// Filter Devfile String Array Field Test Cases
+	// ============================================
+	filterAttributeNamesTestCases = []filterDevfileStrArrayFieldTestCase{}
+	filterArchitecturesTestCases  = []filterDevfileStrArrayFieldTestCase{
+		{
+			Name:      "two arch filters",
+			FieldName: ARRAY_PARAM_ARCHITECTURES,
+			Index: []indexSchema.Schema{
+				{
+					Name:          "devfileA",
+					Architectures: []string{"amd64", "arm64"},
+				},
+				{
+					Name:          "devfileB",
+					Architectures: []string{"amd64"},
+				},
+				{
+					Name: "devfileC",
+				},
+			},
+			V1Index: true,
+			Values:  []string{"amd64", "arm64"},
+			WantIndex: []indexSchema.Schema{
+				{
+					Name:          "devfileA",
+					Architectures: []string{"amd64", "arm64"},
+				},
+				{
+					Name: "devfileC",
+				},
+			},
+		},
+		{
+			Name:      "two arch filters with v2 index",
+			FieldName: ARRAY_PARAM_ARCHITECTURES,
+			Index: []indexSchema.Schema{
+				{
+					Name:          "devfileA",
+					Architectures: []string{"amd64", "arm64"},
+					Versions: []indexSchema.Version{
+						{
+							Version:       "1.0.0",
+							Architectures: []string{"amd64"},
+						},
+						{
+							Version:       "1.1.0",
+							Architectures: []string{"amd64", "arm64"},
+						},
+					},
+				},
+				{
+					Name:          "devfileB",
+					Architectures: []string{"amd64"},
+				},
+				{
+					Name: "devfileC",
+				},
+			},
+			V1Index: false,
+			Values:  []string{"amd64", "arm64"},
+			WantIndex: []indexSchema.Schema{
+				{
+					Name:          "devfileA",
+					Architectures: []string{"amd64", "arm64"},
+					Versions: []indexSchema.Version{
+						{
+							Version:       "1.1.0",
+							Architectures: []string{"amd64", "arm64"},
+						},
+					},
+				},
+				{
+					Name: "devfileC",
+				},
+			},
+		},
+	}
+	filterTagsTestCases = []filterDevfileStrArrayFieldTestCase{
+		{
+			Name:      "two tag filters",
+			FieldName: ARRAY_PARAM_TAGS,
+			Index: []indexSchema.Schema{
+				{
+					Name: "devfileA",
+					Tags: []string{"Python", "Django"},
+				},
+				{
+					Name: "devfileB",
+					Tags: []string{"Python"},
+				},
+				{
+					Name: "devfileC",
+				},
+			},
+			V1Index: true,
+			Values:  []string{"Python", "Django"},
+			WantIndex: []indexSchema.Schema{
+				{
+					Name: "devfileA",
+					Tags: []string{"Python", "Django"},
+				},
+			},
+		},
+		{
+			Name:      "two tag filters with v2 index",
+			FieldName: ARRAY_PARAM_TAGS,
+			Index: []indexSchema.Schema{
+				{
+					Name: "devfileA",
+					Tags: []string{"Python", "Django", "Flask"},
+					Versions: []indexSchema.Version{
+						{
+							Version: "1.0.0",
+							Tags:    []string{"Python"},
+						},
+						{
+							Version: "1.1.0",
+							Tags:    []string{"Python", "Django"},
+						},
+						{
+							Version: "2.0.0",
+							Tags:    []string{"Python", "Flask"},
+						},
+					},
+				},
+				{
+					Name: "devfileB",
+					Tags: []string{"Python"},
+				},
+				{
+					Name: "devfileC",
+				},
+			},
+			V1Index: false,
+			Values:  []string{"Python", "Django"},
+			WantIndex: []indexSchema.Schema{
+				{
+					Name: "devfileA",
+					Tags: []string{"Python", "Django", "Flask"},
+					Versions: []indexSchema.Version{
+						{
+							Version: "1.1.0",
+							Tags:    []string{"Python", "Django"},
+						},
+					},
+				},
+			},
+		},
+	}
+	filterResourcesTestCases       = []filterDevfileStrArrayFieldTestCase{}
+	filterStarterProjectsTestCases = []filterDevfileStrArrayFieldTestCase{}
+	filterLinksTestCases           = []filterDevfileStrArrayFieldTestCase{}
+	filterCommandGroupsTestCases   = []filterDevfileStrArrayFieldTestCase{}
+	filterGitRemotesTestCases      = []filterDevfileStrArrayFieldTestCase{}
+	// ======================================
+	// Filter Devfile String Field Test Cases
+	// ======================================
+	filterNameFieldTestCases = []filterDevfileStrFieldTestCase{
+		{
+			Name:      "name filter",
+			FieldName: PARAM_NAME,
+			Index: []indexSchema.Schema{
+				{
+					Name: "devfileA",
+				},
+				{
+					Name: "devfileB",
+				},
+				{
+					Name: "devfileC",
+				},
+				{
+					Name: "devfileAA",
+				},
+			},
+			V1Index: true,
+			Value:   "A",
+			WantIndex: []indexSchema.Schema{
+				{
+					Name: "devfileA",
+				},
+				{
+					Name: "devfileAA",
+				},
+			},
+			WantErr: false,
+		},
+		{
+			Name:      "name filter v2",
+			FieldName: PARAM_NAME,
+			Index: []indexSchema.Schema{
+				{
+					Name: "devfileA",
+				},
+				{
+					Name: "devfileB",
+				},
+				{
+					Name: "devfileC",
+				},
+				{
+					Name: "devfileAA",
+				},
+			},
+			Value: "A",
+			WantIndex: []indexSchema.Schema{
+				{
+					Name: "devfileA",
+				},
+				{
+					Name: "devfileAA",
+				},
+			},
+			WantErr: false,
+		},
+	}
+	filterDisplayNameFieldTestCases = []filterDevfileStrFieldTestCase{
+		{
+			Name:      "display name filter",
+			FieldName: PARAM_DISPLAY_NAME,
+			Index: []indexSchema.Schema{
+				{
+					Name:        "devfileA",
+					DisplayName: "Python",
+				},
+				{
+					Name:        "devfileB",
+					DisplayName: "Python",
+				},
+				{
+					Name:        "devfileC",
+					DisplayName: "Flask",
+				},
+				{
+					Name:        "devfileAA",
+					DisplayName: "Python - Flask",
+				},
+			},
+			V1Index: true,
+			Value:   "Flask",
+			WantIndex: []indexSchema.Schema{
+				{
+					Name:        "devfileC",
+					DisplayName: "Flask",
+				},
+				{
+					Name:        "devfileAA",
+					DisplayName: "Python - Flask",
+				},
+			},
+			WantErr: false,
+		},
+		{
+			Name:      "display name filter v2",
+			FieldName: PARAM_DISPLAY_NAME,
+			Index: []indexSchema.Schema{
+				{
+					Name:        "devfileA",
+					DisplayName: "Python",
+				},
+				{
+					Name:        "devfileB",
+					DisplayName: "Python",
+				},
+				{
+					Name:        "devfileC",
+					DisplayName: "Flask",
+				},
+				{
+					Name:        "devfileAA",
+					DisplayName: "Python - Flask",
+				},
+			},
+			Value: "Flask",
+			WantIndex: []indexSchema.Schema{
+				{
+					Name:        "devfileC",
+					DisplayName: "Flask",
+				},
+				{
+					Name:        "devfileAA",
+					DisplayName: "Python - Flask",
+				},
+			},
+			WantErr: false,
+		},
+	}
+	filterDescriptionFieldTestCases = []filterDevfileStrFieldTestCase{
+		{
+			Name:      "description filter",
+			FieldName: PARAM_DESCRIPTION,
+			Index: []indexSchema.Schema{
+				{
+					Name:        "devfileA",
+					DisplayName: "Python",
+					Description: "A python stack.",
+				},
+				{
+					Name:        "devfileB",
+					DisplayName: "Python",
+					Description: "A python sample.",
+				},
+				{
+					Name:        "devfileC",
+					DisplayName: "Flask",
+					Description: "A python flask stack.",
+				},
+				{
+					Name:        "devfileAA",
+					DisplayName: "Python - Flask",
+					Description: "A python flask sample.",
+				},
+			},
+			V1Index: true,
+			Value:   "stack",
+			WantIndex: []indexSchema.Schema{
+				{
+					Name:        "devfileA",
+					DisplayName: "Python",
+					Description: "A python stack.",
+				},
+				{
+					Name:        "devfileC",
+					DisplayName: "Flask",
+					Description: "A python flask stack.",
+				},
+			},
+			WantErr: false,
+		},
+		{
+			Name:      "description filter v2",
+			FieldName: PARAM_DESCRIPTION,
+			Index: []indexSchema.Schema{
+				{
+					Name:        "devfileA",
+					DisplayName: "Python",
+					Description: "A python stack.",
+					Versions: []indexSchema.Version{
+						{
+							Version:     "1.0.0",
+							Description: "A python stack.",
+							Default:     true,
+						},
+					},
+				},
+				{
+					Name:        "devfileB",
+					DisplayName: "Python",
+					Description: "A python sample.",
+					Versions: []indexSchema.Version{
+						{
+							Version:     "1.0.0",
+							Description: "A python sample.",
+						},
+						{
+							Version:     "2.0.0",
+							Description: "A python stack.",
+							Default:     true,
+						},
+					},
+				},
+				{
+					Name:        "devfileC",
+					DisplayName: "Flask",
+					Description: "A python flask stack.",
+				},
+				{
+					Name:        "devfileAA",
+					DisplayName: "Python - Flask",
+					Description: "A python flask sample.",
+				},
+			},
+			Value: "stack",
+			WantIndex: []indexSchema.Schema{
+				{
+					Name:        "devfileA",
+					DisplayName: "Python",
+					Description: "A python stack.",
+					Versions: []indexSchema.Version{
+						{
+							Version:     "1.0.0",
+							Description: "A python stack.",
+							Default:     true,
+						},
+					},
+				},
+				{
+					Name:        "devfileB",
+					DisplayName: "Python",
+					Description: "A python sample.",
+					Versions: []indexSchema.Version{
+						{
+							Version:     "2.0.0",
+							Description: "A python stack.",
+							Default:     true,
+						},
+					},
+				},
+				{
+					Name:        "devfileC",
+					DisplayName: "Flask",
+					Description: "A python flask stack.",
+				},
+			},
+			WantErr: false,
+		},
+	}
+	filterIconFieldTestCases = []filterDevfileStrFieldTestCase{
+		{
+			Name:      "icon filter",
+			FieldName: PARAM_ICON,
+			Index: []indexSchema.Schema{
+				{
+					Name:        "devfileA",
+					DisplayName: "Python",
+					Icon:        "devfileA.png",
+				},
+				{
+					Name:        "devfileB",
+					DisplayName: "Python",
+					Icon:        "devfileB.png",
+				},
+				{
+					Name:        "devfileC",
+					DisplayName: "Flask",
+					Icon:        "devfileC.jpg",
+				},
+				{
+					Name:        "devfileAA",
+					DisplayName: "Python - Flask",
+					Icon:        "devfileAA.ico",
+				},
+			},
+			V1Index: true,
+			Value:   "png",
+			WantIndex: []indexSchema.Schema{
+				{
+					Name:        "devfileA",
+					DisplayName: "Python",
+					Icon:        "devfileA.png",
+				},
+				{
+					Name:        "devfileB",
+					DisplayName: "Python",
+					Icon:        "devfileB.png",
+				},
+			},
+			WantErr: false,
+		},
+		{
+			Name:      "icon filter v2",
+			FieldName: PARAM_ICON,
+			Index: []indexSchema.Schema{
+				{
+					Name:        "devfileA",
+					DisplayName: "Python",
+					Description: "A python stack.",
+					Versions: []indexSchema.Version{
+						{
+							Version: "1.0.0",
+							Icon:    "devfileA.png",
+							Default: true,
+						},
+					},
+				},
+				{
+					Name:        "devfileB",
+					DisplayName: "Python",
+					Description: "A python sample.",
+					Versions: []indexSchema.Version{
+						{
+							Version: "1.0.0",
+							Icon:    "devfileB.png",
+						},
+						{
+							Version: "2.0.0",
+							Icon:    "devfileB.ico",
+							Default: true,
+						},
+					},
+				},
+				{
+					Name:        "devfileC",
+					DisplayName: "Flask",
+					Icon:        "devfileC.jpg",
+				},
+				{
+					Name:        "devfileAA",
+					DisplayName: "Python - Flask",
+					Icon:        "devfileAA.ico",
+				},
+			},
+			Value: "ico",
+			WantIndex: []indexSchema.Schema{
+				{
+					Name:        "devfileB",
+					DisplayName: "Python",
+					Description: "A python sample.",
+					Versions: []indexSchema.Version{
+						{
+							Version: "2.0.0",
+							Icon:    "devfileB.ico",
+							Default: true,
+						},
+					},
+				},
+				{
+					Name:        "devfileAA",
+					DisplayName: "Python - Flask",
+					Icon:        "devfileAA.ico",
+				},
+			},
+			WantErr: false,
+		},
+	}
+	filterProjectTypeFieldTestCases = []filterDevfileStrFieldTestCase{
+		{
+			Name:      "project type filter",
+			FieldName: PARAM_PROJECT_TYPE,
+			Index: []indexSchema.Schema{
+				{
+					Name:        "devfileA",
+					DisplayName: "Python",
+					ProjectType: "python",
+				},
+				{
+					Name:        "devfileB",
+					DisplayName: "Python",
+					ProjectType: "python",
+				},
+				{
+					Name:        "devfileC",
+					DisplayName: "Flask",
+					ProjectType: "python",
+				},
+				{
+					Name:        "devfileD",
+					DisplayName: "Java Springboot",
+					ProjectType: "java",
+				},
+				{
+					Name:        "devfileAA",
+					DisplayName: "Python - Flask",
+					ProjectType: "python",
+				},
+			},
+			V1Index: true,
+			Value:   "java",
+			WantIndex: []indexSchema.Schema{
+				{
+					Name:        "devfileD",
+					DisplayName: "Java Springboot",
+					ProjectType: "java",
+				},
+			},
+			WantErr: false,
+		},
+		{
+			Name:      "project type filter v2",
+			FieldName: PARAM_PROJECT_TYPE,
+			Index: []indexSchema.Schema{
+				{
+					Name:        "devfileA",
+					DisplayName: "Python",
+					ProjectType: "python",
+				},
+				{
+					Name:        "devfileB",
+					DisplayName: "Python",
+					ProjectType: "python",
+				},
+				{
+					Name:        "devfileC",
+					DisplayName: "Flask",
+					ProjectType: "python",
+				},
+				{
+					Name:        "devfileD",
+					DisplayName: "Java Springboot",
+					ProjectType: "java",
+				},
+				{
+					Name:        "devfileAA",
+					DisplayName: "Python - Flask",
+					ProjectType: "python",
+				},
+			},
+			Value: "java",
+			WantIndex: []indexSchema.Schema{
+				{
+					Name:        "devfileD",
+					DisplayName: "Java Springboot",
+					ProjectType: "java",
+				},
+			},
+			WantErr: false,
+		},
+	}
+	filterLanguageFieldTestCases = []filterDevfileStrFieldTestCase{
+		{
+			Name:      "language filter",
+			FieldName: PARAM_LANGUAGE,
+			Index: []indexSchema.Schema{
+				{
+					Name:        "devfileA",
+					DisplayName: "Python",
+					Language:    "Python",
+				},
+				{
+					Name:        "devfileB",
+					DisplayName: "Python",
+					Language:    "Python",
+				},
+				{
+					Name:        "devfileC",
+					DisplayName: "Flask",
+					Language:    "Python",
+				},
+				{
+					Name:        "devfileD",
+					DisplayName: "Java Springboot",
+					Language:    "Java",
+				},
+				{
+					Name:        "devfileAA",
+					DisplayName: "Python - Flask",
+					Language:    "Python",
+				},
+			},
+			V1Index: true,
+			Value:   "java",
+			WantIndex: []indexSchema.Schema{
+				{
+					Name:        "devfileD",
+					DisplayName: "Java Springboot",
+					Language:    "Java",
+				},
+			},
+			WantErr: false,
+		},
+	}
+)
+
 func TestFilterOut(t *testing.T) {
 	tests := []struct {
 		name        string
@@ -243,404 +910,6 @@ func TestFuzzyMatch(t *testing.T) {
 	}
 }
 
-func TestFilterDevfileArchitectures(t *testing.T) {
-
-	tests := []struct {
-		name      string
-		index     []indexSchema.Schema
-		archs     []string
-		v1Index   bool
-		wantIndex []indexSchema.Schema
-	}{
-		{
-			name: "one arch filter",
-			index: []indexSchema.Schema{
-				{
-					Name:          "devfileA",
-					Architectures: []string{"amd64", "arm64"},
-				},
-				{
-					Name:          "devfileB",
-					Architectures: []string{"amd64"},
-				},
-				{
-					Name: "devfileC",
-				},
-			},
-			v1Index: true,
-			archs:   []string{"amd64"},
-			wantIndex: []indexSchema.Schema{
-				{
-					Name:          "devfileA",
-					Architectures: []string{"amd64", "arm64"},
-				},
-				{
-					Name:          "devfileB",
-					Architectures: []string{"amd64"},
-				},
-				{
-					Name: "devfileC",
-				},
-			},
-		},
-		{
-			name: "one arch filter with v2 index",
-			index: []indexSchema.Schema{
-				{
-					Name:          "devfileA",
-					Architectures: []string{"amd64", "arm64"},
-					Versions: []indexSchema.Version{
-						{
-							Version:       "1.0.0",
-							Architectures: []string{"amd64"},
-						},
-						{
-							Version:       "1.1.0",
-							Architectures: []string{"arm64"},
-						},
-					},
-				},
-				{
-					Name:          "devfileB",
-					Architectures: []string{"amd64"},
-				},
-				{
-					Name: "devfileC",
-				},
-			},
-			v1Index: false,
-			archs:   []string{"amd64"},
-			wantIndex: []indexSchema.Schema{
-				{
-					Name:          "devfileA",
-					Architectures: []string{"amd64", "arm64"},
-					Versions: []indexSchema.Version{
-						{
-							Version:       "1.0.0",
-							Architectures: []string{"amd64"},
-						},
-					},
-				},
-				{
-					Name:          "devfileB",
-					Architectures: []string{"amd64"},
-				},
-				{
-					Name: "devfileC",
-				},
-			},
-		},
-		{
-			name: "two arch filters",
-			index: []indexSchema.Schema{
-				{
-					Name:          "devfileA",
-					Architectures: []string{"amd64", "arm64"},
-				},
-				{
-					Name:          "devfileB",
-					Architectures: []string{"amd64"},
-				},
-				{
-					Name: "devfileC",
-				},
-			},
-			v1Index: true,
-			archs:   []string{"amd64", "arm64"},
-			wantIndex: []indexSchema.Schema{
-				{
-					Name:          "devfileA",
-					Architectures: []string{"amd64", "arm64"},
-				},
-				{
-					Name: "devfileC",
-				},
-			},
-		},
-		{
-			name: "two arch filters with v2 index",
-			index: []indexSchema.Schema{
-				{
-					Name:          "devfileA",
-					Architectures: []string{"amd64", "arm64"},
-					Versions: []indexSchema.Version{
-						{
-							Version:       "1.0.0",
-							Architectures: []string{"amd64"},
-						},
-						{
-							Version:       "1.1.0",
-							Architectures: []string{"amd64", "arm64"},
-						},
-					},
-				},
-				{
-					Name:          "devfileB",
-					Architectures: []string{"amd64"},
-				},
-				{
-					Name: "devfileC",
-				},
-			},
-			v1Index: false,
-			archs:   []string{"amd64", "arm64"},
-			wantIndex: []indexSchema.Schema{
-				{
-					Name:          "devfileA",
-					Architectures: []string{"amd64", "arm64"},
-					Versions: []indexSchema.Version{
-						{
-							Version:       "1.1.0",
-							Architectures: []string{"amd64", "arm64"},
-						},
-					},
-				},
-				{
-					Name: "devfileC",
-				},
-			},
-		},
-		{
-			name: "empty filters",
-			index: []indexSchema.Schema{
-				{
-					Name:          "devfileA",
-					Architectures: []string{"amd64", "arm64"},
-				},
-				{
-					Name:          "devfileB",
-					Architectures: []string{"amd64"},
-				},
-				{
-					Name: "devfileC",
-				},
-			},
-			v1Index: true,
-			archs:   []string{},
-			wantIndex: []indexSchema.Schema{
-				{
-					Name:          "devfileA",
-					Architectures: []string{"amd64", "arm64"},
-				},
-				{
-					Name:          "devfileB",
-					Architectures: []string{"amd64"},
-				},
-				{
-					Name: "devfileC",
-				},
-			},
-		},
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			gotResult := filterDevfileArchitectures(test.index, test.archs, test.v1Index)
-			gotResult.Eval()
-			if !gotResult.IsEval {
-				t.Errorf("Got unexpected unevaluated result: %v", gotResult)
-			} else if gotResult.Error != nil {
-				t.Errorf("Unexpected error: %v", gotResult.Error)
-			} else if !reflect.DeepEqual(gotResult.Index, test.wantIndex) {
-				t.Errorf("Got: %v, Expected: %v", gotResult.Index, test.wantIndex)
-			}
-		})
-	}
-}
-
-func TestFilterDevfileTags(t *testing.T) {
-
-	tests := []struct {
-		name      string
-		index     []indexSchema.Schema
-		tags      []string
-		v1Index   bool
-		wantIndex []indexSchema.Schema
-	}{
-		{
-			name: "one tag filter",
-			index: []indexSchema.Schema{
-				{
-					Name: "devfileA",
-					Tags: []string{"Python", "Django"},
-				},
-				{
-					Name: "devfileB",
-					Tags: []string{"Python"},
-				},
-				{
-					Name: "devfileC",
-				},
-			},
-			v1Index: true,
-			tags:    []string{"Django"},
-			wantIndex: []indexSchema.Schema{
-				{
-					Name: "devfileA",
-					Tags: []string{"Python", "Django"},
-				},
-			},
-		},
-		{
-			name: "one tag filter with v2 index",
-			index: []indexSchema.Schema{
-				{
-					Name: "devfileA",
-					Tags: []string{"Python", "Django", "Flask"},
-					Versions: []indexSchema.Version{
-						{
-							Version: "1.0.0",
-							Tags:    []string{"Python"},
-						},
-						{
-							Version: "1.1.0",
-							Tags:    []string{"Python", "Django"},
-						},
-						{
-							Version: "2.0.0",
-							Tags:    []string{"Python", "Flask"},
-						},
-					},
-				},
-				{
-					Name: "devfileB",
-					Tags: []string{"Python"},
-				},
-				{
-					Name: "devfileC",
-				},
-			},
-			v1Index: false,
-			tags:    []string{"Django"},
-			wantIndex: []indexSchema.Schema{
-				{
-					Name: "devfileA",
-					Tags: []string{"Python", "Django", "Flask"},
-					Versions: []indexSchema.Version{
-						{
-							Version: "1.1.0",
-							Tags:    []string{"Python", "Django"},
-						},
-					},
-				},
-			},
-		},
-		{
-			name: "two tag filters",
-			index: []indexSchema.Schema{
-				{
-					Name: "devfileA",
-					Tags: []string{"Python", "Django"},
-				},
-				{
-					Name: "devfileB",
-					Tags: []string{"Python"},
-				},
-				{
-					Name: "devfileC",
-				},
-			},
-			v1Index: true,
-			tags:    []string{"Python", "Django"},
-			wantIndex: []indexSchema.Schema{
-				{
-					Name: "devfileA",
-					Tags: []string{"Python", "Django"},
-				},
-			},
-		},
-		{
-			name: "two tag filters with v2 index",
-			index: []indexSchema.Schema{
-				{
-					Name: "devfileA",
-					Tags: []string{"Python", "Django", "Flask"},
-					Versions: []indexSchema.Version{
-						{
-							Version: "1.0.0",
-							Tags:    []string{"Python"},
-						},
-						{
-							Version: "1.1.0",
-							Tags:    []string{"Python", "Django"},
-						},
-						{
-							Version: "2.0.0",
-							Tags:    []string{"Python", "Flask"},
-						},
-					},
-				},
-				{
-					Name: "devfileB",
-					Tags: []string{"Python"},
-				},
-				{
-					Name: "devfileC",
-				},
-			},
-			v1Index: false,
-			tags:    []string{"Python", "Django"},
-			wantIndex: []indexSchema.Schema{
-				{
-					Name: "devfileA",
-					Tags: []string{"Python", "Django", "Flask"},
-					Versions: []indexSchema.Version{
-						{
-							Version: "1.1.0",
-							Tags:    []string{"Python", "Django"},
-						},
-					},
-				},
-			},
-		},
-		{
-			name: "empty filters",
-			index: []indexSchema.Schema{
-				{
-					Name: "devfileA",
-					Tags: []string{"Python", "Django"},
-				},
-				{
-					Name: "devfileB",
-					Tags: []string{"Python"},
-				},
-				{
-					Name: "devfileC",
-				},
-			},
-			v1Index: true,
-			tags:    []string{},
-			wantIndex: []indexSchema.Schema{
-				{
-					Name: "devfileA",
-					Tags: []string{"Python", "Django"},
-				},
-				{
-					Name: "devfileB",
-					Tags: []string{"Python"},
-				},
-				{
-					Name: "devfileC",
-				},
-			},
-		},
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			gotResult := filterDevfileTags(test.index, test.tags, test.v1Index)
-			gotResult.Eval()
-			if !gotResult.IsEval {
-				t.Errorf("Got unexpected unevaluated result: %v", gotResult)
-			} else if gotResult.Error != nil {
-				t.Errorf("Unexpected error: %v", gotResult.Error)
-			} else if !reflect.DeepEqual(gotResult.Index, test.wantIndex) {
-				t.Errorf("Got: %v, Expected: %v", gotResult.Index, test.wantIndex)
-			}
-		})
-	}
-}
-
 func TestFilterDevfileSchemaVersion(t *testing.T) {
 
 	tests := []struct {
@@ -824,670 +1093,52 @@ func TestFilterDevfileSchemaVersion(t *testing.T) {
 }
 
 func TestFilterDevfileStrArrayField(t *testing.T) {
-	tests := []struct {
-		name      string
-		index     []indexSchema.Schema
-		fieldName string
-		values    []string
-		v1Index   bool
-		wantIndex []indexSchema.Schema
-	}{
-		{
-			name:      "two arch filters",
-			fieldName: ARRAY_PARAM_ARCHITECTURES,
-			index: []indexSchema.Schema{
-				{
-					Name:          "devfileA",
-					Architectures: []string{"amd64", "arm64"},
-				},
-				{
-					Name:          "devfileB",
-					Architectures: []string{"amd64"},
-				},
-				{
-					Name: "devfileC",
-				},
-			},
-			v1Index: true,
-			values:  []string{"amd64", "arm64"},
-			wantIndex: []indexSchema.Schema{
-				{
-					Name:          "devfileA",
-					Architectures: []string{"amd64", "arm64"},
-				},
-				{
-					Name: "devfileC",
-				},
-			},
-		},
-		{
-			name:      "two arch filters with v2 index",
-			fieldName: ARRAY_PARAM_ARCHITECTURES,
-			index: []indexSchema.Schema{
-				{
-					Name:          "devfileA",
-					Architectures: []string{"amd64", "arm64"},
-					Versions: []indexSchema.Version{
-						{
-							Version:       "1.0.0",
-							Architectures: []string{"amd64"},
-						},
-						{
-							Version:       "1.1.0",
-							Architectures: []string{"amd64", "arm64"},
-						},
-					},
-				},
-				{
-					Name:          "devfileB",
-					Architectures: []string{"amd64"},
-				},
-				{
-					Name: "devfileC",
-				},
-			},
-			v1Index: false,
-			values:  []string{"amd64", "arm64"},
-			wantIndex: []indexSchema.Schema{
-				{
-					Name:          "devfileA",
-					Architectures: []string{"amd64", "arm64"},
-					Versions: []indexSchema.Version{
-						{
-							Version:       "1.1.0",
-							Architectures: []string{"amd64", "arm64"},
-						},
-					},
-				},
-				{
-					Name: "devfileC",
-				},
-			},
-		},
-		{
-			name:      "two tag filters",
-			fieldName: ARRAY_PARAM_TAGS,
-			index: []indexSchema.Schema{
-				{
-					Name: "devfileA",
-					Tags: []string{"Python", "Django"},
-				},
-				{
-					Name: "devfileB",
-					Tags: []string{"Python"},
-				},
-				{
-					Name: "devfileC",
-				},
-			},
-			v1Index: true,
-			values:  []string{"Python", "Django"},
-			wantIndex: []indexSchema.Schema{
-				{
-					Name: "devfileA",
-					Tags: []string{"Python", "Django"},
-				},
-			},
-		},
-		{
-			name:      "two tag filters with v2 index",
-			fieldName: ARRAY_PARAM_TAGS,
-			index: []indexSchema.Schema{
-				{
-					Name: "devfileA",
-					Tags: []string{"Python", "Django", "Flask"},
-					Versions: []indexSchema.Version{
-						{
-							Version: "1.0.0",
-							Tags:    []string{"Python"},
-						},
-						{
-							Version: "1.1.0",
-							Tags:    []string{"Python", "Django"},
-						},
-						{
-							Version: "2.0.0",
-							Tags:    []string{"Python", "Flask"},
-						},
-					},
-				},
-				{
-					Name: "devfileB",
-					Tags: []string{"Python"},
-				},
-				{
-					Name: "devfileC",
-				},
-			},
-			v1Index: false,
-			values:  []string{"Python", "Django"},
-			wantIndex: []indexSchema.Schema{
-				{
-					Name: "devfileA",
-					Tags: []string{"Python", "Django", "Flask"},
-					Versions: []indexSchema.Version{
-						{
-							Version: "1.1.0",
-							Tags:    []string{"Python", "Django"},
-						},
-					},
-				},
-			},
-		},
-	}
+	tests := []filterDevfileStrArrayFieldTestCase{}
+	tests = append(tests, filterAttributeNamesTestCases...)
+	tests = append(tests, filterArchitecturesTestCases...)
+	tests = append(tests, filterTagsTestCases...)
+	tests = append(tests, filterResourcesTestCases...)
+	tests = append(tests, filterStarterProjectsTestCases...)
+	tests = append(tests, filterLinksTestCases...)
+	tests = append(tests, filterCommandGroupsTestCases...)
+	tests = append(tests, filterGitRemotesTestCases...)
 
 	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			gotResult := FilterDevfileStrArrayField(test.index, test.fieldName, test.values, test.v1Index)
+		t.Run(test.Name, func(t *testing.T) {
+			gotResult := FilterDevfileStrArrayField(test.Index, test.FieldName, test.Values, test.V1Index)
 			gotResult.Eval()
 			if !gotResult.IsEval {
 				t.Errorf("Got unexpected unevaluated result: %v", gotResult)
 			} else if gotResult.Error != nil {
 				t.Errorf("Unexpected error: %v", gotResult.Error)
-			} else if !reflect.DeepEqual(gotResult.Index, test.wantIndex) {
-				t.Errorf("Got: %v, Expected: %v", gotResult.Index, test.wantIndex)
+			} else if !reflect.DeepEqual(gotResult.Index, test.WantIndex) {
+				t.Errorf("Got: %v, Expected: %v", gotResult.Index, test.WantIndex)
 			}
 		})
 	}
 }
 
 func TestFilterDevfileStrField(t *testing.T) {
-	tests := []struct {
-		name       string
-		index      []indexSchema.Schema
-		fieldName  string
-		value      string
-		v1Index    bool
-		wantIndex  []indexSchema.Schema
-		wantErr    bool
-		wantErrStr string
-	}{
-		{
-			name:      "name filter",
-			fieldName: PARAM_NAME,
-			index: []indexSchema.Schema{
-				{
-					Name: "devfileA",
-				},
-				{
-					Name: "devfileB",
-				},
-				{
-					Name: "devfileC",
-				},
-				{
-					Name: "devfileAA",
-				},
-			},
-			v1Index: true,
-			value:   "A",
-			wantIndex: []indexSchema.Schema{
-				{
-					Name: "devfileA",
-				},
-				{
-					Name: "devfileAA",
-				},
-			},
-			wantErr: false,
-		},
-		{
-			name:      "name filter v2",
-			fieldName: PARAM_NAME,
-			index: []indexSchema.Schema{
-				{
-					Name: "devfileA",
-				},
-				{
-					Name: "devfileB",
-				},
-				{
-					Name: "devfileC",
-				},
-				{
-					Name: "devfileAA",
-				},
-			},
-			value: "A",
-			wantIndex: []indexSchema.Schema{
-				{
-					Name: "devfileA",
-				},
-				{
-					Name: "devfileAA",
-				},
-			},
-			wantErr: false,
-		},
-		{
-			name:      "display name filter",
-			fieldName: PARAM_DISPLAY_NAME,
-			index: []indexSchema.Schema{
-				{
-					Name:        "devfileA",
-					DisplayName: "Python",
-				},
-				{
-					Name:        "devfileB",
-					DisplayName: "Python",
-				},
-				{
-					Name:        "devfileC",
-					DisplayName: "Flask",
-				},
-				{
-					Name:        "devfileAA",
-					DisplayName: "Python - Flask",
-				},
-			},
-			v1Index: true,
-			value:   "Flask",
-			wantIndex: []indexSchema.Schema{
-				{
-					Name:        "devfileC",
-					DisplayName: "Flask",
-				},
-				{
-					Name:        "devfileAA",
-					DisplayName: "Python - Flask",
-				},
-			},
-			wantErr: false,
-		},
-		{
-			name:      "display name filter v2",
-			fieldName: PARAM_DISPLAY_NAME,
-			index: []indexSchema.Schema{
-				{
-					Name:        "devfileA",
-					DisplayName: "Python",
-				},
-				{
-					Name:        "devfileB",
-					DisplayName: "Python",
-				},
-				{
-					Name:        "devfileC",
-					DisplayName: "Flask",
-				},
-				{
-					Name:        "devfileAA",
-					DisplayName: "Python - Flask",
-				},
-			},
-			value: "Flask",
-			wantIndex: []indexSchema.Schema{
-				{
-					Name:        "devfileC",
-					DisplayName: "Flask",
-				},
-				{
-					Name:        "devfileAA",
-					DisplayName: "Python - Flask",
-				},
-			},
-			wantErr: false,
-		},
-		{
-			name:      "description filter",
-			fieldName: PARAM_DESCRIPTION,
-			index: []indexSchema.Schema{
-				{
-					Name:        "devfileA",
-					DisplayName: "Python",
-					Description: "A python stack.",
-				},
-				{
-					Name:        "devfileB",
-					DisplayName: "Python",
-					Description: "A python sample.",
-				},
-				{
-					Name:        "devfileC",
-					DisplayName: "Flask",
-					Description: "A python flask stack.",
-				},
-				{
-					Name:        "devfileAA",
-					DisplayName: "Python - Flask",
-					Description: "A python flask sample.",
-				},
-			},
-			v1Index: true,
-			value:   "stack",
-			wantIndex: []indexSchema.Schema{
-				{
-					Name:        "devfileA",
-					DisplayName: "Python",
-					Description: "A python stack.",
-				},
-				{
-					Name:        "devfileC",
-					DisplayName: "Flask",
-					Description: "A python flask stack.",
-				},
-			},
-			wantErr: false,
-		},
-		{
-			name:      "description filter v2",
-			fieldName: PARAM_DESCRIPTION,
-			index: []indexSchema.Schema{
-				{
-					Name:        "devfileA",
-					DisplayName: "Python",
-					Description: "A python stack.",
-					Versions: []indexSchema.Version{
-						{
-							Version:     "1.0.0",
-							Description: "A python stack.",
-							Default:     true,
-						},
-					},
-				},
-				{
-					Name:        "devfileB",
-					DisplayName: "Python",
-					Description: "A python sample.",
-					Versions: []indexSchema.Version{
-						{
-							Version:     "1.0.0",
-							Description: "A python sample.",
-						},
-						{
-							Version:     "2.0.0",
-							Description: "A python stack.",
-							Default:     true,
-						},
-					},
-				},
-				{
-					Name:        "devfileC",
-					DisplayName: "Flask",
-					Description: "A python flask stack.",
-				},
-				{
-					Name:        "devfileAA",
-					DisplayName: "Python - Flask",
-					Description: "A python flask sample.",
-				},
-			},
-			value: "stack",
-			wantIndex: []indexSchema.Schema{
-				{
-					Name:        "devfileA",
-					DisplayName: "Python",
-					Description: "A python stack.",
-					Versions: []indexSchema.Version{
-						{
-							Version:     "1.0.0",
-							Description: "A python stack.",
-							Default:     true,
-						},
-					},
-				},
-				{
-					Name:        "devfileB",
-					DisplayName: "Python",
-					Description: "A python sample.",
-					Versions: []indexSchema.Version{
-						{
-							Version:     "2.0.0",
-							Description: "A python stack.",
-							Default:     true,
-						},
-					},
-				},
-				{
-					Name:        "devfileC",
-					DisplayName: "Flask",
-					Description: "A python flask stack.",
-				},
-			},
-			wantErr: false,
-		},
-		{
-			name:      "icon filter",
-			fieldName: PARAM_ICON,
-			index: []indexSchema.Schema{
-				{
-					Name:        "devfileA",
-					DisplayName: "Python",
-					Icon:        "devfileA.png",
-				},
-				{
-					Name:        "devfileB",
-					DisplayName: "Python",
-					Icon:        "devfileB.png",
-				},
-				{
-					Name:        "devfileC",
-					DisplayName: "Flask",
-					Icon:        "devfileC.jpg",
-				},
-				{
-					Name:        "devfileAA",
-					DisplayName: "Python - Flask",
-					Icon:        "devfileAA.ico",
-				},
-			},
-			v1Index: true,
-			value:   "png",
-			wantIndex: []indexSchema.Schema{
-				{
-					Name:        "devfileA",
-					DisplayName: "Python",
-					Icon:        "devfileA.png",
-				},
-				{
-					Name:        "devfileB",
-					DisplayName: "Python",
-					Icon:        "devfileB.png",
-				},
-			},
-			wantErr: false,
-		},
-		{
-			name:      "icon filter v2",
-			fieldName: PARAM_ICON,
-			index: []indexSchema.Schema{
-				{
-					Name:        "devfileA",
-					DisplayName: "Python",
-					Description: "A python stack.",
-					Versions: []indexSchema.Version{
-						{
-							Version: "1.0.0",
-							Icon:    "devfileA.png",
-							Default: true,
-						},
-					},
-				},
-				{
-					Name:        "devfileB",
-					DisplayName: "Python",
-					Description: "A python sample.",
-					Versions: []indexSchema.Version{
-						{
-							Version: "1.0.0",
-							Icon:    "devfileB.png",
-						},
-						{
-							Version: "2.0.0",
-							Icon:    "devfileB.ico",
-							Default: true,
-						},
-					},
-				},
-				{
-					Name:        "devfileC",
-					DisplayName: "Flask",
-					Icon:        "devfileC.jpg",
-				},
-				{
-					Name:        "devfileAA",
-					DisplayName: "Python - Flask",
-					Icon:        "devfileAA.ico",
-				},
-			},
-			value: "ico",
-			wantIndex: []indexSchema.Schema{
-				{
-					Name:        "devfileB",
-					DisplayName: "Python",
-					Description: "A python sample.",
-					Versions: []indexSchema.Version{
-						{
-							Version: "2.0.0",
-							Icon:    "devfileB.ico",
-							Default: true,
-						},
-					},
-				},
-				{
-					Name:        "devfileAA",
-					DisplayName: "Python - Flask",
-					Icon:        "devfileAA.ico",
-				},
-			},
-			wantErr: false,
-		},
-		{
-			name:      "project type filter",
-			fieldName: PARAM_PROJECT_TYPE,
-			index: []indexSchema.Schema{
-				{
-					Name:        "devfileA",
-					DisplayName: "Python",
-					ProjectType: "python",
-				},
-				{
-					Name:        "devfileB",
-					DisplayName: "Python",
-					ProjectType: "python",
-				},
-				{
-					Name:        "devfileC",
-					DisplayName: "Flask",
-					ProjectType: "python",
-				},
-				{
-					Name:        "devfileD",
-					DisplayName: "Java Springboot",
-					ProjectType: "java",
-				},
-				{
-					Name:        "devfileAA",
-					DisplayName: "Python - Flask",
-					ProjectType: "python",
-				},
-			},
-			v1Index: true,
-			value:   "java",
-			wantIndex: []indexSchema.Schema{
-				{
-					Name:        "devfileD",
-					DisplayName: "Java Springboot",
-					ProjectType: "java",
-				},
-			},
-			wantErr: false,
-		},
-		{
-			name:      "project type filter v2",
-			fieldName: PARAM_PROJECT_TYPE,
-			index: []indexSchema.Schema{
-				{
-					Name:        "devfileA",
-					DisplayName: "Python",
-					ProjectType: "python",
-				},
-				{
-					Name:        "devfileB",
-					DisplayName: "Python",
-					ProjectType: "python",
-				},
-				{
-					Name:        "devfileC",
-					DisplayName: "Flask",
-					ProjectType: "python",
-				},
-				{
-					Name:        "devfileD",
-					DisplayName: "Java Springboot",
-					ProjectType: "java",
-				},
-				{
-					Name:        "devfileAA",
-					DisplayName: "Python - Flask",
-					ProjectType: "python",
-				},
-			},
-			value: "java",
-			wantIndex: []indexSchema.Schema{
-				{
-					Name:        "devfileD",
-					DisplayName: "Java Springboot",
-					ProjectType: "java",
-				},
-			},
-			wantErr: false,
-		},
-		{
-			name:      "language filter",
-			fieldName: PARAM_LANGUAGE,
-			index: []indexSchema.Schema{
-				{
-					Name:        "devfileA",
-					DisplayName: "Python",
-					Language:    "Python",
-				},
-				{
-					Name:        "devfileB",
-					DisplayName: "Python",
-					Language:    "Python",
-				},
-				{
-					Name:        "devfileC",
-					DisplayName: "Flask",
-					Language:    "Python",
-				},
-				{
-					Name:        "devfileD",
-					DisplayName: "Java Springboot",
-					Language:    "Java",
-				},
-				{
-					Name:        "devfileAA",
-					DisplayName: "Python - Flask",
-					Language:    "Python",
-				},
-			},
-			v1Index: true,
-			value:   "java",
-			wantIndex: []indexSchema.Schema{
-				{
-					Name:        "devfileD",
-					DisplayName: "Java Springboot",
-					Language:    "Java",
-				},
-			},
-			wantErr: false,
-		},
-	}
+	tests := []filterDevfileStrFieldTestCase{}
+	tests = append(tests, filterNameFieldTestCases...)
+	tests = append(tests, filterDisplayNameFieldTestCases...)
+	tests = append(tests, filterDescriptionFieldTestCases...)
+	tests = append(tests, filterIconFieldTestCases...)
+	tests = append(tests, filterProjectTypeFieldTestCases...)
+	tests = append(tests, filterLanguageFieldTestCases...)
 
 	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			gotResult := FilterDevfileStrField(test.index, test.fieldName, test.value, test.v1Index)
+		t.Run(test.Name, func(t *testing.T) {
+			gotResult := FilterDevfileStrField(test.Index, test.FieldName, test.Value, test.V1Index)
 			gotResult.Eval()
 			if !gotResult.IsEval {
 				t.Errorf("Got unexpected unevaluated result: %v", gotResult)
-			} else if !test.wantErr && gotResult.Error != nil {
+			} else if !test.WantErr && gotResult.Error != nil {
 				t.Errorf("Unexpected error: %v", gotResult.Error)
-			} else if !test.wantErr && !reflect.DeepEqual(gotResult.Index, test.wantIndex) {
-				t.Errorf("Got: %v, Expected: %v", gotResult.Index, test.wantIndex)
-			} else if test.wantErr && !strings.HasPrefix(gotResult.Error.Error(), test.wantErrStr) {
-				t.Errorf("Got: %v, Expected: %v", gotResult.Error.Error(), test.wantErrStr)
+			} else if !test.WantErr && !reflect.DeepEqual(gotResult.Index, test.WantIndex) {
+				t.Errorf("Got: %v, Expected: %v", gotResult.Index, test.WantIndex)
+			} else if test.WantErr && !strings.HasPrefix(gotResult.Error.Error(), test.WantErrStr) {
+				t.Errorf("Got: %v, Expected: %v", gotResult.Error.Error(), test.WantErrStr)
 			}
 		})
 	}

@@ -106,6 +106,42 @@ func (fr *FilterResult) Eval() {
 	fr.IsEval = true
 }
 
+// FilterOptions provides filtering options to filters operations
+type FilterOptions[T any] struct {
+	GetFromIndexField   func(*indexSchema.Schema) T
+	GetFromVersionField func(*indexSchema.Version) T
+	FilterOutEmpty      bool
+	V1Index             bool
+}
+
+// indexFieldEmptyHandler handles what to do with empty index array fields
+func indexFieldEmptyHandler(index *[]indexSchema.Schema, idx *int, requestedValues []string, options FilterOptions[[]string]) bool {
+	schema := &(*index)[*idx]
+
+	// If filtering out empty, assume that if a stack has no field values mentioned and field value are request, then filter out entry
+	if options.FilterOutEmpty && len(requestedValues) != 0 && len(options.GetFromIndexField(schema)) == 0 {
+		filterOut(index, idx)
+		return true
+	}
+
+	// Else assume that if a stack has no array field values mentioned, then assume all possible are valid
+	return len(options.GetFromIndexField(schema)) == 0
+}
+
+// versionFieldEmptyHandler handles what to do with empty version array fields
+func versionFieldEmptyHandler(versions *[]indexSchema.Version, idx *int, requestedValues []string, options FilterOptions[[]string]) bool {
+	version := &(*versions)[*idx]
+
+	// If filtering out empty, assume that if a stack has no field values mentioned and field value are request, then filter out entry
+	if options.FilterOutEmpty && len(requestedValues) != 0 && len(options.GetFromVersionField(version)) == 0 {
+		filterOut(versions, idx)
+		return true
+	}
+
+	// Else assume that if a stack has no array field values mentioned, then assume all possible are valid
+	return len(options.GetFromVersionField(version)) == 0
+}
+
 // filterOut filters out element at i in a given referenced array,
 // if element does not exist the given referenced array does not
 // change.
@@ -139,26 +175,45 @@ func trimPunc(s string) string {
 	return strings.TrimSpace(re.ReplaceAllString(s, " "))
 }
 
+// preProcessString pre-process give string to perform fuzzy matching
+func preProcessString(s string) string {
+	sLower := strings.ToLower(s)
+	return trimPunc(trimExtraSpace(sLower))
+}
+
+// getFuzzySetFromArray gets a fuzzy pre-processed set from given array
+func getFuzzySetFromArray(arr []string) *sets.Set[string] {
+	preProcessedArray := []string{}
+
+	for i := 0; i < len(arr); i++ {
+		preProcessedArray = append(preProcessedArray, preProcessString(arr[i]))
+	}
+
+	return sets.From(preProcessedArray)
+}
+
 // fuzzyMatch fuzzy compare function
 func fuzzyMatch(a string, b string) bool {
-	aLower, bLower := strings.ToLower(a), strings.ToLower(b)
-	aTrim, bTrim := trimPunc(trimExtraSpace(aLower)), trimPunc(trimExtraSpace(bLower))
-	return strings.Contains(aTrim, bTrim)
+	return strings.Contains(preProcessString(a), preProcessString(b))
+}
+
+// fuzzyMatchInSet fuzzy compare function on fuzzy pre-processed set
+func fuzzyMatchInSet(fuzzySet *sets.Set[string], matchVal string) bool {
+	return fuzzySet.Contains(preProcessString(matchVal))
 }
 
 // filterDevfileFieldFuzzy filters devfiles based on fuzzy filtering of string fields
-func filterDevfileFieldFuzzy(index []indexSchema.Schema, requestedValue string, getIndexValue func(*indexSchema.Schema) string,
-	getVersionValue func(*indexSchema.Version) string, v1Index bool) FilterResult {
+func filterDevfileFieldFuzzy(index []indexSchema.Schema, requestedValue string, options FilterOptions[string]) FilterResult {
 	return FilterResult{
 		filterFn: func(fr *FilterResult) {
 			filteredIndex := deepcopy.Copy(index).([]indexSchema.Schema)
 
-			if getIndexValue != nil || getVersionValue != nil {
+			if options.GetFromIndexField != nil || options.GetFromVersionField != nil {
 				for i := 0; i < len(filteredIndex); i++ {
 					toFilterOutIndex := false
 
-					if getIndexValue != nil {
-						indexValue := getIndexValue(&filteredIndex[i])
+					if options.GetFromIndexField != nil {
+						indexValue := options.GetFromIndexField(&filteredIndex[i])
 						if !fuzzyMatch(indexValue, requestedValue) {
 							toFilterOutIndex = true
 						}
@@ -166,10 +221,10 @@ func filterDevfileFieldFuzzy(index []indexSchema.Schema, requestedValue string, 
 						toFilterOutIndex = true
 					}
 
-					if !v1Index && getVersionValue != nil {
+					if !options.V1Index && options.GetFromVersionField != nil {
 						filteredVersions := deepcopy.Copy(filteredIndex[i].Versions).([]indexSchema.Version)
 						for versionIndex := 0; versionIndex < len(filteredVersions); versionIndex++ {
-							versionValue := getVersionValue(&filteredVersions[versionIndex])
+							versionValue := options.GetFromVersionField(&filteredVersions[versionIndex])
 							if !fuzzyMatch(versionValue, requestedValue) {
 								filterOut(&filteredVersions, &versionIndex)
 							}
@@ -192,127 +247,56 @@ func filterDevfileFieldFuzzy(index []indexSchema.Schema, requestedValue string, 
 	}
 }
 
-// filterDevfileTags filters devfiles based on tags
-func filterDevfileTags(index []indexSchema.Schema, tags []string, v1Index bool) FilterResult {
+// filterDevfileFieldFuzzy filters devfiles based on fuzzy filtering of string array fields
+func filterDevfileArrayFuzzy(index []indexSchema.Schema, requestedValues []string, options FilterOptions[[]string]) FilterResult {
 	return FilterResult{
 		filterFn: func(fr *FilterResult) {
 			filteredIndex := deepcopy.Copy(index).([]indexSchema.Schema)
-			for i := 0; i < len(filteredIndex); i++ {
-				if len(tags) != 0 && len(filteredIndex[i].Tags) == 0 {
-					// If tags are requested and a stack has no tags mentioned, then filter out entry
-					filterOut(&filteredIndex, &i)
-					continue
-				}
 
-				filterIn := true
-				tagsInIndex := sets.From(filteredIndex[i].Tags)
-
-				for _, requestedTag := range tags {
-					if !tagsInIndex.Contains(requestedTag) {
-						filterIn = false
-						break
-					}
-				}
-
-				if !filterIn {
-					filterOut(&filteredIndex, &i)
-					continue
-				}
-
-				// go through each version's tags if multi-version stack is supported
-				if !v1Index {
-					for versionIndex := 0; versionIndex < len(filteredIndex[i].Versions); versionIndex++ {
-						versionTags := filteredIndex[i].Versions[versionIndex].Tags
-						if len(tags) != 0 && len(versionTags) == 0 {
-							// If tags are requested and a stack has no tags mentioned, then filter out entry
-							filterOut(&filteredIndex[i].Versions, &versionIndex)
+			if options.GetFromIndexField != nil || options.GetFromVersionField != nil {
+				for i := 0; i < len(filteredIndex); i++ {
+					if options.GetFromIndexField != nil {
+						if indexFieldEmptyHandler(&filteredIndex, &i, requestedValues, options) {
 							continue
 						}
-						filterVersion := true
-						tagsInVersion := sets.From(filteredIndex[i].Versions[versionIndex].Tags)
 
-						for _, requestedTag := range tags {
-							if !tagsInVersion.Contains(requestedTag) {
-								filterVersion = false
+						filterIn := true
+						valuesInIndex := getFuzzySetFromArray(options.GetFromIndexField(&filteredIndex[i]))
+
+						for _, requestedValue := range requestedValues {
+							if !fuzzyMatchInSet(valuesInIndex, requestedValue) {
+								filterIn = false
 								break
 							}
 						}
 
-						if !filterVersion {
-							filterOut(&filteredIndex[i].Versions, &versionIndex)
-						}
-
-					}
-				}
-			}
-
-			fr.Index = filteredIndex
-		},
-	}
-}
-
-// filterDevfileArchitectures filters devfiles based on architectures
-func filterDevfileArchitectures(index []indexSchema.Schema, archs []string, v1Index bool) FilterResult {
-	return FilterResult{
-		filterFn: func(fr *FilterResult) {
-			filteredIndex := deepcopy.Copy(index).([]indexSchema.Schema)
-			for i := 0; i < len(filteredIndex); i++ {
-				if len(filteredIndex[i].Architectures) == 0 {
-					// If a stack has no architectures mentioned, then it supports all architectures
-					continue
-				}
-
-				filterIn := true
-
-				for _, requestedArch := range archs {
-					isArchPresent := false
-					for _, devfileArch := range filteredIndex[i].Architectures {
-						if requestedArch == devfileArch {
-							isArchPresent = true
-							break
-						}
-					}
-
-					if !isArchPresent {
-						// if one of the arch requested is not present, no need to search for the others
-						filterIn = false
-						break
-					}
-				}
-
-				if !filterIn {
-					filterOut(&filteredIndex, &i)
-					continue
-				}
-
-				// go through each version's architecture if multi-version stack is supported
-				if !v1Index {
-					for versionIndex := 0; versionIndex < len(filteredIndex[i].Versions); versionIndex++ {
-						versionArchs := filteredIndex[i].Versions[versionIndex].Architectures
-						if len(versionArchs) == 0 {
-							// If a devfile has no architectures mentioned, then it supports all architectures
+						if !filterIn {
+							filterOut(&filteredIndex, &i)
 							continue
 						}
-						archInVersion := true
-						for _, requestedArch := range archs {
-							archPresentInVersion := false
-							for _, versionArch := range versionArchs {
-								if requestedArch == versionArch {
-									archPresentInVersion = true
+					}
+
+					// go through each version's tags if multi-version stack is supported
+					if !options.V1Index && options.GetFromVersionField != nil {
+						for versionIndex := 0; versionIndex < len(filteredIndex[i].Versions); versionIndex++ {
+							if versionFieldEmptyHandler(&filteredIndex[i].Versions, &versionIndex, requestedValues, options) {
+								continue
+							}
+
+							filterVersion := true
+							valuesInVersion := getFuzzySetFromArray(options.GetFromVersionField(&filteredIndex[i].Versions[versionIndex]))
+
+							for _, requestedValue := range requestedValues {
+								if !fuzzyMatchInSet(valuesInVersion, requestedValue) {
+									filterVersion = false
 									break
 								}
 							}
-							if !archPresentInVersion {
-								// if one of the arch requested is not present, no need to search for the others
-								archInVersion = false
-								break
+
+							if !filterVersion {
+								filterOut(&filteredIndex[i].Versions, &versionIndex)
 							}
 						}
-
-						if !archInVersion {
-							filterOut(&filteredIndex[i].Versions, &versionIndex)
-						}
-
 					}
 				}
 			}
@@ -381,93 +365,87 @@ func FilterDevfileSchemaVersion(index []indexSchema.Schema, minSchemaVersion str
 
 // FilterDevfileStrField filters by given string field, returns unchanged index if given parameter name is unrecognized
 func FilterDevfileStrField(index []indexSchema.Schema, paramName string, requestedValue string, v1Index bool) FilterResult {
-	var getIndexValue func(*indexSchema.Schema) string
-	var getVersionValue func(*indexSchema.Version) string
+	options := FilterOptions[string]{
+		V1Index: v1Index,
+	}
 	switch paramName {
 	case PARAM_NAME:
-		getIndexValue = func(s *indexSchema.Schema) string {
+		options.GetFromIndexField = func(s *indexSchema.Schema) string {
 			return s.Name
 		}
-		getVersionValue = nil
 	case PARAM_DISPLAY_NAME:
-		getIndexValue = func(s *indexSchema.Schema) string {
+		options.GetFromIndexField = func(s *indexSchema.Schema) string {
 			return s.DisplayName
 		}
-		getVersionValue = nil
 	case PARAM_DESCRIPTION:
-		getIndexValue = func(s *indexSchema.Schema) string {
+		options.GetFromIndexField = func(s *indexSchema.Schema) string {
 			return s.Description
 		}
-		getVersionValue = func(v *indexSchema.Version) string {
+		options.GetFromVersionField = func(v *indexSchema.Version) string {
 			return v.Description
 		}
 	case PARAM_ICON:
-		getIndexValue = func(s *indexSchema.Schema) string {
+		options.GetFromIndexField = func(s *indexSchema.Schema) string {
 			return s.Icon
 		}
-		getVersionValue = func(v *indexSchema.Version) string {
+		options.GetFromVersionField = func(v *indexSchema.Version) string {
 			return v.Icon
 		}
 	case PARAM_PROJECT_TYPE:
-		getIndexValue = func(s *indexSchema.Schema) string {
+		options.GetFromIndexField = func(s *indexSchema.Schema) string {
 			return s.ProjectType
 		}
-		getVersionValue = nil
 	case PARAM_LANGUAGE:
-		getIndexValue = func(s *indexSchema.Schema) string {
+		options.GetFromIndexField = func(s *indexSchema.Schema) string {
 			return s.Language
 		}
-		getVersionValue = nil
 	case PARAM_VERSION:
-		getIndexValue = func(s *indexSchema.Schema) string {
+		options.GetFromIndexField = func(s *indexSchema.Schema) string {
 			return s.Version
 		}
-		getVersionValue = func(v *indexSchema.Version) string {
+		options.GetFromVersionField = func(v *indexSchema.Version) string {
 			return v.Version
 		}
 	case PARAM_SCHEMA_VERSION:
-		getIndexValue = nil
-		getVersionValue = func(v *indexSchema.Version) string {
+		options.GetFromVersionField = func(v *indexSchema.Version) string {
 			return v.SchemaVersion
 		}
 	case PARAM_GIT_URL:
-		getIndexValue = func(s *indexSchema.Schema) string {
+		options.GetFromIndexField = func(s *indexSchema.Schema) string {
 			return s.Git.Url
 		}
-		getVersionValue = func(v *indexSchema.Version) string {
+		options.GetFromVersionField = func(v *indexSchema.Version) string {
 			return v.Git.Url
 		}
 	case PARAM_GIT_REMOTE_NAME:
-		getIndexValue = func(s *indexSchema.Schema) string {
+		options.GetFromIndexField = func(s *indexSchema.Schema) string {
 			return s.Git.RemoteName
 		}
-		getVersionValue = func(v *indexSchema.Version) string {
+		options.GetFromVersionField = func(v *indexSchema.Version) string {
 			return v.Git.RemoteName
 		}
 	case PARAM_GIT_SUBDIR:
-		getIndexValue = func(s *indexSchema.Schema) string {
+		options.GetFromIndexField = func(s *indexSchema.Schema) string {
 			return s.Git.SubDir
 		}
-		getVersionValue = func(v *indexSchema.Version) string {
+		options.GetFromVersionField = func(v *indexSchema.Version) string {
 			return v.Git.SubDir
 		}
 	case PARAM_GIT_REVISION:
-		getIndexValue = func(s *indexSchema.Schema) string {
+		options.GetFromIndexField = func(s *indexSchema.Schema) string {
 			return s.Git.Revision
 		}
-		getVersionValue = func(v *indexSchema.Version) string {
+		options.GetFromVersionField = func(v *indexSchema.Version) string {
 			return v.Git.Revision
 		}
 	case PARAM_PROVIDER:
-		getIndexValue = func(s *indexSchema.Schema) string {
+		options.GetFromIndexField = func(s *indexSchema.Schema) string {
 			return s.Provider
 		}
-		getVersionValue = nil
 	case PARAM_SUPPORT_URL:
-		getIndexValue = func(s *indexSchema.Schema) string {
+		options.GetFromIndexField = func(s *indexSchema.Schema) string {
 			return s.SupportUrl
 		}
-		getVersionValue = nil
 	default:
 		return FilterResult{
 			filterFn: func(fr *FilterResult) {
@@ -476,7 +454,7 @@ func FilterDevfileStrField(index []indexSchema.Schema, paramName string, request
 		}
 	}
 
-	return filterDevfileFieldFuzzy(index, requestedValue, getIndexValue, getVersionValue, v1Index)
+	return filterDevfileFieldFuzzy(index, requestedValue, options)
 }
 
 // AndFilter filters results of given filters to only overlapping results
@@ -540,11 +518,115 @@ func AndFilter(results ...FilterResult) FilterResult {
 
 // FilterDevfileStrArrayField filters devfiles based on an array field
 func FilterDevfileStrArrayField(index []indexSchema.Schema, paramName string, requestedValues []string, v1Index bool) FilterResult {
+	options := FilterOptions[[]string]{
+		FilterOutEmpty: true,
+		V1Index:        v1Index,
+	}
 	switch paramName {
+	case ARRAY_PARAM_ATTRIBUTE_NAMES:
+		options.GetFromIndexField = func(s *indexSchema.Schema) []string {
+			names := []string{}
+
+			for name := range s.Attributes {
+				names = append(names, name)
+			}
+
+			return names
+		}
 	case ARRAY_PARAM_ARCHITECTURES:
-		return filterDevfileArchitectures(index, requestedValues, v1Index)
+		options.GetFromIndexField = func(s *indexSchema.Schema) []string {
+			return s.Architectures
+		}
+		options.GetFromVersionField = func(v *indexSchema.Version) []string {
+			return v.Architectures
+		}
+		options.FilterOutEmpty = false
 	case ARRAY_PARAM_TAGS:
-		return filterDevfileTags(index, requestedValues, v1Index)
+		options.GetFromIndexField = func(s *indexSchema.Schema) []string {
+			return s.Tags
+		}
+		options.GetFromVersionField = func(v *indexSchema.Version) []string {
+			return v.Tags
+		}
+	case ARRAY_PARAM_RESOURCES:
+		options.GetFromIndexField = func(s *indexSchema.Schema) []string {
+			return s.Resources
+		}
+		options.GetFromVersionField = func(v *indexSchema.Version) []string {
+			return v.Resources
+		}
+	case ARRAY_PARAM_STARTER_PROJECTS:
+		options.GetFromIndexField = func(s *indexSchema.Schema) []string {
+			return s.StarterProjects
+		}
+		options.GetFromVersionField = func(v *indexSchema.Version) []string {
+			return v.StarterProjects
+		}
+	case ARRAY_PARAM_LINKS:
+		options.GetFromIndexField = func(s *indexSchema.Schema) []string {
+			links := []string{}
+
+			for _, link := range s.Links {
+				links = append(links, link)
+			}
+
+			return links
+		}
+		options.GetFromVersionField = func(v *indexSchema.Version) []string {
+			links := []string{}
+
+			for _, link := range v.Links {
+				links = append(links, link)
+			}
+
+			return links
+		}
+	case ARRAY_PARAM_COMMAND_GROUPS:
+		options.GetFromIndexField = func(s *indexSchema.Schema) []string {
+			commandGroups := []string{}
+
+			for commandGroup, isSet := range s.CommandGroups {
+				if isSet {
+					commandGroups = append(commandGroups, string(commandGroup))
+				}
+			}
+
+			return commandGroups
+		}
+		options.GetFromVersionField = func(v *indexSchema.Version) []string {
+			commandGroups := []string{}
+
+			for commandGroup, isSet := range v.CommandGroups {
+				if isSet {
+					commandGroups = append(commandGroups, string(commandGroup))
+				}
+			}
+
+			return commandGroups
+		}
+	case ARRAY_PARAM_GIT_REMOTES:
+		options.GetFromIndexField = func(s *indexSchema.Schema) []string {
+			gitRemotes := []string{}
+
+			if s.Git != nil {
+				for remoteName := range s.Git.Remotes {
+					gitRemotes = append(gitRemotes, remoteName)
+				}
+			}
+
+			return gitRemotes
+		}
+		options.GetFromVersionField = func(v *indexSchema.Version) []string {
+			gitRemotes := []string{}
+
+			if v.Git != nil {
+				for remoteName := range v.Git.Remotes {
+					gitRemotes = append(gitRemotes, remoteName)
+				}
+			}
+
+			return gitRemotes
+		}
 	default:
 		return FilterResult{
 			filterFn: func(fr *FilterResult) {
@@ -552,4 +634,6 @@ func FilterDevfileStrArrayField(index []indexSchema.Schema, paramName string, re
 			},
 		}
 	}
+
+	return filterDevfileArrayFuzzy(index, requestedValues, options)
 }
