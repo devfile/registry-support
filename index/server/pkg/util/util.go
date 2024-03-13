@@ -18,7 +18,7 @@ package util
 import (
 	"encoding/base64"
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"net/url"
@@ -46,7 +46,7 @@ func IsHtmlRequested(acceptHeader []string) bool {
 func EncodeIndexIconToBase64(indexPath string, base64IndexPath string) ([]byte, error) {
 	// load index
 	/* #nosec G304 -- indexPath is derived from known paths set in the docker image */
-	bytes, err := ioutil.ReadFile(indexPath)
+	bytes, err := os.ReadFile(indexPath)
 	if err != nil {
 		return nil, err
 	}
@@ -94,13 +94,13 @@ func encodeToBase64(uri string) (string, error) {
 		}
 		defer resp.Body.Close()
 
-		bytes, err = ioutil.ReadAll(resp.Body)
+		bytes, err = io.ReadAll(resp.Body)
 		if err != nil {
 			return "", err
 		}
 	} else {
 		/* #nosec G304 -- uri is derived from known paths set in the docker image */
-		bytes, err = ioutil.ReadFile(uri)
+		bytes, err = os.ReadFile(uri)
 		if err != nil {
 			return "", err
 		}
@@ -125,7 +125,7 @@ func encodeToBase64(uri string) (string, error) {
 func ReadIndexPath(indexPath string) ([]indexSchema.Schema, error) {
 	// load index
 	/* #nosec G304 -- not user input */
-	bytes, err := ioutil.ReadFile(indexPath)
+	bytes, err := os.ReadFile(indexPath)
 	if err != nil {
 		return nil, err
 	}
@@ -198,10 +198,7 @@ func ConvertToOldIndexFormat(schemaList []indexSchema.Schema) []indexSchema.Sche
 }
 
 func IsTelemetryEnabled() bool {
-	if len(telemetryKey) > 0 {
-		return true
-	}
-	return false
+	return len(telemetryKey) > 0
 }
 
 // IsEnabled return value of a boolean environment variable, if environment variable

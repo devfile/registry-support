@@ -22,7 +22,6 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -387,7 +386,7 @@ func TestServeHealthCheck(t *testing.T) {
 		return
 	}
 
-	bytes, err := ioutil.ReadAll(w.Body)
+	bytes, err := io.ReadAll(w.Body)
 	if err != nil {
 		t.Fatalf("Did not expect error: %v", err)
 		return
@@ -1217,22 +1216,22 @@ func TestRootEndpointMethodNotAllowed(t *testing.T) {
 		wantCode int
 	}{
 		{
-			name: "POST / - Successful Response Test",
-			handler: server.PostRootEndpoint,
+			name:     "POST / - Successful Response Test",
+			handler:  server.PostRootEndpoint,
 			wantCode: http.StatusMethodNotAllowed,
 		},
 		{
-			name: "PUT / - Successful Response Test",
-			handler: server.PutRootEndpoint,
+			name:     "PUT / - Successful Response Test",
+			handler:  server.PutRootEndpoint,
 			wantCode: http.StatusMethodNotAllowed,
 		},
 		{
-			name: "DELETE / - Successful Response Test",
-			handler: server.DeleteRootEndpoint,
+			name:     "DELETE / - Successful Response Test",
+			handler:  server.DeleteRootEndpoint,
 			wantCode: http.StatusMethodNotAllowed,
 		},
 	}
-	
+
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
 			gin.SetMode(gin.TestMode)
@@ -1261,22 +1260,22 @@ func TestHealthCheckMethodNotAllowed(t *testing.T) {
 		wantCode int
 	}{
 		{
-			name: "POST /health - Successful Response Test",
-			handler: server.PostHealthCheck,
+			name:     "POST /health - Successful Response Test",
+			handler:  server.PostHealthCheck,
 			wantCode: http.StatusMethodNotAllowed,
 		},
 		{
-			name: "PUT /health - Successful Response Test",
-			handler: server.PutHealthCheck,
+			name:     "PUT /health - Successful Response Test",
+			handler:  server.PutHealthCheck,
 			wantCode: http.StatusMethodNotAllowed,
 		},
 		{
-			name: "DELETE /health - Successful Response Test",
-			handler: server.DeleteHealthCheck,
+			name:     "DELETE /health - Successful Response Test",
+			handler:  server.DeleteHealthCheck,
 			wantCode: http.StatusMethodNotAllowed,
 		},
 	}
-	
+
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
 			gin.SetMode(gin.TestMode)
@@ -1305,37 +1304,41 @@ func TestDevfileIndexV1MethodNotAllowed(t *testing.T) {
 		wantCode int
 	}{
 		{
-			name: "POST /index - Successful Response Test",
-			handler: server.PostDevfileIndexV1,
+			name:     "POST /index - Successful Response Test",
+			handler:  server.PostDevfileIndexV1,
 			wantCode: http.StatusMethodNotAllowed,
 		},
 		{
-			name: "PUT /index - Successful Response Test",
-			handler: server.PutDevfileIndexV1,
+			name:     "PUT /index - Successful Response Test",
+			handler:  server.PutDevfileIndexV1,
 			wantCode: http.StatusMethodNotAllowed,
 		},
 		{
-			name: "DELETE /index - Successful Response Test",
-			handler: server.DeleteDevfileIndexV1,
+			name:     "DELETE /index - Successful Response Test",
+			handler:  server.DeleteDevfileIndexV1,
 			wantCode: http.StatusMethodNotAllowed,
 		},
 		{
 			name: "POST /index/{indexType} - Successful Response Test",
-			handler: func(c *gin.Context){server.PostDevfileIndexV1WithType(c, "stack", PostDevfileIndexV1WithTypeParams{})},
+			handler: func(c *gin.Context) {
+				server.PostDevfileIndexV1WithType(c, "stack", PostDevfileIndexV1WithTypeParams{})
+			},
 			wantCode: http.StatusMethodNotAllowed,
 		},
 		{
-			name: "PUT /index/{indexType} - Successful Response Test",
-			handler: func(c *gin.Context){server.PutDevfileIndexV1WithType(c, "stack", PutDevfileIndexV1WithTypeParams{})},
+			name:     "PUT /index/{indexType} - Successful Response Test",
+			handler:  func(c *gin.Context) { server.PutDevfileIndexV1WithType(c, "stack", PutDevfileIndexV1WithTypeParams{}) },
 			wantCode: http.StatusMethodNotAllowed,
 		},
 		{
 			name: "DELETE /index/{indexType} - Successful Response Test",
-			handler: func(c *gin.Context){server.DeleteDevfileIndexV1WithType(c, "stack", DeleteDevfileIndexV1WithTypeParams{})},
+			handler: func(c *gin.Context) {
+				server.DeleteDevfileIndexV1WithType(c, "stack", DeleteDevfileIndexV1WithTypeParams{})
+			},
 			wantCode: http.StatusMethodNotAllowed,
 		},
 	}
-	
+
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
 			gin.SetMode(gin.TestMode)
@@ -1364,37 +1367,41 @@ func TestDevfileIndexV2MethodNotAllowed(t *testing.T) {
 		wantCode int
 	}{
 		{
-			name: "POST /v2index - Successful Response Test",
-			handler: server.PostDevfileIndexV2,
+			name:     "POST /v2index - Successful Response Test",
+			handler:  server.PostDevfileIndexV2,
 			wantCode: http.StatusMethodNotAllowed,
 		},
 		{
-			name: "PUT /v2index - Successful Response Test",
-			handler: server.PutDevfileIndexV2,
+			name:     "PUT /v2index - Successful Response Test",
+			handler:  server.PutDevfileIndexV2,
 			wantCode: http.StatusMethodNotAllowed,
 		},
 		{
-			name: "DELETE /v2index - Successful Response Test",
-			handler: server.DeleteDevfileIndexV2,
+			name:     "DELETE /v2index - Successful Response Test",
+			handler:  server.DeleteDevfileIndexV2,
 			wantCode: http.StatusMethodNotAllowed,
 		},
 		{
 			name: "POST /v2index/{indexType} - Successful Response Test",
-			handler: func(c *gin.Context){server.PostDevfileIndexV2WithType(c, "stack", PostDevfileIndexV2WithTypeParams{})},
+			handler: func(c *gin.Context) {
+				server.PostDevfileIndexV2WithType(c, "stack", PostDevfileIndexV2WithTypeParams{})
+			},
 			wantCode: http.StatusMethodNotAllowed,
 		},
 		{
-			name: "PUT /v2index/{indexType} - Successful Response Test",
-			handler: func(c *gin.Context){server.PutDevfileIndexV2WithType(c, "stack", PutDevfileIndexV2WithTypeParams{})},
+			name:     "PUT /v2index/{indexType} - Successful Response Test",
+			handler:  func(c *gin.Context) { server.PutDevfileIndexV2WithType(c, "stack", PutDevfileIndexV2WithTypeParams{}) },
 			wantCode: http.StatusMethodNotAllowed,
 		},
 		{
 			name: "DELETE /v2index/{indexType} - Successful Response Test",
-			handler: func(c *gin.Context){server.DeleteDevfileIndexV2WithType(c, "stack", DeleteDevfileIndexV2WithTypeParams{})},
+			handler: func(c *gin.Context) {
+				server.DeleteDevfileIndexV2WithType(c, "stack", DeleteDevfileIndexV2WithTypeParams{})
+			},
 			wantCode: http.StatusMethodNotAllowed,
 		},
 	}
-	
+
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
 			gin.SetMode(gin.TestMode)
@@ -1418,72 +1425,72 @@ func TestDevfileMethodNotAllowed(t *testing.T) {
 	setupVars()
 	server := &Server{}
 	tests := []struct {
-		name     	string
-		handler  	gin.HandlerFunc
-		wantCode 	int
+		name     string
+		handler  gin.HandlerFunc
+		wantCode int
 	}{
 		{
-			name: "POST /devfiles/{stack} - Successful Response Test",
-			handler: func(c *gin.Context){server.PostDevfile(c, "go")},
+			name:     "POST /devfiles/{stack} - Successful Response Test",
+			handler:  func(c *gin.Context) { server.PostDevfile(c, "go") },
 			wantCode: http.StatusMethodNotAllowed,
 		},
 		{
-			name: "PUT /devfiles/{stack} - Successful Response Test",
-			handler: func(c *gin.Context){server.PutDevfile(c, "go")},
+			name:     "PUT /devfiles/{stack} - Successful Response Test",
+			handler:  func(c *gin.Context) { server.PutDevfile(c, "go") },
 			wantCode: http.StatusMethodNotAllowed,
 		},
 		{
-			name: "DELETE /devfiles/{stack} - Successful Response Test",
-			handler: func(c *gin.Context){server.DeleteDevfile(c, "go")},
+			name:     "DELETE /devfiles/{stack} - Successful Response Test",
+			handler:  func(c *gin.Context) { server.DeleteDevfile(c, "go") },
 			wantCode: http.StatusMethodNotAllowed,
 		},
 		{
-			name: "POST /devfiles/{stack}/{version} - Successful Response Test",
-			handler: func(c *gin.Context){server.PostDevfileWithVersion(c, "go", "2.0.0")},
+			name:     "POST /devfiles/{stack}/{version} - Successful Response Test",
+			handler:  func(c *gin.Context) { server.PostDevfileWithVersion(c, "go", "2.0.0") },
 			wantCode: http.StatusMethodNotAllowed,
 		},
 		{
-			name: "PUT /devfiles/{stack}/{version} - Successful Response Test",
-			handler: func(c *gin.Context){server.PutDevfileWithVersion(c, "go", "2.0.0")},
+			name:     "PUT /devfiles/{stack}/{version} - Successful Response Test",
+			handler:  func(c *gin.Context) { server.PutDevfileWithVersion(c, "go", "2.0.0") },
 			wantCode: http.StatusMethodNotAllowed,
 		},
 		{
-			name: "DELETE /devfiles/{stack}/{version} - Successful Response Test",
-			handler: func(c *gin.Context){server.DeleteDevfileWithVersion(c, "go", "2.0.0")},
+			name:     "DELETE /devfiles/{stack}/{version} - Successful Response Test",
+			handler:  func(c *gin.Context) { server.DeleteDevfileWithVersion(c, "go", "2.0.0") },
 			wantCode: http.StatusMethodNotAllowed,
 		},
 		{
-			name: "POST /devfiles/{stack}/starter-projects/{starterProject} - Successful Response Test",
-			handler: func(c *gin.Context){server.PostDevfileStarterProject(c, "go", "go-starter")},
+			name:     "POST /devfiles/{stack}/starter-projects/{starterProject} - Successful Response Test",
+			handler:  func(c *gin.Context) { server.PostDevfileStarterProject(c, "go", "go-starter") },
 			wantCode: http.StatusMethodNotAllowed,
 		},
 		{
-			name: "PUT /devfiles/{stack}/starter-projects/{starterProject} - Successful Response Test",
-			handler: func(c *gin.Context){server.PutDevfileStarterProject(c, "go", "go-starter")},
+			name:     "PUT /devfiles/{stack}/starter-projects/{starterProject} - Successful Response Test",
+			handler:  func(c *gin.Context) { server.PutDevfileStarterProject(c, "go", "go-starter") },
 			wantCode: http.StatusMethodNotAllowed,
 		},
 		{
-			name: "DELETE /devfiles/{stack}/starter-projects/{starterProject} - Successful Response Test",
-			handler: func(c *gin.Context){server.DeleteDevfileStarterProject(c, "go", "go-starter")},
+			name:     "DELETE /devfiles/{stack}/starter-projects/{starterProject} - Successful Response Test",
+			handler:  func(c *gin.Context) { server.DeleteDevfileStarterProject(c, "go", "go-starter") },
 			wantCode: http.StatusMethodNotAllowed,
 		},
 		{
-			name: "POST /devfiles/{stack}/{version}/starter-projects/{starterProject} - Successful Response Test",
-			handler: func(c *gin.Context){server.PostDevfileStarterProjectWithVersion(c, "go", "2.0.0", "go-starter")},
+			name:     "POST /devfiles/{stack}/{version}/starter-projects/{starterProject} - Successful Response Test",
+			handler:  func(c *gin.Context) { server.PostDevfileStarterProjectWithVersion(c, "go", "2.0.0", "go-starter") },
 			wantCode: http.StatusMethodNotAllowed,
 		},
 		{
-			name: "PUT /devfiles/{stack}/{version}/starter-projects/{starterProject} - Successful Response Test",
-			handler: func(c *gin.Context){server.PutDevfileStarterProjectWithVersion(c, "go", "2.0.0", "go-starter")},
+			name:     "PUT /devfiles/{stack}/{version}/starter-projects/{starterProject} - Successful Response Test",
+			handler:  func(c *gin.Context) { server.PutDevfileStarterProjectWithVersion(c, "go", "2.0.0", "go-starter") },
 			wantCode: http.StatusMethodNotAllowed,
 		},
 		{
-			name: "DELETE /devfiles/{stack}/{version}/starter-projects/{starterProject} - Successful Response Test",
-			handler: func(c *gin.Context){server.DeleteDevfileStarterProjectWithVersion(c, "go", "2.0.0", "go-starter")},
+			name:     "DELETE /devfiles/{stack}/{version}/starter-projects/{starterProject} - Successful Response Test",
+			handler:  func(c *gin.Context) { server.DeleteDevfileStarterProjectWithVersion(c, "go", "2.0.0", "go-starter") },
 			wantCode: http.StatusMethodNotAllowed,
 		},
 	}
-	
+
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
 			gin.SetMode(gin.TestMode)
