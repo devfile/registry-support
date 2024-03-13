@@ -193,7 +193,7 @@ func getFuzzySetFromArray(arr []string) *sets.Set[string] {
 }
 
 // fuzzyMatch fuzzy compare function
-func fuzzyMatch(a string, b string) bool {
+func fuzzyMatch(a, b string) bool {
 	return strings.Contains(preProcessString(a), preProcessString(b))
 }
 
@@ -307,7 +307,7 @@ func filterDevfileArrayFuzzy(index []indexSchema.Schema, requestedValues []strin
 }
 
 // FilterDevfileSchemaVersion filters devfiles based on schema version
-func FilterDevfileSchemaVersion(index []indexSchema.Schema, minSchemaVersion string, maxSchemaVersion string) FilterResult {
+func FilterDevfileSchemaVersion(index []indexSchema.Schema, minSchemaVersion, maxSchemaVersion string) FilterResult {
 	return FilterResult{
 		filterFn: func(fr *FilterResult) {
 			for i := 0; i < len(index); i++ {
@@ -364,7 +364,7 @@ func FilterDevfileSchemaVersion(index []indexSchema.Schema, minSchemaVersion str
 }
 
 // FilterDevfileStrField filters by given string field, returns unchanged index if given parameter name is unrecognized
-func FilterDevfileStrField(index []indexSchema.Schema, paramName string, requestedValue string, v1Index bool) FilterResult {
+func FilterDevfileStrField(index []indexSchema.Schema, paramName, requestedValue string, v1Index bool) FilterResult {
 	options := FilterOptions[string]{
 		V1Index: v1Index,
 	}
