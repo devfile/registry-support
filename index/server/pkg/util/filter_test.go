@@ -532,7 +532,149 @@ var (
 			},
 		},
 	}
-	filterLinksTestCases         = []filterDevfileStrArrayFieldTestCase{}
+	filterLinksTestCases = []filterDevfileStrArrayFieldTestCase{
+		{
+			Name:      "two link filters",
+			FieldName: ARRAY_PARAM_LINKS,
+			Index: []indexSchema.Schema{
+				{
+					Name: "devfileA",
+					Links: map[string]string{
+						"linkA": "git.test.com",
+						"linkB": "https://http.test.com",
+						"linkC": "https://another.testlink.ca",
+					},
+				},
+				{
+					Name: "devfileB",
+					Links: map[string]string{
+						"linkA": "git.test.com",
+						"linkC": "https://another.testlink.ca",
+					},
+				},
+				{
+					Name: "devfileC",
+					Links: map[string]string{
+						"linkA": "git.test.com",
+					},
+				},
+				{
+					Name: "devfileD",
+				},
+			},
+			V1Index: true,
+			Values:  []string{"linkA", "linkC"},
+			WantIndex: []indexSchema.Schema{
+				{
+					Name: "devfileA",
+					Links: map[string]string{
+						"linkA": "git.test.com",
+						"linkB": "https://http.test.com",
+						"linkC": "https://another.testlink.ca",
+					},
+				},
+				{
+					Name: "devfileB",
+					Links: map[string]string{
+						"linkA": "git.test.com",
+						"linkC": "https://another.testlink.ca",
+					},
+				},
+			},
+		},
+		{
+			Name:      "two link filters with v2 index",
+			FieldName: ARRAY_PARAM_LINKS,
+			Index: []indexSchema.Schema{
+				{
+					Name: "devfileA",
+					Versions: []indexSchema.Version{
+						{
+							Version: "1.0.0",
+						},
+						{
+							Version: "1.1.0",
+							Links: map[string]string{
+								"linkA": "git.test.com",
+								"linkB": "https://http.test.com",
+								"linkC": "https://another.testlink.ca",
+							},
+						},
+					},
+				},
+				{
+					Name: "devfileB",
+					Links: map[string]string{
+						"linkA": "git.test.com",
+						"linkC": "https://another.testlink.ca",
+					},
+				},
+				{
+					Name: "devfileC",
+					Links: map[string]string{
+						"linkA": "git.test.com",
+					},
+					Versions: []indexSchema.Version{
+						{
+							Version: "1.0.0",
+							Links: map[string]string{
+								"linkA": "git.test.com",
+							},
+						},
+						{
+							Version: "1.1.0",
+							Links: map[string]string{
+								"linkA": "git.test.com",
+								"linkC": "https://another.testlink.ca",
+							},
+						},
+					},
+				},
+				{
+					Name: "devfileD",
+				},
+			},
+			V1Index: false,
+			Values:  []string{"linkA", "linkC"},
+			WantIndex: []indexSchema.Schema{
+				{
+					Name: "devfileA",
+					Versions: []indexSchema.Version{
+						{
+							Version: "1.1.0",
+							Links: map[string]string{
+								"linkA": "git.test.com",
+								"linkB": "https://http.test.com",
+								"linkC": "https://another.testlink.ca",
+							},
+						},
+					},
+				},
+				{
+					Name: "devfileB",
+					Links: map[string]string{
+						"linkA": "git.test.com",
+						"linkC": "https://another.testlink.ca",
+					},
+				},
+				{
+					Name: "devfileC",
+					Links: map[string]string{
+						"linkA": "git.test.com",
+					},
+					Versions: []indexSchema.Version{
+						{
+							Version: "1.1.0",
+							Links: map[string]string{
+								"linkA": "git.test.com",
+								"linkC": "https://another.testlink.ca",
+							},
+						},
+					},
+				},
+			},
+		},
+	}
 	filterCommandGroupsTestCases = []filterDevfileStrArrayFieldTestCase{}
 	filterGitRemotesTestCases    = []filterDevfileStrArrayFieldTestCase{}
 	// ======================================
