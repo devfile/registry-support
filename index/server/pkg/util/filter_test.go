@@ -332,7 +332,104 @@ var (
 			},
 		},
 	}
-	filterResourcesTestCases       = []filterDevfileStrArrayFieldTestCase{}
+	filterResourcesTestCases = []filterDevfileStrArrayFieldTestCase{
+		{
+			Name:      "two resource filters",
+			FieldName: ARRAY_PARAM_RESOURCES,
+			Index: []indexSchema.Schema{
+				{
+					Name:      "devfileA",
+					Resources: []string{"devfile.yaml", "archive.tar"},
+				},
+				{
+					Name:      "devfileB",
+					Resources: []string{"devfile.yaml"},
+				},
+				{
+					Name:      "devfileC",
+					Resources: []string{"devfile.yaml", "archive.tar"},
+				},
+				{
+					Name: "devfileD",
+				},
+			},
+			V1Index: true,
+			Values:  []string{"devfile.yaml", "archive.tar"},
+			WantIndex: []indexSchema.Schema{
+				{
+					Name:      "devfileA",
+					Resources: []string{"devfile.yaml", "archive.tar"},
+				},
+				{
+					Name:      "devfileC",
+					Resources: []string{"devfile.yaml", "archive.tar"},
+				},
+			},
+		},
+		{
+			Name:      "two resource filters with v2 index",
+			FieldName: ARRAY_PARAM_RESOURCES,
+			Index: []indexSchema.Schema{
+				{
+					Name: "devfileA",
+					Versions: []indexSchema.Version{
+						{
+							Version:   "1.0.0",
+							Resources: []string{"devfile.yaml"},
+						},
+						{
+							Version:   "1.1.0",
+							Resources: []string{"devfile.yaml"},
+						},
+						{
+							Version:   "2.0.0",
+							Resources: []string{"devfile.yaml", "archive.tar"},
+						},
+					},
+				},
+				{
+					Name:      "devfileB",
+					Resources: []string{"devfile.yaml"},
+				},
+				{
+					Name:      "devfileC",
+					Resources: []string{"devfile.yaml", "archive.tar"},
+					Versions: []indexSchema.Version{
+						{
+							Version:   "1.0.0",
+							Resources: []string{"devfile.yaml", "archive.tar"},
+						},
+					},
+				},
+				{
+					Name: "devfileD",
+				},
+			},
+			V1Index: false,
+			Values:  []string{"devfile.yaml", "archive.tar"},
+			WantIndex: []indexSchema.Schema{
+				{
+					Name: "devfileA",
+					Versions: []indexSchema.Version{
+						{
+							Version:   "2.0.0",
+							Resources: []string{"devfile.yaml", "archive.tar"},
+						},
+					},
+				},
+				{
+					Name:      "devfileC",
+					Resources: []string{"devfile.yaml", "archive.tar"},
+					Versions: []indexSchema.Version{
+						{
+							Version:   "1.0.0",
+							Resources: []string{"devfile.yaml", "archive.tar"},
+						},
+					},
+				},
+			},
+		},
+	}
 	filterStarterProjectsTestCases = []filterDevfileStrArrayFieldTestCase{}
 	filterLinksTestCases           = []filterDevfileStrArrayFieldTestCase{}
 	filterCommandGroupsTestCases   = []filterDevfileStrArrayFieldTestCase{}
