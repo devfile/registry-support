@@ -430,10 +430,111 @@ var (
 			},
 		},
 	}
-	filterStarterProjectsTestCases = []filterDevfileStrArrayFieldTestCase{}
-	filterLinksTestCases           = []filterDevfileStrArrayFieldTestCase{}
-	filterCommandGroupsTestCases   = []filterDevfileStrArrayFieldTestCase{}
-	filterGitRemotesTestCases      = []filterDevfileStrArrayFieldTestCase{}
+	filterStarterProjectsTestCases = []filterDevfileStrArrayFieldTestCase{
+		{
+			Name:      "two starter project filters",
+			FieldName: ARRAY_PARAM_STARTER_PROJECTS,
+			Index: []indexSchema.Schema{
+				{
+					Name:            "devfileA",
+					StarterProjects: []string{"starterA", "starterB"},
+				},
+				{
+					Name:            "devfileB",
+					StarterProjects: []string{"starterB"},
+				},
+				{
+					Name:            "devfileC",
+					StarterProjects: []string{"starterA", "starterC"},
+				},
+				{
+					Name: "devfileD",
+				},
+			},
+			V1Index: true,
+			Values:  []string{"starterA", "starterB"},
+			WantIndex: []indexSchema.Schema{
+				{
+					Name:            "devfileA",
+					StarterProjects: []string{"starterA", "starterB"},
+				},
+			},
+		},
+		{
+			Name:      "two starter project filters with v2 index",
+			FieldName: ARRAY_PARAM_STARTER_PROJECTS,
+			Index: []indexSchema.Schema{
+				{
+					Name: "devfileA",
+					Versions: []indexSchema.Version{
+						{
+							Version:         "1.0.0",
+							StarterProjects: []string{"starterA"},
+						},
+						{
+							Version:         "1.1.0",
+							StarterProjects: []string{"starterA", "starterB"},
+						},
+						{
+							Version:         "2.0.0",
+							StarterProjects: []string{"starterA", "starterB"},
+						},
+					},
+				},
+				{
+					Name:            "devfileB",
+					StarterProjects: []string{"starterB"},
+				},
+				{
+					Name:            "devfileC",
+					StarterProjects: []string{"starterA", "starterC"},
+					Versions: []indexSchema.Version{
+						{
+							Version:         "1.0.0",
+							StarterProjects: []string{"starterA", "starterC"},
+						},
+						{
+							Version:         "2.0.0",
+							StarterProjects: []string{"starterA", "starterB"},
+						},
+					},
+				},
+				{
+					Name: "devfileD",
+				},
+			},
+			V1Index: false,
+			Values:  []string{"starterA", "starterB"},
+			WantIndex: []indexSchema.Schema{
+				{
+					Name: "devfileA",
+					Versions: []indexSchema.Version{
+						{
+							Version:         "1.1.0",
+							StarterProjects: []string{"starterA", "starterB"},
+						},
+						{
+							Version:         "2.0.0",
+							StarterProjects: []string{"starterA", "starterB"},
+						},
+					},
+				},
+				{
+					Name:            "devfileC",
+					StarterProjects: []string{"starterA", "starterC"},
+					Versions: []indexSchema.Version{
+						{
+							Version:         "2.0.0",
+							StarterProjects: []string{"starterA", "starterB"},
+						},
+					},
+				},
+			},
+		},
+	}
+	filterLinksTestCases         = []filterDevfileStrArrayFieldTestCase{}
+	filterCommandGroupsTestCases = []filterDevfileStrArrayFieldTestCase{}
+	filterGitRemotesTestCases    = []filterDevfileStrArrayFieldTestCase{}
 	// ======================================
 	// Filter Devfile String Field Test Cases
 	// ======================================
