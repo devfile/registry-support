@@ -850,7 +850,189 @@ var (
 			},
 		},
 	}
-	filterGitRemotesTestCases = []filterDevfileStrArrayFieldTestCase{}
+	filterGitRemotesTestCases = []filterDevfileStrArrayFieldTestCase{
+		{
+			Name:      "two git remote filters",
+			FieldName: ARRAY_PARAM_GIT_REMOTES,
+			Index: []indexSchema.Schema{
+				{
+					Name: "devfileA",
+					Git: &indexSchema.Git{
+						Remotes: map[string]string{
+							"linkA": "git.test.com",
+							"linkB": "https://http.test.com",
+							"linkC": "https://another.testlink.ca",
+						},
+					},
+				},
+				{
+					Name: "devfileB",
+					Git: &indexSchema.Git{
+						Remotes: map[string]string{
+							"linkA": "git.test.com",
+							"linkC": "https://another.testlink.ca",
+						},
+					},
+				},
+				{
+					Name: "devfileC",
+					Git: &indexSchema.Git{
+						Remotes: map[string]string{
+							"linkA": "git.test.com",
+						},
+					},
+				},
+				{
+					Name: "devfileD",
+					Git: &indexSchema.Git{
+						RemoteName: "remoteA",
+					},
+				},
+				{
+					Name: "devfileE",
+				},
+			},
+			V1Index: true,
+			Values:  []string{"linkA", "linkC"},
+			WantIndex: []indexSchema.Schema{
+				{
+					Name: "devfileA",
+					Git: &indexSchema.Git{
+						Remotes: map[string]string{
+							"linkA": "git.test.com",
+							"linkB": "https://http.test.com",
+							"linkC": "https://another.testlink.ca",
+						},
+					},
+				},
+				{
+					Name: "devfileB",
+					Git: &indexSchema.Git{
+						Remotes: map[string]string{
+							"linkA": "git.test.com",
+							"linkC": "https://another.testlink.ca",
+						},
+					},
+				},
+			},
+		},
+		{
+			Name:      "two git remote filters with v2 index",
+			FieldName: ARRAY_PARAM_GIT_REMOTES,
+			Index: []indexSchema.Schema{
+				{
+					Name: "devfileA",
+					Versions: []indexSchema.Version{
+						{
+							Version: "1.0.0",
+						},
+						{
+							Version: "1.1.0",
+							Git: &indexSchema.Git{
+								Remotes: map[string]string{
+									"linkA": "git.test.com",
+									"linkB": "https://http.test.com",
+									"linkC": "https://another.testlink.ca",
+								},
+							},
+						},
+					},
+				},
+				{
+					Name: "devfileB",
+					Git: &indexSchema.Git{
+						Remotes: map[string]string{
+							"linkA": "git.test.com",
+							"linkC": "https://another.testlink.ca",
+						},
+					},
+				},
+				{
+					Name: "devfileC",
+					Git: &indexSchema.Git{
+						Remotes: map[string]string{
+							"linkA": "git.test.com",
+						},
+					},
+					Versions: []indexSchema.Version{
+						{
+							Version: "1.0.0",
+							Git: &indexSchema.Git{
+								Remotes: map[string]string{
+									"linkA": "git.test.com",
+								},
+							},
+						},
+						{
+							Version: "1.1.0",
+							Git: &indexSchema.Git{
+								Remotes: map[string]string{
+									"linkA": "git.test.com",
+									"linkC": "https://another.testlink.ca",
+								},
+							},
+						},
+					},
+				},
+				{
+					Name: "devfileD",
+					Git: &indexSchema.Git{
+						RemoteName: "remoteA",
+					},
+				},
+				{
+					Name: "devfileE",
+				},
+			},
+			V1Index: false,
+			Values:  []string{"linkA", "linkC"},
+			WantIndex: []indexSchema.Schema{
+				{
+					Name: "devfileA",
+					Versions: []indexSchema.Version{
+						{
+							Version: "1.1.0",
+							Git: &indexSchema.Git{
+								Remotes: map[string]string{
+									"linkA": "git.test.com",
+									"linkB": "https://http.test.com",
+									"linkC": "https://another.testlink.ca",
+								},
+							},
+						},
+					},
+				},
+				{
+					Name: "devfileB",
+					Git: &indexSchema.Git{
+						Remotes: map[string]string{
+							"linkA": "git.test.com",
+							"linkC": "https://another.testlink.ca",
+						},
+					},
+				},
+				{
+					Name: "devfileC",
+					Git: &indexSchema.Git{
+						Remotes: map[string]string{
+							"linkA": "git.test.com",
+						},
+					},
+					Versions: []indexSchema.Version{
+						{
+							Version: "1.1.0",
+							Git: &indexSchema.Git{
+								Remotes: map[string]string{
+									"linkA": "git.test.com",
+									"linkC": "https://another.testlink.ca",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
 	// ======================================
 	// Filter Devfile String Field Test Cases
 	// ======================================
