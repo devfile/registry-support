@@ -675,8 +675,182 @@ var (
 			},
 		},
 	}
-	filterCommandGroupsTestCases = []filterDevfileStrArrayFieldTestCase{}
-	filterGitRemotesTestCases    = []filterDevfileStrArrayFieldTestCase{}
+	filterCommandGroupsTestCases = []filterDevfileStrArrayFieldTestCase{
+		{
+			Name:      "two command group filters",
+			FieldName: ARRAY_PARAM_COMMAND_GROUPS,
+			Index: []indexSchema.Schema{
+				{
+					Name: "devfileA",
+					CommandGroups: map[indexSchema.CommandGroupKind]bool{
+						indexSchema.DebugCommandGroupKind:  false,
+						indexSchema.DeployCommandGroupKind: false,
+						indexSchema.BuildCommandGroupKind:  true,
+						indexSchema.RunCommandGroupKind:    true,
+						indexSchema.TestCommandGroupKind:   false,
+					},
+				},
+				{
+					Name: "devfileB",
+					CommandGroups: map[indexSchema.CommandGroupKind]bool{
+						indexSchema.BuildCommandGroupKind: true,
+						indexSchema.RunCommandGroupKind:   true,
+					},
+				},
+				{
+					Name: "devfileC",
+					CommandGroups: map[indexSchema.CommandGroupKind]bool{
+						indexSchema.DeployCommandGroupKind: false,
+						indexSchema.RunCommandGroupKind:    true,
+					},
+				},
+				{
+					Name: "devfileD",
+				},
+			},
+			V1Index: true,
+			Values:  []string{string(indexSchema.BuildCommandGroupKind), string(indexSchema.RunCommandGroupKind)},
+			WantIndex: []indexSchema.Schema{
+				{
+					Name: "devfileA",
+					CommandGroups: map[indexSchema.CommandGroupKind]bool{
+						indexSchema.DebugCommandGroupKind:  false,
+						indexSchema.DeployCommandGroupKind: false,
+						indexSchema.BuildCommandGroupKind:  true,
+						indexSchema.RunCommandGroupKind:    true,
+						indexSchema.TestCommandGroupKind:   false,
+					},
+				},
+				{
+					Name: "devfileB",
+					CommandGroups: map[indexSchema.CommandGroupKind]bool{
+						indexSchema.BuildCommandGroupKind: true,
+						indexSchema.RunCommandGroupKind:   true,
+					},
+				},
+			},
+		},
+		{
+			Name:      "two command group filters with v2 index",
+			FieldName: ARRAY_PARAM_COMMAND_GROUPS,
+			Index: []indexSchema.Schema{
+				{
+					Name: "devfileA",
+					Versions: []indexSchema.Version{
+						{
+							Version: "1.0.0",
+						},
+						{
+							Version: "1.1.0",
+							CommandGroups: map[indexSchema.CommandGroupKind]bool{
+								indexSchema.BuildCommandGroupKind: true,
+								indexSchema.RunCommandGroupKind:   true,
+							},
+						},
+						{
+							Version: "2.0.0",
+							CommandGroups: map[indexSchema.CommandGroupKind]bool{
+								indexSchema.DebugCommandGroupKind:  false,
+								indexSchema.DeployCommandGroupKind: false,
+								indexSchema.BuildCommandGroupKind:  true,
+								indexSchema.RunCommandGroupKind:    true,
+								indexSchema.TestCommandGroupKind:   false,
+							},
+						},
+					},
+				},
+				{
+					Name: "devfileB",
+					CommandGroups: map[indexSchema.CommandGroupKind]bool{
+						indexSchema.BuildCommandGroupKind: true,
+						indexSchema.RunCommandGroupKind:   true,
+					},
+				},
+				{
+					Name: "devfileC",
+					CommandGroups: map[indexSchema.CommandGroupKind]bool{
+						indexSchema.DeployCommandGroupKind: false,
+						indexSchema.RunCommandGroupKind:    true,
+					},
+					Versions: []indexSchema.Version{
+						{
+							Version: "1.0.0",
+							CommandGroups: map[indexSchema.CommandGroupKind]bool{
+								indexSchema.DeployCommandGroupKind: false,
+								indexSchema.RunCommandGroupKind:    true,
+							},
+						},
+						{
+							Version: "2.0.0",
+							CommandGroups: map[indexSchema.CommandGroupKind]bool{
+								indexSchema.DebugCommandGroupKind:  false,
+								indexSchema.DeployCommandGroupKind: false,
+								indexSchema.BuildCommandGroupKind:  true,
+								indexSchema.RunCommandGroupKind:    true,
+								indexSchema.TestCommandGroupKind:   false,
+							},
+						},
+					},
+				},
+				{
+					Name: "devfileD",
+				},
+			},
+			V1Index: false,
+			Values:  []string{string(indexSchema.BuildCommandGroupKind), string(indexSchema.RunCommandGroupKind)},
+			WantIndex: []indexSchema.Schema{
+				{
+					Name: "devfileA",
+					Versions: []indexSchema.Version{
+						{
+							Version: "1.1.0",
+							CommandGroups: map[indexSchema.CommandGroupKind]bool{
+								indexSchema.BuildCommandGroupKind: true,
+								indexSchema.RunCommandGroupKind:   true,
+							},
+						},
+						{
+							Version: "2.0.0",
+							CommandGroups: map[indexSchema.CommandGroupKind]bool{
+								indexSchema.DebugCommandGroupKind:  false,
+								indexSchema.DeployCommandGroupKind: false,
+								indexSchema.BuildCommandGroupKind:  true,
+								indexSchema.RunCommandGroupKind:    true,
+								indexSchema.TestCommandGroupKind:   false,
+							},
+						},
+					},
+				},
+				{
+					Name: "devfileB",
+					CommandGroups: map[indexSchema.CommandGroupKind]bool{
+						indexSchema.BuildCommandGroupKind: true,
+						indexSchema.RunCommandGroupKind:   true,
+					},
+				},
+				{
+					Name: "devfileC",
+					CommandGroups: map[indexSchema.CommandGroupKind]bool{
+						indexSchema.DeployCommandGroupKind: false,
+						indexSchema.RunCommandGroupKind:    true,
+					},
+					Versions: []indexSchema.Version{
+						{
+							Version: "2.0.0",
+							CommandGroups: map[indexSchema.CommandGroupKind]bool{
+								indexSchema.DebugCommandGroupKind:  false,
+								indexSchema.DeployCommandGroupKind: false,
+								indexSchema.BuildCommandGroupKind:  true,
+								indexSchema.RunCommandGroupKind:    true,
+								indexSchema.TestCommandGroupKind:   false,
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	filterGitRemotesTestCases = []filterDevfileStrArrayFieldTestCase{}
 	// ======================================
 	// Filter Devfile String Field Test Cases
 	// ======================================
