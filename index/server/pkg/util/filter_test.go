@@ -1520,6 +1520,15 @@ var (
 			WantErr: false,
 		},
 	}
+	filterVersionFieldTestCases       = []filterDevfileStrFieldTestCase{}
+	filterSchemaVersionFieldTestCases = []filterDevfileStrFieldTestCase{}
+	filterDefaultFieldTestCases       = []filterDevfileStrFieldTestCase{}
+	filterGitUrlFieldTestCases        = []filterDevfileStrFieldTestCase{}
+	filterGitRemoteNameFieldTestCases = []filterDevfileStrFieldTestCase{}
+	filterGitSubDirFieldTestCases     = []filterDevfileStrFieldTestCase{}
+	filterGitRevisionFieldTestCases   = []filterDevfileStrFieldTestCase{}
+	filterProviderFieldTestCases      = []filterDevfileStrFieldTestCase{}
+	filterSupportUrlFieldTestCases    = []filterDevfileStrFieldTestCase{}
 )
 
 func TestFilterOut(t *testing.T) {
@@ -1955,6 +1964,15 @@ func TestFilterDevfileStrField(t *testing.T) {
 	tests = append(tests, filterIconFieldTestCases...)
 	tests = append(tests, filterProjectTypeFieldTestCases...)
 	tests = append(tests, filterLanguageFieldTestCases...)
+	tests = append(tests, filterVersionFieldTestCases...)
+	tests = append(tests, filterSchemaVersionFieldTestCases...)
+	tests = append(tests, filterDefaultFieldTestCases...)
+	tests = append(tests, filterGitUrlFieldTestCases...)
+	tests = append(tests, filterGitRemoteNameFieldTestCases...)
+	tests = append(tests, filterGitSubDirFieldTestCases...)
+	tests = append(tests, filterGitRevisionFieldTestCases...)
+	tests = append(tests, filterProviderFieldTestCases...)
+	tests = append(tests, filterSupportUrlFieldTestCases...)
 
 	for _, test := range tests {
 		t.Run(test.Name, func(t *testing.T) {
