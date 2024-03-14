@@ -570,8 +570,8 @@ func FilterDevfileStrArrayField(index []indexSchema.Schema, paramName string, re
 		options.GetFromIndexField = func(s *indexSchema.Schema) []string {
 			links := []string{}
 
-			for _, link := range s.Links {
-				links = append(links, link)
+			for linkName := range s.Links {
+				links = append(links, linkName)
 			}
 
 			return links
@@ -579,8 +579,8 @@ func FilterDevfileStrArrayField(index []indexSchema.Schema, paramName string, re
 		options.GetFromVersionField = func(v *indexSchema.Version) []string {
 			links := []string{}
 
-			for _, link := range v.Links {
-				links = append(links, link)
+			for linkName := range v.Links {
+				links = append(links, linkName)
 			}
 
 			return links
