@@ -115,31 +115,25 @@ type FilterOptions[T any] struct {
 }
 
 // indexFieldEmptyHandler handles what to do with empty index array fields
-func indexFieldEmptyHandler(index *[]indexSchema.Schema, idx *int, requestedValues []string, options FilterOptions[[]string]) bool {
-	schema := &(*index)[*idx]
-
-	// If filtering out empty, assume that if a stack has no field values mentioned and field value are request, then filter out entry
-	if options.FilterOutEmpty && len(requestedValues) != 0 && len(options.GetFromIndexField(schema)) == 0 {
-		filterOut(index, idx)
-		return true
-	}
-
+func indexFieldEmptyHandler(schema *indexSchema.Schema, requestedValues []string, options FilterOptions[[]string]) bool {
+	// If filtering out empty, assume that if a stack has no field values mentioned and field value are request
 	// Else assume that if a stack has no array field values mentioned, then assume all possible are valid
-	return len(options.GetFromIndexField(schema)) == 0
+	if options.FilterOutEmpty {
+		return len(requestedValues) != 0 && len(options.GetFromIndexField(schema)) == 0
+	} else {
+		return len(options.GetFromIndexField(schema)) == 0
+	}
 }
 
 // versionFieldEmptyHandler handles what to do with empty version array fields
-func versionFieldEmptyHandler(versions *[]indexSchema.Version, idx *int, requestedValues []string, options FilterOptions[[]string]) bool {
-	version := &(*versions)[*idx]
-
-	// If filtering out empty, assume that if a stack has no field values mentioned and field value are request, then filter out entry
-	if options.FilterOutEmpty && len(requestedValues) != 0 && len(options.GetFromVersionField(version)) == 0 {
-		filterOut(versions, idx)
-		return true
-	}
-
+func versionFieldEmptyHandler(version *indexSchema.Version, requestedValues []string, options FilterOptions[[]string]) bool {
+	// If filtering out empty, assume that if a stack has no field values mentioned and field value are request
 	// Else assume that if a stack has no array field values mentioned, then assume all possible are valid
-	return len(options.GetFromVersionField(version)) == 0
+	if options.FilterOutEmpty {
+		return len(requestedValues) != 0 && len(options.GetFromVersionField(version)) == 0
+	} else {
+		return len(options.GetFromVersionField(version)) == 0
+	}
 }
 
 // filterOut filters out element at i in a given referenced array,
@@ -255,48 +249,58 @@ func filterDevfileArrayFuzzy(index []indexSchema.Schema, requestedValues []strin
 
 			if options.GetFromIndexField != nil || options.GetFromVersionField != nil {
 				for i := 0; i < len(filteredIndex); i++ {
+					toFilterOutIndex := false
+
 					if options.GetFromIndexField != nil {
-						if indexFieldEmptyHandler(&filteredIndex, &i, requestedValues, options) {
-							continue
-						}
+						// If index schema field is not empty perform fuzzy filtering
+						// else if filtering out based on empty fields is set, set index schema to be filtered out
+						// (after version filtering if applicable)
+						if !indexFieldEmptyHandler(&filteredIndex[i], requestedValues, options) {
+							valuesInIndex := getFuzzySetFromArray(options.GetFromIndexField(&filteredIndex[i]))
 
-						filterIn := true
-						valuesInIndex := getFuzzySetFromArray(options.GetFromIndexField(&filteredIndex[i]))
-
-						for _, requestedValue := range requestedValues {
-							if !fuzzyMatchInSet(valuesInIndex, requestedValue) {
-								filterIn = false
-								break
+							for _, requestedValue := range requestedValues {
+								if !fuzzyMatchInSet(valuesInIndex, requestedValue) {
+									toFilterOutIndex = true
+									break
+								}
 							}
-						}
-
-						if !filterIn {
-							filterOut(&filteredIndex, &i)
-							continue
+						} else if options.FilterOutEmpty {
+							toFilterOutIndex = true
 						}
 					}
 
 					// go through each version's tags if multi-version stack is supported
 					if !options.V1Index && options.GetFromVersionField != nil {
-						for versionIndex := 0; versionIndex < len(filteredIndex[i].Versions); versionIndex++ {
-							if versionFieldEmptyHandler(&filteredIndex[i].Versions, &versionIndex, requestedValues, options) {
-								continue
-							}
+						filteredVersions := deepcopy.Copy(filteredIndex[i].Versions).([]indexSchema.Version)
+						for versionIndex := 0; versionIndex < len(filteredVersions); versionIndex++ {
+							// If version schema field is not empty perform fuzzy filtering
+							// else if filtering out based on empty fields is set, filter out version schema
+							if !versionFieldEmptyHandler(&filteredVersions[versionIndex], requestedValues, options) {
+								valuesInVersion := getFuzzySetFromArray(options.GetFromVersionField(&filteredVersions[versionIndex]))
 
-							filterVersion := true
-							valuesInVersion := getFuzzySetFromArray(options.GetFromVersionField(&filteredIndex[i].Versions[versionIndex]))
-
-							for _, requestedValue := range requestedValues {
-								if !fuzzyMatchInSet(valuesInVersion, requestedValue) {
-									filterVersion = false
-									break
+								for _, requestedValue := range requestedValues {
+									if !fuzzyMatchInSet(valuesInVersion, requestedValue) {
+										filterOut(&filteredVersions, &versionIndex)
+										break
+									}
 								}
-							}
-
-							if !filterVersion {
-								filterOut(&filteredIndex[i].Versions, &versionIndex)
+							} else if options.FilterOutEmpty {
+								filterOut(&filteredVersions, &versionIndex)
 							}
 						}
+
+						// If the filtered versions is not empty, set to the filtered index result
+						// Else if empty and index field filtering was not performed ensure index entry is filtered out
+						if len(filteredVersions) != 0 {
+							filteredIndex[i].Versions = filteredVersions
+							toFilterOutIndex = false
+						} else if options.GetFromIndexField == nil {
+							toFilterOutIndex = true
+						}
+					}
+
+					if toFilterOutIndex {
+						filterOut(&filteredIndex, &i)
 					}
 				}
 			}
