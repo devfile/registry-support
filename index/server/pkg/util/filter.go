@@ -310,6 +310,43 @@ func filterDevfileArrayFuzzy(index []indexSchema.Schema, requestedValues []strin
 	}
 }
 
+func IsFieldParameter(name string) bool {
+	parameterNames := sets.From([]string{
+		PARAM_NAME,
+		PARAM_DISPLAY_NAME,
+		PARAM_DESCRIPTION,
+		PARAM_ICON,
+		PARAM_PROJECT_TYPE,
+		PARAM_LANGUAGE,
+		PARAM_VERSION,
+		PARAM_SCHEMA_VERSION,
+		PARAM_DEFAULT,
+		PARAM_GIT_URL,
+		PARAM_GIT_REMOTE_NAME,
+		PARAM_GIT_SUBDIR,
+		PARAM_GIT_REVISION,
+		PARAM_PROVIDER,
+		PARAM_SUPPORT_URL,
+	})
+
+	return parameterNames.Contains(name)
+}
+
+func IsArrayParameter(name string) bool {
+	parameterNames := sets.From([]string{
+		ARRAY_PARAM_ATTRIBUTE_NAMES,
+		ARRAY_PARAM_ARCHITECTURES,
+		ARRAY_PARAM_TAGS,
+		ARRAY_PARAM_RESOURCES,
+		ARRAY_PARAM_STARTER_PROJECTS,
+		ARRAY_PARAM_LINKS,
+		ARRAY_PARAM_COMMAND_GROUPS,
+		ARRAY_PARAM_GIT_REMOTES,
+	})
+
+	return parameterNames.Contains(name)
+}
+
 // FilterDevfileSchemaVersion filters devfiles based on schema version
 func FilterDevfileSchemaVersion(index []indexSchema.Schema, minSchemaVersion, maxSchemaVersion string) FilterResult {
 	return FilterResult{
