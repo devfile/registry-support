@@ -481,19 +481,13 @@ func ServeUI(c *gin.Context) {
 func buildIndexAPIResponse(c *gin.Context, indexType string, wantV1Index bool, params IndexParams) {
 
 	iconType := ""
-	archs := []string{}
-	var result util.FilterResult
+
+	var bytes []byte
+	var responseIndexPath, responseBase64IndexPath string
 
 	if params.Icon != nil {
 		iconType = *params.Icon
 	}
-
-	if params.Arch != nil {
-		archs = append(archs, *params.Arch...)
-	}
-
-	var bytes []byte
-	var responseIndexPath, responseBase64IndexPath string
 
 	// Sets Access-Control-Allow-Origin response header to allow cross origin requests
 	c.Header("Access-Control-Allow-Origin", "*")
@@ -571,39 +565,24 @@ func buildIndexAPIResponse(c *gin.Context, indexType string, wantV1Index bool, p
 				}
 			}
 
-			result = util.FilterDevfileSchemaVersion(index, minSchemaVersion, maxSchemaVersion)
-			result.Eval()
-			if !result.IsEval {
+			index, err = util.FilterDevfileSchemaVersion(index, minSchemaVersion, maxSchemaVersion)
+			if err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{
-					"status": fmt.Sprintf("failed to apply schema version filter: %v", "unevaluated filter"),
-				})
-				return
-			} else if result.Error != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{
-					"status": fmt.Sprintf("failed to apply schema version filter: %v", result.Error),
+					"status": fmt.Sprintf("failed to apply schema version filter: %v", err),
 				})
 				return
 			}
-			index = result.Index
 		}
 	}
-	// Filter the index if archs has been requested
-	if len(archs) > 0 {
-		result = util.FilterDevfileStrArrayField(index, util.ARRAY_PARAM_ARCHITECTURES, archs, wantV1Index)
-		result.Eval()
-		if !result.IsEval {
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"status": fmt.Sprintf("failed to apply schema version filter: %v", "unevaluated filter"),
-			})
-			return
-		} else if result.Error != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"status": fmt.Sprintf("failed to apply archs filter: %v", result.Error),
-			})
-			return
-		}
-		index = result.Index
+
+	// Filter the fields of the index
+	index, err = filterFieldsByParams(index, wantV1Index, params)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"status": fmt.Sprintf("failed to perform field filtering: %v", err),
+		})
 	}
+
 	bytes, err = json.MarshalIndent(&index, "", "  ")
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -701,20 +680,13 @@ func fetchDevfile(c *gin.Context, name string, version string) ([]byte, indexSch
 			}
 		}
 
-		result := util.FilterDevfileSchemaVersion(index, minSchemaVersion, maxSchemaVersion)
-		result.Eval()
-		if !result.IsEval {
+		index, err = util.FilterDevfileSchemaVersion(index, minSchemaVersion, maxSchemaVersion)
+		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
-				"status": fmt.Sprintf("failed to apply schema version filter: %v", "unevaluated filter"),
-			})
-			return []byte{}, indexSchema.Schema{}
-		} else if result.Error != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"status": fmt.Sprintf("failed to apply schema version filter: %v", result.Error),
+				"status": fmt.Sprintf("failed to apply schema version filter: %v", err),
 			})
 			return []byte{}, indexSchema.Schema{}
 		}
-		index = result.Index
 	}
 
 	for _, devfileIndex := range index {

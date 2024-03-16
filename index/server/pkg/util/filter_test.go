@@ -850,10 +850,10 @@ var (
 			},
 		},
 	}
-	filterGitRemotesTestCases = []filterDevfileStrArrayFieldTestCase{
+	filterGitRemoteNamesTestCases = []filterDevfileStrArrayFieldTestCase{
 		{
-			Name:      "two git remote filters",
-			FieldName: ARRAY_PARAM_GIT_REMOTES,
+			Name:      "two git remote name filters",
+			FieldName: ARRAY_PARAM_GIT_REMOTE_NAMES,
 			Index: []indexSchema.Schema{
 				{
 					Name: "devfileA",
@@ -917,8 +917,8 @@ var (
 			},
 		},
 		{
-			Name:      "two git remote filters with v2 index",
-			FieldName: ARRAY_PARAM_GIT_REMOTES,
+			Name:      "two git remote name filters with v2 index",
+			FieldName: ARRAY_PARAM_GIT_REMOTE_NAMES,
 			Index: []indexSchema.Schema{
 				{
 					Name: "devfileA",
@@ -1019,6 +1019,205 @@ var (
 						},
 					},
 					Versions: []indexSchema.Version{
+						{
+							Version: "1.1.0",
+							Git: &indexSchema.Git{
+								Remotes: map[string]string{
+									"linkA": "git.test.com",
+									"linkC": "https://another.testlink.ca",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	filterGitRemotesTestCases = []filterDevfileStrArrayFieldTestCase{
+		{
+			Name:      "two git remote filters",
+			FieldName: ARRAY_PARAM_GIT_REMOTES,
+			Index: []indexSchema.Schema{
+				{
+					Name: "devfileA",
+					Git: &indexSchema.Git{
+						Remotes: map[string]string{
+							"linkA": "git.test.com",
+							"linkB": "https://http.test.com",
+							"linkC": "https://another.testlink.ca",
+						},
+					},
+				},
+				{
+					Name: "devfileB",
+					Git: &indexSchema.Git{
+						Remotes: map[string]string{
+							"linkA": "git.test.com",
+							"linkC": "https://another.testlink.ca",
+						},
+					},
+				},
+				{
+					Name: "devfileC",
+					Git: &indexSchema.Git{
+						Remotes: map[string]string{
+							"linkA": "git.test.com",
+						},
+					},
+				},
+				{
+					Name: "devfileD",
+					Git: &indexSchema.Git{
+						RemoteName: "remoteA",
+					},
+				},
+				{
+					Name: "devfileE",
+				},
+			},
+			V1Index: true,
+			Values:  []string{"git", ".com"},
+			WantIndex: []indexSchema.Schema{
+				{
+					Name: "devfileA",
+					Git: &indexSchema.Git{
+						Remotes: map[string]string{
+							"linkA": "git.test.com",
+							"linkB": "https://http.test.com",
+							"linkC": "https://another.testlink.ca",
+						},
+					},
+				},
+				{
+					Name: "devfileB",
+					Git: &indexSchema.Git{
+						Remotes: map[string]string{
+							"linkA": "git.test.com",
+							"linkC": "https://another.testlink.ca",
+						},
+					},
+				},
+				{
+					Name: "devfileC",
+					Git: &indexSchema.Git{
+						Remotes: map[string]string{
+							"linkA": "git.test.com",
+						},
+					},
+				},
+			},
+		},
+		{
+			Name:      "two git remote filters with v2 index",
+			FieldName: ARRAY_PARAM_GIT_REMOTES,
+			Index: []indexSchema.Schema{
+				{
+					Name: "devfileA",
+					Versions: []indexSchema.Version{
+						{
+							Version: "1.0.0",
+						},
+						{
+							Version: "1.1.0",
+							Git: &indexSchema.Git{
+								Remotes: map[string]string{
+									"linkA": "git.test.com",
+									"linkB": "https://http.test.com",
+									"linkC": "https://another.testlink.ca",
+								},
+							},
+						},
+					},
+				},
+				{
+					Name: "devfileB",
+					Git: &indexSchema.Git{
+						Remotes: map[string]string{
+							"linkA": "git.test.com",
+							"linkC": "https://another.testlink.ca",
+						},
+					},
+				},
+				{
+					Name: "devfileC",
+					Git: &indexSchema.Git{
+						Remotes: map[string]string{
+							"linkA": "git.test.com",
+						},
+					},
+					Versions: []indexSchema.Version{
+						{
+							Version: "1.0.0",
+							Git: &indexSchema.Git{
+								Remotes: map[string]string{
+									"linkA": "git.test.com",
+								},
+							},
+						},
+						{
+							Version: "1.1.0",
+							Git: &indexSchema.Git{
+								Remotes: map[string]string{
+									"linkA": "git.test.com",
+									"linkC": "https://another.testlink.ca",
+								},
+							},
+						},
+					},
+				},
+				{
+					Name: "devfileD",
+					Git: &indexSchema.Git{
+						RemoteName: "remoteA",
+					},
+				},
+				{
+					Name: "devfileE",
+				},
+			},
+			V1Index: false,
+			Values:  []string{"git", ".com"},
+			WantIndex: []indexSchema.Schema{
+				{
+					Name: "devfileA",
+					Versions: []indexSchema.Version{
+						{
+							Version: "1.1.0",
+							Git: &indexSchema.Git{
+								Remotes: map[string]string{
+									"linkA": "git.test.com",
+									"linkB": "https://http.test.com",
+									"linkC": "https://another.testlink.ca",
+								},
+							},
+						},
+					},
+				},
+				{
+					Name: "devfileB",
+					Git: &indexSchema.Git{
+						Remotes: map[string]string{
+							"linkA": "git.test.com",
+							"linkC": "https://another.testlink.ca",
+						},
+					},
+				},
+				{
+					Name: "devfileC",
+					Git: &indexSchema.Git{
+						Remotes: map[string]string{
+							"linkA": "git.test.com",
+						},
+					},
+					Versions: []indexSchema.Version{
+						{
+							Version: "1.0.0",
+							Git: &indexSchema.Git{
+								Remotes: map[string]string{
+									"linkA": "git.test.com",
+								},
+							},
+						},
 						{
 							Version: "1.1.0",
 							Git: &indexSchema.Git{
@@ -1748,6 +1947,44 @@ func TestFuzzyMatch(t *testing.T) {
 	}
 }
 
+func TestPreProcessStringTokens(t *testing.T) {
+	tests := []struct {
+		name  string
+		value string
+		want  []string
+	}{
+		{
+			name:  "Case 1: One Token",
+			value: "Test",
+			want:  []string{"Test"},
+		},
+		{
+			name:  "Case 2: Two Tokens",
+			value: "Test token",
+			want:  []string{"Test", "token"},
+		},
+		{
+			name:  "Case 2: Three Tokens",
+			value: "Test 3 tokens",
+			want:  []string{"Test", "3", "tokens"},
+		},
+		{
+			name:  "Case 3: No tokens (Empty string)",
+			value: "",
+			want:  []string{},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got := preProcessStringTokens(test.value)
+			if !reflect.DeepEqual(got, test.want) {
+				t.Errorf("Got: %v, Expected: %v", got, test.want)
+			}
+		})
+	}
+}
+
 func TestFilterDevfileSchemaVersion(t *testing.T) {
 
 	tests := []struct {
@@ -1917,14 +2154,11 @@ func TestFilterDevfileSchemaVersion(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			gotResult := FilterDevfileSchemaVersion(test.index, test.minSchemaVersion, test.maxSchemaVersion)
-			gotResult.Eval()
-			if !gotResult.IsEval {
-				t.Errorf("Got unexpected unevaluated result: %v", gotResult)
-			} else if gotResult.Error != nil {
-				t.Errorf("Unexpected error: %v", gotResult.Error)
-			} else if !reflect.DeepEqual(gotResult.Index, test.wantIndex) {
-				t.Errorf("Got: %v, Expected: %v", gotResult.Index, test.wantIndex)
+			gotIndex, gotErr := FilterDevfileSchemaVersion(test.index, test.minSchemaVersion, test.maxSchemaVersion)
+			if gotErr != nil {
+				t.Errorf("Unexpected error: %v", gotErr)
+			} else if !reflect.DeepEqual(gotIndex, test.wantIndex) {
+				t.Errorf("Got: %v, Expected: %v", gotIndex, test.wantIndex)
 			}
 		})
 	}
@@ -1939,6 +2173,7 @@ func TestFilterDevfileStrArrayField(t *testing.T) {
 	tests = append(tests, filterStarterProjectsTestCases...)
 	tests = append(tests, filterLinksTestCases...)
 	tests = append(tests, filterCommandGroupsTestCases...)
+	tests = append(tests, filterGitRemoteNamesTestCases...)
 	tests = append(tests, filterGitRemotesTestCases...)
 
 	for _, test := range tests {
@@ -1994,7 +2229,7 @@ func TestFilterDevfileStrField(t *testing.T) {
 func TestAndFilter(t *testing.T) {
 	tests := []struct {
 		name        string
-		filters     []FilterResult
+		filters     []*FilterResult
 		wantIndex   []indexSchema.Schema
 		wantNotEval bool
 		wantErr     bool
@@ -2002,7 +2237,7 @@ func TestAndFilter(t *testing.T) {
 	}{
 		{
 			name: "Test Valid And with same results",
-			filters: []FilterResult{
+			filters: []*FilterResult{
 				{
 					Index: []indexSchema.Schema{
 						{
@@ -2049,7 +2284,7 @@ func TestAndFilter(t *testing.T) {
 		},
 		{
 			name: "Test Valid And with same results v2",
-			filters: []FilterResult{
+			filters: []*FilterResult{
 				{
 					Index: []indexSchema.Schema{
 						{
@@ -2189,7 +2424,7 @@ func TestAndFilter(t *testing.T) {
 		},
 		{
 			name: "Test Valid And with overlapping results",
-			filters: []FilterResult{
+			filters: []*FilterResult{
 				{
 					Index: []indexSchema.Schema{
 						{
@@ -2226,7 +2461,7 @@ func TestAndFilter(t *testing.T) {
 		},
 		{
 			name: "Test Valid And with overlapping results v2",
-			filters: []FilterResult{
+			filters: []*FilterResult{
 				{
 					Index: []indexSchema.Schema{
 						{
@@ -2316,7 +2551,7 @@ func TestAndFilter(t *testing.T) {
 		},
 		{
 			name: "Test Valid And with overlapping results and versions v2",
-			filters: []FilterResult{
+			filters: []*FilterResult{
 				{
 					Index: []indexSchema.Schema{
 						{
@@ -2416,12 +2651,12 @@ func TestAndFilter(t *testing.T) {
 		},
 		{
 			name:      "Test Valid And with no results",
-			filters:   []FilterResult{},
+			filters:   []*FilterResult{},
 			wantIndex: []indexSchema.Schema{},
 		},
 		{
 			name: "Test Invalid And with single error",
-			filters: []FilterResult{
+			filters: []*FilterResult{
 				{
 					Error:  fmt.Errorf("A test error"),
 					IsEval: true,
@@ -2433,7 +2668,7 @@ func TestAndFilter(t *testing.T) {
 		},
 		{
 			name: "Test Invalid And with multiple errors",
-			filters: []FilterResult{
+			filters: []*FilterResult{
 				{
 					Error:  fmt.Errorf("First test error"),
 					IsEval: true,
@@ -2453,7 +2688,7 @@ func TestAndFilter(t *testing.T) {
 		},
 		{
 			name: "Test Invalid And with valid filters and errors",
-			filters: []FilterResult{
+			filters: []*FilterResult{
 				{
 					Index: []indexSchema.Schema{
 						{
@@ -2498,7 +2733,7 @@ func TestAndFilter(t *testing.T) {
 		},
 		{
 			name: "Test Invalid And with valid filters and errors v2",
-			filters: []FilterResult{
+			filters: []*FilterResult{
 				{
 					Index: []indexSchema.Schema{
 						{
@@ -2595,7 +2830,7 @@ func TestAndFilter(t *testing.T) {
 		},
 		{
 			name: "Test Unevaluated FilterResult entities with And filter",
-			filters: []FilterResult{
+			filters: []*FilterResult{
 				{
 					filterFn: func(fr *FilterResult) {
 						newIndex := []indexSchema.Schema{}

@@ -55,13 +55,13 @@ const (
 	// Parameter 'default'
 	PARAM_DEFAULT = "default"
 	// Parameter 'git.url'
-	PARAM_GIT_URL = "git.url"
+	PARAM_GIT_URL = "gitUrl"
 	// Parameter 'git.remoteName'
-	PARAM_GIT_REMOTE_NAME = "git.remoteName"
+	PARAM_GIT_REMOTE_NAME = "gitRemoteName"
 	// Parameter 'git.subDir'
-	PARAM_GIT_SUBDIR = "git.subDir"
+	PARAM_GIT_SUBDIR = "gitSubDir"
 	// Parameter 'git.revision'
-	PARAM_GIT_REVISION = "git.revision"
+	PARAM_GIT_REVISION = "gitRevision"
 	// Parameter 'provider'
 	PARAM_PROVIDER = "provider"
 	// Parameter 'supportUrl'
@@ -69,12 +69,12 @@ const (
 
 	/* Array Parameter Names */
 
-	// Parameter 'attributes'
-	ARRAY_PARAM_ATTRIBUTE_NAMES = "attributes"
+	// Parameter 'attributeNames'
+	ARRAY_PARAM_ATTRIBUTE_NAMES = "attributeNames"
 	// Parameter 'tags'
 	ARRAY_PARAM_TAGS = "tags"
 	// Parameter 'architectures'
-	ARRAY_PARAM_ARCHITECTURES = "architectures"
+	ARRAY_PARAM_ARCHITECTURES = "arch"
 	// Parameter 'resources'
 	ARRAY_PARAM_RESOURCES = "resources"
 	// Parameter 'starterProjects'
@@ -83,14 +83,16 @@ const (
 	ARRAY_PARAM_LINKS = "links"
 	// Parameter 'commandGroups'
 	ARRAY_PARAM_COMMAND_GROUPS = "commandGroups"
-	// Parameter 'git.remotes'
-	ARRAY_PARAM_GIT_REMOTES = "git.remotes"
+	// Parameter 'gitRemoteNames'
+	ARRAY_PARAM_GIT_REMOTE_NAMES = "gitRemoteNames"
+	// Parameter 'gitRemotes'
+	ARRAY_PARAM_GIT_REMOTES = "gitRemotes"
 )
 
 // FilterResult result entity of filtering the index schema
 type FilterResult struct {
 	filterFn func(*FilterResult)
-	children []FilterResult
+	children []*FilterResult
 
 	// Index schema result
 	Index []indexSchema.Schema
@@ -106,6 +108,31 @@ func (fr *FilterResult) Eval() {
 	fr.IsEval = true
 }
 
+// IsChildrenEval checks children results if they are evaluated yet, if parent caller is unevaluated returns
+// false, if parent has no children results then returns true. If recurse is true check children of children
+// until any root conditions are hit otherwise only direct children will be checked.
+func (fr *FilterResult) IsChildrenEval(recurse bool) bool {
+	if !fr.IsEval {
+		return false
+	} else if len(fr.children) == 0 {
+		return true
+	}
+	isEval := true
+
+	for _, child := range fr.children {
+		if !child.IsEval {
+			isEval = false
+			break
+		}
+
+		if recurse && len(child.children) > 0 {
+			isEval = child.IsChildrenEval(true)
+		}
+	}
+
+	return isEval
+}
+
 // FilterOptions provides filtering options to filters operations
 type FilterOptions[T any] struct {
 	GetFromIndexField   func(*indexSchema.Schema) T
@@ -115,24 +142,24 @@ type FilterOptions[T any] struct {
 }
 
 // indexFieldEmptyHandler handles what to do with empty index array fields
-func indexFieldEmptyHandler(schema *indexSchema.Schema, requestedValues []string, options FilterOptions[[]string]) bool {
+func indexFieldEmptyHandler(fieldValues []string, requestedValues []string, options FilterOptions[[]string]) bool {
 	// If filtering out empty, assume that if a stack has no field values mentioned and field value are request
 	// Else assume that if a stack has no array field values mentioned, then assume all possible are valid
 	if options.FilterOutEmpty {
-		return len(requestedValues) != 0 && len(options.GetFromIndexField(schema)) == 0
+		return len(requestedValues) != 0 && len(fieldValues) == 0
 	} else {
-		return len(options.GetFromIndexField(schema)) == 0
+		return len(fieldValues) == 0
 	}
 }
 
 // versionFieldEmptyHandler handles what to do with empty version array fields
-func versionFieldEmptyHandler(version *indexSchema.Version, requestedValues []string, options FilterOptions[[]string]) bool {
+func versionFieldEmptyHandler(fieldValues []string, requestedValues []string, options FilterOptions[[]string]) bool {
 	// If filtering out empty, assume that if a stack has no field values mentioned and field value are request
 	// Else assume that if a stack has no array field values mentioned, then assume all possible are valid
 	if options.FilterOutEmpty {
-		return len(requestedValues) != 0 && len(options.GetFromVersionField(version)) == 0
+		return len(requestedValues) != 0 && len(fieldValues) == 0
 	} else {
-		return len(options.GetFromVersionField(version)) == 0
+		return len(fieldValues) == 0
 	}
 }
 
@@ -175,12 +202,26 @@ func preProcessString(s string) string {
 	return trimPunc(trimExtraSpace(sLower))
 }
 
+// preProcessStringTokens gives array of string tokens
+func preProcessStringTokens(s string) []string {
+	if len(s) > 0 {
+		re := regexp.MustCompile(`\s+`)
+		return re.Split(s, -1)
+	}
+
+	return []string{}
+}
+
 // getFuzzySetFromArray gets a fuzzy pre-processed set from given array
 func getFuzzySetFromArray(arr []string) *sets.Set[string] {
 	preProcessedArray := []string{}
 
 	for i := 0; i < len(arr); i++ {
-		preProcessedArray = append(preProcessedArray, preProcessString(arr[i]))
+		preProcessedString := preProcessString(arr[i])
+		tokens := preProcessStringTokens(preProcessedString)
+
+		preProcessedArray = append(preProcessedArray, tokens...)
+		preProcessedArray = append(preProcessedArray, preProcessedString)
 	}
 
 	return sets.From(preProcessedArray)
@@ -252,11 +293,13 @@ func filterDevfileArrayFuzzy(index []indexSchema.Schema, requestedValues []strin
 					toFilterOutIndex := false
 
 					if options.GetFromIndexField != nil {
+						fieldValues := options.GetFromIndexField(&filteredIndex[i])
+
 						// If index schema field is not empty perform fuzzy filtering
 						// else if filtering out based on empty fields is set, set index schema to be filtered out
 						// (after version filtering if applicable)
-						if !indexFieldEmptyHandler(&filteredIndex[i], requestedValues, options) {
-							valuesInIndex := getFuzzySetFromArray(options.GetFromIndexField(&filteredIndex[i]))
+						if !indexFieldEmptyHandler(fieldValues, requestedValues, options) {
+							valuesInIndex := getFuzzySetFromArray(fieldValues)
 
 							for _, requestedValue := range requestedValues {
 								if !fuzzyMatchInSet(valuesInIndex, requestedValue) {
@@ -273,10 +316,12 @@ func filterDevfileArrayFuzzy(index []indexSchema.Schema, requestedValues []strin
 					if !options.V1Index && options.GetFromVersionField != nil {
 						filteredVersions := deepcopy.Copy(filteredIndex[i].Versions).([]indexSchema.Version)
 						for versionIndex := 0; versionIndex < len(filteredVersions); versionIndex++ {
+							fieldValues := options.GetFromVersionField(&filteredVersions[versionIndex])
+
 							// If version schema field is not empty perform fuzzy filtering
 							// else if filtering out based on empty fields is set, filter out version schema
-							if !versionFieldEmptyHandler(&filteredVersions[versionIndex], requestedValues, options) {
-								valuesInVersion := getFuzzySetFromArray(options.GetFromVersionField(&filteredVersions[versionIndex]))
+							if !versionFieldEmptyHandler(fieldValues, requestedValues, options) {
+								valuesInVersion := getFuzzySetFromArray(fieldValues)
 
 								for _, requestedValue := range requestedValues {
 									if !fuzzyMatchInSet(valuesInVersion, requestedValue) {
@@ -341,6 +386,7 @@ func IsArrayParameter(name string) bool {
 		ARRAY_PARAM_STARTER_PROJECTS,
 		ARRAY_PARAM_LINKS,
 		ARRAY_PARAM_COMMAND_GROUPS,
+		ARRAY_PARAM_GIT_REMOTE_NAMES,
 		ARRAY_PARAM_GIT_REMOTES,
 	})
 
@@ -348,60 +394,53 @@ func IsArrayParameter(name string) bool {
 }
 
 // FilterDevfileSchemaVersion filters devfiles based on schema version
-func FilterDevfileSchemaVersion(index []indexSchema.Schema, minSchemaVersion, maxSchemaVersion string) FilterResult {
-	return FilterResult{
-		filterFn: func(fr *FilterResult) {
-			for i := 0; i < len(index); i++ {
-				for versionIndex := 0; versionIndex < len(index[i].Versions); versionIndex++ {
-					currectSchemaVersion := index[i].Versions[versionIndex].SchemaVersion
-					schemaVersionWithoutServiceVersion := currectSchemaVersion[:strings.LastIndex(currectSchemaVersion, ".")]
-					curVersion, err := versionpkg.NewVersion(schemaVersionWithoutServiceVersion)
-					if err != nil {
-						fr.Error = fmt.Errorf("failed to parse schemaVersion %s for stack: %s, version %s. Error: %v", currectSchemaVersion, index[i].Name, index[i].Versions[versionIndex].Version, err)
-						return
-					}
-
-					versionInRange := true
-					if minSchemaVersion != "" {
-						minVersion, err := versionpkg.NewVersion(minSchemaVersion)
-						if err != nil {
-							fr.Error = fmt.Errorf("failed to parse minSchemaVersion %s. Error: %v", minSchemaVersion, err)
-							return
-						}
-						if minVersion.GreaterThan(curVersion) {
-							versionInRange = false
-						}
-					}
-					if versionInRange && maxSchemaVersion != "" {
-						maxVersion, err := versionpkg.NewVersion(maxSchemaVersion)
-						if err != nil {
-							fr.Error = fmt.Errorf("failed to parse maxSchemaVersion %s. Error: %v", maxSchemaVersion, err)
-							return
-						}
-						if maxVersion.LessThan(curVersion) {
-							versionInRange = false
-						}
-					}
-					if !versionInRange {
-						// if schemaVersion is not in requested range, filter it out
-						index[i].Versions = append(index[i].Versions[:versionIndex], index[i].Versions[versionIndex+1:]...)
-
-						// decrement counter, since we shifted the array
-						versionIndex--
-					}
-				}
-				if len(index[i].Versions) == 0 {
-					// if versions list is empty after filter, remove this index
-					index = append(index[:i], index[i+1:]...)
-
-					// decrement counter, since we shifted the array
-					i--
-				}
+func FilterDevfileSchemaVersion(index []indexSchema.Schema, minSchemaVersion, maxSchemaVersion string) ([]indexSchema.Schema, error) {
+	for i := 0; i < len(index); i++ {
+		for versionIndex := 0; versionIndex < len(index[i].Versions); versionIndex++ {
+			currectSchemaVersion := index[i].Versions[versionIndex].SchemaVersion
+			schemaVersionWithoutServiceVersion := currectSchemaVersion[:strings.LastIndex(currectSchemaVersion, ".")]
+			curVersion, err := versionpkg.NewVersion(schemaVersionWithoutServiceVersion)
+			if err != nil {
+				return []indexSchema.Schema{}, fmt.Errorf("failed to parse schemaVersion %s for stack: %s, version %s. Error: %v", currectSchemaVersion, index[i].Name, index[i].Versions[versionIndex].Version, err)
 			}
 
-			fr.Index = index
-		},
+			versionInRange := true
+			if minSchemaVersion != "" {
+				minVersion, err := versionpkg.NewVersion(minSchemaVersion)
+				if err != nil {
+					return []indexSchema.Schema{}, fmt.Errorf("failed to parse minSchemaVersion %s. Error: %v", minSchemaVersion, err)
+				}
+				if minVersion.GreaterThan(curVersion) {
+					versionInRange = false
+				}
+			}
+			if versionInRange && maxSchemaVersion != "" {
+				maxVersion, err := versionpkg.NewVersion(maxSchemaVersion)
+				if err != nil {
+					return []indexSchema.Schema{}, fmt.Errorf("failed to parse maxSchemaVersion %s. Error: %v", maxSchemaVersion, err)
+				}
+				if maxVersion.LessThan(curVersion) {
+					versionInRange = false
+				}
+			}
+			if !versionInRange {
+				// if schemaVersion is not in requested range, filter it out
+				index[i].Versions = append(index[i].Versions[:versionIndex], index[i].Versions[versionIndex+1:]...)
+
+				// decrement counter, since we shifted the array
+				versionIndex--
+			}
+		}
+		if len(index[i].Versions) == 0 {
+			// if versions list is empty after filter, remove this index
+			index = append(index[:i], index[i+1:]...)
+
+			// decrement counter, since we shifted the array
+			i--
+		}
 	}
+
+	return index, nil
 }
 
 // FilterDevfileStrField filters by given string field, returns unchanged index if given parameter name is unrecognized
@@ -451,6 +490,11 @@ func FilterDevfileStrField(index []indexSchema.Schema, paramName, requestedValue
 		options.GetFromVersionField = func(v *indexSchema.Version) string {
 			return v.SchemaVersion
 		}
+	case PARAM_DEFAULT:
+		options.GetFromIndexField = nil
+		options.GetFromVersionField = func(v *indexSchema.Version) string {
+			return fmt.Sprintf("%v", v.Default)
+		}
 	case PARAM_GIT_URL:
 		options.GetFromIndexField = func(s *indexSchema.Schema) string {
 			return s.Git.Url
@@ -499,7 +543,7 @@ func FilterDevfileStrField(index []indexSchema.Schema, paramName, requestedValue
 }
 
 // AndFilter filters results of given filters to only overlapping results
-func AndFilter(results ...FilterResult) FilterResult {
+func AndFilter(results ...*FilterResult) FilterResult {
 	return FilterResult{
 		children: results,
 		filterFn: func(fr *FilterResult) {
@@ -509,20 +553,20 @@ func AndFilter(results ...FilterResult) FilterResult {
 			}{}
 			andResults := []indexSchema.Schema{}
 
-			for _, result := range fr.children {
+			for i := 0; i < len(fr.children); i++ {
 
 				// Evaluates filter if not already evaluated
-				if !result.IsEval {
-					result.Eval()
+				if !fr.children[i].IsEval {
+					fr.children[i].Eval()
 				}
 
 				// If a filter returns an error, return as overall result
-				if result.Error != nil {
-					fr.Error = result.Error
+				if fr.children[i].Error != nil {
+					fr.Error = fr.children[i].Error
 					return
 				}
 
-				for _, schema := range result.Index {
+				for _, schema := range fr.children[i].Index {
 					andResult, found := andResultsMap[schema.Name]
 					// if not found, initize is a seen counter of one and the current seen schema
 					// else increment seen counter and re-assign current seen schema if versions have been filtered
@@ -536,7 +580,7 @@ func AndFilter(results ...FilterResult) FilterResult {
 						}
 					} else {
 						andResultsMap[schema.Name].count += 1
-						if len(schema.Versions) < len(andResult.schema.Version) {
+						if len(schema.Versions) < len(andResult.schema.Versions) {
 							andResultsMap[schema.Name].schema = schema
 						}
 					}
@@ -645,13 +689,36 @@ func FilterDevfileStrArrayField(index []indexSchema.Schema, paramName string, re
 
 			return commandGroups
 		}
+	case ARRAY_PARAM_GIT_REMOTE_NAMES:
+		options.GetFromIndexField = func(s *indexSchema.Schema) []string {
+			gitRemoteNames := []string{}
+
+			if s.Git != nil {
+				for remoteName := range s.Git.Remotes {
+					gitRemoteNames = append(gitRemoteNames, remoteName)
+				}
+			}
+
+			return gitRemoteNames
+		}
+		options.GetFromVersionField = func(v *indexSchema.Version) []string {
+			gitRemoteNames := []string{}
+
+			if v.Git != nil {
+				for remoteName := range v.Git.Remotes {
+					gitRemoteNames = append(gitRemoteNames, remoteName)
+				}
+			}
+
+			return gitRemoteNames
+		}
 	case ARRAY_PARAM_GIT_REMOTES:
 		options.GetFromIndexField = func(s *indexSchema.Schema) []string {
 			gitRemotes := []string{}
 
 			if s.Git != nil {
-				for remoteName := range s.Git.Remotes {
-					gitRemotes = append(gitRemotes, remoteName)
+				for _, remoteUrl := range s.Git.Remotes {
+					gitRemotes = append(gitRemotes, remoteUrl)
 				}
 			}
 
@@ -661,8 +728,8 @@ func FilterDevfileStrArrayField(index []indexSchema.Schema, paramName string, re
 			gitRemotes := []string{}
 
 			if v.Git != nil {
-				for remoteName := range v.Git.Remotes {
-					gitRemotes = append(gitRemotes, remoteName)
+				for _, remoteUrl := range v.Git.Remotes {
+					gitRemotes = append(gitRemotes, remoteUrl)
 				}
 			}
 

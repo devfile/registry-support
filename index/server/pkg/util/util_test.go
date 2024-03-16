@@ -23,6 +23,7 @@ import (
 	"testing"
 
 	indexSchema "github.com/devfile/registry-support/index/generator/schema"
+	"k8s.io/utils/pointer"
 )
 
 func TestIsHtmlRequested(t *testing.T) {
@@ -404,7 +405,7 @@ func TestStructToMap(t *testing.T) {
 		wantMap     map[string]any
 	}{
 		{
-			name: "Test struct type with map conversion",
+			name: "Case 1: Test struct type with map conversion",
 			inputStruct: struct {
 				Language     string
 				Stack        string
@@ -421,7 +422,7 @@ func TestStructToMap(t *testing.T) {
 			},
 		},
 		{
-			name: "Test schema type with map conversion",
+			name: "Case 2: Test schema type with map conversion",
 			inputStruct: indexSchema.Schema{
 				Name:        "go",
 				DisplayName: "Go",
@@ -435,6 +436,23 @@ func TestStructToMap(t *testing.T) {
 				"description": "A Go project.",
 				"version":     "1.0.0",
 				"tags":        []string{"Go", "Gin"},
+			},
+		},
+		{
+			name: "Case 3: Test pointer fields struct type with map conversion",
+			inputStruct: struct {
+				P1 *string
+				P2 *string
+				P3 *[]string
+				P4 *bool
+			}{
+				P1: pointer.String("test"),
+				P3: &[]string{"test1", "test2"},
+				P4: nil,
+			},
+			wantMap: map[string]any{
+				"p1": "test",
+				"p3": []string{"test1", "test2"},
 			},
 		},
 	}

@@ -251,7 +251,7 @@ func StructToMap[T any](s T) map[string]any {
 
 	val := reflect.ValueOf(s)
 
-	if val.Kind() == reflect.Ptr {
+	if val.Kind() == reflect.Pointer {
 		if val.IsNil() {
 			return nil
 		}
@@ -265,7 +265,7 @@ func StructToMap[T any](s T) map[string]any {
 		var fieldValueKind reflect.Kind = field.Kind()
 		var fieldValue interface{}
 
-		if fieldValueKind == reflect.Ptr {
+		if fieldValueKind == reflect.Pointer {
 			if field.IsNil() {
 				continue
 			}
