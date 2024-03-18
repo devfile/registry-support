@@ -18,7 +18,6 @@ package util
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"reflect"
 	"testing"
@@ -215,11 +214,11 @@ func TestGetOptionalEnv(t *testing.T) {
 func TestConvertToOldIndexFormat(t *testing.T) {
 	const inputIndexFilePath = "../../tests/resources/newIndexStruct.json"
 	const wantIndexFilePath = "../../tests/resources/oldIndexStruct.json"
-	bytes, err := ioutil.ReadFile(inputIndexFilePath)
+	bytes, err := os.ReadFile(inputIndexFilePath)
 	if err != nil {
 		t.Errorf("Failed to read newIndexStruct.json: %v", err)
 	}
-	expected, err := ioutil.ReadFile(wantIndexFilePath)
+	expected, err := os.ReadFile(wantIndexFilePath)
 	if err != nil {
 		t.Errorf("Failed to oldIndexStruct.json: %v", err)
 	}

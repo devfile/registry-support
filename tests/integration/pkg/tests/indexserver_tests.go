@@ -16,7 +16,7 @@
 package tests
 
 import (
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	devfilePkg "github.com/devfile/library/v2/pkg/devfile"
@@ -50,7 +50,7 @@ var _ = ginkgo.Describe("[Verify index server is working properly]", func() {
 		// Check the path of the response. Should have been redirected to /viewer
 		gomega.Expect(resp.Request.URL.Path).To(gomega.Equal("/viewer"))
 
-		bytes, err := ioutil.ReadAll(resp.Body)
+		bytes, err := io.ReadAll(resp.Body)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		body := string(bytes)
 		gomega.Expect(body).To(gomega.ContainSubstring("<!DOCTYPE html>"))
@@ -66,7 +66,7 @@ var _ = ginkgo.Describe("[Verify index server is working properly]", func() {
 		// Check the path of the response. Should have been redirected to /viewer
 		gomega.Expect(resp.Request.URL.Path).To(gomega.Equal("/viewer"))
 
-		bytes, err := ioutil.ReadAll(resp.Body)
+		bytes, err := io.ReadAll(resp.Body)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		body := string(bytes)
 
@@ -311,7 +311,7 @@ var _ = ginkgo.Describe("[Verify index server is working properly]", func() {
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		defer resp.Body.Close()
 
-		bytes, err = ioutil.ReadAll(resp.Body)
+		bytes, err = io.ReadAll(resp.Body)
 
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		gomega.Expect(resp.StatusCode).To(gomega.Equal(http.StatusAccepted))
@@ -328,7 +328,7 @@ var _ = ginkgo.Describe("[Verify index server is working properly]", func() {
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		defer resp.Body.Close()
 
-		bytes, err = ioutil.ReadAll(resp.Body)
+		bytes, err = io.ReadAll(resp.Body)
 
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		gomega.Expect(resp.StatusCode).To(gomega.Equal(http.StatusAccepted))
@@ -346,7 +346,7 @@ var _ = ginkgo.Describe("[Verify index server is working properly]", func() {
 			gomega.Expect(err).NotTo(gomega.HaveOccurred())
 			defer resp.Body.Close()
 
-			bytes, err = ioutil.ReadAll(resp.Body)
+			bytes, err = io.ReadAll(resp.Body)
 
 			gomega.Expect(err).NotTo(gomega.HaveOccurred())
 			gomega.Expect(resp.StatusCode).To(gomega.Equal(http.StatusAccepted))
@@ -368,7 +368,7 @@ var _ = ginkgo.Describe("[Verify index server is working properly]", func() {
 			gomega.Expect(err).NotTo(gomega.HaveOccurred())
 			defer resp.Body.Close()
 
-			bytes, err = ioutil.ReadAll(resp.Body)
+			bytes, err = io.ReadAll(resp.Body)
 
 			gomega.Expect(err).NotTo(gomega.HaveOccurred())
 			gomega.Expect(resp.StatusCode).To(gomega.Equal(http.StatusAccepted))
@@ -390,7 +390,7 @@ var _ = ginkgo.Describe("[Verify index server is working properly]", func() {
 			gomega.Expect(err).NotTo(gomega.HaveOccurred())
 			defer resp.Body.Close()
 
-			bytes, err = ioutil.ReadAll(resp.Body)
+			bytes, err = io.ReadAll(resp.Body)
 
 			gomega.Expect(err).NotTo(gomega.HaveOccurred())
 			gomega.Expect(resp.StatusCode).To(gomega.Equal(http.StatusAccepted))

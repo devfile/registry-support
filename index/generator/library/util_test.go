@@ -17,7 +17,6 @@ package library
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -327,7 +326,7 @@ func TestZipDir(t *testing.T) {
 		t.Errorf("Failed to zip directory '%s': %v", dirPath, err)
 	}
 
-	bytes, err := ioutil.ReadFile(zipPath)
+	bytes, err := os.ReadFile(zipPath)
 	if err != nil {
 		t.Errorf("Unable to read zip file '%s': %v", zipPath, err)
 	}

@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-FROM golang:1.18-alpine AS builder
+FROM golang:1.19-alpine@sha256:276692412aea6f9dd6cdc5725b2f1c05bef8df7223811afbc6aa16294e2903f9 AS builder
 
 # Install dependencies
 RUN apk add --no-cache git bash curl zip

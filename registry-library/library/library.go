@@ -20,7 +20,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
@@ -179,7 +178,7 @@ func GetRegistryIndex(registryURL string, options RegistryOptions, devfileTypes 
 	if err != nil {
 		return nil, err
 	}
-	bytes, err := ioutil.ReadAll(resp.Body)
+	bytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -454,7 +453,7 @@ func DownloadStarterProjectAsBytes(registryURL string, stack string, starterProj
 	}
 
 	// Return downloaded starter project as bytes or error if unsuccessful.
-	return ioutil.ReadAll(resp.Body)
+	return io.ReadAll(resp.Body)
 }
 
 // IsStarterProjectExists checks if starter project exists for a given stack

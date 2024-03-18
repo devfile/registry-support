@@ -18,7 +18,7 @@ package tests
 import (
 	"bytes"
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	"github.com/devfile/registry-support/tests/integration/pkg/config"
@@ -42,7 +42,7 @@ var _ = ginkgo.Describe("[Verify oci registry is working properly]", func() {
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		gomega.Expect(resp.StatusCode).To(gomega.Equal(http.StatusOK))
 
-		body, err := ioutil.ReadAll(resp.Body)
+		body, err := io.ReadAll(resp.Body)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
 		// Parse the oci catalog entries and verify it has at least 1 entry in it
