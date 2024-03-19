@@ -43,7 +43,7 @@ const (
 	// Parameter 'description'
 	PARAM_DESCRIPTION = "description"
 	// Parameter 'icon'
-	PARAM_ICON = "icon"
+	PARAM_ICON = "iconUri"
 	// Parameter 'projectType'
 	PARAM_PROJECT_TYPE = "projectType"
 	// Parameter 'language'

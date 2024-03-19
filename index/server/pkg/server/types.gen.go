@@ -56,8 +56,11 @@ type GitRevision = string
 // GitSubDir Subdirectory of git repository to use as reference
 type GitSubDir = string
 
-// Icon Optional devfile icon, can be a URI or a relative path in the project
+// Icon Optional devfile icon encoding type
 type Icon = string
+
+// IconUri Optional devfile icon uri, can be a URL or a relative path in the project
+type IconUri = string
 
 // IndexParams IndexParams defines parameters for index endpoints.
 type IndexParams struct {
@@ -97,7 +100,7 @@ type IndexParams struct {
 	// GitUrl Url field type
 	GitUrl *Url `json:"gitUrl,omitempty"`
 
-	// Icon Optional devfile icon, can be a URI or a relative path in the project
+	// Icon Optional devfile icon encoding type
 	Icon *Icon `json:"icon,omitempty"`
 
 	// Language Programming language of the devfile workspace
@@ -218,8 +221,11 @@ type GitSubDirParam = GitSubDir
 // GitUrlParam Url field type
 type GitUrlParam = Url
 
-// IconParam Optional devfile icon, can be a URI or a relative path in the project
+// IconParam Optional devfile icon encoding type
 type IconParam = Icon
+
+// IconUriParam Optional devfile icon uri, can be a URL or a relative path in the project
+type IconUriParam = IconUri
 
 // LanguageParam Programming language of the devfile workspace
 type LanguageParam = Language
@@ -304,8 +310,11 @@ type ServeDevfileIndexV1Params struct {
 	// Arch The target architecture filter
 	Arch *ArchParam `form:"arch,omitempty" json:"arch,omitempty"`
 
-	// Icon The icon type filter
-	Icon             *IconParam             `form:"icon,omitempty" json:"icon,omitempty"`
+	// Icon The icon encoding filter
+	Icon *IconParam `form:"icon,omitempty" json:"icon,omitempty"`
+
+	// IconUri The icon uri filter
+	IconUri          *IconUriParam          `form:"iconUri,omitempty" json:"iconUri,omitempty"`
 	ProjectType      *ProjectTypeParam      `form:"projectType,omitempty" json:"projectType,omitempty"`
 	Language         *LanguageParam         `form:"language,omitempty" json:"language,omitempty"`
 	MinSchemaVersion *MinSchemaVersionParam `form:"minSchemaVersion,omitempty" json:"minSchemaVersion,omitempty"`
@@ -329,7 +338,7 @@ type DeleteDevfileIndexV1WithTypeParams struct {
 	// Arch The target architecture filter
 	Arch *ArchParam `form:"arch,omitempty" json:"arch,omitempty"`
 
-	// Icon The icon type filter
+	// Icon The icon encoding filter
 	Icon *IconParam `form:"icon,omitempty" json:"icon,omitempty"`
 }
 
@@ -344,8 +353,11 @@ type ServeDevfileIndexV1WithTypeParams struct {
 	// Arch The target architecture filter
 	Arch *ArchParam `form:"arch,omitempty" json:"arch,omitempty"`
 
-	// Icon The icon type filter
-	Icon             *IconParam             `form:"icon,omitempty" json:"icon,omitempty"`
+	// Icon The icon encoding filter
+	Icon *IconParam `form:"icon,omitempty" json:"icon,omitempty"`
+
+	// IconUri The icon uri filter
+	IconUri          *IconUriParam          `form:"iconUri,omitempty" json:"iconUri,omitempty"`
 	ProjectType      *ProjectTypeParam      `form:"projectType,omitempty" json:"projectType,omitempty"`
 	Language         *LanguageParam         `form:"language,omitempty" json:"language,omitempty"`
 	MinSchemaVersion *MinSchemaVersionParam `form:"minSchemaVersion,omitempty" json:"minSchemaVersion,omitempty"`
@@ -369,7 +381,7 @@ type PostDevfileIndexV1WithTypeParams struct {
 	// Arch The target architecture filter
 	Arch *ArchParam `form:"arch,omitempty" json:"arch,omitempty"`
 
-	// Icon The icon type filter
+	// Icon The icon encoding filter
 	Icon *IconParam `form:"icon,omitempty" json:"icon,omitempty"`
 }
 
@@ -378,7 +390,7 @@ type PutDevfileIndexV1WithTypeParams struct {
 	// Arch The target architecture filter
 	Arch *ArchParam `form:"arch,omitempty" json:"arch,omitempty"`
 
-	// Icon The icon type filter
+	// Icon The icon encoding filter
 	Icon *IconParam `form:"icon,omitempty" json:"icon,omitempty"`
 }
 
@@ -393,8 +405,11 @@ type ServeDevfileIndexV2Params struct {
 	// Arch The target architecture filter
 	Arch *ArchParam `form:"arch,omitempty" json:"arch,omitempty"`
 
-	// Icon The icon type filter
-	Icon             *IconParam             `form:"icon,omitempty" json:"icon,omitempty"`
+	// Icon The icon encoding filter
+	Icon *IconParam `form:"icon,omitempty" json:"icon,omitempty"`
+
+	// IconUri The icon uri filter
+	IconUri          *IconUriParam          `form:"iconUri,omitempty" json:"iconUri,omitempty"`
 	ProjectType      *ProjectTypeParam      `form:"projectType,omitempty" json:"projectType,omitempty"`
 	Language         *LanguageParam         `form:"language,omitempty" json:"language,omitempty"`
 	MinVersion       *MinVersionParam       `form:"minVersion,omitempty" json:"minVersion,omitempty"`
@@ -422,7 +437,7 @@ type DeleteDevfileIndexV2WithTypeParams struct {
 	// Arch The target architecture filter
 	Arch *ArchParam `form:"arch,omitempty" json:"arch,omitempty"`
 
-	// Icon The icon type filter
+	// Icon The icon encoding filter
 	Icon *IconParam `form:"icon,omitempty" json:"icon,omitempty"`
 }
 
@@ -437,8 +452,11 @@ type ServeDevfileIndexV2WithTypeParams struct {
 	// Arch The target architecture filter
 	Arch *ArchParam `form:"arch,omitempty" json:"arch,omitempty"`
 
-	// Icon The icon type filter
-	Icon             *IconParam             `form:"icon,omitempty" json:"icon,omitempty"`
+	// Icon The icon encoding filter
+	Icon *IconParam `form:"icon,omitempty" json:"icon,omitempty"`
+
+	// IconUri The icon uri filter
+	IconUri          *IconUriParam          `form:"iconUri,omitempty" json:"iconUri,omitempty"`
 	ProjectType      *ProjectTypeParam      `form:"projectType,omitempty" json:"projectType,omitempty"`
 	Language         *LanguageParam         `form:"language,omitempty" json:"language,omitempty"`
 	MinVersion       *MinVersionParam       `form:"minVersion,omitempty" json:"minVersion,omitempty"`
@@ -466,7 +484,7 @@ type PostDevfileIndexV2WithTypeParams struct {
 	// Arch The target architecture filter
 	Arch *ArchParam `form:"arch,omitempty" json:"arch,omitempty"`
 
-	// Icon The icon type filter
+	// Icon The icon encoding filter
 	Icon *IconParam `form:"icon,omitempty" json:"icon,omitempty"`
 }
 
@@ -475,6 +493,6 @@ type PutDevfileIndexV2WithTypeParams struct {
 	// Arch The target architecture filter
 	Arch *ArchParam `form:"arch,omitempty" json:"arch,omitempty"`
 
-	// Icon The icon type filter
+	// Icon The icon encoding filter
 	Icon *IconParam `form:"icon,omitempty" json:"icon,omitempty"`
 }

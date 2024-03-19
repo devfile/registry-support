@@ -105,6 +105,7 @@ paths:
         - $ref: '#/components/parameters/tagsParam'
         - $ref: '#/components/parameters/archParam'
         - $ref: '#/components/parameters/iconParam'
+        - $ref: '#/components/parameters/iconUriParam'
         - $ref: '#/components/parameters/projectTypeParam'
         - $ref: '#/components/parameters/languageParam'
         - $ref: '#/components/parameters/minSchemaVersionParam'
@@ -170,6 +171,7 @@ paths:
         - $ref: '#/components/parameters/tagsParam'
         - $ref: '#/components/parameters/archParam'
         - $ref: '#/components/parameters/iconParam'
+        - $ref: '#/components/parameters/iconUriParam'
         - $ref: '#/components/parameters/projectTypeParam'
         - $ref: '#/components/parameters/languageParam'
         - $ref: '#/components/parameters/minSchemaVersionParam'
@@ -260,6 +262,7 @@ paths:
         - $ref: '#/components/parameters/tagsParam'
         - $ref: '#/components/parameters/archParam'
         - $ref: '#/components/parameters/iconParam'
+        - $ref: '#/components/parameters/iconUriParam'
         - $ref: '#/components/parameters/projectTypeParam'
         - $ref: '#/components/parameters/languageParam'
         - $ref: '#/components/parameters/minVersionParam'
@@ -329,6 +332,7 @@ paths:
         - $ref: '#/components/parameters/tagsParam'
         - $ref: '#/components/parameters/archParam'
         - $ref: '#/components/parameters/iconParam'
+        - $ref: '#/components/parameters/iconUriParam'
         - $ref: '#/components/parameters/projectTypeParam'
         - $ref: '#/components/parameters/languageParam'
         - $ref: '#/components/parameters/minVersionParam'
@@ -896,7 +900,10 @@ components:
         description: A subject tag to describe the devfile workspace
         type: string
     Icon:
-      description: Optional devfile icon, can be a URI or a relative path in the project
+      description: Optional devfile icon encoding type
+      type: string
+    IconUri:
+      description: Optional devfile icon uri, can be a URL or a relative path in the project
       type: string
     Architectures:
       description: Optional list of processor architectures that the devfile supports, empty list suggests that the devfile can be used on any architecture
@@ -1031,10 +1038,17 @@ components:
     iconParam:
       name: icon
       in: query
-      description: The icon type filter
+      description: The icon encoding filter
       required: false
       schema:
         $ref: '#/components/schemas/Icon'
+    iconUriParam:
+      name: iconUri
+      in: query
+      description: The icon uri filter
+      required: false
+      schema:
+        $ref: '#/components/schemas/IconUri'
     archParam:
       name: arch
       in: query
