@@ -401,14 +401,14 @@ func FilterDevfileSchemaVersion(index []indexSchema.Schema, minSchemaVersion, ma
 			schemaVersionWithoutServiceVersion := currectSchemaVersion[:strings.LastIndex(currectSchemaVersion, ".")]
 			curVersion, err := versionpkg.NewVersion(schemaVersionWithoutServiceVersion)
 			if err != nil {
-				return []indexSchema.Schema{}, fmt.Errorf("failed to parse schemaVersion %s for stack: %s, version %s. Error: %v", currectSchemaVersion, index[i].Name, index[i].Versions[versionIndex].Version, err)
+				return nil, fmt.Errorf("failed to parse schemaVersion %s for stack: %s, version %s. Error: %v", currectSchemaVersion, index[i].Name, index[i].Versions[versionIndex].Version, err)
 			}
 
 			versionInRange := true
 			if minSchemaVersion != "" {
 				minVersion, err := versionpkg.NewVersion(minSchemaVersion)
 				if err != nil {
-					return []indexSchema.Schema{}, fmt.Errorf("failed to parse minSchemaVersion %s. Error: %v", minSchemaVersion, err)
+					return nil, fmt.Errorf("failed to parse minSchemaVersion %s. Error: %v", minSchemaVersion, err)
 				}
 				if minVersion.GreaterThan(curVersion) {
 					versionInRange = false
@@ -417,7 +417,7 @@ func FilterDevfileSchemaVersion(index []indexSchema.Schema, minSchemaVersion, ma
 			if versionInRange && maxSchemaVersion != "" {
 				maxVersion, err := versionpkg.NewVersion(maxSchemaVersion)
 				if err != nil {
-					return []indexSchema.Schema{}, fmt.Errorf("failed to parse maxSchemaVersion %s. Error: %v", maxSchemaVersion, err)
+					return nil, fmt.Errorf("failed to parse maxSchemaVersion %s. Error: %v", maxSchemaVersion, err)
 				}
 				if maxVersion.LessThan(curVersion) {
 					versionInRange = false

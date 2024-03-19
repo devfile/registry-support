@@ -2156,6 +2156,9 @@ func TestFilterDevfileSchemaVersion(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			gotIndex, gotErr := FilterDevfileSchemaVersion(test.index, test.minSchemaVersion, test.maxSchemaVersion)
 			if gotErr != nil {
+				if gotIndex != nil {
+					t.Errorf("Unexpected non-nil index on error: %v", gotIndex)
+				}
 				t.Errorf("Unexpected error: %v", gotErr)
 			} else if !reflect.DeepEqual(gotIndex, test.wantIndex) {
 				t.Errorf("Got: %v, Expected: %v", gotIndex, test.wantIndex)
