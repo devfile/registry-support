@@ -33,18 +33,18 @@ coverage:
     # which were not changed by the diff
     changes: yes
 
-  # See http://docs.codecov.io/docs/ignoring-paths
-  ignore:
-    - "assets/*"
-    - "build/*"
-    - "deploy/*"
-    - "hack/*"
-    - "manifests/*"
-    - "openshift-ci/*"
-    - "vendor/*"
-    - "Makefile"
-    - ".travis.yml"
-    - "**/*.gen.go"
+# See http://docs.codecov.io/docs/ignoring-paths
+ignore:
+  - "assets/*"
+  - "build/*"
+  - "deploy/*"
+  - "hack/*"
+  - "manifests/*"
+  - "openshift-ci/*"
+  - "vendor/*"
+  - "Makefile"
+  - ".travis.yml"
+  - "**/*.gen.go"
 
 # See http://docs.codecov.io/docs/pull-request-comments-1
 comment:
