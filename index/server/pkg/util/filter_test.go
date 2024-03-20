@@ -2182,8 +2182,11 @@ func TestFilterDevfileStrArrayField(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.Name, func(t *testing.T) {
 			gotResult := FilterDevfileStrArrayField(test.Index, test.FieldName, test.Values, test.V1Index)
-			gotResult.Eval()
-			if !gotResult.IsEval {
+			err := gotResult.Eval()
+			if err != nil || !gotResult.IsEval {
+				if gotResult.Error != nil {
+					t.Errorf("Unexpected error while evaluating: %v", gotResult.Error)
+				}
 				t.Errorf("Got unexpected unevaluated result: %v", gotResult)
 			} else if gotResult.Error != nil {
 				t.Errorf("Unexpected error: %v", gotResult.Error)
@@ -2215,8 +2218,11 @@ func TestFilterDevfileStrField(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.Name, func(t *testing.T) {
 			gotResult := FilterDevfileStrField(test.Index, test.FieldName, test.Value, test.V1Index)
-			gotResult.Eval()
-			if !gotResult.IsEval {
+			err := gotResult.Eval()
+			if err != nil || !gotResult.IsEval {
+				if gotResult.Error != nil {
+					t.Errorf("Unexpected error while evaluating: %v", gotResult.Error)
+				}
 				t.Errorf("Got unexpected unevaluated result: %v", gotResult)
 			} else if !test.WantErr && gotResult.Error != nil {
 				t.Errorf("Unexpected error: %v", gotResult.Error)
@@ -2880,9 +2886,11 @@ func TestAndFilter(t *testing.T) {
 			}
 
 			gotResult := AndFilter(test.filters...)
-			gotResult.Eval()
-
-			if !gotResult.IsEval {
+			err := gotResult.Eval()
+			if err != nil || !gotResult.IsEval {
+				if gotResult.Error != nil {
+					t.Errorf("Unexpected error while evaluating: %v", gotResult.Error)
+				}
 				t.Errorf("Got unexpected unevaluated result: %v", gotResult)
 				return
 			}

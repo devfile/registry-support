@@ -523,10 +523,18 @@ func TestFilterFieldbyParam(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			gotResult := filterFieldbyParam(test.index, test.v1Index, test.paramName, test.paramValue)
-			gotResult.Eval()
+			err := gotResult.Eval()
+			if err != nil || !gotResult.IsEval {
+				if gotResult.Error != nil {
+					t.Errorf("Unexpected error while evaluating: %v", gotResult.Error)
+				}
+				t.Errorf("Unexpected unevaluated result: %v", gotResult)
+				return
+			}
 
 			if gotResult.Error != nil {
 				t.Errorf("unexpected error: %v", gotResult.Error)
+				return
 			}
 
 			sort.Slice(gotResult.Index, func(i, j int) bool {

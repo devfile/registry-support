@@ -71,7 +71,10 @@ func filterFieldsByParams(index []indexSchema.Schema, wantV1Index bool, params I
 	}
 
 	andResult = util.AndFilter(results...)
-	andResult.Eval()
+
+	if err := andResult.Eval(); err != nil {
+		return []indexSchema.Schema{}, err
+	}
 
 	if err := checkChildrenEval(&andResult); err != nil {
 		return []indexSchema.Schema{}, err

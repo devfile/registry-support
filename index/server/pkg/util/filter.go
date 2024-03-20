@@ -94,6 +94,8 @@ type FilterResult struct {
 	filterFn func(*FilterResult)
 	children []*FilterResult
 
+	// Name of filter
+	Name string
 	// Index schema result
 	Index []indexSchema.Schema
 	// First error returned in result
@@ -103,9 +105,16 @@ type FilterResult struct {
 }
 
 // Eval evaluates the filter results
-func (fr *FilterResult) Eval() {
+func (fr *FilterResult) Eval() error {
+	if fr == nil {
+		return fmt.Errorf("nil set filter result cannot be evaluated")
+	} else if fr.filterFn == nil {
+		return fmt.Errorf("filter result '%s' cannot be evaluated due to no set filter function", fr.Name)
+	}
+
 	fr.filterFn(fr)
 	fr.IsEval = true
+	return nil
 }
 
 // IsChildrenEval checks children results if they are evaluated yet, if parent caller is unevaluated returns
@@ -448,6 +457,7 @@ func FilterDevfileStrField(index []indexSchema.Schema, paramName, requestedValue
 	options := FilterOptions[string]{
 		V1Index: v1Index,
 	}
+	var result FilterResult
 	switch paramName {
 	case PARAM_NAME:
 		options.GetFromIndexField = func(s *indexSchema.Schema) string {
@@ -539,11 +549,22 @@ func FilterDevfileStrField(index []indexSchema.Schema, paramName, requestedValue
 		}
 	}
 
-	return filterDevfileFieldFuzzy(index, requestedValue, options)
+	result = filterDevfileFieldFuzzy(index, requestedValue, options)
+	result.Name = fmt.Sprintf("Fuzzy_Field_Filter_On_%s", paramName)
+
+	return result
 }
 
 // AndFilter filters results of given filters to only overlapping results
 func AndFilter(results ...*FilterResult) FilterResult {
+	resultNames := func() []string {
+		names := []string{}
+		for _, result := range results {
+			names = append(names, result.Name)
+		}
+		return names
+	}()
+	filterName := fmt.Sprintf("And(%s)", strings.Join(resultNames, ", "))
 	return FilterResult{
 		children: results,
 		filterFn: func(fr *FilterResult) {
@@ -557,7 +578,11 @@ func AndFilter(results ...*FilterResult) FilterResult {
 
 				// Evaluates filter if not already evaluated
 				if !fr.children[i].IsEval {
-					fr.children[i].Eval()
+					err := fr.children[i].Eval()
+					if err != nil {
+						fr.Error = fmt.Errorf("%s within %s", err.Error(), fr.Name)
+						return
+					}
 				}
 
 				// If a filter returns an error, return as overall result
@@ -598,6 +623,7 @@ func AndFilter(results ...*FilterResult) FilterResult {
 			// set new index schema as the and filter result
 			fr.Index = andResults
 		},
+		Name: filterName,
 	}
 }
 
@@ -607,6 +633,7 @@ func FilterDevfileStrArrayField(index []indexSchema.Schema, paramName string, re
 		FilterOutEmpty: true,
 		V1Index:        v1Index,
 	}
+	var result FilterResult
 	switch paramName {
 	case ARRAY_PARAM_ATTRIBUTE_NAMES:
 		options.GetFromIndexField = func(s *indexSchema.Schema) []string {
@@ -743,5 +770,8 @@ func FilterDevfileStrArrayField(index []indexSchema.Schema, paramName string, re
 		}
 	}
 
-	return filterDevfileArrayFuzzy(index, requestedValues, options)
+	result = filterDevfileArrayFuzzy(index, requestedValues, options)
+	result.Name = fmt.Sprintf("Fuzzy_Array_Filter_On_%s", paramName)
+
+	return result
 }
