@@ -928,12 +928,12 @@ components:
     Version:
       description: Devfile registry entry version number
       type: string
-      pattern: '^[0-9]+\.[0-9]+\.[0-9]+$'
+      pattern: '^[0-9]+\.[0-9]+(\.[0-9]+)?$'
       example: 1.4.0
     SchemaVersion:
       description: Devfile schema version number
       type: string
-      pattern: '^[0-9]+\.[0-9]+\.[0-9]+(\-alpha)?$'
+      pattern: '^[0-9]+\.[0-9]+(\.[0-9]+(\-alpha)?)?$'
       example: 2.2.0, 2.2.3-alpha
     Default:
       description: Flag for default devfile registry entry version 
