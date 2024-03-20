@@ -834,6 +834,8 @@ components:
           $ref: '#/components/schemas/Tags'
         icon:
           $ref: '#/components/schemas/Icon'
+        iconUri:
+          $ref: '#/components/schemas/IconUri'
         arch:
           $ref: '#/components/schemas/Architectures'
         projectType:

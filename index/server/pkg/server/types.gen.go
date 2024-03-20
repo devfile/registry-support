@@ -103,6 +103,9 @@ type IndexParams struct {
 	// Icon Optional devfile icon encoding type
 	Icon *Icon `json:"icon,omitempty"`
 
+	// IconUri Optional devfile icon uri, can be a URL or a relative path in the project
+	IconUri *IconUri `json:"iconUri,omitempty"`
+
 	// Language Programming language of the devfile workspace
 	Language *Language `json:"language,omitempty"`
 
