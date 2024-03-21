@@ -323,6 +323,119 @@ curl http://devfile-registry.192.168.1.1.nip.io/index
 ]
 ----
 
+=== Query parameters
+[cols="1,1"]
+|===
+|Parameter|Description
+
+|Name
+|Search string to filter stacks by their name
+
+|DisplayName
+|Search string to filter stacks by their display names
+
+|Description
+|Search string to filter stacks by the description text
+
+|AttributeNames
+|Collection of search strings to filter stacks by the names of defined free-form attributes
+
+|Arch
+|Collection of search strings to filter stacks by their architectures
+
+|Tags
+|Collection of search strings to filter stacks by their tags
+
+|Icon
+|Toggle on encoding content passed
+
+|IconUri
+|Search string to filter stacks by their icon uri
+
+|ProjectType
+|Search string to filter stacks by their project type
+
+|Language
+|Search string to filter stacks by their programming language
+
+|Resources
+|Collection of search strings to filter stacks by their resource files
+
+|StarterProjects
+|Collection of search strings to filter stacks by the names of the starter projects
+
+|LinkNames
+|Collection of search strings to filter stacks by the names of the link sources
+
+|Links
+|Collection of search strings to filter stacks by their link sources
+
+|GitRemoteNames
+|Collection of search strings to filter stacks by the names of the git remotes
+
+|GitRemotes
+|Collection of search strings to filter stacks by the URIs of the git remotes
+
+|GitUrl
+|Search string to filter stacks by their git urls
+
+|GitRemoteName
+|Search string to filter stacks by their git remote name
+
+|GitSubDir
+|Search string to filter stacks by their target subdirectory of the git repository
+
+|GitRevision
+|Search string to filter stacks by their git revision
+
+|Provider
+|Search string to filter stacks by the stack provider
+
+|SupportUrl
+|Search string to filter stacks by their given support url
+
+|===
+
+=== Request example
+....
+curl 'http://devfile-registry.192.168.1.1.nip.io/index?provider=Red%22Hat&resources=.zip'
+....
+
+*Note:* Field filter parameters accept fuzzy search strings, meaning if `.zip` is passed into `resources` parameter, the results will be any stack with resource entries which contain `.zip` as partial matches.
+
+=== Response example
+[source,json]
+----
+[
+  {
+    "name": "go",
+    "version": "1.2.0",
+    "displayName": "Go Runtime",
+    "description": "Go is an open source programming language that makes it easy to build simple, reliable, and efficient software.",
+    "type": "stack",
+    "tags": [
+      "testtag"
+    ],
+    "icon": "https://raw.githubusercontent.com/devfile-samples/devfile-stack-icons/main/golang.svg",
+    "projectType": "Go",
+    "language": "Go",
+    "links": {
+      "self": "devfile-catalog/go:1.2.0"
+    },
+    "resources": [
+      "devfile.yaml",
+      "go-starter-offline.zip"
+    ],
+    "starterProjects": [
+      "go-starter",
+      "go-starter-offline"
+    ],
+    "provider": "Red Hat"
+  }
+]
+----
+
+
 == Gets registry index of sample devfile type
 Gets the registry index file content of sample devfile type from HTTP response
 
@@ -426,6 +539,164 @@ curl http://devfile-registry.192.168.1.1.nip.io/index/sample
   }
 ]
 ---
+
+=== Query parameters
+[cols="1,1"]
+|===
+|Parameter|Description
+
+|Name
+|Search string to filter samples by their name
+
+|DisplayName
+|Search string to filter samples by their display names
+
+|Description
+|Search string to filter samples by the description text
+
+|AttributeNames
+|Collection of search strings to filter samples by the names of defined free-form attributes
+
+|Arch
+|Collection of search strings to filter samples by their architectures
+
+|Tags
+|Collection of search strings to filter samples by their tags
+
+|Icon
+|Toggle on encoding content passed
+
+|IconUri
+|Search string to filter samples by their icon uri
+
+|ProjectType
+|Search string to filter samples by their project type
+
+|Language
+|Search string to filter samples by their programming language
+
+|Resources
+|Collection of search strings to filter samples by their resource files
+
+|StarterProjects
+|Collection of search strings to filter samples by the names of the starter projects
+
+|LinkNames
+|Collection of search strings to filter samples by the names of the link sources
+
+|Links
+|Collection of search strings to filter samples by their link sources
+
+|GitRemoteNames
+|Collection of search strings to filter samples by the names of the git remotes
+
+|GitRemotes
+|Collection of search strings to filter samples by the URIs of the git remotes
+
+|GitUrl
+|Search string to filter samples by their git urls
+
+|GitRemoteName
+|Search string to filter samples by their git remote name
+
+|GitSubDir
+|Search string to filter samples by their target subdirectory of the git repository
+
+|GitRevision
+|Search string to filter samples by their git revision
+
+|Provider
+|Search string to filter samples by the stack provider
+
+|SupportUrl
+|Search string to filter samples by their given support url
+
+|===
+
+=== Request example
+....
+curl 'http://devfile-registry.192.168.1.1.nip.io/index/sample?description=Hello%22World'
+....
+
+*Note:* Field filter parameters accept fuzzy search strings, meaning if `Hello World` is passed into `description` parameter, the results will be any sample with resource entries which contain `Hello World` as partial matches.
+
+=== Response example
+[source,json]
+----
+[
+  {
+    "name": "python-basic",
+    "displayName": "Basic Python",
+    "description": "A simple Hello World application using Python",
+    "type": "sample",
+    "tags": [
+      "Python"
+    ],
+    "icon": "https://www.python.org/static/community_logos/python-logo-generic.svg",
+    "projectType": "python",
+    "language": "python",
+    "git": {
+      "remotes": {
+        "origin": "https://github.com/devfile-samples/devfile-sample-python-basic.git"
+      }
+    }
+  },
+  {
+    "name": "nodejs-basic",
+    "displayName": "Basic Node.js",
+    "description": "A simple Hello World Node.js application",
+    "type": "sample",
+    "tags": [
+      "NodeJS",
+      "Express"
+    ],
+    "icon": "https://raw.githubusercontent.com/devfile-samples/devfile-stack-icons/main/node-js.svg",
+    "projectType": "nodejs",
+    "language": "nodejs",
+    "git": {
+      "remotes": {
+        "origin": "https://github.com/nodeshift-starters/devfile-sample.git"
+      }
+    }
+  },
+  {
+    "name": "code-with-quarkus",
+    "displayName": "Basic Quarkus",
+    "description": "A simple Hello World Java application using Quarkus",
+    "type": "sample",
+    "tags": [
+      "Java",
+      "Quarkus"
+    ],
+    "icon": "https://design.jboss.org/quarkus/logo/final/SVG/quarkus_icon_rgb_default.svg",
+    "projectType": "quarkus",
+    "language": "java",
+    "git": {
+      "remotes": {
+        "origin": "https://github.com/devfile-samples/devfile-sample-code-with-quarkus.git"
+      }
+    }
+  },
+  {
+    "name": "java-springboot-basic",
+    "displayName": "Basic Spring Boot",
+    "description": "A simple Hello World Java Spring Boot application using Maven",
+    "type": "sample",
+    "tags": [
+      "Java",
+      "Spring"
+    ],
+    "icon": "https://raw.githubusercontent.com/devfile-samples/devfile-stack-icons/main/spring.svg",
+    "projectType": "springboot",
+    "language": "java",
+    "git": {
+      "remotes": {
+        "origin": "https://github.com/devfile-samples/devfile-sample-java-springboot-basic.git"
+      }
+    }
+  }
+]
+----
 
 == Gets registry index of all devfile types
 Gets the registry index file content of all devfile types from HTTP response
@@ -789,6 +1060,141 @@ curl http://devfile-registry.192.168.1.1.nip.io/index/all
 ]
 ----
 
+=== Query parameters
+[cols="1,1"]
+|===
+|Parameter|Description
+
+|Name
+|Search string to filter stacks/samples by their name
+
+|DisplayName
+|Search string to filter stacks/samples by their display names
+
+|Description
+|Search string to filter stacks/samples by the description text
+
+|AttributeNames
+|Collection of search strings to filter stacks/samples by the names of defined free-form attributes
+
+|Arch
+|Collection of search strings to filter stacks/samples by their architectures
+
+|Tags
+|Collection of search strings to filter stacks/samples by their tags
+
+|Icon
+|Toggle on encoding content passed
+
+|IconUri
+|Search string to filter stacks/samples by their icon uri
+
+|ProjectType
+|Search string to filter stacks/samples by their project type
+
+|Language
+|Search string to filter stacks/samples by their programming language
+
+|Resources
+|Collection of search strings to filter stacks/samples by their resource files
+
+|StarterProjects
+|Collection of search strings to filter stacks/samples by the names of the starter projects
+
+|LinkNames
+|Collection of search strings to filter stacks/samples by the names of the link sources
+
+|Links
+|Collection of search strings to filter stacks/samples by their link sources
+
+|GitRemoteNames
+|Collection of search strings to filter stacks/samples by the names of the git remotes
+
+|GitRemotes
+|Collection of search strings to filter stacks/samples by the URIs of the git remotes
+
+|GitUrl
+|Search string to filter stacks/samples by their git urls
+
+|GitRemoteName
+|Search string to filter stacks/samples by their git remote name
+
+|GitSubDir
+|Search string to filter stacks/samples by their target subdirectory of the git repository
+
+|GitRevision
+|Search string to filter stacks/samples by their git revision
+
+|Provider
+|Search string to filter stacks/samples by the stack provider
+
+|SupportUrl
+|Search string to filter stacks/samples by their given support url
+
+|===
+
+=== Request example
+....
+curl 'http://devfile-registry.192.168.1.1.nip.io/index/all?description=node'
+....
+
+*Note:* Field filter parameters accept fuzzy search strings, meaning if `node` is passed into `description` parameter, the results will be any stack or sample with resource entries which contain `node` as partial matches.
+
+=== Response example
+[source,json]
+----
+[
+  {
+    "name": "nodejs-basic",
+    "displayName": "Basic Node.js",
+    "description": "A simple Hello World Node.js application",
+    "type": "sample",
+    "tags": [
+      "NodeJS",
+      "Express"
+    ],
+    "icon": "https://raw.githubusercontent.com/devfile-samples/devfile-stack-icons/main/node-js.svg",
+    "projectType": "nodejs",
+    "language": "nodejs",
+    "git": {
+      "remotes": {
+        "origin": "https://github.com/nodeshift-starters/devfile-sample.git"
+      }
+    }
+  },
+  {
+    "name": "nodejs",
+    "version": "1.0.0",
+    "displayName": "NodeJS Runtime",
+    "description": "Stack with NodeJS 12",
+    "type": "stack",
+    "tags": [
+      "NodeJS",
+      "Express",
+      "ubi8"
+    ],
+    "architectures": [
+      "amd64",
+      "arm64"
+    ],
+    "icon": "https://raw.githubusercontent.com/devfile-samples/devfile-stack-icons/main/node-js.svg",
+    "projectType": "nodejs",
+    "language": "nodejs",
+    "links": {
+      "self": "devfile-catalog/nodejs:1.0.0"
+    },
+    "resources": [
+      "devfile.yaml"
+    ],
+    "starterProjects": [
+      "nodejs-starter"
+    ],
+    "provider": "Red Hat",
+    "supportUrl": "http://testurl/support.md"
+  }
+]
+----
+
 == Gets registry v2 index of stack devfile type
 Gets the registry v2 index file content of stack devfile type, which contains versions information, from HTTP response
 
@@ -1045,10 +1451,16 @@ curl http://devfile-registry.192.168.1.1.nip.io/v2index
 ]
 ----
 
-=== Query parameters
+=== Query (range) parameters
 [cols="1,1"]
 |===
 |Parameter|Description
+
+|MaxVersion
+|The maximum stack version
+
+|MinVersion
+|The minimum stack version
 
 |MaxSchemaVersion
 |The maximum devfile schema version
@@ -1159,6 +1571,203 @@ curl http://devfile-registry.192.168.1.1.nip.io/v2index?minSchemaVersion=2.1&max
 ]
 ----
 
+=== Query (field) parameters
+[cols="1,1"]
+|===
+|Parameter|Description
+
+|Name
+|Search string to filter stacks by their name
+
+|DisplayName
+|Search string to filter stacks by their display names
+
+|Description
+|Search string to filter stacks by the description text
+
+|AttributeNames
+|Collection of search strings to filter stacks by the names of defined free-form attributes
+
+|Arch
+|Collection of search strings to filter stacks by their architectures
+
+|Tags
+|Collection of search strings to filter stacks by their tags
+
+|Icon
+|Toggle on encoding content passed
+
+|IconUri
+|Search string to filter stacks by their icon uri
+
+|ProjectType
+|Search string to filter stacks by their project type
+
+|Language
+|Search string to filter stacks by their programming language
+
+|Default
+|Boolean to filter stacks if they are default or not
+
+|Resources
+|Collection of search strings to filter stacks by their resource files
+
+|StarterProjects
+|Collection of search strings to filter stacks by the names of the starter projects
+
+|LinkNames
+|Collection of search strings to filter stacks by the names of the link sources
+
+|Links
+|Collection of search strings to filter stacks by their link sources
+
+|CommandGroups
+|Collection of search strings to filter stacks by their present command groups
+
+|GitRemoteNames
+|Collection of search strings to filter stacks by the names of the git remotes
+
+|GitRemotes
+|Collection of search strings to filter stacks by the URIs of the git remotes
+
+|GitUrl
+|Search string to filter stacks by their git urls
+
+|GitRemoteName
+|Search string to filter stacks by their git remote name
+
+|GitSubDir
+|Search string to filter stacks by their target subdirectory of the git repository
+
+|GitRevision
+|Search string to filter stacks by their git revision
+
+|Provider
+|Search string to filter stacks by the stack provider
+
+|SupportUrl
+|Search string to filter stacks by their given support url
+
+|===
+
+=== Request example
+....
+curl 'http://devfile-registry.192.168.1.1.nip.io/v2index?name=java&default=true'
+....
+
+*Note:* Field filter parameters accept fuzzy search strings, meaning if `java` is passed into `name` parameter, the results will be any stack with resource entries which contain `java` as partial matches.
+
+=== Response example
+[source,json]
+----
+[
+  {
+    "name": "java-maven",
+    "displayName": "Maven Java",
+    "description": "Upstream Maven and OpenJDK 11",
+    "type": "stack",
+    "tags": [
+      "Java",
+      "Maven"
+    ],
+    "architectures": [
+      "amd64",
+      "arm64",
+      "s390x"
+    ],
+    "icon": "https://raw.githubusercontent.com/devfile-samples/devfile-stack-icons/main/java-maven.jpg",
+    "projectType": "maven",
+    "language": "java",
+    "versions": [
+      {
+        "version": "1.1.0",
+        "schemaVersion": "2.1.0",
+        "default": true,
+        "description": "Upstream Maven and OpenJDK 11",
+        "tags": [
+          "Java",
+          "Maven"
+        ],
+        "architectures": [
+          "amd64",
+          "arm64",
+          "s390x"
+        ],
+        "icon": "https://raw.githubusercontent.com/devfile-samples/devfile-stack-icons/main/java-maven.jpg",
+        "links": {
+          "self": "devfile-catalog/java-maven:1.1.0"
+        },
+        "commandGroups": {
+          "build": true,
+          "debug": true,
+          "deploy": false,
+          "run": true,
+          "test": false
+        },
+        "resources": [
+          "devfile.yaml"
+        ],
+        "starterProjects": [
+          "springbootproject-offline",
+          "springbootproject"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "java-quarkus",
+    "displayName": "Quarkus Java",
+    "description": "Quarkus with Java",
+    "type": "stack",
+    "tags": [
+      "Java",
+      "Quarkus"
+    ],
+    "architectures": [
+      "amd64"
+    ],
+    "icon": "https://design.jboss.org/quarkus/logo/final/SVG/quarkus_icon_rgb_default.svg",
+    "projectType": "quarkus",
+    "language": "java",
+    "versions": [
+      {
+        "version": "1.1.0",
+        "schemaVersion": "2.0.0",
+        "default": true,
+        "description": "Quarkus with Java",
+        "tags": [
+          "Java",
+          "Quarkus"
+        ],
+        "architectures": [
+          "amd64"
+        ],
+        "icon": "https://design.jboss.org/quarkus/logo/final/SVG/quarkus_icon_rgb_default.svg",
+        "links": {
+          "self": "devfile-catalog/java-quarkus:1.1.0"
+        },
+        "commandGroups": {
+          "build": false,
+          "debug": true,
+          "deploy": false,
+          "run": true,
+          "test": false
+        },
+        "resources": [
+          "community-offline.zip",
+          "devfile.yaml"
+        ],
+        "starterProjects": [
+          "community-offline",
+          "community",
+          "redhat-product"
+        ]
+      }
+    ]
+  }
+]
+----
+
 == Gets registry v2 index of sample devfile type
 Gets the registry v2 index file content of sample devfile type, which contains versions information, from HTTP response
 
@@ -1254,10 +1863,16 @@ curl http://devfile-registry.192.168.1.1.nip.io/v2index/sample
 ]
 ----
 
-=== Query parameters
+=== Query (range) parameters
 [cols="1,1"]
 |===
 |Parameter|Description
+
+|MaxVersion
+|The maximum sample version
+
+|MinVersion
+|The minimum sample version
 
 |MaxSchemaVersion
 |The maximum devfile schema version
@@ -1297,6 +1912,125 @@ curl http://devfile-registry.192.168.1.1.nip.io/v2index/sample?maxSchemaVersion=
           }
         },
         "description": "java quarkus with devfile v2.0.0"
+      }
+    ]
+  }
+]
+----
+
+=== Query (field) parameters
+[cols="1,1"]
+|===
+|Parameter|Description
+
+|Name
+|Search string to filter samples by their name
+
+|DisplayName
+|Search string to filter samples by their display names
+
+|Description
+|Search string to filter samples by the description text
+
+|AttributeNames
+|Collection of search strings to filter samples by the names of defined free-form attributes
+
+|Arch
+|Collection of search strings to filter samples by their architectures
+
+|Tags
+|Collection of search strings to filter samples by their tags
+
+|Icon
+|Toggle on encoding content passed
+
+|IconUri
+|Search string to filter samples by their icon uri
+
+|ProjectType
+|Search string to filter samples by their project type
+
+|Language
+|Search string to filter samples by their programming language
+
+|Default
+|Boolean to filter samples if they are default or not
+
+|Resources
+|Collection of search strings to filter samples by their resource files
+
+|StarterProjects
+|Collection of search strings to filter samples by the names of the starter projects
+
+|LinkNames
+|Collection of search strings to filter samples by the names of the link sources
+
+|Links
+|Collection of search strings to filter samples by their link sources
+
+|CommandGroups
+|Collection of search strings to filter samples by their present command groups
+
+|GitRemoteNames
+|Collection of search strings to filter samples by the names of the git remotes
+
+|GitRemotes
+|Collection of search strings to filter samples by the URIs of the git remotes
+
+|GitUrl
+|Search string to filter samples by their git urls
+
+|GitRemoteName
+|Search string to filter samples by their git remote name
+
+|GitSubDir
+|Search string to filter samples by their target subdirectory of the git repository
+
+|GitRevision
+|Search string to filter samples by their git revision
+
+|Provider
+|Search string to filter samples by the stack provider
+
+|SupportUrl
+|Search string to filter samples by their given support url
+
+|===
+
+=== Request example
+....
+curl 'http://devfile-registry.192.168.1.1.nip.io/v2index/sample?description=java&default=true'
+....
+
+*Note:* Field filter parameters accept fuzzy search strings, meaning if `java` is passed into `description` parameter, the results will be any sample with resource entries which contain `java` as partial matches.
+
+=== Response example
+[source,json]
+----
+[
+  {
+    "name": "code-with-quarkus",
+    "displayName": "Basic Quarkus",
+    "description": "A simple Hello World Java application using Quarkus",
+    "type": "sample",
+    "tags": [
+      "Java",
+      "Quarkus"
+    ],
+    "icon": "https://design.jboss.org/quarkus/logo/final/SVG/quarkus_icon_rgb_default.svg",
+    "projectType": "quarkus",
+    "language": "java",
+    "versions": [
+      {
+        "version": "1.1.0",
+        "schemaVersion": "2.2.0",
+        "default": true,
+        "git": {
+          "remotes": {
+            "origin": "https://github.com/devfile-samples/devfile-sample-code-with-quarkus.git"
+          }
+        },
+        "description": "java quarkus with devfile v2.2.0"
       }
     ]
   }
@@ -1656,10 +2390,16 @@ curl http://devfile-registry.192.168.1.1.nip.io/v2index/all
 ]
 ----
 
-=== Query parameters
+=== Query (range) parameters
 [cols="1,1"]
 |===
 |Parameter|Description
+
+|MaxVersion
+|The maximum stack/sample version
+
+|MinVersion
+|The minimum stack/sample version
 
 |MaxSchemaVersion
 |The maximum devfile schema version
@@ -1790,6 +2530,176 @@ curl http://devfile-registry.192.168.1.1.nip.io/v2index/sample?minSchemaVersion=
           }
         },
         "description": "nodejs with devfile v2.2.0"
+      }
+    ]
+  },
+  {
+    "name": "code-with-quarkus",
+    "displayName": "Basic Quarkus",
+    "description": "A simple Hello World Java application using Quarkus",
+    "type": "sample",
+    "tags": [
+      "Java",
+      "Quarkus"
+    ],
+    "icon": "https://design.jboss.org/quarkus/logo/final/SVG/quarkus_icon_rgb_default.svg",
+    "projectType": "quarkus",
+    "language": "java",
+    "versions": [
+      {
+        "version": "1.1.0",
+        "schemaVersion": "2.2.0",
+        "default": true,
+        "git": {
+          "remotes": {
+            "origin": "https://github.com/devfile-samples/devfile-sample-code-with-quarkus.git"
+          }
+        },
+        "description": "java quarkus with devfile v2.2.0"
+      }
+    ]
+  }
+]
+----
+
+=== Query (field) parameters
+[cols="1,1"]
+|===
+|Parameter|Description
+
+|Name
+|Search string to filter stacks/samples by their name
+
+|DisplayName
+|Search string to filter stacks/samples by their display names
+
+|Description
+|Search string to filter stacks/samples by the description text
+
+|AttributeNames
+|Collection of search strings to filter stacks/samples by the names of defined free-form attributes
+
+|Arch
+|Collection of search strings to filter stacks/samples by their architectures
+
+|Tags
+|Collection of search strings to filter stacks/samples by their tags
+
+|Icon
+|Toggle on encoding content passed
+
+|IconUri
+|Search string to filter stacks/samples by their icon uri
+
+|ProjectType
+|Search string to filter stacks/samples by their project type
+
+|Language
+|Search string to filter stacks/samples by their programming language
+
+|Default
+|Boolean to filter stacks/samples if they are default or not
+
+|Resources
+|Collection of search strings to filter stacks/samples by their resource files
+
+|StarterProjects
+|Collection of search strings to filter stacks/samples by the names of the starter projects
+
+|LinkNames
+|Collection of search strings to filter stacks/samples by the names of the link sources
+
+|Links
+|Collection of search strings to filter stacks/samples by their link sources
+
+|CommandGroups
+|Collection of search strings to filter stacks/samples by their present command groups
+
+|GitRemoteNames
+|Collection of search strings to filter stacks/samples by the names of the git remotes
+
+|GitRemotes
+|Collection of search strings to filter stacks/samples by the URIs of the git remotes
+
+|GitUrl
+|Search string to filter stacks/samples by their git urls
+
+|GitRemoteName
+|Search string to filter stacks/samples by their git remote name
+
+|GitSubDir
+|Search string to filter stacks/samples by their target subdirectory of the git repository
+
+|GitRevision
+|Search string to filter stacks/samples by their git revision
+
+|Provider
+|Search string to filter stacks/samples by the stack provider
+
+|SupportUrl
+|Search string to filter stacks/samples by their given support url
+
+|===
+
+=== Request example
+....
+curl 'http://devfile-registry.192.168.1.1.nip.io/v2index/all?description=java&default=true'
+....
+
+*Note:* Field filter parameters accept fuzzy search strings, meaning if `java` is passed into `description` parameter, the results will be any stack or sample with resource entries which contain `java` as partial matches.
+
+=== Response example
+[source,json]
+----
+[
+  {
+    "name": "java-quarkus",
+    "displayName": "Quarkus Java",
+    "description": "Quarkus with Java",
+    "type": "stack",
+    "tags": [
+      "Java",
+      "Quarkus"
+    ],
+    "architectures": [
+      "amd64"
+    ],
+    "icon": "https://design.jboss.org/quarkus/logo/final/SVG/quarkus_icon_rgb_default.svg",
+    "projectType": "quarkus",
+    "language": "java",
+    "versions": [
+      {
+        "version": "1.1.0",
+        "schemaVersion": "2.0.0",
+        "default": true,
+        "description": "Quarkus with Java",
+        "tags": [
+          "Java",
+          "Quarkus"
+        ],
+        "architectures": [
+          "amd64"
+        ],
+        "icon": "https://design.jboss.org/quarkus/logo/final/SVG/quarkus_icon_rgb_default.svg",
+        "links": {
+          "self": "devfile-catalog/java-quarkus:1.1.0"
+        },
+        "commandGroups": {
+          "build": false,
+          "debug": true,
+          "deploy": false,
+          "run": true,
+          "test": false
+        },
+        "resources": [
+          "community-offline.zip",
+          "devfile.yaml"
+        ],
+        "starterProjects": [
+          "community-offline",
+          "community",
+          "redhat-product"
+        ]
       }
     ]
   },

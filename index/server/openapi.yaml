@@ -108,8 +108,6 @@ paths:
         - $ref: '#/components/parameters/iconUriParam'
         - $ref: '#/components/parameters/projectTypeParam'
         - $ref: '#/components/parameters/languageParam'
-        - $ref: '#/components/parameters/minSchemaVersionParam'
-        - $ref: '#/components/parameters/maxSchemaVersionParam'
         - $ref: '#/components/parameters/resourcesParam'
         - $ref: '#/components/parameters/starterProjectsParam'
         - $ref: '#/components/parameters/linkNamesParam'
@@ -174,8 +172,6 @@ paths:
         - $ref: '#/components/parameters/iconUriParam'
         - $ref: '#/components/parameters/projectTypeParam'
         - $ref: '#/components/parameters/languageParam'
-        - $ref: '#/components/parameters/minSchemaVersionParam'
-        - $ref: '#/components/parameters/maxSchemaVersionParam'
         - $ref: '#/components/parameters/resourcesParam'
         - $ref: '#/components/parameters/starterProjectsParam'
         - $ref: '#/components/parameters/linkNamesParam'
@@ -1007,24 +1003,30 @@ components:
       name: name
       in: query
       required: false
+      description: Search string to filter stacks by their name
       schema:
         $ref: '#/components/schemas/Name'
     displayNameParam:
       name: displayName
       in: query
       required: false
+      description: Search string to filter stacks by their display names
       schema:
         $ref: '#/components/schemas/DisplayName'
     descriptionParam:
       name: description
       in: query
       required: false
+      description: Search string to filter stacks by the description text
       schema:
         $ref: '#/components/schemas/Description'
     attributeNamesParam:
       name: attributeNames
       in: query
       required: false
+      description: |-
+        Collection of search strings to filter stacks by the names of 
+        defined free-form attributes
       schema:
         type: array
         items:
@@ -1033,6 +1035,7 @@ components:
       name: tags
       in: query
       required: false
+      description: Collection of search strings to filter stacks by their tags
       schema:
         type: array
         items:
@@ -1040,21 +1043,21 @@ components:
     iconParam:
       name: icon
       in: query
-      description: The icon encoding filter
+      description: Toggle on encoding content passed
       required: false
       schema:
         $ref: '#/components/schemas/Icon'
     iconUriParam:
       name: iconUri
       in: query
-      description: The icon uri filter
+      description: Search string to filter stacks by their icon uri
       required: false
       schema:
         $ref: '#/components/schemas/IconUri'
     archParam:
       name: arch
       in: query
-      description: The target architecture filter
+      description: Collection of search strings to filter stacks by their architectures
       required: false
       schema:
         $ref: '#/components/schemas/Architectures'
@@ -1062,120 +1065,157 @@ components:
       name: projectType
       in: query
       required: false
+      description: Search string to filter stacks by their project type
       schema:
         $ref: '#/components/schemas/ProjectType'
     languageParam:
       name: language
       in: query
       required: false
+      description: Search string to filter stacks by their programming language
       schema:
         $ref: '#/components/schemas/Language'
     minVersionParam:
       name: minVersion
       in: query
       required: false
+      description: The minimum stack version
       schema:
         $ref: '#/components/schemas/Version'
     maxVersionParam:
       name: maxVersion
       in: query
       required: false
+      description: The maximum stack version
       schema:
         $ref: '#/components/schemas/Version'
     minSchemaVersionParam:
       name: minSchemaVersion
       in: query
       required: false
+      description: The minimum devfile schema version
       schema:
         $ref: '#/components/schemas/SchemaVersion'
     maxSchemaVersionParam:
       name: maxSchemaVersion
       in: query
       required: false
+      description: The maximum devfile schema version
       schema:
         $ref: '#/components/schemas/SchemaVersion'
     defaultParam:
       name: default
       in: query
       required: false
+      description: Boolean to filter stacks if they are default or not
       schema:
         $ref: '#/components/schemas/Default'
     resourcesParam:
       name: resources
       in: query
       required: false
+      description: |- 
+        Collection of search strings to filter stacks by their 
+        resource files
       schema:
         $ref: '#/components/schemas/Resources'
     starterProjectsParam:
       name: starterProjects
       in: query
       required: false
+      description: |-
+        Collection of search strings to filter stacks by the names 
+        of the starter projects
       schema:
         $ref: '#/components/schemas/StarterProjects'
     linkNamesParam:
       name: linkNames
       in: query
       required: false
+      description: |-
+        Collection of search strings to filter stacks by the names 
+        of the link sources
       schema:
         $ref: '#/components/schemas/LinkNames'
     linksParam:
       name: links
       in: query
       required: false
+      description: |- 
+        Collection of search strings to filter stacks by their link 
+        sources
       schema:
         $ref: '#/components/schemas/Links'
     commandGroupsParam:
       name: commandGroups
       in: query
       required: false
+      description: |- 
+        Collection of search strings to filter stacks by their present command 
+        groups
       schema:
         $ref: '#/components/schemas/CommandGroups'
     gitRemoteNamesParam:
       name: gitRemoteNames
       in: query
       required: false
+      description: |-
+        Collection of search strings to filter stacks by the names of 
+        the git remotes
       schema:
         $ref: '#/components/schemas/GitRemoteNames'
     gitRemotesParam:
       name: gitRemotes
       in: query
       required: false
+      description: |-
+        Collection of search strings to filter stacks by the URIs of 
+        the git remotes
       schema:
         $ref: '#/components/schemas/GitRemotes'
     gitUrlParam:
       name: gitUrl
       in: query
       required: false
+      description: Search string to filter stacks by their git urls
       schema:
         $ref: '#/components/schemas/Url'
     gitRemoteNameParam:
       name: gitRemoteName
       in: query
       required: false
+      description: |- 
+        Search string to filter stacks by their git remote name
       schema:
         $ref: '#/components/schemas/GitRemoteName'
     gitSubDirParam:
       name: gitSubDir
       in: query
       required: false
+      description: |-
+        Search string to filter stacks by their target subdirectory 
+        of the git repository
       schema:
         $ref: '#/components/schemas/GitSubDir'
     gitRevisionParam:
       name: gitRevision
       in: query
       required: false
+      description: Search string to filter stacks by their git revision
       schema:
         $ref: '#/components/schemas/GitRevision'
     providerParam:
       name: provider
       in: query
       required: false
+      description: Search string to filter stacks by the stack provider
       schema:
         $ref: '#/components/schemas/Provider'
     supportUrlParam:
       name: supportUrl
       in: query
       required: false
+      description: Search string to filter stacks by their given support url
       schema:
         $ref: '#/components/schemas/Url'
   responses:
