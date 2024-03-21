@@ -325,7 +325,7 @@
   {
     "name": "nodejs",
     "displayName": "NodeJS Runtime",
-    "icon": "https://nodejs.org/static/images/logos/nodejs-new-pantone-black.svg",
+    "icon": "https://raw.githubusercontent.com/devfile-samples/devfile-stack-icons/main/node-js.svg",
     "description": "Stack with NodeJS 12",
     "type": "stack",
     "tags": ["NodeJS", "Express", "ubi8"],
@@ -337,7 +337,7 @@
         "schemaVersion": "2.2.0",
         "default": true,
         "description": "Stack with NodeJS 12",
-        "icon": "https://nodejs.org/static/images/logos/nodejs-new-pantone-black.svg",
+        "icon": "https://raw.githubusercontent.com/devfile-samples/devfile-stack-icons/main/node-js.svg",
         "tags": ["NodeJS", "Express", "ubi8"],
         "links": {
           "self": "devfile-catalog/nodejs:1.0.0"

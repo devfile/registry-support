@@ -1198,7 +1198,7 @@ curl http://devfile-registry.192.168.1.1.nip.io/v2index/sample
       "NodeJS",
       "Express"
     ],
-    "icon": "https://nodejs.org/static/images/logos/nodejs-new-pantone-black.svg",
+    "icon": "https://raw.githubusercontent.com/devfile-samples/devfile-stack-icons/main/node-js.svg",
     "projectType": "nodejs",
     "language": "nodejs",
     "versions": [
@@ -1565,7 +1565,7 @@ curl http://devfile-registry.192.168.1.1.nip.io/v2index/all
       "NodeJS",
       "Express"
     ],
-    "icon": "https://nodejs.org/static/images/logos/nodejs-new-pantone-black.svg",
+    "icon": "https://raw.githubusercontent.com/devfile-samples/devfile-stack-icons/main/node-js.svg",
     "projectType": "nodejs",
     "language": "nodejs",
     "versions": [
@@ -1776,7 +1776,7 @@ curl http://devfile-registry.192.168.1.1.nip.io/v2index/sample?minSchemaVersion=
       "NodeJS",
       "Express"
     ],
-    "icon": "https://nodejs.org/static/images/logos/nodejs-new-pantone-black.svg",
+    "icon": "https://raw.githubusercontent.com/devfile-samples/devfile-stack-icons/main/node-js.svg",
     "projectType": "nodejs",
     "language": "nodejs",
     "versions": [
@@ -1953,7 +1953,7 @@ metadata:
   version: 1.0.1
   displayName: Node.js Runtime
   description: Stack with Node.js 14
-  icon: https://nodejs.org/static/images/logos/nodejs-new-pantone-black.svg
+  icon: https://raw.githubusercontent.com/devfile-samples/devfile-stack-icons/main/node-js.svg
   tags: ['NodeJS', 'Express', 'ubi8']
   projectType: 'nodejs'
   language: 'javascript'

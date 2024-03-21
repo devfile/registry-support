@@ -337,7 +337,7 @@
   },
   {
     "name": "nodejs",
-    "icon": "https://nodejs.org/static/images/logos/nodejs-new-pantone-black.svg",
+    "icon": "https://raw.githubusercontent.com/devfile-samples/devfile-stack-icons/main/node-js.svg",
     "displayName": "NodeJS Runtime",
     "description": "Stack with NodeJS 12",
     "type": "stack",
@@ -354,7 +354,7 @@
         "schemaVersion": "2.2.0",
         "default": true,
         "description": "Stack with NodeJS 12",
-        "icon": "https://nodejs.org/static/images/logos/nodejs-new-pantone-black.svg",
+        "icon": "https://raw.githubusercontent.com/devfile-samples/devfile-stack-icons/main/node-js.svg",
         "tags": [
           "NodeJS",
           "Express",
@@ -454,7 +454,7 @@
       "NodeJS",
       "Express"
     ],
-    "icon": "https://nodejs.org/static/images/logos/nodejs-new-pantone-black.svg",
+    "icon": "https://raw.githubusercontent.com/devfile-samples/devfile-stack-icons/main/node-js.svg",
     "projectType": "nodejs",
     "language": "nodejs",
     "versions": [
