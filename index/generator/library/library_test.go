@@ -184,7 +184,7 @@ func TestValidateIndexComponent(t *testing.T) {
 			"Case 8: check for missing arch",
 			schema.Schema{
 				Name: "nodejs",
-				Icon: "https://nodejs.org/static/images/logos/nodejs-new-pantone-black.svg",
+				Icon: "https://raw.githubusercontent.com/devfile-samples/devfile-stack-icons/main/node-js.svg",
 				Git: &schema.Git{
 					Remotes: map[string]string{
 						"origin": "https://github.com/redhat-developer/devfile-sample",
@@ -200,7 +200,7 @@ func TestValidateIndexComponent(t *testing.T) {
 			"Case 9: check for missing provider",
 			schema.Schema{
 				Name: "nodejs",
-				Icon: "https://nodejs.org/static/images/logos/nodejs-new-pantone-black.svg",
+				Icon: "https://raw.githubusercontent.com/devfile-samples/devfile-stack-icons/main/node-js.svg",
 				Versions: []schema.Version{
 					{
 						Version:       "1.0.0",
@@ -226,7 +226,7 @@ func TestValidateIndexComponent(t *testing.T) {
 			"Case 10: check for missing supportUrl",
 			schema.Schema{
 				Name: "nodejs",
-				Icon: "https://nodejs.org/static/images/logos/nodejs-new-pantone-black.svg",
+				Icon: "https://raw.githubusercontent.com/devfile-samples/devfile-stack-icons/main/node-js.svg",
 				Versions: []schema.Version{
 					{
 						Version:       "1.0.0",
@@ -361,7 +361,7 @@ func TestValidateIndexComponent(t *testing.T) {
 			"Case 16: test happy path for for sample component with new struct",
 			schema.Schema{
 				Name: "nodejs",
-				Icon: "https://nodejs.org/static/images/logos/nodejs-new-pantone-black.svg",
+				Icon: "https://raw.githubusercontent.com/devfile-samples/devfile-stack-icons/main/node-js.svg",
 				Versions: []schema.Version{
 					{
 						Version:       "1.0.0",

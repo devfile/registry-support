@@ -8,7 +8,7 @@
       "NodeJS",
       "Express"
     ],
-    "icon": "https://nodejs.org/static/images/logos/nodejs-new-pantone-black.svg",
+    "icon": "https://raw.githubusercontent.com/devfile-samples/devfile-stack-icons/main/node-js.svg",
     "projectType": "nodejs",
     "language": "nodejs",
     "versions": [
