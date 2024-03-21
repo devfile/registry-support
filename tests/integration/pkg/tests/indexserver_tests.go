@@ -234,6 +234,34 @@ var _ = ginkgo.Describe("[Verify index server is working properly]", func() {
 		}
 	})
 
+	ginkgo.It("/v2index/all?arch=arm64&language=java endpoint should return stacks and samples for arch 'arm64' and language 'java'", func() {
+		if config.IsTestRegistry {
+			registryIndex := util.GetRegistryIndex(config.Registry + "/v2index/all?arch=arm64&language=java")
+
+			hasStacks := false
+			hasSamples := false
+			for _, index := range registryIndex {
+				if index.Type == indexSchema.SampleDevfileType {
+					hasSamples = true
+				}
+				if index.Type == indexSchema.StackDevfileType {
+					hasStacks = true
+				}
+				if len(index.Architectures) != 0 {
+					gomega.Expect(index.Architectures).Should(gomega.ContainElement("arm64"))
+				}
+
+				gomega.Expect(index.Language).Should(gomega.ContainSubstring("java"))
+			}
+
+			if len(registryIndex) > 0 {
+				gomega.Expect(hasStacks && hasSamples).To(gomega.BeTrue())
+			}
+		} else {
+			ginkgo.Skip("cannot guarantee test outside of test registry, skipping test")
+		}
+	})
+
 	ginkgo.It("/v2index?minSchemaVersion=2.1&maxSchemaVersion=2.1 endpoint should return stacks for devfile schema version 2.1.0", func() {
 		registryIndex := util.GetRegistryIndex(config.Registry + "/v2index/all?minSchemaVersion=2.1&maxSchemaVersion=2.1")
 
