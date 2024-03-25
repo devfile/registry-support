@@ -1,5 +1,5 @@
 //
-// Copyright Red Hat
+// Copyright 2022-2023 Red Hat, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,7 +21,12 @@ import (
 	"bytes"
 	"crypto/rand"
 	"fmt"
+	gitpkg "github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/gregjones/httpcache"
+	"github.com/gregjones/httpcache/diskcache"
 	"io"
+	"io/ioutil"
 	"math/big"
 	"net"
 	"net/http"
@@ -39,11 +44,6 @@ import (
 	"strings"
 	"syscall"
 	"time"
-
-	gitpkg "github.com/go-git/go-git/v5"
-	"github.com/go-git/go-git/v5/plumbing"
-	"github.com/gregjones/httpcache"
-	"github.com/gregjones/httpcache/diskcache"
 
 	"github.com/devfile/library/v2/pkg/testingutil/filesystem"
 	"github.com/fatih/color"
@@ -819,7 +819,7 @@ func HTTPGetRequest(request HTTPRequestParams, cacheFor int) ([]byte, error) {
 	}
 
 	// Process http response
-	bytes, err := io.ReadAll(resp.Body)
+	bytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -855,11 +855,7 @@ func FilterIgnores(filesChanged, filesDeleted, absIgnoreRules []string) (filesCh
 // IsValidProjectDir checks that the folder to download the project from devfile is
 // either empty or only contains the devfile used.
 func IsValidProjectDir(path string, devfilePath string) error {
-	return isValidProjectDirOnFS(path, devfilePath, filesystem.DefaultFs{})
-}
-
-func isValidProjectDirOnFS(path string, devfilePath string, fs filesystem.Filesystem) error {
-	files, err := fs.ReadDir(path)
+	files, err := ioutil.ReadDir(path)
 	if err != nil {
 		return err
 	}
@@ -1094,31 +1090,29 @@ func DownloadFileInMemory(url string) ([]byte, error) {
 	}
 	defer resp.Body.Close()
 
-	return io.ReadAll(resp.Body)
+	return ioutil.ReadAll(resp.Body)
 }
 
-// DownloadInMemory uses HTTPRequestParams to download the file and return bytes.
-// Use the pkg/devfile/parser/utils.go DownloadInMemory() invocation if you want to
-// call with a client instead.
+// DownloadInMemory uses HTTPRequestParams to download the file and return bytes
 func DownloadInMemory(params HTTPRequestParams) ([]byte, error) {
 	var httpClient = &http.Client{Transport: &http.Transport{
 		ResponseHeaderTimeout: HTTPRequestResponseTimeout,
 	}, Timeout: HTTPRequestResponseTimeout}
 
-	var g *GitUrl
+	var g GitUrl
 	var err error
 
 	if IsGitProviderRepo(params.URL) {
-		g, err = NewGitURL(params.URL, params.Token)
+		g, err = NewGitUrlWithURL(params.URL)
 		if err != nil {
 			return nil, errors.Errorf("failed to parse git repo. error: %v", err)
 		}
 	}
 
-	return g.downloadInMemoryWithClient(params, httpClient)
+	return downloadInMemoryWithClient(params, httpClient, g)
 }
 
-func (g *GitUrl) downloadInMemoryWithClient(params HTTPRequestParams, httpClient HTTPClient) ([]byte, error) {
+func downloadInMemoryWithClient(params HTTPRequestParams, httpClient HTTPClient, g GitUrl) ([]byte, error) {
 	var url string
 	url = params.URL
 	req, err := http.NewRequest("GET", url, nil)
@@ -1150,7 +1144,7 @@ func (g *GitUrl) downloadInMemoryWithClient(params HTTPRequestParams, httpClient
 	}
 	defer resp.Body.Close()
 
-	return io.ReadAll(resp.Body)
+	return ioutil.ReadAll(resp.Body)
 }
 
 // ValidateK8sResourceName sanitizes kubernetes resource name with the following requirements:

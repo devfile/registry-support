@@ -1,5 +1,5 @@
 //
-// Copyright Red Hat
+// Copyright 2022 Red Hat, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package devfile
 import (
 	"github.com/devfile/api/v2/pkg/validation/variables"
 	"github.com/devfile/library/v2/pkg/devfile/parser"
-	errPkg "github.com/devfile/library/v2/pkg/devfile/parser/errors"
 	"github.com/devfile/library/v2/pkg/devfile/validate"
 )
 
@@ -122,7 +121,7 @@ func ParseDevfileAndValidate(args parser.ParserArgs) (d parser.DevfileObj, varWa
 	// generic validation on devfile content
 	err = validate.ValidateDevfileData(d.Data)
 	if err != nil {
-		return d, varWarning, &errPkg.NonCompliantDevfile{Err: err.Error()}
+		return d, varWarning, err
 	}
 
 	return d, varWarning, err
