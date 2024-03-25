@@ -304,198 +304,400 @@ type V2IndexResponse = schema.Schema
 
 // ServeDevfileIndexV1Params defines parameters for ServeDevfileIndexV1.
 type ServeDevfileIndexV1Params struct {
-	Name           *NameParam           `form:"name,omitempty" json:"name,omitempty"`
-	DisplayName    *DisplayNameParam    `form:"displayName,omitempty" json:"displayName,omitempty"`
-	Description    *DescriptionParam    `form:"description,omitempty" json:"description,omitempty"`
-	AttributeNames *AttributeNamesParam `form:"attributeNames,omitempty" json:"attributeNames,omitempty"`
-	Tags           *TagsParam           `form:"tags,omitempty" json:"tags,omitempty"`
+	// Name Search string to filter stacks by their name
+	Name *NameParam `form:"name,omitempty" json:"name,omitempty"`
 
-	// Arch The target architecture filter
+	// DisplayName Search string to filter stacks by their display names
+	DisplayName *DisplayNameParam `form:"displayName,omitempty" json:"displayName,omitempty"`
+
+	// Description Search string to filter stacks by the description text
+	Description *DescriptionParam `form:"description,omitempty" json:"description,omitempty"`
+
+	// AttributeNames Collection of search strings to filter stacks by the names of
+	// defined free-form attributes
+	AttributeNames *AttributeNamesParam `form:"attributeNames,omitempty" json:"attributeNames,omitempty"`
+
+	// Tags Collection of search strings to filter stacks by their tags
+	Tags *TagsParam `form:"tags,omitempty" json:"tags,omitempty"`
+
+	// Arch Collection of search strings to filter stacks by their architectures
 	Arch *ArchParam `form:"arch,omitempty" json:"arch,omitempty"`
 
-	// Icon The icon encoding filter
+	// Icon Toggle on encoding content passed
 	Icon *IconParam `form:"icon,omitempty" json:"icon,omitempty"`
 
-	// IconUri The icon uri filter
-	IconUri          *IconUriParam          `form:"iconUri,omitempty" json:"iconUri,omitempty"`
-	ProjectType      *ProjectTypeParam      `form:"projectType,omitempty" json:"projectType,omitempty"`
-	Language         *LanguageParam         `form:"language,omitempty" json:"language,omitempty"`
-	MinSchemaVersion *MinSchemaVersionParam `form:"minSchemaVersion,omitempty" json:"minSchemaVersion,omitempty"`
-	MaxSchemaVersion *MaxSchemaVersionParam `form:"maxSchemaVersion,omitempty" json:"maxSchemaVersion,omitempty"`
-	Resources        *ResourcesParam        `form:"resources,omitempty" json:"resources,omitempty"`
-	StarterProjects  *StarterProjectsParam  `form:"starterProjects,omitempty" json:"starterProjects,omitempty"`
-	LinkNames        *LinkNamesParam        `form:"linkNames,omitempty" json:"linkNames,omitempty"`
-	Links            *LinksParam            `form:"links,omitempty" json:"links,omitempty"`
-	GitRemoteNames   *GitRemoteNamesParam   `form:"gitRemoteNames,omitempty" json:"gitRemoteNames,omitempty"`
-	GitRemotes       *GitRemotesParam       `form:"gitRemotes,omitempty" json:"gitRemotes,omitempty"`
-	GitUrl           *GitUrlParam           `form:"gitUrl,omitempty" json:"gitUrl,omitempty"`
-	GitRemoteName    *GitRemoteNameParam    `form:"gitRemoteName,omitempty" json:"gitRemoteName,omitempty"`
-	GitSubDir        *GitSubDirParam        `form:"gitSubDir,omitempty" json:"gitSubDir,omitempty"`
-	GitRevision      *GitRevisionParam      `form:"gitRevision,omitempty" json:"gitRevision,omitempty"`
-	Provider         *ProviderParam         `form:"provider,omitempty" json:"provider,omitempty"`
-	SupportUrl       *SupportUrlParam       `form:"supportUrl,omitempty" json:"supportUrl,omitempty"`
+	// IconUri Search string to filter stacks by their icon uri
+	IconUri *IconUriParam `form:"iconUri,omitempty" json:"iconUri,omitempty"`
+
+	// ProjectType Search string to filter stacks by their project type
+	ProjectType *ProjectTypeParam `form:"projectType,omitempty" json:"projectType,omitempty"`
+
+	// Language Search string to filter stacks by their programming language
+	Language *LanguageParam `form:"language,omitempty" json:"language,omitempty"`
+
+	// Resources Collection of search strings to filter stacks by their
+	// resource files
+	Resources *ResourcesParam `form:"resources,omitempty" json:"resources,omitempty"`
+
+	// StarterProjects Collection of search strings to filter stacks by the names
+	// of the starter projects
+	StarterProjects *StarterProjectsParam `form:"starterProjects,omitempty" json:"starterProjects,omitempty"`
+
+	// LinkNames Collection of search strings to filter stacks by the names
+	// of the link sources
+	LinkNames *LinkNamesParam `form:"linkNames,omitempty" json:"linkNames,omitempty"`
+
+	// Links Collection of search strings to filter stacks by their link
+	// sources
+	Links *LinksParam `form:"links,omitempty" json:"links,omitempty"`
+
+	// GitRemoteNames Collection of search strings to filter stacks by the names of
+	// the git remotes
+	GitRemoteNames *GitRemoteNamesParam `form:"gitRemoteNames,omitempty" json:"gitRemoteNames,omitempty"`
+
+	// GitRemotes Collection of search strings to filter stacks by the URIs of
+	// the git remotes
+	GitRemotes *GitRemotesParam `form:"gitRemotes,omitempty" json:"gitRemotes,omitempty"`
+
+	// GitUrl Search string to filter stacks by their git urls
+	GitUrl *GitUrlParam `form:"gitUrl,omitempty" json:"gitUrl,omitempty"`
+
+	// GitRemoteName Search string to filter stacks by their git remote name
+	GitRemoteName *GitRemoteNameParam `form:"gitRemoteName,omitempty" json:"gitRemoteName,omitempty"`
+
+	// GitSubDir Search string to filter stacks by their target subdirectory
+	// of the git repository
+	GitSubDir *GitSubDirParam `form:"gitSubDir,omitempty" json:"gitSubDir,omitempty"`
+
+	// GitRevision Search string to filter stacks by their git revision
+	GitRevision *GitRevisionParam `form:"gitRevision,omitempty" json:"gitRevision,omitempty"`
+
+	// Provider Search string to filter stacks by the stack provider
+	Provider *ProviderParam `form:"provider,omitempty" json:"provider,omitempty"`
+
+	// SupportUrl Search string to filter stacks by their given support url
+	SupportUrl *SupportUrlParam `form:"supportUrl,omitempty" json:"supportUrl,omitempty"`
 }
 
 // DeleteDevfileIndexV1WithTypeParams defines parameters for DeleteDevfileIndexV1WithType.
 type DeleteDevfileIndexV1WithTypeParams struct {
-	// Arch The target architecture filter
+	// Arch Collection of search strings to filter stacks by their architectures
 	Arch *ArchParam `form:"arch,omitempty" json:"arch,omitempty"`
 
-	// Icon The icon encoding filter
+	// Icon Toggle on encoding content passed
 	Icon *IconParam `form:"icon,omitempty" json:"icon,omitempty"`
 }
 
 // ServeDevfileIndexV1WithTypeParams defines parameters for ServeDevfileIndexV1WithType.
 type ServeDevfileIndexV1WithTypeParams struct {
-	Name           *NameParam           `form:"name,omitempty" json:"name,omitempty"`
-	DisplayName    *DisplayNameParam    `form:"displayName,omitempty" json:"displayName,omitempty"`
-	Description    *DescriptionParam    `form:"description,omitempty" json:"description,omitempty"`
-	AttributeNames *AttributeNamesParam `form:"attributeNames,omitempty" json:"attributeNames,omitempty"`
-	Tags           *TagsParam           `form:"tags,omitempty" json:"tags,omitempty"`
+	// Name Search string to filter stacks by their name
+	Name *NameParam `form:"name,omitempty" json:"name,omitempty"`
 
-	// Arch The target architecture filter
+	// DisplayName Search string to filter stacks by their display names
+	DisplayName *DisplayNameParam `form:"displayName,omitempty" json:"displayName,omitempty"`
+
+	// Description Search string to filter stacks by the description text
+	Description *DescriptionParam `form:"description,omitempty" json:"description,omitempty"`
+
+	// AttributeNames Collection of search strings to filter stacks by the names of
+	// defined free-form attributes
+	AttributeNames *AttributeNamesParam `form:"attributeNames,omitempty" json:"attributeNames,omitempty"`
+
+	// Tags Collection of search strings to filter stacks by their tags
+	Tags *TagsParam `form:"tags,omitempty" json:"tags,omitempty"`
+
+	// Arch Collection of search strings to filter stacks by their architectures
 	Arch *ArchParam `form:"arch,omitempty" json:"arch,omitempty"`
 
-	// Icon The icon encoding filter
+	// Icon Toggle on encoding content passed
 	Icon *IconParam `form:"icon,omitempty" json:"icon,omitempty"`
 
-	// IconUri The icon uri filter
-	IconUri          *IconUriParam          `form:"iconUri,omitempty" json:"iconUri,omitempty"`
-	ProjectType      *ProjectTypeParam      `form:"projectType,omitempty" json:"projectType,omitempty"`
-	Language         *LanguageParam         `form:"language,omitempty" json:"language,omitempty"`
-	MinSchemaVersion *MinSchemaVersionParam `form:"minSchemaVersion,omitempty" json:"minSchemaVersion,omitempty"`
-	MaxSchemaVersion *MaxSchemaVersionParam `form:"maxSchemaVersion,omitempty" json:"maxSchemaVersion,omitempty"`
-	Resources        *ResourcesParam        `form:"resources,omitempty" json:"resources,omitempty"`
-	StarterProjects  *StarterProjectsParam  `form:"starterProjects,omitempty" json:"starterProjects,omitempty"`
-	LinkNames        *LinkNamesParam        `form:"linkNames,omitempty" json:"linkNames,omitempty"`
-	Links            *LinksParam            `form:"links,omitempty" json:"links,omitempty"`
-	GitRemoteNames   *GitRemoteNamesParam   `form:"gitRemoteNames,omitempty" json:"gitRemoteNames,omitempty"`
-	GitRemotes       *GitRemotesParam       `form:"gitRemotes,omitempty" json:"gitRemotes,omitempty"`
-	GitUrl           *GitUrlParam           `form:"gitUrl,omitempty" json:"gitUrl,omitempty"`
-	GitRemoteName    *GitRemoteNameParam    `form:"gitRemoteName,omitempty" json:"gitRemoteName,omitempty"`
-	GitSubDir        *GitSubDirParam        `form:"gitSubDir,omitempty" json:"gitSubDir,omitempty"`
-	GitRevision      *GitRevisionParam      `form:"gitRevision,omitempty" json:"gitRevision,omitempty"`
-	Provider         *ProviderParam         `form:"provider,omitempty" json:"provider,omitempty"`
-	SupportUrl       *SupportUrlParam       `form:"supportUrl,omitempty" json:"supportUrl,omitempty"`
+	// IconUri Search string to filter stacks by their icon uri
+	IconUri *IconUriParam `form:"iconUri,omitempty" json:"iconUri,omitempty"`
+
+	// ProjectType Search string to filter stacks by their project type
+	ProjectType *ProjectTypeParam `form:"projectType,omitempty" json:"projectType,omitempty"`
+
+	// Language Search string to filter stacks by their programming language
+	Language *LanguageParam `form:"language,omitempty" json:"language,omitempty"`
+
+	// Resources Collection of search strings to filter stacks by their
+	// resource files
+	Resources *ResourcesParam `form:"resources,omitempty" json:"resources,omitempty"`
+
+	// StarterProjects Collection of search strings to filter stacks by the names
+	// of the starter projects
+	StarterProjects *StarterProjectsParam `form:"starterProjects,omitempty" json:"starterProjects,omitempty"`
+
+	// LinkNames Collection of search strings to filter stacks by the names
+	// of the link sources
+	LinkNames *LinkNamesParam `form:"linkNames,omitempty" json:"linkNames,omitempty"`
+
+	// Links Collection of search strings to filter stacks by their link
+	// sources
+	Links *LinksParam `form:"links,omitempty" json:"links,omitempty"`
+
+	// GitRemoteNames Collection of search strings to filter stacks by the names of
+	// the git remotes
+	GitRemoteNames *GitRemoteNamesParam `form:"gitRemoteNames,omitempty" json:"gitRemoteNames,omitempty"`
+
+	// GitRemotes Collection of search strings to filter stacks by the URIs of
+	// the git remotes
+	GitRemotes *GitRemotesParam `form:"gitRemotes,omitempty" json:"gitRemotes,omitempty"`
+
+	// GitUrl Search string to filter stacks by their git urls
+	GitUrl *GitUrlParam `form:"gitUrl,omitempty" json:"gitUrl,omitempty"`
+
+	// GitRemoteName Search string to filter stacks by their git remote name
+	GitRemoteName *GitRemoteNameParam `form:"gitRemoteName,omitempty" json:"gitRemoteName,omitempty"`
+
+	// GitSubDir Search string to filter stacks by their target subdirectory
+	// of the git repository
+	GitSubDir *GitSubDirParam `form:"gitSubDir,omitempty" json:"gitSubDir,omitempty"`
+
+	// GitRevision Search string to filter stacks by their git revision
+	GitRevision *GitRevisionParam `form:"gitRevision,omitempty" json:"gitRevision,omitempty"`
+
+	// Provider Search string to filter stacks by the stack provider
+	Provider *ProviderParam `form:"provider,omitempty" json:"provider,omitempty"`
+
+	// SupportUrl Search string to filter stacks by their given support url
+	SupportUrl *SupportUrlParam `form:"supportUrl,omitempty" json:"supportUrl,omitempty"`
 }
 
 // PostDevfileIndexV1WithTypeParams defines parameters for PostDevfileIndexV1WithType.
 type PostDevfileIndexV1WithTypeParams struct {
-	// Arch The target architecture filter
+	// Arch Collection of search strings to filter stacks by their architectures
 	Arch *ArchParam `form:"arch,omitempty" json:"arch,omitempty"`
 
-	// Icon The icon encoding filter
+	// Icon Toggle on encoding content passed
 	Icon *IconParam `form:"icon,omitempty" json:"icon,omitempty"`
 }
 
 // PutDevfileIndexV1WithTypeParams defines parameters for PutDevfileIndexV1WithType.
 type PutDevfileIndexV1WithTypeParams struct {
-	// Arch The target architecture filter
+	// Arch Collection of search strings to filter stacks by their architectures
 	Arch *ArchParam `form:"arch,omitempty" json:"arch,omitempty"`
 
-	// Icon The icon encoding filter
+	// Icon Toggle on encoding content passed
 	Icon *IconParam `form:"icon,omitempty" json:"icon,omitempty"`
 }
 
 // ServeDevfileIndexV2Params defines parameters for ServeDevfileIndexV2.
 type ServeDevfileIndexV2Params struct {
-	Name           *NameParam           `form:"name,omitempty" json:"name,omitempty"`
-	DisplayName    *DisplayNameParam    `form:"displayName,omitempty" json:"displayName,omitempty"`
-	Description    *DescriptionParam    `form:"description,omitempty" json:"description,omitempty"`
-	AttributeNames *AttributeNamesParam `form:"attributeNames,omitempty" json:"attributeNames,omitempty"`
-	Tags           *TagsParam           `form:"tags,omitempty" json:"tags,omitempty"`
+	// Name Search string to filter stacks by their name
+	Name *NameParam `form:"name,omitempty" json:"name,omitempty"`
 
-	// Arch The target architecture filter
+	// DisplayName Search string to filter stacks by their display names
+	DisplayName *DisplayNameParam `form:"displayName,omitempty" json:"displayName,omitempty"`
+
+	// Description Search string to filter stacks by the description text
+	Description *DescriptionParam `form:"description,omitempty" json:"description,omitempty"`
+
+	// AttributeNames Collection of search strings to filter stacks by the names of
+	// defined free-form attributes
+	AttributeNames *AttributeNamesParam `form:"attributeNames,omitempty" json:"attributeNames,omitempty"`
+
+	// Tags Collection of search strings to filter stacks by their tags
+	Tags *TagsParam `form:"tags,omitempty" json:"tags,omitempty"`
+
+	// Arch Collection of search strings to filter stacks by their architectures
 	Arch *ArchParam `form:"arch,omitempty" json:"arch,omitempty"`
 
-	// Icon The icon encoding filter
+	// Icon Toggle on encoding content passed
 	Icon *IconParam `form:"icon,omitempty" json:"icon,omitempty"`
 
-	// IconUri The icon uri filter
-	IconUri          *IconUriParam          `form:"iconUri,omitempty" json:"iconUri,omitempty"`
-	ProjectType      *ProjectTypeParam      `form:"projectType,omitempty" json:"projectType,omitempty"`
-	Language         *LanguageParam         `form:"language,omitempty" json:"language,omitempty"`
-	MinVersion       *MinVersionParam       `form:"minVersion,omitempty" json:"minVersion,omitempty"`
-	MaxVersion       *MaxVersionParam       `form:"maxVersion,omitempty" json:"maxVersion,omitempty"`
+	// IconUri Search string to filter stacks by their icon uri
+	IconUri *IconUriParam `form:"iconUri,omitempty" json:"iconUri,omitempty"`
+
+	// ProjectType Search string to filter stacks by their project type
+	ProjectType *ProjectTypeParam `form:"projectType,omitempty" json:"projectType,omitempty"`
+
+	// Language Search string to filter stacks by their programming language
+	Language *LanguageParam `form:"language,omitempty" json:"language,omitempty"`
+
+	// MinVersion The minimum stack version
+	MinVersion *MinVersionParam `form:"minVersion,omitempty" json:"minVersion,omitempty"`
+
+	// MaxVersion The maximum stack version
+	MaxVersion *MaxVersionParam `form:"maxVersion,omitempty" json:"maxVersion,omitempty"`
+
+	// MinSchemaVersion The minimum devfile schema version
 	MinSchemaVersion *MinSchemaVersionParam `form:"minSchemaVersion,omitempty" json:"minSchemaVersion,omitempty"`
+
+	// MaxSchemaVersion The maximum devfile schema version
 	MaxSchemaVersion *MaxSchemaVersionParam `form:"maxSchemaVersion,omitempty" json:"maxSchemaVersion,omitempty"`
-	Default          *DefaultParam          `form:"default,omitempty" json:"default,omitempty"`
-	Resources        *ResourcesParam        `form:"resources,omitempty" json:"resources,omitempty"`
-	StarterProjects  *StarterProjectsParam  `form:"starterProjects,omitempty" json:"starterProjects,omitempty"`
-	LinkNames        *LinkNamesParam        `form:"linkNames,omitempty" json:"linkNames,omitempty"`
-	Links            *LinksParam            `form:"links,omitempty" json:"links,omitempty"`
-	CommandGroups    *CommandGroupsParam    `form:"commandGroups,omitempty" json:"commandGroups,omitempty"`
-	GitRemoteNames   *GitRemoteNamesParam   `form:"gitRemoteNames,omitempty" json:"gitRemoteNames,omitempty"`
-	GitRemotes       *GitRemotesParam       `form:"gitRemotes,omitempty" json:"gitRemotes,omitempty"`
-	GitUrl           *GitUrlParam           `form:"gitUrl,omitempty" json:"gitUrl,omitempty"`
-	GitRemoteName    *GitRemoteNameParam    `form:"gitRemoteName,omitempty" json:"gitRemoteName,omitempty"`
-	GitSubDir        *GitSubDirParam        `form:"gitSubDir,omitempty" json:"gitSubDir,omitempty"`
-	GitRevision      *GitRevisionParam      `form:"gitRevision,omitempty" json:"gitRevision,omitempty"`
-	Provider         *ProviderParam         `form:"provider,omitempty" json:"provider,omitempty"`
-	SupportUrl       *SupportUrlParam       `form:"supportUrl,omitempty" json:"supportUrl,omitempty"`
+
+	// Default Boolean to filter stacks if they are default or not
+	Default *DefaultParam `form:"default,omitempty" json:"default,omitempty"`
+
+	// Resources Collection of search strings to filter stacks by their
+	// resource files
+	Resources *ResourcesParam `form:"resources,omitempty" json:"resources,omitempty"`
+
+	// StarterProjects Collection of search strings to filter stacks by the names
+	// of the starter projects
+	StarterProjects *StarterProjectsParam `form:"starterProjects,omitempty" json:"starterProjects,omitempty"`
+
+	// LinkNames Collection of search strings to filter stacks by the names
+	// of the link sources
+	LinkNames *LinkNamesParam `form:"linkNames,omitempty" json:"linkNames,omitempty"`
+
+	// Links Collection of search strings to filter stacks by their link
+	// sources
+	Links *LinksParam `form:"links,omitempty" json:"links,omitempty"`
+
+	// CommandGroups Collection of search strings to filter stacks by their present command
+	// groups
+	CommandGroups *CommandGroupsParam `form:"commandGroups,omitempty" json:"commandGroups,omitempty"`
+
+	// GitRemoteNames Collection of search strings to filter stacks by the names of
+	// the git remotes
+	GitRemoteNames *GitRemoteNamesParam `form:"gitRemoteNames,omitempty" json:"gitRemoteNames,omitempty"`
+
+	// GitRemotes Collection of search strings to filter stacks by the URIs of
+	// the git remotes
+	GitRemotes *GitRemotesParam `form:"gitRemotes,omitempty" json:"gitRemotes,omitempty"`
+
+	// GitUrl Search string to filter stacks by their git urls
+	GitUrl *GitUrlParam `form:"gitUrl,omitempty" json:"gitUrl,omitempty"`
+
+	// GitRemoteName Search string to filter stacks by their git remote name
+	GitRemoteName *GitRemoteNameParam `form:"gitRemoteName,omitempty" json:"gitRemoteName,omitempty"`
+
+	// GitSubDir Search string to filter stacks by their target subdirectory
+	// of the git repository
+	GitSubDir *GitSubDirParam `form:"gitSubDir,omitempty" json:"gitSubDir,omitempty"`
+
+	// GitRevision Search string to filter stacks by their git revision
+	GitRevision *GitRevisionParam `form:"gitRevision,omitempty" json:"gitRevision,omitempty"`
+
+	// Provider Search string to filter stacks by the stack provider
+	Provider *ProviderParam `form:"provider,omitempty" json:"provider,omitempty"`
+
+	// SupportUrl Search string to filter stacks by their given support url
+	SupportUrl *SupportUrlParam `form:"supportUrl,omitempty" json:"supportUrl,omitempty"`
 }
 
 // DeleteDevfileIndexV2WithTypeParams defines parameters for DeleteDevfileIndexV2WithType.
 type DeleteDevfileIndexV2WithTypeParams struct {
-	// Arch The target architecture filter
+	// Arch Collection of search strings to filter stacks by their architectures
 	Arch *ArchParam `form:"arch,omitempty" json:"arch,omitempty"`
 
-	// Icon The icon encoding filter
+	// Icon Toggle on encoding content passed
 	Icon *IconParam `form:"icon,omitempty" json:"icon,omitempty"`
 }
 
 // ServeDevfileIndexV2WithTypeParams defines parameters for ServeDevfileIndexV2WithType.
 type ServeDevfileIndexV2WithTypeParams struct {
-	Name           *NameParam           `form:"name,omitempty" json:"name,omitempty"`
-	DisplayName    *DisplayNameParam    `form:"displayName,omitempty" json:"displayName,omitempty"`
-	Description    *DescriptionParam    `form:"description,omitempty" json:"description,omitempty"`
-	AttributeNames *AttributeNamesParam `form:"attributeNames,omitempty" json:"attributeNames,omitempty"`
-	Tags           *TagsParam           `form:"tags,omitempty" json:"tags,omitempty"`
+	// Name Search string to filter stacks by their name
+	Name *NameParam `form:"name,omitempty" json:"name,omitempty"`
 
-	// Arch The target architecture filter
+	// DisplayName Search string to filter stacks by their display names
+	DisplayName *DisplayNameParam `form:"displayName,omitempty" json:"displayName,omitempty"`
+
+	// Description Search string to filter stacks by the description text
+	Description *DescriptionParam `form:"description,omitempty" json:"description,omitempty"`
+
+	// AttributeNames Collection of search strings to filter stacks by the names of
+	// defined free-form attributes
+	AttributeNames *AttributeNamesParam `form:"attributeNames,omitempty" json:"attributeNames,omitempty"`
+
+	// Tags Collection of search strings to filter stacks by their tags
+	Tags *TagsParam `form:"tags,omitempty" json:"tags,omitempty"`
+
+	// Arch Collection of search strings to filter stacks by their architectures
 	Arch *ArchParam `form:"arch,omitempty" json:"arch,omitempty"`
 
-	// Icon The icon encoding filter
+	// Icon Toggle on encoding content passed
 	Icon *IconParam `form:"icon,omitempty" json:"icon,omitempty"`
 
-	// IconUri The icon uri filter
-	IconUri          *IconUriParam          `form:"iconUri,omitempty" json:"iconUri,omitempty"`
-	ProjectType      *ProjectTypeParam      `form:"projectType,omitempty" json:"projectType,omitempty"`
-	Language         *LanguageParam         `form:"language,omitempty" json:"language,omitempty"`
-	MinVersion       *MinVersionParam       `form:"minVersion,omitempty" json:"minVersion,omitempty"`
-	MaxVersion       *MaxVersionParam       `form:"maxVersion,omitempty" json:"maxVersion,omitempty"`
+	// IconUri Search string to filter stacks by their icon uri
+	IconUri *IconUriParam `form:"iconUri,omitempty" json:"iconUri,omitempty"`
+
+	// ProjectType Search string to filter stacks by their project type
+	ProjectType *ProjectTypeParam `form:"projectType,omitempty" json:"projectType,omitempty"`
+
+	// Language Search string to filter stacks by their programming language
+	Language *LanguageParam `form:"language,omitempty" json:"language,omitempty"`
+
+	// MinVersion The minimum stack version
+	MinVersion *MinVersionParam `form:"minVersion,omitempty" json:"minVersion,omitempty"`
+
+	// MaxVersion The maximum stack version
+	MaxVersion *MaxVersionParam `form:"maxVersion,omitempty" json:"maxVersion,omitempty"`
+
+	// MinSchemaVersion The minimum devfile schema version
 	MinSchemaVersion *MinSchemaVersionParam `form:"minSchemaVersion,omitempty" json:"minSchemaVersion,omitempty"`
+
+	// MaxSchemaVersion The maximum devfile schema version
 	MaxSchemaVersion *MaxSchemaVersionParam `form:"maxSchemaVersion,omitempty" json:"maxSchemaVersion,omitempty"`
-	Default          *DefaultParam          `form:"default,omitempty" json:"default,omitempty"`
-	Resources        *ResourcesParam        `form:"resources,omitempty" json:"resources,omitempty"`
-	StarterProjects  *StarterProjectsParam  `form:"starterProjects,omitempty" json:"starterProjects,omitempty"`
-	LinkNames        *LinkNamesParam        `form:"linkNames,omitempty" json:"linkNames,omitempty"`
-	Links            *LinksParam            `form:"links,omitempty" json:"links,omitempty"`
-	CommandGroups    *CommandGroupsParam    `form:"commandGroups,omitempty" json:"commandGroups,omitempty"`
-	GitRemoteNames   *GitRemoteNamesParam   `form:"gitRemoteNames,omitempty" json:"gitRemoteNames,omitempty"`
-	GitRemotes       *GitRemotesParam       `form:"gitRemotes,omitempty" json:"gitRemotes,omitempty"`
-	GitUrl           *GitUrlParam           `form:"gitUrl,omitempty" json:"gitUrl,omitempty"`
-	GitRemoteName    *GitRemoteNameParam    `form:"gitRemoteName,omitempty" json:"gitRemoteName,omitempty"`
-	GitSubDir        *GitSubDirParam        `form:"gitSubDir,omitempty" json:"gitSubDir,omitempty"`
-	GitRevision      *GitRevisionParam      `form:"gitRevision,omitempty" json:"gitRevision,omitempty"`
-	Provider         *ProviderParam         `form:"provider,omitempty" json:"provider,omitempty"`
-	SupportUrl       *SupportUrlParam       `form:"supportUrl,omitempty" json:"supportUrl,omitempty"`
+
+	// Default Boolean to filter stacks if they are default or not
+	Default *DefaultParam `form:"default,omitempty" json:"default,omitempty"`
+
+	// Resources Collection of search strings to filter stacks by their
+	// resource files
+	Resources *ResourcesParam `form:"resources,omitempty" json:"resources,omitempty"`
+
+	// StarterProjects Collection of search strings to filter stacks by the names
+	// of the starter projects
+	StarterProjects *StarterProjectsParam `form:"starterProjects,omitempty" json:"starterProjects,omitempty"`
+
+	// LinkNames Collection of search strings to filter stacks by the names
+	// of the link sources
+	LinkNames *LinkNamesParam `form:"linkNames,omitempty" json:"linkNames,omitempty"`
+
+	// Links Collection of search strings to filter stacks by their link
+	// sources
+	Links *LinksParam `form:"links,omitempty" json:"links,omitempty"`
+
+	// CommandGroups Collection of search strings to filter stacks by their present command
+	// groups
+	CommandGroups *CommandGroupsParam `form:"commandGroups,omitempty" json:"commandGroups,omitempty"`
+
+	// GitRemoteNames Collection of search strings to filter stacks by the names of
+	// the git remotes
+	GitRemoteNames *GitRemoteNamesParam `form:"gitRemoteNames,omitempty" json:"gitRemoteNames,omitempty"`
+
+	// GitRemotes Collection of search strings to filter stacks by the URIs of
+	// the git remotes
+	GitRemotes *GitRemotesParam `form:"gitRemotes,omitempty" json:"gitRemotes,omitempty"`
+
+	// GitUrl Search string to filter stacks by their git urls
+	GitUrl *GitUrlParam `form:"gitUrl,omitempty" json:"gitUrl,omitempty"`
+
+	// GitRemoteName Search string to filter stacks by their git remote name
+	GitRemoteName *GitRemoteNameParam `form:"gitRemoteName,omitempty" json:"gitRemoteName,omitempty"`
+
+	// GitSubDir Search string to filter stacks by their target subdirectory
+	// of the git repository
+	GitSubDir *GitSubDirParam `form:"gitSubDir,omitempty" json:"gitSubDir,omitempty"`
+
+	// GitRevision Search string to filter stacks by their git revision
+	GitRevision *GitRevisionParam `form:"gitRevision,omitempty" json:"gitRevision,omitempty"`
+
+	// Provider Search string to filter stacks by the stack provider
+	Provider *ProviderParam `form:"provider,omitempty" json:"provider,omitempty"`
+
+	// SupportUrl Search string to filter stacks by their given support url
+	SupportUrl *SupportUrlParam `form:"supportUrl,omitempty" json:"supportUrl,omitempty"`
 }
 
 // PostDevfileIndexV2WithTypeParams defines parameters for PostDevfileIndexV2WithType.
 type PostDevfileIndexV2WithTypeParams struct {
-	// Arch The target architecture filter
+	// Arch Collection of search strings to filter stacks by their architectures
 	Arch *ArchParam `form:"arch,omitempty" json:"arch,omitempty"`
 
-	// Icon The icon encoding filter
+	// Icon Toggle on encoding content passed
 	Icon *IconParam `form:"icon,omitempty" json:"icon,omitempty"`
 }
 
 // PutDevfileIndexV2WithTypeParams defines parameters for PutDevfileIndexV2WithType.
 type PutDevfileIndexV2WithTypeParams struct {
-	// Arch The target architecture filter
+	// Arch Collection of search strings to filter stacks by their architectures
 	Arch *ArchParam `form:"arch,omitempty" json:"arch,omitempty"`
 
-	// Icon The icon encoding filter
+	// Icon Toggle on encoding content passed
 	Icon *IconParam `form:"icon,omitempty" json:"icon,omitempty"`
 }
