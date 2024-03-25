@@ -1,17 +1,17 @@
-/*   Copyright 2020-2022 Red Hat, Inc.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-   http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
+//
+// Copyright Red Hat
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package library
 
@@ -19,9 +19,7 @@ import (
 	"archive/zip"
 	"encoding/json"
 	"fmt"
-	"github.com/hashicorp/go-multierror"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
@@ -32,6 +30,7 @@ import (
 	"text/tabwriter"
 	"time"
 
+	"github.com/hashicorp/go-multierror"
 	orasctx "oras.land/oras-go/pkg/context"
 
 	"github.com/containerd/containerd/remotes/docker"
@@ -49,9 +48,9 @@ const (
 	DevfilePNGLogoMediaType = "image/png"
 	DevfileArchiveMediaType = "application/x-tar"
 
-	OwnersFile = "OWNERS"
-
-	httpRequestResponseTimeout = 30 * time.Second // httpRequestTimeout configures timeout of all HTTP requests
+	OwnersFile                 = "OWNERS"
+	registryLibrary            = "registry-library" //constant to indicate that function is called by the library
+	httpRequestResponseTimeout = 30 * time.Second   // httpRequestTimeout configures timeout of all HTTP requests
 )
 
 var (
@@ -66,7 +65,7 @@ type Registry struct {
 	err              error
 }
 
-//TelemetryData structure to pass in client telemetry information
+// TelemetryData structure to pass in client telemetry information
 // The User and Locale fields should be passed in by clients if telemetry opt-in is enabled
 // the generic Client name will be passed in regardless of opt-in/out choice.  The value
 // will be assigned to the UserId field for opt-outs
@@ -179,7 +178,7 @@ func GetRegistryIndex(registryURL string, options RegistryOptions, devfileTypes 
 	if err != nil {
 		return nil, err
 	}
-	bytes, err := ioutil.ReadAll(resp.Body)
+	bytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -215,12 +214,15 @@ func PrintRegistry(registryURLs string, devfileType string, options RegistryOpti
 	registryURLArray := strings.Split(registryURLs, ",")
 	var registryList []Registry
 
+	//ignore telemetry when printing the registry
+	modifiedOptions := options
+	modifiedOptions.Telemetry = TelemetryData{Client: registryLibrary}
 	if devfileType == string(indexSchema.StackDevfileType) {
-		registryList = GetMultipleRegistryIndices(registryURLArray, options, indexSchema.StackDevfileType)
+		registryList = GetMultipleRegistryIndices(registryURLArray, modifiedOptions, indexSchema.StackDevfileType)
 	} else if devfileType == string(indexSchema.SampleDevfileType) {
-		registryList = GetMultipleRegistryIndices(registryURLArray, options, indexSchema.SampleDevfileType)
+		registryList = GetMultipleRegistryIndices(registryURLArray, modifiedOptions, indexSchema.SampleDevfileType)
 	} else if devfileType == "all" {
-		registryList = GetMultipleRegistryIndices(registryURLArray, options, indexSchema.StackDevfileType, indexSchema.SampleDevfileType)
+		registryList = GetMultipleRegistryIndices(registryURLArray, modifiedOptions, indexSchema.StackDevfileType, indexSchema.SampleDevfileType)
 	}
 
 	w := tabwriter.NewWriter(os.Stdout, 5, 2, 3, ' ', tabwriter.TabIndent)
@@ -451,13 +453,16 @@ func DownloadStarterProjectAsBytes(registryURL string, stack string, starterProj
 	}
 
 	// Return downloaded starter project as bytes or error if unsuccessful.
-	return ioutil.ReadAll(resp.Body)
+	return io.ReadAll(resp.Body)
 }
 
 // IsStarterProjectExists checks if starter project exists for a given stack
 func IsStarterProjectExists(registryURL string, stack string, starterProject string, options RegistryOptions) (bool, error) {
 	// Get stack index
-	stackIndex, err := GetStackIndex(registryURL, stack, options)
+	// Avoid collecting telemetry here since it's an indirect call to GetStackIndex
+	modifiedOptions := options
+	modifiedOptions.Telemetry = TelemetryData{Client: registryLibrary}
+	stackIndex, err := GetStackIndex(registryURL, stack, modifiedOptions)
 	if err != nil {
 		return false, err
 	}
@@ -497,7 +502,10 @@ func GetStackLink(registryURL string, stack string, options RegistryOptions) (st
 	var stackLink string
 
 	// Get stack index
-	stackIndex, err := GetStackIndex(registryURL, stack, options)
+	// Avoid collecting telemetry here since it's an indirect call to GetStackIndex
+	modifiedOptions := options
+	modifiedOptions.Telemetry = TelemetryData{Client: registryLibrary}
+	stackIndex, err := GetStackIndex(registryURL, stack, modifiedOptions)
 	if err != nil {
 		return "", err
 	}
