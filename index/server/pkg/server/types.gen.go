@@ -379,15 +379,6 @@ type ServeDevfileIndexV1Params struct {
 	SupportUrl *SupportUrlParam `form:"supportUrl,omitempty" json:"supportUrl,omitempty"`
 }
 
-// DeleteDevfileIndexV1WithTypeParams defines parameters for DeleteDevfileIndexV1WithType.
-type DeleteDevfileIndexV1WithTypeParams struct {
-	// Arch Collection of search strings to filter stacks by their architectures
-	Arch *ArchParam `form:"arch,omitempty" json:"arch,omitempty"`
-
-	// Icon Toggle on encoding content passed
-	Icon *IconParam `form:"icon,omitempty" json:"icon,omitempty"`
-}
-
 // ServeDevfileIndexV1WithTypeParams defines parameters for ServeDevfileIndexV1WithType.
 type ServeDevfileIndexV1WithTypeParams struct {
 	// Name Search string to filter stacks by their name
@@ -463,24 +454,6 @@ type ServeDevfileIndexV1WithTypeParams struct {
 
 	// SupportUrl Search string to filter stacks by their given support url
 	SupportUrl *SupportUrlParam `form:"supportUrl,omitempty" json:"supportUrl,omitempty"`
-}
-
-// PostDevfileIndexV1WithTypeParams defines parameters for PostDevfileIndexV1WithType.
-type PostDevfileIndexV1WithTypeParams struct {
-	// Arch Collection of search strings to filter stacks by their architectures
-	Arch *ArchParam `form:"arch,omitempty" json:"arch,omitempty"`
-
-	// Icon Toggle on encoding content passed
-	Icon *IconParam `form:"icon,omitempty" json:"icon,omitempty"`
-}
-
-// PutDevfileIndexV1WithTypeParams defines parameters for PutDevfileIndexV1WithType.
-type PutDevfileIndexV1WithTypeParams struct {
-	// Arch Collection of search strings to filter stacks by their architectures
-	Arch *ArchParam `form:"arch,omitempty" json:"arch,omitempty"`
-
-	// Icon Toggle on encoding content passed
-	Icon *IconParam `form:"icon,omitempty" json:"icon,omitempty"`
 }
 
 // ServeDevfileIndexV2Params defines parameters for ServeDevfileIndexV2.
@@ -579,15 +552,6 @@ type ServeDevfileIndexV2Params struct {
 	SupportUrl *SupportUrlParam `form:"supportUrl,omitempty" json:"supportUrl,omitempty"`
 }
 
-// DeleteDevfileIndexV2WithTypeParams defines parameters for DeleteDevfileIndexV2WithType.
-type DeleteDevfileIndexV2WithTypeParams struct {
-	// Arch Collection of search strings to filter stacks by their architectures
-	Arch *ArchParam `form:"arch,omitempty" json:"arch,omitempty"`
-
-	// Icon Toggle on encoding content passed
-	Icon *IconParam `form:"icon,omitempty" json:"icon,omitempty"`
-}
-
 // ServeDevfileIndexV2WithTypeParams defines parameters for ServeDevfileIndexV2WithType.
 type ServeDevfileIndexV2WithTypeParams struct {
 	// Name Search string to filter stacks by their name
@@ -682,22 +646,4 @@ type ServeDevfileIndexV2WithTypeParams struct {
 
 	// SupportUrl Search string to filter stacks by their given support url
 	SupportUrl *SupportUrlParam `form:"supportUrl,omitempty" json:"supportUrl,omitempty"`
-}
-
-// PostDevfileIndexV2WithTypeParams defines parameters for PostDevfileIndexV2WithType.
-type PostDevfileIndexV2WithTypeParams struct {
-	// Arch Collection of search strings to filter stacks by their architectures
-	Arch *ArchParam `form:"arch,omitempty" json:"arch,omitempty"`
-
-	// Icon Toggle on encoding content passed
-	Icon *IconParam `form:"icon,omitempty" json:"icon,omitempty"`
-}
-
-// PutDevfileIndexV2WithTypeParams defines parameters for PutDevfileIndexV2WithType.
-type PutDevfileIndexV2WithTypeParams struct {
-	// Arch Collection of search strings to filter stacks by their architectures
-	Arch *ArchParam `form:"arch,omitempty" json:"arch,omitempty"`
-
-	// Icon Toggle on encoding content passed
-	Icon *IconParam `form:"icon,omitempty" json:"icon,omitempty"`
 }

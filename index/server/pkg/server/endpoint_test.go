@@ -1321,19 +1321,19 @@ func TestDevfileIndexV1MethodNotAllowed(t *testing.T) {
 		{
 			name: "POST /index/{indexType} - Successful Response Test",
 			handler: func(c *gin.Context) {
-				server.PostDevfileIndexV1WithType(c, "stack", PostDevfileIndexV1WithTypeParams{})
+				server.PostDevfileIndexV1WithType(c, "stack")
 			},
 			wantCode: http.StatusMethodNotAllowed,
 		},
 		{
 			name:     "PUT /index/{indexType} - Successful Response Test",
-			handler:  func(c *gin.Context) { server.PutDevfileIndexV1WithType(c, "stack", PutDevfileIndexV1WithTypeParams{}) },
+			handler:  func(c *gin.Context) { server.PutDevfileIndexV1WithType(c, "stack") },
 			wantCode: http.StatusMethodNotAllowed,
 		},
 		{
 			name: "DELETE /index/{indexType} - Successful Response Test",
 			handler: func(c *gin.Context) {
-				server.DeleteDevfileIndexV1WithType(c, "stack", DeleteDevfileIndexV1WithTypeParams{})
+				server.DeleteDevfileIndexV1WithType(c, "stack")
 			},
 			wantCode: http.StatusMethodNotAllowed,
 		},
@@ -1384,19 +1384,19 @@ func TestDevfileIndexV2MethodNotAllowed(t *testing.T) {
 		{
 			name: "POST /v2index/{indexType} - Successful Response Test",
 			handler: func(c *gin.Context) {
-				server.PostDevfileIndexV2WithType(c, "stack", PostDevfileIndexV2WithTypeParams{})
+				server.PostDevfileIndexV2WithType(c, "stack")
 			},
 			wantCode: http.StatusMethodNotAllowed,
 		},
 		{
 			name:     "PUT /v2index/{indexType} - Successful Response Test",
-			handler:  func(c *gin.Context) { server.PutDevfileIndexV2WithType(c, "stack", PutDevfileIndexV2WithTypeParams{}) },
+			handler:  func(c *gin.Context) { server.PutDevfileIndexV2WithType(c, "stack") },
 			wantCode: http.StatusMethodNotAllowed,
 		},
 		{
 			name: "DELETE /v2index/{indexType} - Successful Response Test",
 			handler: func(c *gin.Context) {
-				server.DeleteDevfileIndexV2WithType(c, "stack", DeleteDevfileIndexV2WithTypeParams{})
+				server.DeleteDevfileIndexV2WithType(c, "stack")
 			},
 			wantCode: http.StatusMethodNotAllowed,
 		},

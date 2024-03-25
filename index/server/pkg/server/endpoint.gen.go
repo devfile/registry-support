@@ -116,16 +116,16 @@ type ServerInterface interface {
 	PutDevfileIndexV1(c *gin.Context)
 
 	// (DELETE /index/{indexType})
-	DeleteDevfileIndexV1WithType(c *gin.Context, indexType string, params DeleteDevfileIndexV1WithTypeParams)
+	DeleteDevfileIndexV1WithType(c *gin.Context, indexType string)
 	// Gets index schemas of the devfiles of specific type.
 	// (GET /index/{indexType})
 	ServeDevfileIndexV1WithType(c *gin.Context, indexType string, params ServeDevfileIndexV1WithTypeParams)
 
 	// (POST /index/{indexType})
-	PostDevfileIndexV1WithType(c *gin.Context, indexType string, params PostDevfileIndexV1WithTypeParams)
+	PostDevfileIndexV1WithType(c *gin.Context, indexType string)
 
 	// (PUT /index/{indexType})
-	PutDevfileIndexV1WithType(c *gin.Context, indexType string, params PutDevfileIndexV1WithTypeParams)
+	PutDevfileIndexV1WithType(c *gin.Context, indexType string)
 
 	// (DELETE /v2index)
 	DeleteDevfileIndexV2(c *gin.Context)
@@ -140,16 +140,16 @@ type ServerInterface interface {
 	PutDevfileIndexV2(c *gin.Context)
 
 	// (DELETE /v2index/{indexType})
-	DeleteDevfileIndexV2WithType(c *gin.Context, indexType string, params DeleteDevfileIndexV2WithTypeParams)
+	DeleteDevfileIndexV2WithType(c *gin.Context, indexType string)
 	// Gets V2 index schemas of the devfiles of specific type.
 	// (GET /v2index/{indexType})
 	ServeDevfileIndexV2WithType(c *gin.Context, indexType string, params ServeDevfileIndexV2WithTypeParams)
 
 	// (POST /v2index/{indexType})
-	PostDevfileIndexV2WithType(c *gin.Context, indexType string, params PostDevfileIndexV2WithTypeParams)
+	PostDevfileIndexV2WithType(c *gin.Context, indexType string)
 
 	// (PUT /v2index/{indexType})
-	PutDevfileIndexV2WithType(c *gin.Context, indexType string, params PutDevfileIndexV2WithTypeParams)
+	PutDevfileIndexV2WithType(c *gin.Context, indexType string)
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -956,30 +956,11 @@ func (siw *ServerInterfaceWrapper) DeleteDevfileIndexV1WithType(c *gin.Context) 
 		return
 	}
 
-	// Parameter object where we will unmarshal all parameters from the context
-	var params DeleteDevfileIndexV1WithTypeParams
-
-	// ------------- Optional query parameter "arch" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "arch", c.Request.URL.Query(), &params.Arch)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter arch: %s", err), http.StatusBadRequest)
-		return
-	}
-
-	// ------------- Optional query parameter "icon" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "icon", c.Request.URL.Query(), &params.Icon)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter icon: %s", err), http.StatusBadRequest)
-		return
-	}
-
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)
 	}
 
-	siw.Handler.DeleteDevfileIndexV1WithType(c, indexType, params)
+	siw.Handler.DeleteDevfileIndexV1WithType(c, indexType)
 }
 
 // ServeDevfileIndexV1WithType operation middleware
@@ -1196,30 +1177,11 @@ func (siw *ServerInterfaceWrapper) PostDevfileIndexV1WithType(c *gin.Context) {
 		return
 	}
 
-	// Parameter object where we will unmarshal all parameters from the context
-	var params PostDevfileIndexV1WithTypeParams
-
-	// ------------- Optional query parameter "arch" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "arch", c.Request.URL.Query(), &params.Arch)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter arch: %s", err), http.StatusBadRequest)
-		return
-	}
-
-	// ------------- Optional query parameter "icon" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "icon", c.Request.URL.Query(), &params.Icon)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter icon: %s", err), http.StatusBadRequest)
-		return
-	}
-
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)
 	}
 
-	siw.Handler.PostDevfileIndexV1WithType(c, indexType, params)
+	siw.Handler.PostDevfileIndexV1WithType(c, indexType)
 }
 
 // PutDevfileIndexV1WithType operation middleware
@@ -1236,30 +1198,11 @@ func (siw *ServerInterfaceWrapper) PutDevfileIndexV1WithType(c *gin.Context) {
 		return
 	}
 
-	// Parameter object where we will unmarshal all parameters from the context
-	var params PutDevfileIndexV1WithTypeParams
-
-	// ------------- Optional query parameter "arch" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "arch", c.Request.URL.Query(), &params.Arch)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter arch: %s", err), http.StatusBadRequest)
-		return
-	}
-
-	// ------------- Optional query parameter "icon" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "icon", c.Request.URL.Query(), &params.Icon)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter icon: %s", err), http.StatusBadRequest)
-		return
-	}
-
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)
 	}
 
-	siw.Handler.PutDevfileIndexV1WithType(c, indexType, params)
+	siw.Handler.PutDevfileIndexV1WithType(c, indexType)
 }
 
 // DeleteDevfileIndexV2 operation middleware
@@ -1545,30 +1488,11 @@ func (siw *ServerInterfaceWrapper) DeleteDevfileIndexV2WithType(c *gin.Context) 
 		return
 	}
 
-	// Parameter object where we will unmarshal all parameters from the context
-	var params DeleteDevfileIndexV2WithTypeParams
-
-	// ------------- Optional query parameter "arch" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "arch", c.Request.URL.Query(), &params.Arch)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter arch: %s", err), http.StatusBadRequest)
-		return
-	}
-
-	// ------------- Optional query parameter "icon" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "icon", c.Request.URL.Query(), &params.Icon)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter icon: %s", err), http.StatusBadRequest)
-		return
-	}
-
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)
 	}
 
-	siw.Handler.DeleteDevfileIndexV2WithType(c, indexType, params)
+	siw.Handler.DeleteDevfileIndexV2WithType(c, indexType)
 }
 
 // ServeDevfileIndexV2WithType operation middleware
@@ -1833,30 +1757,11 @@ func (siw *ServerInterfaceWrapper) PostDevfileIndexV2WithType(c *gin.Context) {
 		return
 	}
 
-	// Parameter object where we will unmarshal all parameters from the context
-	var params PostDevfileIndexV2WithTypeParams
-
-	// ------------- Optional query parameter "arch" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "arch", c.Request.URL.Query(), &params.Arch)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter arch: %s", err), http.StatusBadRequest)
-		return
-	}
-
-	// ------------- Optional query parameter "icon" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "icon", c.Request.URL.Query(), &params.Icon)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter icon: %s", err), http.StatusBadRequest)
-		return
-	}
-
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)
 	}
 
-	siw.Handler.PostDevfileIndexV2WithType(c, indexType, params)
+	siw.Handler.PostDevfileIndexV2WithType(c, indexType)
 }
 
 // PutDevfileIndexV2WithType operation middleware
@@ -1873,30 +1778,11 @@ func (siw *ServerInterfaceWrapper) PutDevfileIndexV2WithType(c *gin.Context) {
 		return
 	}
 
-	// Parameter object where we will unmarshal all parameters from the context
-	var params PutDevfileIndexV2WithTypeParams
-
-	// ------------- Optional query parameter "arch" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "arch", c.Request.URL.Query(), &params.Arch)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter arch: %s", err), http.StatusBadRequest)
-		return
-	}
-
-	// ------------- Optional query parameter "icon" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "icon", c.Request.URL.Query(), &params.Icon)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter icon: %s", err), http.StatusBadRequest)
-		return
-	}
-
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)
 	}
 
-	siw.Handler.PutDevfileIndexV2WithType(c, indexType, params)
+	siw.Handler.PutDevfileIndexV2WithType(c, indexType)
 }
 
 // GinServerOptions provides options for the Gin server.
@@ -2014,62 +1900,62 @@ func RegisterHandlersWithOptions(router *gin.Engine, si ServerInterface, options
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
+	"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",
-	"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",
+	"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",
-	"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",
-	"7mhca/Zh9b8AAAD//ycEAtDrfAAA",
+	"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",
+	"//+nPzOSz3oAAA==",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

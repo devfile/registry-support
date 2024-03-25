@@ -120,15 +120,15 @@ func (*Server) ServeDevfileIndexV1WithType(c *gin.Context, indexType string, par
 	buildIndexAPIResponse(c, indexType, true, params.toIndexParams())
 }
 
-func (*Server) PostDevfileIndexV1WithType(c *gin.Context, indexType string, params PostDevfileIndexV1WithTypeParams) {
+func (*Server) PostDevfileIndexV1WithType(c *gin.Context, indexType string) {
 	SetMethodNotAllowedJSONResponse(c)
 }
 
-func (*Server) PutDevfileIndexV1WithType(c *gin.Context, indexType string, params PutDevfileIndexV1WithTypeParams) {
+func (*Server) PutDevfileIndexV1WithType(c *gin.Context, indexType string) {
 	SetMethodNotAllowedJSONResponse(c)
 }
 
-func (*Server) DeleteDevfileIndexV1WithType(c *gin.Context, indexType string, params DeleteDevfileIndexV1WithTypeParams) {
+func (*Server) DeleteDevfileIndexV1WithType(c *gin.Context, indexType string) {
 	SetMethodNotAllowedJSONResponse(c)
 }
 
@@ -138,15 +138,15 @@ func (*Server) ServeDevfileIndexV2WithType(c *gin.Context, indexType string, par
 	buildIndexAPIResponse(c, indexType, false, params.toIndexParams())
 }
 
-func (*Server) PostDevfileIndexV2WithType(c *gin.Context, indexType string, params PostDevfileIndexV2WithTypeParams) {
+func (*Server) PostDevfileIndexV2WithType(c *gin.Context, indexType string) {
 	SetMethodNotAllowedJSONResponse(c)
 }
 
-func (*Server) PutDevfileIndexV2WithType(c *gin.Context, indexType string, params PutDevfileIndexV2WithTypeParams) {
+func (*Server) PutDevfileIndexV2WithType(c *gin.Context, indexType string) {
 	SetMethodNotAllowedJSONResponse(c)
 }
 
-func (*Server) DeleteDevfileIndexV2WithType(c *gin.Context, indexType string, params DeleteDevfileIndexV2WithTypeParams) {
+func (*Server) DeleteDevfileIndexV2WithType(c *gin.Context, indexType string) {
 	SetMethodNotAllowedJSONResponse(c)
 }
 

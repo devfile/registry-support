@@ -201,8 +201,6 @@ paths:
             type: string
             x-go-name: IndexType
           x-go-name: IndexType
-        - $ref: '#/components/parameters/archParam'
-        - $ref: '#/components/parameters/iconParam'
       responses:
         405:
           $ref: '#/components/responses/methodNotAllowedResponse'
@@ -217,8 +215,6 @@ paths:
             type: string
             x-go-name: IndexType
           x-go-name: IndexType
-        - $ref: '#/components/parameters/archParam'
-        - $ref: '#/components/parameters/iconParam'
       responses:
         405:
           $ref: '#/components/responses/methodNotAllowedResponse'
@@ -233,8 +229,6 @@ paths:
             type: string
             x-go-name: IndexType
           x-go-name: IndexType
-        - $ref: '#/components/parameters/archParam'
-        - $ref: '#/components/parameters/iconParam'
       responses:
         405:
           $ref: '#/components/responses/methodNotAllowedResponse'
@@ -366,8 +360,6 @@ paths:
             type: string
             x-go-name: IndexType
           x-go-name: IndexType
-        - $ref: '#/components/parameters/archParam'
-        - $ref: '#/components/parameters/iconParam' 
       responses:
         405:
           $ref: '#/components/responses/methodNotAllowedResponse'
@@ -382,8 +374,6 @@ paths:
             type: string
             x-go-name: IndexType
           x-go-name: IndexType
-        - $ref: '#/components/parameters/archParam'
-        - $ref: '#/components/parameters/iconParam' 
       responses:
         405:
           $ref: '#/components/responses/methodNotAllowedResponse'
@@ -398,8 +388,6 @@ paths:
             type: string
             x-go-name: IndexType
           x-go-name: IndexType
-        - $ref: '#/components/parameters/archParam'
-        - $ref: '#/components/parameters/iconParam' 
       responses:
         405:
           $ref: '#/components/responses/methodNotAllowedResponse'
