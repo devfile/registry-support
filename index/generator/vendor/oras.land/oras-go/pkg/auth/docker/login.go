@@ -19,11 +19,13 @@ import (
 	"context"
 
 	ctypes "github.com/docker/cli/cli/config/types"
-	"github.com/docker/docker/api/types"
+	apiregistry "github.com/docker/docker/api/types/registry"
 	"github.com/docker/docker/registry"
 
 	iface "oras.land/oras-go/pkg/auth"
 )
+
+const IndexHostname = "index.docker.io"
 
 // Login logs in to a docker registry identified by the hostname.
 // Deprecated: use LoginWithOpts
@@ -49,7 +51,7 @@ func (c *Client) LoginWithOpts(options ...iface.LoginOption) error {
 
 func (c *Client) login(settings *iface.LoginSettings) error {
 	hostname := resolveHostname(settings.Hostname)
-	cred := types.AuthConfig{
+	cred := apiregistry.AuthConfig{
 		Username:      settings.Username,
 		ServerAddress: hostname,
 	}
@@ -78,9 +80,19 @@ func (c *Client) login(settings *iface.LoginSettings) error {
 	if userAgent == "" {
 		userAgent = "oras"
 	}
-	if _, token, err := remote.Auth(ctx, &cred, userAgent); err != nil {
+
+	var token string
+	if (settings.CertFile != "" && settings.KeyFile != "") || settings.CAFile != "" {
+		_, token, err = c.loginWithTLS(ctx, remote, settings.CertFile, settings.KeyFile, settings.CAFile, &cred, userAgent)
+	} else {
+		_, token, err = remote.Auth(ctx, &cred, userAgent)
+	}
+
+	if err != nil {
 		return err
-	} else if token != "" {
+	}
+
+	if token != "" {
 		cred.Username = ""
 		cred.Password = ""
 		cred.IdentityToken = token
