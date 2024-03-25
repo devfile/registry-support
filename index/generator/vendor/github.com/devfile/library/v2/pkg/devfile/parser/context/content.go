@@ -1,5 +1,5 @@
 //
-// Copyright Red Hat
+// Copyright 2022-2023 Red Hat, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,8 +19,6 @@ import (
 	"bytes"
 	"unicode"
 
-	errPkg "github.com/devfile/library/v2/pkg/devfile/parser/errors"
-	parserUtil "github.com/devfile/library/v2/pkg/devfile/parser/util"
 	"github.com/devfile/library/v2/pkg/util"
 	"github.com/pkg/errors"
 	"k8s.io/klog"
@@ -43,7 +41,7 @@ func YAMLToJSON(data []byte) ([]byte, error) {
 	// Is YAML, convert to JSON
 	data, err := yaml.YAMLToJSON(data)
 	if err != nil {
-		return data, &errPkg.NonCompliantDevfile{Err: err.Error()}
+		return data, errors.Wrapf(err, "failed to convert devfile yaml to json")
 	}
 
 	// Successful
@@ -64,7 +62,7 @@ func hasPrefix(buf []byte, prefix []byte) bool {
 }
 
 // SetDevfileContent reads devfile and if devfile is in YAML format converts it to JSON
-func (d *DevfileCtx) SetDevfileContent(devfileUtilsClient parserUtil.DevfileUtils) error {
+func (d *DevfileCtx) SetDevfileContent() error {
 
 	var err error
 	var data []byte
@@ -74,7 +72,7 @@ func (d *DevfileCtx) SetDevfileContent(devfileUtilsClient parserUtil.DevfileUtil
 		if d.token != "" {
 			params.Token = d.token
 		}
-		data, err = devfileUtilsClient.DownloadInMemory(params)
+		data, err = util.DownloadInMemory(params)
 		if err != nil {
 			return errors.Wrap(err, "error getting devfile info from url")
 		}
