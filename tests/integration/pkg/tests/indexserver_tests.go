@@ -149,6 +149,23 @@ var _ = ginkgo.Describe("[Verify index server is working properly]", func() {
 		}
 	})
 
+	ginkgo.It("/index?provider=Red%22Hat&resources=.zip endpoint should return stacks for provider Red Hat and resources containing .zip partial match", func() {
+		registryIndex := util.GetRegistryIndex(config.Registry + "/index?provider=Red%22Hat&resources=.zip")
+
+		hasStacks := false
+		for _, index := range registryIndex {
+			if index.Type == indexSchema.StackDevfileType {
+				hasStacks = true
+			}
+			gomega.Expect(index.Resources).Should(gomega.ContainElement(gomega.ContainSubstring(".zip")))
+			gomega.Expect(index.Provider).Should(gomega.Equal("Red Hat"))
+		}
+
+		if len(registryIndex) > 0 {
+			gomega.Expect(hasStacks).To(gomega.BeTrue())
+		}
+	})
+
 	// v2index tests
 	ginkgo.It("/v2index endpoint should return list of stacks", func() {
 		registryIndex := util.GetRegistryIndex(config.Registry + "/v2index")
