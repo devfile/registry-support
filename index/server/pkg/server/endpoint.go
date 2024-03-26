@@ -541,25 +541,28 @@ func buildIndexAPIResponse(c *gin.Context, indexType string, wantV1Index bool, p
 	if wantV1Index {
 		index = util.ConvertToOldIndexFormat(index)
 	} else {
-		minSchemaVersion := c.Query("minSchemaVersion")
-		maxSchemaVersion := c.Query("maxSchemaVersion")
-		if maxSchemaVersion != "" || minSchemaVersion != "" {
+		minSchemaVersion := params.MinSchemaVersion
+		maxSchemaVersion := params.MaxSchemaVersion
+		minVersion := params.MinVersion
+		maxVersion := params.MaxVersion
+
+		if util.StrPtrIsSet(maxSchemaVersion) || util.StrPtrIsSet(minSchemaVersion) {
 			// check if schema version filters are in valid format.
 			// should include major and minor versions as well as an optional bugfix version. e.g. 2.1 or 2.1.0
-			if minSchemaVersion != "" {
-				matched, err := regexp.MatchString(`^([2-9])\.([0-9]+)(\.[0-9]+)?$`, minSchemaVersion)
+			if util.StrPtrIsSet(minSchemaVersion) {
+				matched, err := regexp.MatchString(`^([2-9])\.([0-9]+)(\.[0-9]+)?$`, *minSchemaVersion)
 				if !matched || err != nil {
 					c.JSON(http.StatusBadRequest, gin.H{
-						"status": fmt.Sprintf("minSchemaVersion %s is not valid, version format should be '+2.x' or '+2.x.x'. %v", minSchemaVersion, err),
+						"status": fmt.Sprintf("minSchemaVersion %s is not valid, version format should be '+2.x' or '+2.x.x'. %v", *minSchemaVersion, err),
 					})
 					return
 				}
 			}
-			if maxSchemaVersion != "" {
-				matched, err := regexp.MatchString(`^([2-9])\.([0-9]+)(\.[0-9]+)?$`, maxSchemaVersion)
+			if util.StrPtrIsSet(maxSchemaVersion) {
+				matched, err := regexp.MatchString(`^([2-9])\.([0-9]+)(\.[0-9]+)?$`, *maxSchemaVersion)
 				if !matched || err != nil {
 					c.JSON(http.StatusBadRequest, gin.H{
-						"status": fmt.Sprintf("maxSchemaVersion %s is not valid, version format should be '+2.x' or '+2.x.x'. %v", maxSchemaVersion, err),
+						"status": fmt.Sprintf("maxSchemaVersion %s is not valid, version format should be '+2.x' or '+2.x.x'. %v", *maxSchemaVersion, err),
 					})
 					return
 				}
@@ -569,6 +572,37 @@ func buildIndexAPIResponse(c *gin.Context, indexType string, wantV1Index bool, p
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{
 					"status": fmt.Sprintf("failed to apply schema version filter: %v", err),
+				})
+				return
+			}
+		}
+
+		if util.StrPtrIsSet(minVersion) || util.StrPtrIsSet(maxVersion) {
+			// check if version filters are in valid format.
+			// should include major and minor versions as well as an optional bugfix version. e.g. 2.1 or 2.1.0
+			if util.StrPtrIsSet(minVersion) {
+				matched, err := regexp.MatchString(`^([0-9])\.([0-9]+)(\.[0-9]+)?$`, *minVersion)
+				if !matched || err != nil {
+					c.JSON(http.StatusBadRequest, gin.H{
+						"status": fmt.Sprintf("minVersion %s is not valid, version format should be 'x.x' or 'x.x.x'. %v", *minVersion, err),
+					})
+					return
+				}
+			}
+			if util.StrPtrIsSet(maxVersion) {
+				matched, err := regexp.MatchString(`^([0-9]+)\.([0-9]+)(\.[0-9]+)?$`, *maxVersion)
+				if !matched || err != nil {
+					c.JSON(http.StatusBadRequest, gin.H{
+						"status": fmt.Sprintf("maxVersion %s is not valid, version format should be 'x.x' or 'x.x.x'. %v", *maxVersion, err),
+					})
+					return
+				}
+			}
+
+			index, err = util.FilterDevfileVersion(index, minVersion, maxVersion)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"status": fmt.Sprintf("failed to apply version filter: %v", err),
 				})
 				return
 			}
@@ -680,7 +714,7 @@ func fetchDevfile(c *gin.Context, name string, version string) ([]byte, indexSch
 			}
 		}
 
-		index, err = util.FilterDevfileSchemaVersion(index, minSchemaVersion, maxSchemaVersion)
+		index, err = util.FilterDevfileSchemaVersion(index, &minSchemaVersion, &maxSchemaVersion)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"status": fmt.Sprintf("failed to apply schema version filter: %v", err),

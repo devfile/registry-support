@@ -2154,7 +2154,193 @@ func TestFilterDevfileSchemaVersion(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			gotIndex, gotErr := FilterDevfileSchemaVersion(test.index, test.minSchemaVersion, test.maxSchemaVersion)
+			gotIndex, gotErr := FilterDevfileSchemaVersion(test.index, &test.minSchemaVersion, &test.maxSchemaVersion)
+			if gotErr != nil {
+				if gotIndex != nil {
+					t.Errorf("Unexpected non-nil index on error: %v", gotIndex)
+				}
+				t.Errorf("Unexpected error: %v", gotErr)
+			} else if !reflect.DeepEqual(gotIndex, test.wantIndex) {
+				t.Errorf("Got: %v, Expected: %v", gotIndex, test.wantIndex)
+			}
+		})
+	}
+}
+
+func TestFilterDevfileVersion(t *testing.T) {
+
+	tests := []struct {
+		name       string
+		index      []indexSchema.Schema
+		minVersion string
+		maxVersion string
+		wantIndex  []indexSchema.Schema
+	}{
+		{
+			name: "only minVersion",
+			index: []indexSchema.Schema{
+				{
+					Name: "devfileA",
+					Versions: []indexSchema.Version{
+						{
+							Version:       "1.0.0",
+							SchemaVersion: "2.0.0",
+						},
+						{
+							Version:       "1.1.0",
+							SchemaVersion: "2.1.0",
+						},
+						{
+							Version:       "1.2.0",
+							SchemaVersion: "2.2.0",
+						},
+					},
+				},
+				{
+					Name: "devfileB",
+					Versions: []indexSchema.Version{
+						{
+							Version:       "1.0.0",
+							SchemaVersion: "2.0.0",
+						},
+					},
+				},
+			},
+			minVersion: "1.1",
+			wantIndex: []indexSchema.Schema{
+				{
+					Name: "devfileA",
+					Versions: []indexSchema.Version{
+						{
+							Version:       "1.1.0",
+							SchemaVersion: "2.1.0",
+						},
+						{
+							Version:       "1.2.0",
+							SchemaVersion: "2.2.0",
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "only maxVersion",
+			index: []indexSchema.Schema{
+				{
+					Name: "devfileA",
+					Versions: []indexSchema.Version{
+						{
+							Version:       "1.0.0",
+							SchemaVersion: "2.0.0",
+						},
+						{
+							Version:       "1.1.0",
+							SchemaVersion: "2.1.0",
+						},
+						{
+							Version:       "1.2.0",
+							SchemaVersion: "2.2.0",
+						},
+					},
+				},
+				{
+					Name: "devfileB",
+					Versions: []indexSchema.Version{
+						{
+							Version:       "1.1.0",
+							SchemaVersion: "2.1.0",
+						},
+					},
+				},
+			},
+			maxVersion: "1.1",
+			wantIndex: []indexSchema.Schema{
+				{
+					Name: "devfileA",
+					Versions: []indexSchema.Version{
+						{
+							Version:       "1.0.0",
+							SchemaVersion: "2.0.0",
+						},
+						{
+							Version:       "1.1.0",
+							SchemaVersion: "2.1.0",
+						},
+					},
+				},
+				{
+					Name: "devfileB",
+					Versions: []indexSchema.Version{
+						{
+							Version:       "1.1.0",
+							SchemaVersion: "2.1.0",
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "both minSchemaVersion and maxSchemaVersion",
+			index: []indexSchema.Schema{
+				{
+					Name: "devfileA",
+					Versions: []indexSchema.Version{
+						{
+							Version:       "1.0.0",
+							SchemaVersion: "2.0.0",
+						},
+						{
+							Version:       "1.1.0",
+							SchemaVersion: "2.1.0",
+						},
+						{
+							Version:       "1.2.0",
+							SchemaVersion: "2.2.0",
+						},
+					},
+				},
+				{
+					Name: "devfileB",
+					Versions: []indexSchema.Version{
+						{
+							Version:       "1.1.0",
+							SchemaVersion: "2.1.0",
+						},
+					},
+				},
+			},
+			minVersion: "1.1",
+			maxVersion: "1.2",
+			wantIndex: []indexSchema.Schema{
+				{
+					Name: "devfileA",
+					Versions: []indexSchema.Version{
+						{
+							Version:       "1.1.0",
+							SchemaVersion: "2.1.0",
+						},
+						{
+							Version:       "1.2.0",
+							SchemaVersion: "2.2.0",
+						},
+					},
+				},
+				{
+					Name: "devfileB",
+					Versions: []indexSchema.Version{
+						{
+							Version:       "1.1.0",
+							SchemaVersion: "2.1.0",
+						},
+					},
+				},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			gotIndex, gotErr := FilterDevfileVersion(test.index, &test.minVersion, &test.maxVersion)
 			if gotErr != nil {
 				if gotIndex != nil {
 					t.Errorf("Unexpected non-nil index on error: %v", gotIndex)
