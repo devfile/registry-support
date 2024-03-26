@@ -723,6 +723,7 @@ func TestServeDevfile(t *testing.T) {
 			w := httptest.NewRecorder()
 			c, _ := gin.CreateTestContext(w)
 
+			c.Request = httptest.NewRequest(http.MethodGet, fmt.Sprintf("/devfile/%s", test.params.ByName("stack")), nil)
 			c.Params = append(c.Params, test.params...)
 
 			server.ServeDevfile(c)
@@ -868,7 +869,11 @@ func TestServeDevfileWithVersion(t *testing.T) {
 			w := httptest.NewRecorder()
 			c, _ := gin.CreateTestContext(w)
 
-			c.Request = httptest.NewRequest(http.MethodGet, "/devfiles", nil)
+			c.Request = httptest.NewRequest(
+				http.MethodGet,
+				fmt.Sprintf("/devfile/%s/%s", test.params.ByName("stack"), test.params.ByName("version")),
+				nil,
+			)
 			c.Params = append(c.Params, test.params...)
 			c.Request.URL.RawQuery = test.query.Encode()
 
@@ -979,6 +984,11 @@ func TestServeDevfileStarterProject(t *testing.T) {
 			w := httptest.NewRecorder()
 			c, _ := gin.CreateTestContext(w)
 
+			c.Request = httptest.NewRequest(
+				http.MethodGet,
+				fmt.Sprintf("/devfile/%s/starter-projects/%s", test.params.ByName("stack"), test.params.ByName("starterProject")),
+				nil,
+			)
 			c.Params = append(c.Params, test.params...)
 
 			server.ServeDevfileStarterProject(c)
@@ -1085,6 +1095,15 @@ func TestServeDevfileStarterProjectWithVersion(t *testing.T) {
 			w := httptest.NewRecorder()
 			c, _ := gin.CreateTestContext(w)
 
+			c.Request = httptest.NewRequest(
+				http.MethodGet,
+				fmt.Sprintf("/devfile/%s/%s/starter-projects/%s",
+					test.params.ByName("stack"),
+					test.params.ByName("version"),
+					test.params.ByName("starterProject"),
+				),
+				nil,
+			)
 			c.Params = append(c.Params, test.params...)
 
 			server.ServeDevfileStarterProjectWithVersion(c)

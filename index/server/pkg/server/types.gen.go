@@ -302,6 +302,42 @@ type MethodNotAllowedResponse struct {
 // V2IndexResponse defines model for v2IndexResponse.
 type V2IndexResponse = schema.Schema
 
+// ServeDevfileParams defines parameters for ServeDevfile.
+type ServeDevfileParams struct {
+	// MinSchemaVersion The minimum devfile schema version
+	MinSchemaVersion *MinSchemaVersionParam `form:"minSchemaVersion,omitempty" json:"minSchemaVersion,omitempty"`
+
+	// MaxSchemaVersion The maximum devfile schema version
+	MaxSchemaVersion *MaxSchemaVersionParam `form:"maxSchemaVersion,omitempty" json:"maxSchemaVersion,omitempty"`
+}
+
+// ServeDevfileStarterProjectParams defines parameters for ServeDevfileStarterProject.
+type ServeDevfileStarterProjectParams struct {
+	// MinSchemaVersion The minimum devfile schema version
+	MinSchemaVersion *MinSchemaVersionParam `form:"minSchemaVersion,omitempty" json:"minSchemaVersion,omitempty"`
+
+	// MaxSchemaVersion The maximum devfile schema version
+	MaxSchemaVersion *MaxSchemaVersionParam `form:"maxSchemaVersion,omitempty" json:"maxSchemaVersion,omitempty"`
+}
+
+// ServeDevfileWithVersionParams defines parameters for ServeDevfileWithVersion.
+type ServeDevfileWithVersionParams struct {
+	// MinSchemaVersion The minimum devfile schema version
+	MinSchemaVersion *MinSchemaVersionParam `form:"minSchemaVersion,omitempty" json:"minSchemaVersion,omitempty"`
+
+	// MaxSchemaVersion The maximum devfile schema version
+	MaxSchemaVersion *MaxSchemaVersionParam `form:"maxSchemaVersion,omitempty" json:"maxSchemaVersion,omitempty"`
+}
+
+// ServeDevfileStarterProjectWithVersionParams defines parameters for ServeDevfileStarterProjectWithVersion.
+type ServeDevfileStarterProjectWithVersionParams struct {
+	// MinSchemaVersion The minimum devfile schema version
+	MinSchemaVersion *MinSchemaVersionParam `form:"minSchemaVersion,omitempty" json:"minSchemaVersion,omitempty"`
+
+	// MaxSchemaVersion The maximum devfile schema version
+	MaxSchemaVersion *MaxSchemaVersionParam `form:"maxSchemaVersion,omitempty" json:"maxSchemaVersion,omitempty"`
+}
+
 // ServeDevfileIndexV1Params defines parameters for ServeDevfileIndexV1.
 type ServeDevfileIndexV1Params struct {
 	// Name Search string to filter stacks by their name

@@ -407,6 +407,8 @@ paths:
             type: string
             x-go-name: Stack
           x-go-name: Stack
+        - $ref: '#/components/parameters/minSchemaVersionParam'
+        - $ref: '#/components/parameters/maxSchemaVersionParam'
       requestBody:
         description: The request body must be empty.
         content: {}
@@ -483,6 +485,8 @@ paths:
             type: string
             x-go-name: Version
           x-go-name: Version
+        - $ref: '#/components/parameters/minSchemaVersionParam'
+        - $ref: '#/components/parameters/maxSchemaVersionParam'
       requestBody:
         description: The request body must be empty.
         content: {}
@@ -583,6 +587,8 @@ paths:
             type: string
             x-go-name: StarterProject
           x-go-name: StarterProject
+        - $ref: '#/components/parameters/minSchemaVersionParam'
+        - $ref: '#/components/parameters/maxSchemaVersionParam'
       responses:
         '200':
           $ref: '#/components/responses/starterProjectResponse'
@@ -690,6 +696,8 @@ paths:
             type: string
             x-go-name: StarterProject
           x-go-name: StarterProject
+        - $ref: '#/components/parameters/minSchemaVersionParam'
+        - $ref: '#/components/parameters/maxSchemaVersionParam'
       responses:
         '200':
           $ref: '#/components/responses/starterProjectResponse'
