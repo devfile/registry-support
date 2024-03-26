@@ -286,6 +286,30 @@ var _ = ginkgo.Describe("[Verify index server is working properly]", func() {
 		}
 	})
 
+	ginkgo.It("/v2index?minVersion=1.1&maxVersion=1.1 endpoint should return stacks for devfile version 1.1.0", func() {
+		registryIndex := util.GetRegistryIndex(config.Registry + "/v2index/all?minVersion=1.1&maxVersion=1.1")
+
+		for _, index := range registryIndex {
+			if len(index.Versions) != 0 {
+				for _, version := range index.Versions {
+					gomega.Expect(version.Version).Should(gomega.Equal("1.1.0"))
+				}
+			}
+		}
+	})
+
+	ginkgo.It("/v2index?minVersion=1.1.0&maxVersion=1.1.0 endpoint should return stacks for devfile version 1.1.0", func() {
+		registryIndex := util.GetRegistryIndex(config.Registry + "/v2index/all?minVersion=1.1.0&maxVersion=1.1.0")
+
+		for _, index := range registryIndex {
+			if len(index.Versions) != 0 {
+				for _, version := range index.Versions {
+					gomega.Expect(version.Version).Should(gomega.Equal("1.1.0"))
+				}
+			}
+		}
+	})
+
 	ginkgo.It("/devfiles/<devfile> endpoint should return a devfile for stacks", func() {
 		parserArgs := parser.ParserArgs{
 			URL: config.Registry + "/devfiles/nodejs",
