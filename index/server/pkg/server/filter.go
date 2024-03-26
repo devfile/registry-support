@@ -22,23 +22,6 @@ import (
 	"github.com/devfile/registry-support/index/server/pkg/util"
 )
 
-const checkEvalRecursively = true
-
-func checkChildrenEval(result *util.FilterResult) error {
-	if !result.IsChildrenEval(checkEvalRecursively) {
-		errMsg := "there was a problem evaluating and logically filters"
-
-		if result.Error != nil {
-			errMsg += ", see error for details: %v"
-			return fmt.Errorf(errMsg, result.Error)
-		}
-
-		return fmt.Errorf(errMsg)
-	}
-
-	return nil
-}
-
 func filterFieldbyParam(index []indexSchema.Schema, wantV1Index bool, paramName string, paramValue any) util.FilterResult {
 	switch typedValue := paramValue.(type) {
 	case string:
@@ -50,7 +33,7 @@ func filterFieldbyParam(index []indexSchema.Schema, wantV1Index bool, paramName 
 
 func filterFieldsByParams(index []indexSchema.Schema, wantV1Index bool, params IndexParams) ([]indexSchema.Schema, error) {
 	paramsMap := util.StructToMap(params)
-	results := []*util.FilterResult{}
+	results := []util.FilterResult{}
 	var andResult util.FilterResult
 
 	if len(paramsMap) == 0 {
@@ -60,11 +43,11 @@ func filterFieldsByParams(index []indexSchema.Schema, wantV1Index bool, params I
 	for paramName, paramValue := range paramsMap {
 		if util.IsFieldParameter(paramName) {
 			result := filterFieldbyParam(index, wantV1Index, paramName, paramValue)
-			results = append(results, &result)
+			results = append(results, result)
 		} else if util.IsArrayParameter(paramName) {
 			typedValues := paramValue.([]string)
 			result := util.FilterDevfileStrArrayField(index, paramName, typedValues, wantV1Index)
-			results = append(results, &result)
+			results = append(results, result)
 		}
 	}
 
@@ -73,14 +56,6 @@ func filterFieldsByParams(index []indexSchema.Schema, wantV1Index bool, params I
 	}
 
 	andResult = util.AndFilter(results...)
-
-	if err := andResult.Eval(); err != nil {
-		return []indexSchema.Schema{}, err
-	}
-
-	if err := checkChildrenEval(&andResult); err != nil {
-		return []indexSchema.Schema{}, err
-	}
 
 	return andResult.Index, andResult.Error
 }

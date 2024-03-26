@@ -16,7 +16,6 @@
 package server
 
 import (
-	"fmt"
 	"reflect"
 	"sort"
 	"strings"
@@ -162,143 +161,6 @@ var testIndexSchema = []indexSchema.Schema{
 	{
 		Name: "devfileD",
 	},
-}
-
-func TestCheckChildrenEval(t *testing.T) {
-	tests := []struct {
-		name    string
-		result  *util.FilterResult
-		wantErr bool
-	}{
-		{
-			name: "Case 1: Test non-recursive check",
-			result: util.MakeMockFilterResult(
-				nil,
-				true,
-				&util.FilterResult{
-					IsEval: true,
-				},
-				&util.FilterResult{
-					IsEval: true,
-				},
-			),
-		},
-		{
-			name: "Case 2: Test recursive check",
-			result: util.MakeMockFilterResult(
-				nil,
-				true,
-				&util.FilterResult{
-					IsEval: true,
-				},
-				&util.FilterResult{
-					IsEval: true,
-				},
-				util.MakeMockFilterResult(
-					nil,
-					true,
-					&util.FilterResult{
-						IsEval: true,
-					},
-				),
-			),
-		},
-		{
-			name: "Case 3: Test non-recursive fail",
-			result: util.MakeMockFilterResult(
-				nil,
-				true,
-				&util.FilterResult{
-					IsEval: true,
-				},
-				&util.FilterResult{
-					IsEval: false,
-				},
-			),
-			wantErr: true,
-		},
-		{
-			name: "Case 4: Test non-recursive fail with a result error",
-			result: util.MakeMockFilterResult(
-				nil,
-				true,
-				&util.FilterResult{
-					IsEval: true,
-				},
-				&util.FilterResult{
-					IsEval: false,
-					Error:  fmt.Errorf("failed to filter"),
-				},
-			),
-			wantErr: true,
-		},
-		{
-			name: "Case 5: Test recursive fail",
-			result: util.MakeMockFilterResult(
-				nil,
-				true,
-				&util.FilterResult{
-					IsEval: true,
-				},
-				&util.FilterResult{
-					IsEval: true,
-				},
-				util.MakeMockFilterResult(
-					nil,
-					true,
-					&util.FilterResult{
-						IsEval: false,
-					},
-				),
-			),
-			wantErr: true,
-		},
-		{
-			name: "Case 6: Test parent fail",
-			result: util.MakeMockFilterResult(
-				nil,
-				false,
-				&util.FilterResult{
-					IsEval: true,
-				},
-				&util.FilterResult{
-					IsEval: true,
-				},
-				util.MakeMockFilterResult(
-					nil,
-					true,
-					&util.FilterResult{
-						IsEval: true,
-					},
-				),
-			),
-			wantErr: true,
-		},
-		{
-			name: "Case 7: Test empty children",
-			result: util.MakeMockFilterResult(
-				nil,
-				true,
-			),
-		},
-		{
-			name: "Case 8: Test empty children fail",
-			result: util.MakeMockFilterResult(
-				nil,
-				false,
-			),
-			wantErr: true,
-		},
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			err := checkChildrenEval(test.result)
-			if !test.wantErr && err != nil {
-				t.Errorf("unexpected error: %v", err)
-			}
-		})
-	}
 }
 
 func TestFilterFieldbyParam(t *testing.T) {
@@ -523,14 +385,6 @@ func TestFilterFieldbyParam(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			gotResult := filterFieldbyParam(test.index, test.v1Index, test.paramName, test.paramValue)
-			err := gotResult.Eval()
-			if err != nil || !gotResult.IsEval {
-				if gotResult.Error != nil {
-					t.Errorf("Unexpected error while evaluating: %v", gotResult.Error)
-				}
-				t.Errorf("Unexpected unevaluated result: %v", gotResult)
-				return
-			}
 
 			if gotResult.Error != nil {
 				t.Errorf("unexpected error: %v", gotResult.Error)

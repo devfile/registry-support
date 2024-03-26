@@ -91,55 +91,12 @@ const (
 
 // FilterResult result entity of filtering the index schema
 type FilterResult struct {
-	filterFn func(*FilterResult)
-	children []*FilterResult
-
 	// Name of filter
 	Name string
 	// Index schema result
 	Index []indexSchema.Schema
 	// First error returned in result
 	Error error
-	// Is the FilterResult evaluated
-	IsEval bool
-}
-
-// Eval evaluates the filter results
-func (fr *FilterResult) Eval() error {
-	if fr == nil {
-		return fmt.Errorf("nil set filter result cannot be evaluated")
-	} else if fr.filterFn == nil {
-		return fmt.Errorf("filter result '%s' cannot be evaluated due to no set filter function", fr.Name)
-	}
-
-	fr.filterFn(fr)
-	fr.IsEval = true
-	return nil
-}
-
-// IsChildrenEval checks children results if they are evaluated yet, if parent caller is unevaluated returns
-// false, if parent has no children results then returns true. If recurse is true check children of children
-// until any root conditions are hit otherwise only direct children will be checked.
-func (fr *FilterResult) IsChildrenEval(recurse bool) bool {
-	if !fr.IsEval {
-		return false
-	} else if len(fr.children) == 0 {
-		return true
-	}
-	isEval := true
-
-	for _, child := range fr.children {
-		if !child.IsEval {
-			isEval = false
-			break
-		}
-
-		if recurse && len(child.children) > 0 {
-			isEval = child.IsChildrenEval(true)
-		}
-	}
-
-	return isEval
 }
 
 // FilterOptions provides filtering options to filters operations
@@ -211,143 +168,135 @@ func fuzzyMatch(a, b string) bool {
 }
 
 // filterDevfileFieldFuzzy filters devfiles based on fuzzy filtering of string fields
-func filterDevfileFieldFuzzy(index []indexSchema.Schema, requestedValue string, options FilterOptions[string]) FilterResult {
-	return FilterResult{
-		filterFn: func(fr *FilterResult) {
-			filteredIndex := deepcopy.Copy(index).([]indexSchema.Schema)
+func filterDevfileFieldFuzzy(index []indexSchema.Schema, requestedValue string, options FilterOptions[string]) []indexSchema.Schema {
+	filteredIndex := deepcopy.Copy(index).([]indexSchema.Schema)
 
-			if options.GetFromIndexField != nil || options.GetFromVersionField != nil {
-				for i := 0; i < len(filteredIndex); i++ {
-					toFilterOutIndex := false
+	if options.GetFromIndexField != nil || options.GetFromVersionField != nil {
+		for i := 0; i < len(filteredIndex); i++ {
+			toFilterOutIndex := false
 
-					if options.GetFromIndexField != nil {
-						indexValue := options.GetFromIndexField(&filteredIndex[i])
-						if !fuzzyMatch(indexValue, requestedValue) {
-							toFilterOutIndex = true
-						}
-					} else {
-						toFilterOutIndex = true
+			if options.GetFromIndexField != nil {
+				indexValue := options.GetFromIndexField(&filteredIndex[i])
+				if !fuzzyMatch(indexValue, requestedValue) {
+					toFilterOutIndex = true
+				}
+			} else {
+				toFilterOutIndex = true
+			}
+
+			if !options.V1Index && options.GetFromVersionField != nil {
+				filteredVersions := deepcopy.Copy(filteredIndex[i].Versions).([]indexSchema.Version)
+				for versionIndex := 0; versionIndex < len(filteredVersions); versionIndex++ {
+					versionValue := options.GetFromVersionField(&filteredVersions[versionIndex])
+					if !fuzzyMatch(versionValue, requestedValue) {
+						filterOut(&filteredVersions, &versionIndex)
 					}
+				}
 
-					if !options.V1Index && options.GetFromVersionField != nil {
-						filteredVersions := deepcopy.Copy(filteredIndex[i].Versions).([]indexSchema.Version)
-						for versionIndex := 0; versionIndex < len(filteredVersions); versionIndex++ {
-							versionValue := options.GetFromVersionField(&filteredVersions[versionIndex])
-							if !fuzzyMatch(versionValue, requestedValue) {
-								filterOut(&filteredVersions, &versionIndex)
-							}
-						}
-
-						if len(filteredVersions) != 0 {
-							filteredIndex[i].Versions = filteredVersions
-							toFilterOutIndex = false
-						}
-					}
-
-					if toFilterOutIndex {
-						filterOut(&filteredIndex, &i)
-					}
+				if len(filteredVersions) != 0 {
+					filteredIndex[i].Versions = filteredVersions
+					toFilterOutIndex = false
 				}
 			}
 
-			fr.Index = filteredIndex
-		},
+			if toFilterOutIndex {
+				filterOut(&filteredIndex, &i)
+			}
+		}
 	}
+
+	return filteredIndex
 }
 
 // filterDevfileFieldFuzzy filters devfiles based on fuzzy filtering of string array fields
-func filterDevfileArrayFuzzy(index []indexSchema.Schema, requestedValues []string, options FilterOptions[[]string]) FilterResult {
-	return FilterResult{
-		filterFn: func(fr *FilterResult) {
-			filteredIndex := deepcopy.Copy(index).([]indexSchema.Schema)
+func filterDevfileArrayFuzzy(index []indexSchema.Schema, requestedValues []string, options FilterOptions[[]string]) []indexSchema.Schema {
+	filteredIndex := deepcopy.Copy(index).([]indexSchema.Schema)
 
-			if options.GetFromIndexField != nil || options.GetFromVersionField != nil {
-				for i := 0; i < len(filteredIndex); i++ {
-					toFilterOutIndex := false
+	if options.GetFromIndexField != nil || options.GetFromVersionField != nil {
+		for i := 0; i < len(filteredIndex); i++ {
+			toFilterOutIndex := false
 
-					if options.GetFromIndexField != nil {
-						fieldValues := options.GetFromIndexField(&filteredIndex[i])
+			if options.GetFromIndexField != nil {
+				fieldValues := options.GetFromIndexField(&filteredIndex[i])
 
-						// If index schema field is not empty perform fuzzy filtering
-						// else if filtering out based on empty fields is set, set index schema to be filtered out
-						// (after version filtering if applicable)
-						if !indexFieldEmptyHandler(fieldValues, requestedValues, options) {
-							matchAll := true
-							for _, requestedValue := range requestedValues {
-								matchFound := false
+				// If index schema field is not empty perform fuzzy filtering
+				// else if filtering out based on empty fields is set, set index schema to be filtered out
+				// (after version filtering if applicable)
+				if !indexFieldEmptyHandler(fieldValues, requestedValues, options) {
+					matchAll := true
+					for _, requestedValue := range requestedValues {
+						matchFound := false
 
-								for _, fieldValue := range fieldValues {
-									if fuzzyMatch(fieldValue, requestedValue) {
-										matchFound = true
-										break
-									}
-								}
-
-								if !matchFound {
-									matchAll = false
-									break
-								}
-							}
-							if !matchAll {
-								toFilterOutIndex = true
-							}
-						} else if options.FilterOutEmpty {
-							toFilterOutIndex = true
-						}
-					}
-
-					// go through each version's tags if multi-version stack is supported
-					if !options.V1Index && options.GetFromVersionField != nil {
-						filteredVersions := deepcopy.Copy(filteredIndex[i].Versions).([]indexSchema.Version)
-						for versionIndex := 0; versionIndex < len(filteredVersions); versionIndex++ {
-							fieldValues := options.GetFromVersionField(&filteredVersions[versionIndex])
-
-							// If version schema field is not empty perform fuzzy filtering
-							// else if filtering out based on empty fields is set, filter out version schema
-							if !versionFieldEmptyHandler(fieldValues, requestedValues, options) {
-								matchAll := true
-								for _, requestedValue := range requestedValues {
-									matchFound := false
-
-									for _, fieldValue := range fieldValues {
-										if fuzzyMatch(fieldValue, requestedValue) {
-											matchFound = true
-											break
-										}
-									}
-
-									if !matchFound {
-										matchAll = false
-										break
-									}
-								}
-								if !matchAll {
-									filterOut(&filteredVersions, &versionIndex)
-								}
-							} else if options.FilterOutEmpty {
-								filterOut(&filteredVersions, &versionIndex)
+						for _, fieldValue := range fieldValues {
+							if fuzzyMatch(fieldValue, requestedValue) {
+								matchFound = true
+								break
 							}
 						}
 
-						// If the filtered versions is not empty, set to the filtered index result
-						// Else if empty and index field filtering was not performed ensure index entry is filtered out
-						if len(filteredVersions) != 0 {
-							filteredIndex[i].Versions = filteredVersions
-							toFilterOutIndex = false
-						} else if options.GetFromIndexField == nil {
-							toFilterOutIndex = true
+						if !matchFound {
+							matchAll = false
+							break
 						}
 					}
-
-					if toFilterOutIndex {
-						filterOut(&filteredIndex, &i)
+					if !matchAll {
+						toFilterOutIndex = true
 					}
+				} else if options.FilterOutEmpty {
+					toFilterOutIndex = true
 				}
 			}
 
-			fr.Index = filteredIndex
-		},
+			// go through each version's tags if multi-version stack is supported
+			if !options.V1Index && options.GetFromVersionField != nil {
+				filteredVersions := deepcopy.Copy(filteredIndex[i].Versions).([]indexSchema.Version)
+				for versionIndex := 0; versionIndex < len(filteredVersions); versionIndex++ {
+					fieldValues := options.GetFromVersionField(&filteredVersions[versionIndex])
+
+					// If version schema field is not empty perform fuzzy filtering
+					// else if filtering out based on empty fields is set, filter out version schema
+					if !versionFieldEmptyHandler(fieldValues, requestedValues, options) {
+						matchAll := true
+						for _, requestedValue := range requestedValues {
+							matchFound := false
+
+							for _, fieldValue := range fieldValues {
+								if fuzzyMatch(fieldValue, requestedValue) {
+									matchFound = true
+									break
+								}
+							}
+
+							if !matchFound {
+								matchAll = false
+								break
+							}
+						}
+						if !matchAll {
+							filterOut(&filteredVersions, &versionIndex)
+						}
+					} else if options.FilterOutEmpty {
+						filterOut(&filteredVersions, &versionIndex)
+					}
+				}
+
+				// If the filtered versions is not empty, set to the filtered index result
+				// Else if empty and index field filtering was not performed ensure index entry is filtered out
+				if len(filteredVersions) != 0 {
+					filteredIndex[i].Versions = filteredVersions
+					toFilterOutIndex = false
+				} else if options.GetFromIndexField == nil {
+					toFilterOutIndex = true
+				}
+			}
+
+			if toFilterOutIndex {
+				filterOut(&filteredIndex, &i)
+			}
+		}
 	}
+
+	return filteredIndex
 }
 
 func IsFieldParameter(name string) bool {
@@ -478,10 +427,10 @@ func FilterDevfileVersion(index []indexSchema.Schema, minVersion, maxVersion *st
 
 // FilterDevfileStrField filters by given string field, returns unchanged index if given parameter name is unrecognized
 func FilterDevfileStrField(index []indexSchema.Schema, paramName, requestedValue string, v1Index bool) FilterResult {
+	filterName := fmt.Sprintf("Fuzzy_Field_Filter_On_%s", paramName)
 	options := FilterOptions[string]{
 		V1Index: v1Index,
 	}
-	var result FilterResult
 	switch paramName {
 	case PARAM_NAME:
 		options.GetFromIndexField = func(s *indexSchema.Schema) string {
@@ -567,20 +516,23 @@ func FilterDevfileStrField(index []indexSchema.Schema, paramName, requestedValue
 		}
 	default:
 		return FilterResult{
-			filterFn: func(fr *FilterResult) {
-				fr.Index = index
-			},
+			Name:  filterName,
+			Index: index,
 		}
 	}
 
-	result = filterDevfileFieldFuzzy(index, requestedValue, options)
-	result.Name = fmt.Sprintf("Fuzzy_Field_Filter_On_%s", paramName)
-
-	return result
+	return FilterResult{
+		Name:  filterName,
+		Index: filterDevfileFieldFuzzy(index, requestedValue, options),
+	}
 }
 
 // AndFilter filters results of given filters to only overlapping results
-func AndFilter(results ...*FilterResult) FilterResult {
+func AndFilter(results ...FilterResult) FilterResult {
+	schemaCounts := map[string]*struct {
+		count  int
+		schema indexSchema.Schema
+	}{}
 	resultNames := func() []string {
 		names := []string{}
 		for _, result := range results {
@@ -588,76 +540,57 @@ func AndFilter(results ...*FilterResult) FilterResult {
 		}
 		return names
 	}()
-	filterName := fmt.Sprintf("And(%s)", strings.Join(resultNames, ", "))
-	return FilterResult{
-		children: results,
-		filterFn: func(fr *FilterResult) {
-			andResultsMap := map[string]*struct {
-				count  int
-				schema indexSchema.Schema
-			}{}
-			andResults := []indexSchema.Schema{}
-
-			for i := 0; i < len(fr.children); i++ {
-
-				// Evaluates filter if not already evaluated
-				if !fr.children[i].IsEval {
-					err := fr.children[i].Eval()
-					if err != nil {
-						fr.Error = fmt.Errorf("%s within %s", err.Error(), fr.Name)
-						return
-					}
-				}
-
-				// If a filter returns an error, return as overall result
-				if fr.children[i].Error != nil {
-					fr.Error = fr.children[i].Error
-					return
-				}
-
-				for _, schema := range fr.children[i].Index {
-					andResult, found := andResultsMap[schema.Name]
-					// if not found, initize is a seen counter of one and the current seen schema
-					// else increment seen counter and re-assign current seen schema if versions have been filtered
-					if !found {
-						andResultsMap[schema.Name] = &struct {
-							count  int
-							schema indexSchema.Schema
-						}{
-							count:  1,
-							schema: schema,
-						}
-					} else {
-						andResultsMap[schema.Name].count += 1
-						if len(schema.Versions) < len(andResult.schema.Versions) {
-							andResultsMap[schema.Name].schema = schema
-						}
-					}
-				}
-			}
-
-			// build results of filters into new index schema
-			for _, v := range andResultsMap {
-				// if result is in every filter result then add to array
-				if v.count == len(results) {
-					andResults = append(andResults, v.schema)
-				}
-			}
-
-			// set new index schema as the and filter result
-			fr.Index = andResults
-		},
-		Name: filterName,
+	andResult := FilterResult{
+		Name:  fmt.Sprintf("And(%s)", strings.Join(resultNames, ", ")),
+		Index: []indexSchema.Schema{},
 	}
+
+	for _, result := range results {
+		// If a filter returns an error, return as overall result
+		if result.Error != nil {
+			andResult.Error = fmt.Errorf("filter failed on '%s': %v", result.Name, result.Error)
+			return andResult
+		}
+
+		for _, schema := range result.Index {
+			schemaCount, found := schemaCounts[schema.Name]
+			// if not found, initize is a seen counter of one and the current seen schema
+			// else increment seen counter and re-assign current seen schema if versions have been filtered
+			if !found {
+				schemaCounts[schema.Name] = &struct {
+					count  int
+					schema indexSchema.Schema
+				}{
+					count:  1,
+					schema: schema,
+				}
+			} else {
+				schemaCounts[schema.Name].count += 1
+				if len(schema.Versions) < len(schemaCount.schema.Versions) {
+					schemaCounts[schema.Name].schema = schema
+				}
+			}
+		}
+	}
+
+	// build results of filters into new index schema
+	for _, v := range schemaCounts {
+		// if result is in every filter result then add to array
+		if v.count == len(results) {
+			andResult.Index = append(andResult.Index, v.schema)
+		}
+	}
+
+	return andResult
 }
 
 // FilterDevfileStrArrayField filters devfiles based on an array field
 func FilterDevfileStrArrayField(index []indexSchema.Schema, paramName string, requestedValues []string, v1Index bool) FilterResult {
+	filterName := fmt.Sprintf("Fuzzy_Array_Filter_On_%s", paramName)
 	options := FilterOptions[[]string]{
 		FilterOutEmpty: true,
 		V1Index:        v1Index,
 	}
-	var result FilterResult
 	switch paramName {
 	case ARRAY_PARAM_ATTRIBUTE_NAMES:
 		options.GetFromIndexField = func(s *indexSchema.Schema) []string {
@@ -788,14 +721,13 @@ func FilterDevfileStrArrayField(index []indexSchema.Schema, paramName string, re
 		}
 	default:
 		return FilterResult{
-			filterFn: func(fr *FilterResult) {
-				fr.Index = index
-			},
+			Name:  filterName,
+			Index: index,
 		}
 	}
 
-	result = filterDevfileArrayFuzzy(index, requestedValues, options)
-	result.Name = fmt.Sprintf("Fuzzy_Array_Filter_On_%s", paramName)
-
-	return result
+	return FilterResult{
+		Name:  filterName,
+		Index: filterDevfileArrayFuzzy(index, requestedValues, options),
+	}
 }
