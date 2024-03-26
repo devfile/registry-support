@@ -288,3 +288,8 @@ func StructToMap[T any](s T) map[string]any {
 
 	return result
 }
+
+// StrPtrIsSet checks if string pointer is set to a value
+func StrPtrIsSet(ptr *string) bool {
+	return ptr != nil && *ptr != ""
+}

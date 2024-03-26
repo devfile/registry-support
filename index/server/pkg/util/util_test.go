@@ -466,3 +466,35 @@ func TestStructToMap(t *testing.T) {
 		})
 	}
 }
+
+func TestStrPtrIsSet(t *testing.T) {
+	tests := []struct {
+		name string
+		ptr  *string
+		want bool
+	}{
+		{
+			name: "Case 1: string pointer is set",
+			ptr:  pointer.String("test"),
+			want: true,
+		},
+		{
+			name: "Case 2: string is blank",
+			ptr:  pointer.String(""),
+			want: false,
+		},
+		{
+			name: "Case 3: string is nil",
+			want: false,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got := StrPtrIsSet(test.ptr)
+			if got != test.want {
+				t.Errorf("Got: %v, Expected: %v", got, test.want)
+			}
+		})
+	}
+}
