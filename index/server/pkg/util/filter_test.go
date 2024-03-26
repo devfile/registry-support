@@ -1854,30 +1854,6 @@ func TestFuzzyMatch(t *testing.T) {
 			want:   true,
 		},
 		{
-			name:   "Match with period",
-			valueA: "Java Springboot",
-			valueB: "Java Springboot.",
-			want:   true,
-		},
-		{
-			name:   "Match with question mark",
-			valueA: "Java Springboot",
-			valueB: "Java Springboot?",
-			want:   true,
-		},
-		{
-			name:   "Match with exclamation mark",
-			valueA: "Java Springboot",
-			valueB: "Java Springboot!",
-			want:   true,
-		},
-		{
-			name:   "Match using a dash",
-			valueA: "Java Springboot",
-			valueB: "java-springboot",
-			want:   true,
-		},
-		{
 			name:   "Extra space match",
 			valueA: "Java Springboot",
 			valueB: " Java  Springboot ",
@@ -1940,44 +1916,6 @@ func TestFuzzyMatch(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			got := fuzzyMatch(test.valueA, test.valueB)
-			if !reflect.DeepEqual(got, test.want) {
-				t.Errorf("Got: %v, Expected: %v", got, test.want)
-			}
-		})
-	}
-}
-
-func TestPreProcessStringTokens(t *testing.T) {
-	tests := []struct {
-		name  string
-		value string
-		want  []string
-	}{
-		{
-			name:  "Case 1: One Token",
-			value: "Test",
-			want:  []string{"Test"},
-		},
-		{
-			name:  "Case 2: Two Tokens",
-			value: "Test token",
-			want:  []string{"Test", "token"},
-		},
-		{
-			name:  "Case 2: Three Tokens",
-			value: "Test 3 tokens",
-			want:  []string{"Test", "3", "tokens"},
-		},
-		{
-			name:  "Case 3: No tokens (Empty string)",
-			value: "",
-			want:  []string{},
-		},
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			got := preProcessStringTokens(test.value)
 			if !reflect.DeepEqual(got, test.want) {
 				t.Errorf("Got: %v, Expected: %v", got, test.want)
 			}

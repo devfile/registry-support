@@ -199,51 +199,15 @@ func trimExtraSpace(s string) string {
 	return strings.Join(splitStr, " ")
 }
 
-// trimPunc Trims punctuation from a string
-func trimPunc(s string) string {
-	re := regexp.MustCompile(`[^a-zA-Z0-9 ]+`)
-	return strings.TrimSpace(re.ReplaceAllString(s, " "))
-}
-
 // preProcessString pre-process give string to perform fuzzy matching
 func preProcessString(s string) string {
 	sLower := strings.ToLower(s)
-	return trimPunc(trimExtraSpace(sLower))
-}
-
-// preProcessStringTokens gives array of string tokens
-func preProcessStringTokens(s string) []string {
-	if len(s) > 0 {
-		re := regexp.MustCompile(`\s+`)
-		return re.Split(s, -1)
-	}
-
-	return []string{}
-}
-
-// getFuzzySetFromArray gets a fuzzy pre-processed set from given array
-func getFuzzySetFromArray(arr []string) *sets.Set[string] {
-	preProcessedArray := []string{}
-
-	for i := 0; i < len(arr); i++ {
-		preProcessedString := preProcessString(arr[i])
-		tokens := preProcessStringTokens(preProcessedString)
-
-		preProcessedArray = append(preProcessedArray, tokens...)
-		preProcessedArray = append(preProcessedArray, preProcessedString)
-	}
-
-	return sets.From(preProcessedArray)
+	return trimExtraSpace(sLower)
 }
 
 // fuzzyMatch fuzzy compare function
 func fuzzyMatch(a, b string) bool {
 	return strings.Contains(preProcessString(a), preProcessString(b))
-}
-
-// fuzzyMatchInSet fuzzy compare function on fuzzy pre-processed set
-func fuzzyMatchInSet(fuzzySet *sets.Set[string], matchVal string) bool {
-	return fuzzySet.Contains(preProcessString(matchVal))
 }
 
 // filterDevfileFieldFuzzy filters devfiles based on fuzzy filtering of string fields
@@ -308,13 +272,24 @@ func filterDevfileArrayFuzzy(index []indexSchema.Schema, requestedValues []strin
 						// else if filtering out based on empty fields is set, set index schema to be filtered out
 						// (after version filtering if applicable)
 						if !indexFieldEmptyHandler(fieldValues, requestedValues, options) {
-							valuesInIndex := getFuzzySetFromArray(fieldValues)
-
+							matchAll := true
 							for _, requestedValue := range requestedValues {
-								if !fuzzyMatchInSet(valuesInIndex, requestedValue) {
-									toFilterOutIndex = true
+								matchFound := false
+
+								for _, fieldValue := range fieldValues {
+									if fuzzyMatch(fieldValue, requestedValue) {
+										matchFound = true
+										break
+									}
+								}
+
+								if !matchFound {
+									matchAll = false
 									break
 								}
+							}
+							if !matchAll {
+								toFilterOutIndex = true
 							}
 						} else if options.FilterOutEmpty {
 							toFilterOutIndex = true
@@ -330,13 +305,24 @@ func filterDevfileArrayFuzzy(index []indexSchema.Schema, requestedValues []strin
 							// If version schema field is not empty perform fuzzy filtering
 							// else if filtering out based on empty fields is set, filter out version schema
 							if !versionFieldEmptyHandler(fieldValues, requestedValues, options) {
-								valuesInVersion := getFuzzySetFromArray(fieldValues)
-
+								matchAll := true
 								for _, requestedValue := range requestedValues {
-									if !fuzzyMatchInSet(valuesInVersion, requestedValue) {
-										filterOut(&filteredVersions, &versionIndex)
+									matchFound := false
+
+									for _, fieldValue := range fieldValues {
+										if fuzzyMatch(fieldValue, requestedValue) {
+											matchFound = true
+											break
+										}
+									}
+
+									if !matchFound {
+										matchAll = false
 										break
 									}
+								}
+								if !matchAll {
+									filterOut(&filteredVersions, &versionIndex)
 								}
 							} else if options.FilterOutEmpty {
 								filterOut(&filteredVersions, &versionIndex)
