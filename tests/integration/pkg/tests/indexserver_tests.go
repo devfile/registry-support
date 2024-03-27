@@ -170,6 +170,26 @@ var _ = ginkgo.Describe("[Verify index server is working properly]", func() {
 		}
 	})
 
+	ginkgo.It("/index/sample?description=Hello%22World endpoint should return samples with Hello World in the description", func() {
+		if config.IsTestRegistry {
+			registryIndex := util.GetRegistryIndex(config.Registry + "/index/sample?description=Hello%22World")
+
+			hasSamples := false
+			for _, index := range registryIndex {
+				if index.Type == indexSchema.SampleDevfileType {
+					hasSamples = true
+				}
+				gomega.Expect(index.Description).Should(gomega.ContainSubstring("Hello World"))
+			}
+
+			if len(registryIndex) > 0 {
+				gomega.Expect(hasSamples).To(gomega.BeTrue())
+			}
+		} else {
+			ginkgo.Skip("cannot guarantee test outside of test registry, skipping test")
+		}
+	})
+
 	// v2index tests
 	ginkgo.It("/v2index endpoint should return list of stacks", func() {
 		registryIndex := util.GetRegistryIndex(config.Registry + "/v2index")
