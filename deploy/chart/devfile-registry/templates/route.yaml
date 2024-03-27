@@ -19,6 +19,7 @@ metadata:
   labels:
     app: {{ template "devfileregistry.name" . }}
   name: {{ template "devfileregistry.fullname" . }}
+  namespace: {{ .Release.Namespace }}
 spec:
   to:
     kind: Service
