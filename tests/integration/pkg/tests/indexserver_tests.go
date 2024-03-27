@@ -328,6 +328,31 @@ var _ = ginkgo.Describe("[Verify index server is working properly]", func() {
 		}
 	})
 
+	ginkgo.It("/v2index?name=java&default=true endpoint should return stacks for name contains 'java' and is default stack version", func() {
+		if config.IsTestRegistry {
+			registryIndex := util.GetRegistryIndex(config.Registry + "/v2index?name=java&default=true")
+
+			hasStacks := false
+			for _, index := range registryIndex {
+				if index.Type == indexSchema.StackDevfileType {
+					hasStacks = true
+				}
+				gomega.Expect(index.Name).Should(gomega.ContainSubstring("java"))
+
+				gomega.Expect(len(index.Versions) == 1).To(gomega.BeTrue())
+				if len(index.Versions) == 1 {
+					gomega.Expect(index.Versions[0].Default).To(gomega.BeTrue())
+				}
+			}
+
+			if len(registryIndex) > 0 {
+				gomega.Expect(hasStacks).To(gomega.BeTrue())
+			}
+		} else {
+			ginkgo.Skip("cannot guarantee test outside of test registry, skipping test")
+		}
+	})
+
 	ginkgo.It("/v2index?minSchemaVersion=2.1&maxSchemaVersion=2.1 endpoint should return stacks for devfile schema version 2.1.0", func() {
 		registryIndex := util.GetRegistryIndex(config.Registry + "/v2index/all?minSchemaVersion=2.1&maxSchemaVersion=2.1")
 
