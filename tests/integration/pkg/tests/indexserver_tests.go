@@ -353,6 +353,32 @@ var _ = ginkgo.Describe("[Verify index server is working properly]", func() {
 		}
 	})
 
+	ginkgo.It("/v2index/sample?description=java&default=true endpoint should return samples for description contains 'java' and is default sample version", func() {
+		if config.IsTestRegistry {
+			registryIndex := util.GetRegistryIndex(config.Registry + "/v2index/sample?description=java&default=true")
+
+			hasSamples := false
+			for _, index := range registryIndex {
+				if index.Type == indexSchema.SampleDevfileType {
+					hasSamples = true
+				}
+				// strings.ToLower is used to do a non-case match as the fuzzy filtering is non-case sensitive
+				gomega.Expect(strings.ToLower(index.Description)).Should(gomega.ContainSubstring("java"))
+
+				gomega.Expect(len(index.Versions) == 1).To(gomega.BeTrue())
+				if len(index.Versions) == 1 {
+					gomega.Expect(index.Versions[0].Default).To(gomega.BeTrue())
+				}
+			}
+
+			if len(registryIndex) > 0 {
+				gomega.Expect(hasSamples).To(gomega.BeTrue())
+			}
+		} else {
+			ginkgo.Skip("cannot guarantee test outside of test registry, skipping test")
+		}
+	})
+
 	ginkgo.It("/v2index?minSchemaVersion=2.1&maxSchemaVersion=2.1 endpoint should return stacks for devfile schema version 2.1.0", func() {
 		registryIndex := util.GetRegistryIndex(config.Registry + "/v2index/all?minSchemaVersion=2.1&maxSchemaVersion=2.1")
 
