@@ -18,6 +18,7 @@ package tests
 import (
 	"io"
 	"net/http"
+	"strings"
 
 	devfilePkg "github.com/devfile/library/v2/pkg/devfile"
 	"github.com/devfile/library/v2/pkg/devfile/parser"
@@ -184,6 +185,30 @@ var _ = ginkgo.Describe("[Verify index server is working properly]", func() {
 
 			if len(registryIndex) > 0 {
 				gomega.Expect(hasSamples).To(gomega.BeTrue())
+			}
+		} else {
+			ginkgo.Skip("cannot guarantee test outside of test registry, skipping test")
+		}
+	})
+
+	ginkgo.It("/index/all?description=node endpoint should return stacks and samples with node (non-case sensitive) in the description", func() {
+		if config.IsTestRegistry {
+			registryIndex := util.GetRegistryIndex(config.Registry + "/index/all?description=node")
+
+			hasStacks := false
+			hasSamples := false
+			for _, index := range registryIndex {
+				if index.Type == indexSchema.StackDevfileType {
+					hasStacks = true
+				} else if index.Type == indexSchema.SampleDevfileType {
+					hasSamples = true
+				}
+				// strings.ToLower is used to do a non-case match as the fuzzy filtering is non-case sensitive
+				gomega.Expect(strings.ToLower(index.Description)).Should(gomega.ContainSubstring("node"))
+			}
+
+			if len(registryIndex) > 0 {
+				gomega.Expect(hasStacks && hasSamples).To(gomega.BeTrue())
 			}
 		} else {
 			ginkgo.Skip("cannot guarantee test outside of test registry, skipping test")
