@@ -528,7 +528,7 @@ func FilterDevfileStrField(index []indexSchema.Schema, paramName, requestedValue
 }
 
 // AndFilter filters results of given filters to only overlapping results
-func AndFilter(results ...FilterResult) FilterResult {
+func AndFilter(results ...*FilterResult) FilterResult {
 	schemaCounts := map[string]*struct {
 		count  int
 		schema indexSchema.Schema

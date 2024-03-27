@@ -2350,7 +2350,7 @@ func TestFilterDevfileStrField(t *testing.T) {
 func TestAndFilter(t *testing.T) {
 	tests := []struct {
 		name        string
-		filters     []FilterResult
+		filters     []*FilterResult
 		wantIndex   []indexSchema.Schema
 		wantNotEval bool
 		wantErr     bool
@@ -2358,7 +2358,7 @@ func TestAndFilter(t *testing.T) {
 	}{
 		{
 			name: "Test Valid And with same results",
-			filters: []FilterResult{
+			filters: []*FilterResult{
 				{
 					Index: []indexSchema.Schema{
 						{
@@ -2403,7 +2403,7 @@ func TestAndFilter(t *testing.T) {
 		},
 		{
 			name: "Test Valid And with same results v2",
-			filters: []FilterResult{
+			filters: []*FilterResult{
 				{
 					Index: []indexSchema.Schema{
 						{
@@ -2541,7 +2541,7 @@ func TestAndFilter(t *testing.T) {
 		},
 		{
 			name: "Test Valid And with overlapping results",
-			filters: []FilterResult{
+			filters: []*FilterResult{
 				{
 					Index: []indexSchema.Schema{
 						{
@@ -2576,7 +2576,7 @@ func TestAndFilter(t *testing.T) {
 		},
 		{
 			name: "Test Valid And with overlapping results v2",
-			filters: []FilterResult{
+			filters: []*FilterResult{
 				{
 					Index: []indexSchema.Schema{
 						{
@@ -2664,7 +2664,7 @@ func TestAndFilter(t *testing.T) {
 		},
 		{
 			name: "Test Valid And with overlapping results and versions v2",
-			filters: []FilterResult{
+			filters: []*FilterResult{
 				{
 					Index: []indexSchema.Schema{
 						{
@@ -2762,12 +2762,12 @@ func TestAndFilter(t *testing.T) {
 		},
 		{
 			name:      "Test Valid And with no results",
-			filters:   []FilterResult{},
+			filters:   []*FilterResult{},
 			wantIndex: []indexSchema.Schema{},
 		},
 		{
 			name: "Test Invalid And with single error",
-			filters: []FilterResult{
+			filters: []*FilterResult{
 				{
 					Error: fmt.Errorf("A test error"),
 				},
@@ -2778,7 +2778,7 @@ func TestAndFilter(t *testing.T) {
 		},
 		{
 			name: "Test Invalid And with multiple errors",
-			filters: []FilterResult{
+			filters: []*FilterResult{
 				{
 					Error: fmt.Errorf("First test error"),
 				},
@@ -2795,7 +2795,7 @@ func TestAndFilter(t *testing.T) {
 		},
 		{
 			name: "Test Invalid And with valid filters and errors",
-			filters: []FilterResult{
+			filters: []*FilterResult{
 				{
 					Index: []indexSchema.Schema{
 						{
@@ -2835,7 +2835,7 @@ func TestAndFilter(t *testing.T) {
 		},
 		{
 			name: "Test Invalid And with valid filters and errors v2",
-			filters: []FilterResult{
+			filters: []*FilterResult{
 				{
 					Index: []indexSchema.Schema{
 						{

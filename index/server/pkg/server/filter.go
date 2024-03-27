@@ -33,7 +33,7 @@ func filterFieldbyParam(index []indexSchema.Schema, wantV1Index bool, paramName 
 
 func filterFieldsByParams(index []indexSchema.Schema, wantV1Index bool, params IndexParams) ([]indexSchema.Schema, error) {
 	paramsMap := util.StructToMap(params)
-	results := []util.FilterResult{}
+	results := []*util.FilterResult{}
 	var andResult util.FilterResult
 
 	if len(paramsMap) == 0 {
@@ -43,11 +43,11 @@ func filterFieldsByParams(index []indexSchema.Schema, wantV1Index bool, params I
 	for paramName, paramValue := range paramsMap {
 		if util.IsFieldParameter(paramName) {
 			result := filterFieldbyParam(index, wantV1Index, paramName, paramValue)
-			results = append(results, result)
+			results = append(results, &result)
 		} else if util.IsArrayParameter(paramName) {
 			typedValues := paramValue.([]string)
 			result := util.FilterDevfileStrArrayField(index, paramName, typedValues, wantV1Index)
-			results = append(results, result)
+			results = append(results, &result)
 		}
 	}
 
