@@ -150,19 +150,23 @@ var _ = ginkgo.Describe("[Verify index server is working properly]", func() {
 	})
 
 	ginkgo.It("/index?provider=Red%22Hat&resources=.zip endpoint should return stacks for provider Red Hat and resources containing .zip partial match", func() {
-		registryIndex := util.GetRegistryIndex(config.Registry + "/index?provider=Red%22Hat&resources=.zip")
+		if config.IsTestRegistry {
+			registryIndex := util.GetRegistryIndex(config.Registry + "/index?provider=Red%22Hat&resources=.zip")
 
-		hasStacks := false
-		for _, index := range registryIndex {
-			if index.Type == indexSchema.StackDevfileType {
-				hasStacks = true
+			hasStacks := false
+			for _, index := range registryIndex {
+				if index.Type == indexSchema.StackDevfileType {
+					hasStacks = true
+				}
+				gomega.Expect(index.Resources).Should(gomega.ContainElement(gomega.ContainSubstring(".zip")))
+				gomega.Expect(index.Provider).Should(gomega.Equal("Red Hat"))
 			}
-			gomega.Expect(index.Resources).Should(gomega.ContainElement(gomega.ContainSubstring(".zip")))
-			gomega.Expect(index.Provider).Should(gomega.Equal("Red Hat"))
-		}
 
-		if len(registryIndex) > 0 {
-			gomega.Expect(hasStacks).To(gomega.BeTrue())
+			if len(registryIndex) > 0 {
+				gomega.Expect(hasStacks).To(gomega.BeTrue())
+			}
+		} else {
+			ginkgo.Skip("cannot guarantee test outside of test registry, skipping test")
 		}
 	})
 
@@ -304,26 +308,34 @@ var _ = ginkgo.Describe("[Verify index server is working properly]", func() {
 	})
 
 	ginkgo.It("/v2index?minVersion=1.1&maxVersion=1.1 endpoint should return stacks for devfile version 1.1.0", func() {
-		registryIndex := util.GetRegistryIndex(config.Registry + "/v2index/all?minVersion=1.1&maxVersion=1.1")
+		if config.IsTestRegistry {
+			registryIndex := util.GetRegistryIndex(config.Registry + "/v2index/all?minVersion=1.1&maxVersion=1.1")
 
-		for _, index := range registryIndex {
-			if len(index.Versions) != 0 {
-				for _, version := range index.Versions {
-					gomega.Expect(version.Version).Should(gomega.Equal("1.1.0"))
+			for _, index := range registryIndex {
+				if len(index.Versions) != 0 {
+					for _, version := range index.Versions {
+						gomega.Expect(version.Version).Should(gomega.Equal("1.1.0"))
+					}
 				}
 			}
+		} else {
+			ginkgo.Skip("cannot guarantee test outside of test registry, skipping test")
 		}
 	})
 
 	ginkgo.It("/v2index?minVersion=1.1.0&maxVersion=1.1.0 endpoint should return stacks for devfile version 1.1.0", func() {
-		registryIndex := util.GetRegistryIndex(config.Registry + "/v2index/all?minVersion=1.1.0&maxVersion=1.1.0")
+		if config.IsTestRegistry {
+			registryIndex := util.GetRegistryIndex(config.Registry + "/v2index/all?minVersion=1.1.0&maxVersion=1.1.0")
 
-		for _, index := range registryIndex {
-			if len(index.Versions) != 0 {
-				for _, version := range index.Versions {
-					gomega.Expect(version.Version).Should(gomega.Equal("1.1.0"))
+			for _, index := range registryIndex {
+				if len(index.Versions) != 0 {
+					for _, version := range index.Versions {
+						gomega.Expect(version.Version).Should(gomega.Equal("1.1.0"))
+					}
 				}
 			}
+		} else {
+			ginkgo.Skip("cannot guarantee test outside of test registry, skipping test")
 		}
 	})
 
