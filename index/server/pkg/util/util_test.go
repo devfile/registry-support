@@ -23,6 +23,7 @@ import (
 	"testing"
 
 	indexSchema "github.com/devfile/registry-support/index/generator/schema"
+	"k8s.io/utils/pointer"
 )
 
 func TestIsHtmlRequested(t *testing.T) {
@@ -395,4 +396,105 @@ func TestMakeVersionMapOnBadVersion(t *testing.T) {
 			t.Error("Was expecting malformed version error with MakeVersionMap")
 		}
 	})
+}
+
+func TestStructToMap(t *testing.T) {
+	tests := []struct {
+		name        string
+		inputStruct any
+		wantMap     map[string]any
+	}{
+		{
+			name: "Case 1: Test struct type with map conversion",
+			inputStruct: struct {
+				Language     string
+				Stack        string
+				CreationYear int
+			}{
+				Language:     "python",
+				Stack:        "flask",
+				CreationYear: 2011,
+			},
+			wantMap: map[string]any{
+				"language":     "python",
+				"stack":        "flask",
+				"creationYear": 2011,
+			},
+		},
+		{
+			name: "Case 2: Test schema type with map conversion",
+			inputStruct: indexSchema.Schema{
+				Name:        "go",
+				DisplayName: "Go",
+				Description: "A Go project.",
+				Version:     "1.0.0",
+				Tags:        []string{"Go", "Gin"},
+			},
+			wantMap: map[string]any{
+				"name":        "go",
+				"displayName": "Go",
+				"description": "A Go project.",
+				"version":     "1.0.0",
+				"tags":        []string{"Go", "Gin"},
+			},
+		},
+		{
+			name: "Case 3: Test pointer fields struct type with map conversion",
+			inputStruct: struct {
+				P1 *string
+				P2 *string
+				P3 *[]string
+				P4 *bool
+			}{
+				P1: pointer.String("test"),
+				P3: &[]string{"test1", "test2"},
+				P4: nil,
+			},
+			wantMap: map[string]any{
+				"p1": "test",
+				"p3": []string{"test1", "test2"},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			gotMap := StructToMap(test.inputStruct)
+			if !reflect.DeepEqual(test.wantMap, gotMap) {
+				t.Errorf("Got: %v, Expected: %v", gotMap, test.wantMap)
+			}
+		})
+	}
+}
+
+func TestStrPtrIsSet(t *testing.T) {
+	tests := []struct {
+		name string
+		ptr  *string
+		want bool
+	}{
+		{
+			name: "Case 1: string pointer is set",
+			ptr:  pointer.String("test"),
+			want: true,
+		},
+		{
+			name: "Case 2: string is blank",
+			ptr:  pointer.String(""),
+			want: false,
+		},
+		{
+			name: "Case 3: string is nil",
+			want: false,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got := StrPtrIsSet(test.ptr)
+			if got != test.want {
+				t.Errorf("Got: %v, Expected: %v", got, test.want)
+			}
+		})
+	}
 }
