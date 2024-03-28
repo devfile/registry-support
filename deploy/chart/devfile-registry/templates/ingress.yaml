@@ -17,6 +17,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: {{ template "devfileregistry.fullname" . }}
+  namespace: {{ .Release.Namespace }}
   labels:
     app: {{ template "devfileregistry.name" . }}
     chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"

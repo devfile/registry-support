@@ -17,6 +17,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: {{ template "devfileregistry.fullname" . }}
+  namespace: {{ .Release.Namespace }}
   labels:
     app: {{ template "devfileregistry.name" . }}
     chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
