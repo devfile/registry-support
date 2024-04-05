@@ -128,6 +128,68 @@ var _ = ginkgo.Describe("[Verify index server is working properly]", func() {
 		gomega.Expect(hasStacks && hasSamples).To(gomega.BeTrue())
 	})
 
+	ginkgo.It("/index/all?deprecated=true endpoint should return stacks and samples which are deprecated", func() {
+		if config.IsTestRegistry {
+			registryIndex := util.GetRegistryIndex(config.Registry + "/index/all?deprecated=true")
+
+			hasStacks := false
+			hasSamples := false
+			hasAllDeprecated := true
+			for _, index := range registryIndex {
+				foundDeprecated := false
+
+				if index.Type == indexSchema.StackDevfileType {
+					hasStacks = true
+				}
+				if index.Type == indexSchema.SampleDevfileType {
+					hasSamples = true
+				}
+
+				for _, tag := range index.Tags {
+					if tag == "Deprecated" {
+						foundDeprecated = true
+						break
+					}
+				}
+
+				if !foundDeprecated {
+					hasAllDeprecated = false
+				}
+			}
+
+			if len(registryIndex) > 0 {
+				gomega.Expect((hasStacks || hasSamples) && hasAllDeprecated).To(gomega.BeTrue())
+			}
+		} else {
+			ginkgo.Skip("cannot guarantee test outside of test registry, skipping test")
+		}
+	})
+
+	ginkgo.It("/index/all?deprecated=false endpoint should return stacks and samples which are non-deprecated", func() {
+		if config.IsTestRegistry {
+			registryIndex := util.GetRegistryIndex(config.Registry + "/index/all?deprecated=false")
+
+			hasStacks := false
+			hasSamples := false
+			for _, index := range registryIndex {
+				if index.Type == indexSchema.StackDevfileType {
+					hasStacks = true
+				}
+				if index.Type == indexSchema.SampleDevfileType {
+					hasSamples = true
+				}
+
+				gomega.Expect(index.Tags).ShouldNot(gomega.ContainElement("Deprecated"))
+			}
+
+			if len(registryIndex) > 0 {
+				gomega.Expect(hasStacks || hasSamples).To(gomega.BeTrue())
+			}
+		} else {
+			ginkgo.Skip("cannot guarantee test outside of test registry, skipping test")
+		}
+	})
+
 	ginkgo.It("/index/all?arch=amd64&arch=arm64 endpoint should return stacks and samples for arch amd64 and arm64", func() {
 		registryIndex := util.GetRegistryIndex(config.Registry + "/index/all?arch=amd64&arch=arm64")
 
@@ -269,6 +331,88 @@ var _ = ginkgo.Describe("[Verify index server is working properly]", func() {
 				}
 			}
 			gomega.Expect(hasStacks && hasSamples).To(gomega.BeTrue())
+		} else {
+			ginkgo.Skip("cannot guarantee test outside of test registry, skipping test")
+		}
+	})
+
+	ginkgo.It("/v2index/all?deprecated=true endpoint should return stacks and samples which are deprecated", func() {
+		if config.IsTestRegistry {
+			registryIndex := util.GetRegistryIndex(config.Registry + "/v2index/all?deprecated=true")
+
+			hasStacks := false
+			hasSamples := false
+			hasAllDeprecated := true
+			for _, index := range registryIndex {
+				foundDeprecated := false
+
+				if index.Type == indexSchema.StackDevfileType {
+					hasStacks = true
+				}
+				if index.Type == indexSchema.SampleDevfileType {
+					hasSamples = true
+				}
+
+				for _, tag := range index.Tags {
+					if tag == "Deprecated" {
+						foundDeprecated = true
+						break
+					}
+				}
+
+				for _, version := range index.Versions {
+					if version.Default {
+						for _, tag := range version.Tags {
+							if tag == "Deprecrated" {
+								foundDeprecated = true
+								break
+							}
+						}
+						break
+					}
+				}
+
+				if !foundDeprecated {
+					hasAllDeprecated = false
+					break
+				}
+			}
+
+			if len(registryIndex) > 0 {
+				gomega.Expect((hasStacks || hasSamples) && hasAllDeprecated).To(gomega.BeTrue())
+			}
+		} else {
+			ginkgo.Skip("cannot guarantee test outside of test registry, skipping test")
+		}
+	})
+
+	ginkgo.It("/v2index/all?deprecated=false endpoint should return stacks and samples which are non-deprecated", func() {
+		if config.IsTestRegistry {
+			registryIndex := util.GetRegistryIndex(config.Registry + "/v2index/all?deprecated=false")
+
+			hasStacks := false
+			hasSamples := false
+			for _, index := range registryIndex {
+				if index.Type == indexSchema.StackDevfileType {
+					hasStacks = true
+				}
+				if index.Type == indexSchema.SampleDevfileType {
+					hasSamples = true
+				}
+
+				gomega.Expect(index.Tags).ShouldNot(gomega.ContainElement("Deprecated"))
+
+				for _, version := range index.Versions {
+					if version.Default {
+						gomega.Expect(version.Tags).ShouldNot(gomega.ContainElement("Deprecated"))
+						break
+					}
+				}
+			}
+
+			if len(registryIndex) > 0 {
+				gomega.Expect(hasStacks || hasSamples).To(gomega.BeTrue())
+			}
 		} else {
 			ginkgo.Skip("cannot guarantee test outside of test registry, skipping test")
 		}
