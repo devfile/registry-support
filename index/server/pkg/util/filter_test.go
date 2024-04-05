@@ -2291,6 +2291,477 @@ func TestFilterDevfileVersion(t *testing.T) {
 	}
 }
 
+func TestFilterDevfileDeprecated(t *testing.T) {
+	tests := []struct {
+		name       string
+		index      []indexSchema.Schema
+		deprecated bool
+		v1Index    bool
+		wantIndex  []indexSchema.Schema
+	}{
+		{
+			name: "Case 1: filter out non-deprecated stacks",
+			index: []indexSchema.Schema{
+				{
+					Name: "devfileA",
+					Tags: []string{
+						"Go",
+						"Gin",
+						"Deprecated",
+					},
+				},
+				{
+					Name: "devfileB",
+					Tags: []string{
+						"Deprecated",
+						"Python",
+					},
+				},
+				{
+					Name: "devfileC",
+					Tags: []string{
+						"Python",
+						"Flask",
+					},
+				},
+				{
+					Name: "devfileD",
+					Tags: []string{
+						"JS",
+						"Node.js",
+					},
+				},
+			},
+			deprecated: true,
+			v1Index:    true,
+			wantIndex: []indexSchema.Schema{
+				{
+					Name: "devfileA",
+					Tags: []string{
+						"Go",
+						"Gin",
+						"Deprecated",
+					},
+				},
+				{
+					Name: "devfileB",
+					Tags: []string{
+						"Deprecated",
+						"Python",
+					},
+				},
+			},
+		},
+		{
+			name: "Case 2: filter out non-deprecated stacks v2",
+			index: []indexSchema.Schema{
+				{
+					Name: "devfileA",
+					Tags: []string{
+						"Go",
+						"Gin",
+						"Deprecated",
+					},
+					Versions: []indexSchema.Version{
+						{
+							Version: "1.2.0",
+							Default: true,
+							Tags: []string{
+								"Go",
+								"Gin",
+							},
+						},
+						{
+							Version: "1.0.0",
+							Tags: []string{
+								"Go",
+								"Deprecated",
+							},
+						},
+					},
+				},
+				{
+					Name: "devfileB",
+					Tags: []string{
+						"Python",
+					},
+					Versions: []indexSchema.Version{
+						{
+							Version: "1.2.0",
+							Default: true,
+							Tags: []string{
+								"Deprecated",
+								"Python",
+							},
+						},
+					},
+				},
+				{
+					Name: "devfileC",
+					Tags: []string{
+						"Python",
+						"Flask",
+					},
+					Versions: []indexSchema.Version{
+						{
+							Version: "1.2.0",
+							Default: true,
+							Tags: []string{
+								"Python",
+								"Flask",
+							},
+						},
+						{
+							Version: "1.0.0",
+							Tags: []string{
+								"Deprecated",
+								"Python",
+							},
+						},
+					},
+				},
+				{
+					Name: "devfileD",
+					Tags: []string{
+						"JS",
+						"Node.js",
+					},
+				},
+			},
+			deprecated: true,
+			wantIndex: []indexSchema.Schema{
+				{
+					Name: "devfileA",
+					Tags: []string{
+						"Go",
+						"Gin",
+						"Deprecated",
+					},
+					Versions: []indexSchema.Version{
+						{
+							Version: "1.2.0",
+							Default: true,
+							Tags: []string{
+								"Go",
+								"Gin",
+							},
+						},
+						{
+							Version: "1.0.0",
+							Tags: []string{
+								"Go",
+								"Deprecated",
+							},
+						},
+					},
+				},
+				{
+					Name: "devfileB",
+					Tags: []string{
+						"Python",
+					},
+					Versions: []indexSchema.Version{
+						{
+							Version: "1.2.0",
+							Default: true,
+							Tags: []string{
+								"Deprecated",
+								"Python",
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "Case 3: filter out non-deprecated stacks with no deprecated stacks",
+			index: []indexSchema.Schema{
+				{
+					Name: "devfileC",
+					Tags: []string{
+						"Python",
+						"Flask",
+					},
+					Versions: []indexSchema.Version{
+						{
+							Version: "1.2.0",
+							Default: true,
+							Tags: []string{
+								"Python",
+								"Flask",
+							},
+						},
+						{
+							Version: "1.0.0",
+							Tags: []string{
+								"Deprecated",
+								"Python",
+							},
+						},
+					},
+				},
+				{
+					Name: "devfileD",
+					Tags: []string{
+						"JS",
+						"Node.js",
+					},
+				},
+			},
+			deprecated: true,
+			wantIndex:  make([]indexSchema.Schema, 0, 2),
+		},
+		{
+			name:       "Case 4: filter out non-deprecated stacks with empty index schema",
+			deprecated: true,
+		},
+		{
+			name: "Case 5: filter out deprecated stacks",
+			index: []indexSchema.Schema{
+				{
+					Name: "devfileA",
+					Tags: []string{
+						"Go",
+						"Gin",
+						"Deprecated",
+					},
+				},
+				{
+					Name: "devfileB",
+					Tags: []string{
+						"Deprecated",
+						"Python",
+					},
+				},
+				{
+					Name: "devfileC",
+					Tags: []string{
+						"Python",
+						"Flask",
+					},
+				},
+				{
+					Name: "devfileD",
+					Tags: []string{
+						"JS",
+						"Node.js",
+					},
+				},
+			},
+			v1Index: true,
+			wantIndex: []indexSchema.Schema{
+				{
+					Name: "devfileC",
+					Tags: []string{
+						"Python",
+						"Flask",
+					},
+				},
+				{
+					Name: "devfileD",
+					Tags: []string{
+						"JS",
+						"Node.js",
+					},
+				},
+			},
+		},
+		{
+			name: "Case 6: filter out deprecated stacks v2",
+			index: []indexSchema.Schema{
+				{
+					Name: "devfileA",
+					Tags: []string{
+						"Go",
+						"Gin",
+						"Deprecated",
+					},
+					Versions: []indexSchema.Version{
+						{
+							Version: "1.2.0",
+							Default: true,
+							Tags: []string{
+								"Go",
+								"Gin",
+							},
+						},
+						{
+							Version: "1.0.0",
+							Tags: []string{
+								"Go",
+								"Deprecated",
+							},
+						},
+					},
+				},
+				{
+					Name: "devfileB",
+					Tags: []string{
+						"Python",
+					},
+					Versions: []indexSchema.Version{
+						{
+							Version: "1.2.0",
+							Default: true,
+							Tags: []string{
+								"Deprecated",
+								"Python",
+							},
+						},
+					},
+				},
+				{
+					Name: "devfileC",
+					Tags: []string{
+						"Python",
+						"Flask",
+					},
+					Versions: []indexSchema.Version{
+						{
+							Version: "1.2.0",
+							Default: true,
+							Tags: []string{
+								"Python",
+								"Flask",
+							},
+						},
+						{
+							Version: "1.0.0",
+							Tags: []string{
+								"Deprecated",
+								"Python",
+							},
+						},
+					},
+				},
+				{
+					Name: "devfileD",
+					Tags: []string{
+						"JS",
+						"Node.js",
+					},
+				},
+			},
+			wantIndex: []indexSchema.Schema{
+				{
+					Name: "devfileC",
+					Tags: []string{
+						"Python",
+						"Flask",
+					},
+					Versions: []indexSchema.Version{
+						{
+							Version: "1.2.0",
+							Default: true,
+							Tags: []string{
+								"Python",
+								"Flask",
+							},
+						},
+						{
+							Version: "1.0.0",
+							Tags: []string{
+								"Deprecated",
+								"Python",
+							},
+						},
+					},
+				},
+				{
+					Name: "devfileD",
+					Tags: []string{
+						"JS",
+						"Node.js",
+					},
+				},
+			},
+		},
+		{
+			name: "Case 7: filter out deprecated stacks with no deprecated stacks",
+			index: []indexSchema.Schema{
+				{
+					Name: "devfileC",
+					Tags: []string{
+						"Python",
+						"Flask",
+					},
+					Versions: []indexSchema.Version{
+						{
+							Version: "1.2.0",
+							Default: true,
+							Tags: []string{
+								"Python",
+								"Flask",
+							},
+						},
+						{
+							Version: "1.0.0",
+							Tags: []string{
+								"Deprecated",
+								"Python",
+							},
+						},
+					},
+				},
+				{
+					Name: "devfileD",
+					Tags: []string{
+						"JS",
+						"Node.js",
+					},
+				},
+			},
+			wantIndex: []indexSchema.Schema{
+				{
+					Name: "devfileC",
+					Tags: []string{
+						"Python",
+						"Flask",
+					},
+					Versions: []indexSchema.Version{
+						{
+							Version: "1.2.0",
+							Default: true,
+							Tags: []string{
+								"Python",
+								"Flask",
+							},
+						},
+						{
+							Version: "1.0.0",
+							Tags: []string{
+								"Deprecated",
+								"Python",
+							},
+						},
+					},
+				},
+				{
+					Name: "devfileD",
+					Tags: []string{
+						"JS",
+						"Node.js",
+					},
+				},
+			},
+		},
+		{
+			name: "Case 8: filter out deprecated stacks with empty index schema",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			filteredIndex := deepcopy.Copy(test.index).([]indexSchema.Schema)
+			FilterDevfileDeprecated(&filteredIndex, test.deprecated, test.v1Index)
+
+			if !reflect.DeepEqual(filteredIndex, test.wantIndex) {
+				t.Errorf("\nExpected: %v\nGot: %v", test.wantIndex, filteredIndex)
+			}
+		})
+	}
+}
+
 func TestFilterDevfileStrArrayField(t *testing.T) {
 	tests := []filterDevfileStrArrayFieldTestCase{}
 	tests = append(tests, filterAttributeNamesTestCases...)

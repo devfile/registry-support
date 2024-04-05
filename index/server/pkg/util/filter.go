@@ -425,6 +425,43 @@ func FilterDevfileVersion(index []indexSchema.Schema, minVersion, maxVersion *st
 	return filteredIndex, nil
 }
 
+// FilterDevfileDeprecated inplace filters devfiles based on stack deprecation
+func FilterDevfileDeprecated(index *[]indexSchema.Schema, deprecated, v1Index bool) {
+	for i := 0; i < len(*index); i++ {
+		toFilterOutIndex := !deprecated
+		foundDeprecated := false
+
+		for _, tag := range (*index)[i].Tags {
+			if tag == "Deprecated" {
+				foundDeprecated = true
+				break
+			}
+		}
+
+		if !foundDeprecated {
+			toFilterOutIndex = deprecated
+
+			if !v1Index {
+				for versionIndex := 0; versionIndex < len((*index)[i].Versions); versionIndex++ {
+					if (*index)[i].Versions[versionIndex].Default {
+						for _, tag := range (*index)[i].Versions[versionIndex].Tags {
+							if tag == "Deprecated" {
+								toFilterOutIndex = !deprecated
+								break
+							}
+						}
+						break
+					}
+				}
+			}
+		}
+
+		if toFilterOutIndex {
+			filterOut(index, &i)
+		}
+	}
+}
+
 // FilterDevfileStrField filters by given string field, returns unchanged index if given parameter name is unrecognized
 func FilterDevfileStrField(index []indexSchema.Schema, paramName, requestedValue string, v1Index bool) FilterResult {
 	filterName := fmt.Sprintf("Fuzzy_Field_Filter_On_%s", paramName)
