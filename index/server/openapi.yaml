@@ -108,6 +108,7 @@ paths:
         - $ref: '#/components/parameters/iconUriParam'
         - $ref: '#/components/parameters/projectTypeParam'
         - $ref: '#/components/parameters/languageParam'
+        - $ref: '#/components/parameters/deprecatedParam'
         - $ref: '#/components/parameters/resourcesParam'
         - $ref: '#/components/parameters/starterProjectsParam'
         - $ref: '#/components/parameters/linkNamesParam'
@@ -172,6 +173,7 @@ paths:
         - $ref: '#/components/parameters/iconUriParam'
         - $ref: '#/components/parameters/projectTypeParam'
         - $ref: '#/components/parameters/languageParam'
+        - $ref: '#/components/parameters/deprecatedParam'
         - $ref: '#/components/parameters/resourcesParam'
         - $ref: '#/components/parameters/starterProjectsParam'
         - $ref: '#/components/parameters/linkNamesParam'
@@ -259,6 +261,7 @@ paths:
         - $ref: '#/components/parameters/maxVersionParam'
         - $ref: '#/components/parameters/minSchemaVersionParam'
         - $ref: '#/components/parameters/maxSchemaVersionParam'
+        - $ref: '#/components/parameters/deprecatedParam'
         - $ref: '#/components/parameters/defaultParam'
         - $ref: '#/components/parameters/resourcesParam'
         - $ref: '#/components/parameters/starterProjectsParam'
@@ -329,6 +332,7 @@ paths:
         - $ref: '#/components/parameters/maxVersionParam'
         - $ref: '#/components/parameters/minSchemaVersionParam'
         - $ref: '#/components/parameters/maxSchemaVersionParam'
+        - $ref: '#/components/parameters/deprecatedParam'
         - $ref: '#/components/parameters/defaultParam'
         - $ref: '#/components/parameters/resourcesParam'
         - $ref: '#/components/parameters/starterProjectsParam'
@@ -842,6 +846,8 @@ components:
           $ref: '#/components/schemas/SchemaVersion'
         maxSchemaVersion:
           $ref: '#/components/schemas/SchemaVersion'
+        deprecated:
+          $ref: '#/components/schemas/Deprecated'
         default:
           $ref: '#/components/schemas/Default'
         resources:
@@ -927,6 +933,9 @@ components:
       type: string
       pattern: '^[0-9]+\.[0-9]+(\.[0-9]+(\-alpha)?)?$'
       example: 2.2.0, 2.2.3-alpha
+    Deprecated:
+      description: Flag for deprecated devfile registry entry
+      type: boolean
     Default:
       description: Flag for default devfile registry entry version 
       type: boolean
@@ -1099,6 +1108,13 @@ components:
       description: The maximum devfile schema version
       schema:
         $ref: '#/components/schemas/SchemaVersion'
+    deprecatedParam:
+      name: deprecated
+      in: query
+      required: false
+      description: Boolean to filter stacks if they are deprecated or not
+      schema:
+        $ref: '#/components/schemas/Deprecated'
     defaultParam:
       name: default
       in: query

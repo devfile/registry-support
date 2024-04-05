@@ -32,6 +32,9 @@ type CommandGroups = []string
 // Default Flag for default devfile registry entry version
 type Default = bool
 
+// Deprecated Flag for deprecated devfile registry entry
+type Deprecated = bool
+
 // Description Description of devfile registry entry
 type Description = string
 
@@ -75,6 +78,9 @@ type IndexParams struct {
 
 	// Default Flag for default devfile registry entry version
 	Default *Default `json:"default,omitempty"`
+
+	// Deprecated Flag for deprecated devfile registry entry
+	Deprecated *Deprecated `json:"deprecated,omitempty"`
 
 	// Description Description of devfile registry entry
 	Description *Description `json:"description,omitempty"`
@@ -199,6 +205,9 @@ type CommandGroupsParam = CommandGroups
 
 // DefaultParam Flag for default devfile registry entry version
 type DefaultParam = Default
+
+// DeprecatedParam Flag for deprecated devfile registry entry
+type DeprecatedParam = Deprecated
 
 // DescriptionParam Description of devfile registry entry
 type DescriptionParam = Description
@@ -371,6 +380,9 @@ type ServeDevfileIndexV1Params struct {
 	// Language Search string to filter stacks by their programming language
 	Language *LanguageParam `form:"language,omitempty" json:"language,omitempty"`
 
+	// Deprecated Boolean to filter stacks if they are deprecated or not
+	Deprecated *DeprecatedParam `form:"deprecated,omitempty" json:"deprecated,omitempty"`
+
 	// Resources Collection of search strings to filter stacks by their
 	// resource files
 	Resources *ResourcesParam `form:"resources,omitempty" json:"resources,omitempty"`
@@ -447,6 +459,9 @@ type ServeDevfileIndexV1WithTypeParams struct {
 
 	// Language Search string to filter stacks by their programming language
 	Language *LanguageParam `form:"language,omitempty" json:"language,omitempty"`
+
+	// Deprecated Boolean to filter stacks if they are deprecated or not
+	Deprecated *DeprecatedParam `form:"deprecated,omitempty" json:"deprecated,omitempty"`
 
 	// Resources Collection of search strings to filter stacks by their
 	// resource files
@@ -536,6 +551,9 @@ type ServeDevfileIndexV2Params struct {
 
 	// MaxSchemaVersion The maximum devfile schema version
 	MaxSchemaVersion *MaxSchemaVersionParam `form:"maxSchemaVersion,omitempty" json:"maxSchemaVersion,omitempty"`
+
+	// Deprecated Boolean to filter stacks if they are deprecated or not
+	Deprecated *DeprecatedParam `form:"deprecated,omitempty" json:"deprecated,omitempty"`
 
 	// Default Boolean to filter stacks if they are default or not
 	Default *DefaultParam `form:"default,omitempty" json:"default,omitempty"`
@@ -632,6 +650,9 @@ type ServeDevfileIndexV2WithTypeParams struct {
 
 	// MaxSchemaVersion The maximum devfile schema version
 	MaxSchemaVersion *MaxSchemaVersionParam `form:"maxSchemaVersion,omitempty" json:"maxSchemaVersion,omitempty"`
+
+	// Deprecated Boolean to filter stacks if they are deprecated or not
+	Deprecated *DeprecatedParam `form:"deprecated,omitempty" json:"deprecated,omitempty"`
 
 	// Default Boolean to filter stacks if they are default or not
 	Default *DefaultParam `form:"default,omitempty" json:"default,omitempty"`
