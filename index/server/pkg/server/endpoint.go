@@ -538,6 +538,12 @@ func buildIndexAPIResponse(c *gin.Context, indexType string, wantV1Index bool, p
 		})
 		return
 	}
+
+	// Filter based on deprecation if deprecated parameter is set
+	if params.Deprecated != nil {
+		util.FilterDevfileDeprecated(&index, *params.Deprecated, wantV1Index)
+	}
+
 	if wantV1Index {
 		index = util.ConvertToOldIndexFormat(index)
 	} else {
