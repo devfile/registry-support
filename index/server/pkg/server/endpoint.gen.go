@@ -47,7 +47,7 @@ type ServerInterface interface {
 	DeleteDevfile(c *gin.Context, stack string)
 	// Get devfile by stack name.
 	// (GET /devfiles/{stack})
-	ServeDevfile(c *gin.Context, stack string)
+	ServeDevfile(c *gin.Context, stack string, params ServeDevfileParams)
 
 	// (POST /devfiles/{stack})
 	PostDevfile(c *gin.Context, stack string)
@@ -59,7 +59,7 @@ type ServerInterface interface {
 	DeleteDevfileStarterProject(c *gin.Context, stack string, starterProject string)
 	// Fetches starter project by stack and project name
 	// (GET /devfiles/{stack}/starter-projects/{starterProject})
-	ServeDevfileStarterProject(c *gin.Context, stack string, starterProject string)
+	ServeDevfileStarterProject(c *gin.Context, stack string, starterProject string, params ServeDevfileStarterProjectParams)
 
 	// (POST /devfiles/{stack}/starter-projects/{starterProject})
 	PostDevfileStarterProject(c *gin.Context, stack string, starterProject string)
@@ -71,7 +71,7 @@ type ServerInterface interface {
 	DeleteDevfileWithVersion(c *gin.Context, stack string, version string)
 	// Get devfile by stack name.
 	// (GET /devfiles/{stack}/{version})
-	ServeDevfileWithVersion(c *gin.Context, stack string, version string)
+	ServeDevfileWithVersion(c *gin.Context, stack string, version string, params ServeDevfileWithVersionParams)
 
 	// (POST /devfiles/{stack}/{version})
 	PostDevfileWithVersion(c *gin.Context, stack string, version string)
@@ -83,7 +83,7 @@ type ServerInterface interface {
 	DeleteDevfileStarterProjectWithVersion(c *gin.Context, stack string, version string, starterProject string)
 	// Fetches starter project by stack name, stack version, and project name
 	// (GET /devfiles/{stack}/{version}/starter-projects/{starterProject})
-	ServeDevfileStarterProjectWithVersion(c *gin.Context, stack string, version string, starterProject string)
+	ServeDevfileStarterProjectWithVersion(c *gin.Context, stack string, version string, starterProject string, params ServeDevfileStarterProjectWithVersionParams)
 
 	// (POST /devfiles/{stack}/{version}/starter-projects/{starterProject})
 	PostDevfileStarterProjectWithVersion(c *gin.Context, stack string, version string, starterProject string)
@@ -116,16 +116,16 @@ type ServerInterface interface {
 	PutDevfileIndexV1(c *gin.Context)
 
 	// (DELETE /index/{indexType})
-	DeleteDevfileIndexV1WithType(c *gin.Context, indexType string, params DeleteDevfileIndexV1WithTypeParams)
+	DeleteDevfileIndexV1WithType(c *gin.Context, indexType string)
 	// Gets index schemas of the devfiles of specific type.
 	// (GET /index/{indexType})
 	ServeDevfileIndexV1WithType(c *gin.Context, indexType string, params ServeDevfileIndexV1WithTypeParams)
 
 	// (POST /index/{indexType})
-	PostDevfileIndexV1WithType(c *gin.Context, indexType string, params PostDevfileIndexV1WithTypeParams)
+	PostDevfileIndexV1WithType(c *gin.Context, indexType string)
 
 	// (PUT /index/{indexType})
-	PutDevfileIndexV1WithType(c *gin.Context, indexType string, params PutDevfileIndexV1WithTypeParams)
+	PutDevfileIndexV1WithType(c *gin.Context, indexType string)
 
 	// (DELETE /v2index)
 	DeleteDevfileIndexV2(c *gin.Context)
@@ -140,16 +140,16 @@ type ServerInterface interface {
 	PutDevfileIndexV2(c *gin.Context)
 
 	// (DELETE /v2index/{indexType})
-	DeleteDevfileIndexV2WithType(c *gin.Context, indexType string, params DeleteDevfileIndexV2WithTypeParams)
+	DeleteDevfileIndexV2WithType(c *gin.Context, indexType string)
 	// Gets V2 index schemas of the devfiles of specific type.
 	// (GET /v2index/{indexType})
 	ServeDevfileIndexV2WithType(c *gin.Context, indexType string, params ServeDevfileIndexV2WithTypeParams)
 
 	// (POST /v2index/{indexType})
-	PostDevfileIndexV2WithType(c *gin.Context, indexType string, params PostDevfileIndexV2WithTypeParams)
+	PostDevfileIndexV2WithType(c *gin.Context, indexType string)
 
 	// (PUT /v2index/{indexType})
-	PutDevfileIndexV2WithType(c *gin.Context, indexType string, params PutDevfileIndexV2WithTypeParams)
+	PutDevfileIndexV2WithType(c *gin.Context, indexType string)
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -236,11 +236,30 @@ func (siw *ServerInterfaceWrapper) ServeDevfile(c *gin.Context) {
 		return
 	}
 
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ServeDevfileParams
+
+	// ------------- Optional query parameter "minSchemaVersion" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "minSchemaVersion", c.Request.URL.Query(), &params.MinSchemaVersion)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter minSchemaVersion: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "maxSchemaVersion" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "maxSchemaVersion", c.Request.URL.Query(), &params.MaxSchemaVersion)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter maxSchemaVersion: %s", err), http.StatusBadRequest)
+		return
+	}
+
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)
 	}
 
-	siw.Handler.ServeDevfile(c, stack)
+	siw.Handler.ServeDevfile(c, stack, params)
 }
 
 // PostDevfile operation middleware
@@ -338,11 +357,30 @@ func (siw *ServerInterfaceWrapper) ServeDevfileStarterProject(c *gin.Context) {
 		return
 	}
 
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ServeDevfileStarterProjectParams
+
+	// ------------- Optional query parameter "minSchemaVersion" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "minSchemaVersion", c.Request.URL.Query(), &params.MinSchemaVersion)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter minSchemaVersion: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "maxSchemaVersion" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "maxSchemaVersion", c.Request.URL.Query(), &params.MaxSchemaVersion)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter maxSchemaVersion: %s", err), http.StatusBadRequest)
+		return
+	}
+
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)
 	}
 
-	siw.Handler.ServeDevfileStarterProject(c, stack, starterProject)
+	siw.Handler.ServeDevfileStarterProject(c, stack, starterProject, params)
 }
 
 // PostDevfileStarterProject operation middleware
@@ -458,11 +496,30 @@ func (siw *ServerInterfaceWrapper) ServeDevfileWithVersion(c *gin.Context) {
 		return
 	}
 
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ServeDevfileWithVersionParams
+
+	// ------------- Optional query parameter "minSchemaVersion" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "minSchemaVersion", c.Request.URL.Query(), &params.MinSchemaVersion)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter minSchemaVersion: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "maxSchemaVersion" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "maxSchemaVersion", c.Request.URL.Query(), &params.MaxSchemaVersion)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter maxSchemaVersion: %s", err), http.StatusBadRequest)
+		return
+	}
+
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)
 	}
 
-	siw.Handler.ServeDevfileWithVersion(c, stack, version)
+	siw.Handler.ServeDevfileWithVersion(c, stack, version, params)
 }
 
 // PostDevfileWithVersion operation middleware
@@ -596,11 +653,30 @@ func (siw *ServerInterfaceWrapper) ServeDevfileStarterProjectWithVersion(c *gin.
 		return
 	}
 
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ServeDevfileStarterProjectWithVersionParams
+
+	// ------------- Optional query parameter "minSchemaVersion" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "minSchemaVersion", c.Request.URL.Query(), &params.MinSchemaVersion)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter minSchemaVersion: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "maxSchemaVersion" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "maxSchemaVersion", c.Request.URL.Query(), &params.MaxSchemaVersion)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter maxSchemaVersion: %s", err), http.StatusBadRequest)
+		return
+	}
+
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)
 	}
 
-	siw.Handler.ServeDevfileStarterProjectWithVersion(c, stack, version, starterProject)
+	siw.Handler.ServeDevfileStarterProjectWithVersion(c, stack, version, starterProject, params)
 }
 
 // PostDevfileStarterProjectWithVersion operation middleware
@@ -739,6 +815,46 @@ func (siw *ServerInterfaceWrapper) ServeDevfileIndexV1(c *gin.Context) {
 	// Parameter object where we will unmarshal all parameters from the context
 	var params ServeDevfileIndexV1Params
 
+	// ------------- Optional query parameter "name" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "name", c.Request.URL.Query(), &params.Name)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter name: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "displayName" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "displayName", c.Request.URL.Query(), &params.DisplayName)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter displayName: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "description" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "description", c.Request.URL.Query(), &params.Description)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter description: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "attributeNames" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "attributeNames", c.Request.URL.Query(), &params.AttributeNames)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter attributeNames: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "tags" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "tags", c.Request.URL.Query(), &params.Tags)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter tags: %s", err), http.StatusBadRequest)
+		return
+	}
+
 	// ------------- Optional query parameter "arch" -------------
 
 	err = runtime.BindQueryParameter("form", true, false, "arch", c.Request.URL.Query(), &params.Arch)
@@ -752,6 +868,134 @@ func (siw *ServerInterfaceWrapper) ServeDevfileIndexV1(c *gin.Context) {
 	err = runtime.BindQueryParameter("form", true, false, "icon", c.Request.URL.Query(), &params.Icon)
 	if err != nil {
 		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter icon: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "iconUri" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "iconUri", c.Request.URL.Query(), &params.IconUri)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter iconUri: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "projectType" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "projectType", c.Request.URL.Query(), &params.ProjectType)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter projectType: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "language" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "language", c.Request.URL.Query(), &params.Language)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter language: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "deprecated" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "deprecated", c.Request.URL.Query(), &params.Deprecated)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter deprecated: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "resources" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "resources", c.Request.URL.Query(), &params.Resources)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter resources: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "starterProjects" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "starterProjects", c.Request.URL.Query(), &params.StarterProjects)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter starterProjects: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "linkNames" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "linkNames", c.Request.URL.Query(), &params.LinkNames)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter linkNames: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "links" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "links", c.Request.URL.Query(), &params.Links)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter links: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "gitRemoteNames" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "gitRemoteNames", c.Request.URL.Query(), &params.GitRemoteNames)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter gitRemoteNames: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "gitRemotes" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "gitRemotes", c.Request.URL.Query(), &params.GitRemotes)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter gitRemotes: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "gitUrl" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "gitUrl", c.Request.URL.Query(), &params.GitUrl)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter gitUrl: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "gitRemoteName" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "gitRemoteName", c.Request.URL.Query(), &params.GitRemoteName)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter gitRemoteName: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "gitSubDir" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "gitSubDir", c.Request.URL.Query(), &params.GitSubDir)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter gitSubDir: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "gitRevision" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "gitRevision", c.Request.URL.Query(), &params.GitRevision)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter gitRevision: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "provider" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "provider", c.Request.URL.Query(), &params.Provider)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter provider: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "supportUrl" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "supportUrl", c.Request.URL.Query(), &params.SupportUrl)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter supportUrl: %s", err), http.StatusBadRequest)
 		return
 	}
 
@@ -796,30 +1040,11 @@ func (siw *ServerInterfaceWrapper) DeleteDevfileIndexV1WithType(c *gin.Context) 
 		return
 	}
 
-	// Parameter object where we will unmarshal all parameters from the context
-	var params DeleteDevfileIndexV1WithTypeParams
-
-	// ------------- Optional query parameter "arch" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "arch", c.Request.URL.Query(), &params.Arch)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter arch: %s", err), http.StatusBadRequest)
-		return
-	}
-
-	// ------------- Optional query parameter "icon" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "icon", c.Request.URL.Query(), &params.Icon)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter icon: %s", err), http.StatusBadRequest)
-		return
-	}
-
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)
 	}
 
-	siw.Handler.DeleteDevfileIndexV1WithType(c, indexType, params)
+	siw.Handler.DeleteDevfileIndexV1WithType(c, indexType)
 }
 
 // ServeDevfileIndexV1WithType operation middleware
@@ -839,6 +1064,46 @@ func (siw *ServerInterfaceWrapper) ServeDevfileIndexV1WithType(c *gin.Context) {
 	// Parameter object where we will unmarshal all parameters from the context
 	var params ServeDevfileIndexV1WithTypeParams
 
+	// ------------- Optional query parameter "name" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "name", c.Request.URL.Query(), &params.Name)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter name: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "displayName" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "displayName", c.Request.URL.Query(), &params.DisplayName)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter displayName: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "description" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "description", c.Request.URL.Query(), &params.Description)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter description: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "attributeNames" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "attributeNames", c.Request.URL.Query(), &params.AttributeNames)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter attributeNames: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "tags" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "tags", c.Request.URL.Query(), &params.Tags)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter tags: %s", err), http.StatusBadRequest)
+		return
+	}
+
 	// ------------- Optional query parameter "arch" -------------
 
 	err = runtime.BindQueryParameter("form", true, false, "arch", c.Request.URL.Query(), &params.Arch)
@@ -852,6 +1117,134 @@ func (siw *ServerInterfaceWrapper) ServeDevfileIndexV1WithType(c *gin.Context) {
 	err = runtime.BindQueryParameter("form", true, false, "icon", c.Request.URL.Query(), &params.Icon)
 	if err != nil {
 		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter icon: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "iconUri" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "iconUri", c.Request.URL.Query(), &params.IconUri)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter iconUri: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "projectType" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "projectType", c.Request.URL.Query(), &params.ProjectType)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter projectType: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "language" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "language", c.Request.URL.Query(), &params.Language)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter language: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "deprecated" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "deprecated", c.Request.URL.Query(), &params.Deprecated)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter deprecated: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "resources" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "resources", c.Request.URL.Query(), &params.Resources)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter resources: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "starterProjects" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "starterProjects", c.Request.URL.Query(), &params.StarterProjects)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter starterProjects: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "linkNames" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "linkNames", c.Request.URL.Query(), &params.LinkNames)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter linkNames: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "links" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "links", c.Request.URL.Query(), &params.Links)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter links: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "gitRemoteNames" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "gitRemoteNames", c.Request.URL.Query(), &params.GitRemoteNames)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter gitRemoteNames: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "gitRemotes" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "gitRemotes", c.Request.URL.Query(), &params.GitRemotes)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter gitRemotes: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "gitUrl" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "gitUrl", c.Request.URL.Query(), &params.GitUrl)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter gitUrl: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "gitRemoteName" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "gitRemoteName", c.Request.URL.Query(), &params.GitRemoteName)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter gitRemoteName: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "gitSubDir" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "gitSubDir", c.Request.URL.Query(), &params.GitSubDir)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter gitSubDir: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "gitRevision" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "gitRevision", c.Request.URL.Query(), &params.GitRevision)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter gitRevision: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "provider" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "provider", c.Request.URL.Query(), &params.Provider)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter provider: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "supportUrl" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "supportUrl", c.Request.URL.Query(), &params.SupportUrl)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter supportUrl: %s", err), http.StatusBadRequest)
 		return
 	}
 
@@ -876,30 +1269,11 @@ func (siw *ServerInterfaceWrapper) PostDevfileIndexV1WithType(c *gin.Context) {
 		return
 	}
 
-	// Parameter object where we will unmarshal all parameters from the context
-	var params PostDevfileIndexV1WithTypeParams
-
-	// ------------- Optional query parameter "arch" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "arch", c.Request.URL.Query(), &params.Arch)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter arch: %s", err), http.StatusBadRequest)
-		return
-	}
-
-	// ------------- Optional query parameter "icon" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "icon", c.Request.URL.Query(), &params.Icon)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter icon: %s", err), http.StatusBadRequest)
-		return
-	}
-
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)
 	}
 
-	siw.Handler.PostDevfileIndexV1WithType(c, indexType, params)
+	siw.Handler.PostDevfileIndexV1WithType(c, indexType)
 }
 
 // PutDevfileIndexV1WithType operation middleware
@@ -916,30 +1290,11 @@ func (siw *ServerInterfaceWrapper) PutDevfileIndexV1WithType(c *gin.Context) {
 		return
 	}
 
-	// Parameter object where we will unmarshal all parameters from the context
-	var params PutDevfileIndexV1WithTypeParams
-
-	// ------------- Optional query parameter "arch" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "arch", c.Request.URL.Query(), &params.Arch)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter arch: %s", err), http.StatusBadRequest)
-		return
-	}
-
-	// ------------- Optional query parameter "icon" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "icon", c.Request.URL.Query(), &params.Icon)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter icon: %s", err), http.StatusBadRequest)
-		return
-	}
-
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)
 	}
 
-	siw.Handler.PutDevfileIndexV1WithType(c, indexType, params)
+	siw.Handler.PutDevfileIndexV1WithType(c, indexType)
 }
 
 // DeleteDevfileIndexV2 operation middleware
@@ -960,6 +1315,46 @@ func (siw *ServerInterfaceWrapper) ServeDevfileIndexV2(c *gin.Context) {
 	// Parameter object where we will unmarshal all parameters from the context
 	var params ServeDevfileIndexV2Params
 
+	// ------------- Optional query parameter "name" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "name", c.Request.URL.Query(), &params.Name)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter name: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "displayName" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "displayName", c.Request.URL.Query(), &params.DisplayName)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter displayName: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "description" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "description", c.Request.URL.Query(), &params.Description)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter description: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "attributeNames" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "attributeNames", c.Request.URL.Query(), &params.AttributeNames)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter attributeNames: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "tags" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "tags", c.Request.URL.Query(), &params.Tags)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter tags: %s", err), http.StatusBadRequest)
+		return
+	}
+
 	// ------------- Optional query parameter "arch" -------------
 
 	err = runtime.BindQueryParameter("form", true, false, "arch", c.Request.URL.Query(), &params.Arch)
@@ -973,6 +1368,182 @@ func (siw *ServerInterfaceWrapper) ServeDevfileIndexV2(c *gin.Context) {
 	err = runtime.BindQueryParameter("form", true, false, "icon", c.Request.URL.Query(), &params.Icon)
 	if err != nil {
 		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter icon: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "iconUri" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "iconUri", c.Request.URL.Query(), &params.IconUri)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter iconUri: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "projectType" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "projectType", c.Request.URL.Query(), &params.ProjectType)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter projectType: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "language" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "language", c.Request.URL.Query(), &params.Language)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter language: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "minVersion" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "minVersion", c.Request.URL.Query(), &params.MinVersion)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter minVersion: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "maxVersion" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "maxVersion", c.Request.URL.Query(), &params.MaxVersion)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter maxVersion: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "minSchemaVersion" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "minSchemaVersion", c.Request.URL.Query(), &params.MinSchemaVersion)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter minSchemaVersion: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "maxSchemaVersion" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "maxSchemaVersion", c.Request.URL.Query(), &params.MaxSchemaVersion)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter maxSchemaVersion: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "deprecated" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "deprecated", c.Request.URL.Query(), &params.Deprecated)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter deprecated: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "default" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "default", c.Request.URL.Query(), &params.Default)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter default: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "resources" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "resources", c.Request.URL.Query(), &params.Resources)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter resources: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "starterProjects" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "starterProjects", c.Request.URL.Query(), &params.StarterProjects)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter starterProjects: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "linkNames" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "linkNames", c.Request.URL.Query(), &params.LinkNames)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter linkNames: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "links" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "links", c.Request.URL.Query(), &params.Links)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter links: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "commandGroups" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "commandGroups", c.Request.URL.Query(), &params.CommandGroups)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter commandGroups: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "gitRemoteNames" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "gitRemoteNames", c.Request.URL.Query(), &params.GitRemoteNames)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter gitRemoteNames: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "gitRemotes" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "gitRemotes", c.Request.URL.Query(), &params.GitRemotes)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter gitRemotes: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "gitUrl" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "gitUrl", c.Request.URL.Query(), &params.GitUrl)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter gitUrl: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "gitRemoteName" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "gitRemoteName", c.Request.URL.Query(), &params.GitRemoteName)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter gitRemoteName: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "gitSubDir" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "gitSubDir", c.Request.URL.Query(), &params.GitSubDir)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter gitSubDir: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "gitRevision" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "gitRevision", c.Request.URL.Query(), &params.GitRevision)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter gitRevision: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "provider" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "provider", c.Request.URL.Query(), &params.Provider)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter provider: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "supportUrl" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "supportUrl", c.Request.URL.Query(), &params.SupportUrl)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter supportUrl: %s", err), http.StatusBadRequest)
 		return
 	}
 
@@ -1017,30 +1588,11 @@ func (siw *ServerInterfaceWrapper) DeleteDevfileIndexV2WithType(c *gin.Context) 
 		return
 	}
 
-	// Parameter object where we will unmarshal all parameters from the context
-	var params DeleteDevfileIndexV2WithTypeParams
-
-	// ------------- Optional query parameter "arch" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "arch", c.Request.URL.Query(), &params.Arch)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter arch: %s", err), http.StatusBadRequest)
-		return
-	}
-
-	// ------------- Optional query parameter "icon" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "icon", c.Request.URL.Query(), &params.Icon)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter icon: %s", err), http.StatusBadRequest)
-		return
-	}
-
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)
 	}
 
-	siw.Handler.DeleteDevfileIndexV2WithType(c, indexType, params)
+	siw.Handler.DeleteDevfileIndexV2WithType(c, indexType)
 }
 
 // ServeDevfileIndexV2WithType operation middleware
@@ -1060,6 +1612,46 @@ func (siw *ServerInterfaceWrapper) ServeDevfileIndexV2WithType(c *gin.Context) {
 	// Parameter object where we will unmarshal all parameters from the context
 	var params ServeDevfileIndexV2WithTypeParams
 
+	// ------------- Optional query parameter "name" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "name", c.Request.URL.Query(), &params.Name)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter name: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "displayName" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "displayName", c.Request.URL.Query(), &params.DisplayName)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter displayName: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "description" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "description", c.Request.URL.Query(), &params.Description)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter description: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "attributeNames" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "attributeNames", c.Request.URL.Query(), &params.AttributeNames)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter attributeNames: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "tags" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "tags", c.Request.URL.Query(), &params.Tags)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter tags: %s", err), http.StatusBadRequest)
+		return
+	}
+
 	// ------------- Optional query parameter "arch" -------------
 
 	err = runtime.BindQueryParameter("form", true, false, "arch", c.Request.URL.Query(), &params.Arch)
@@ -1073,6 +1665,182 @@ func (siw *ServerInterfaceWrapper) ServeDevfileIndexV2WithType(c *gin.Context) {
 	err = runtime.BindQueryParameter("form", true, false, "icon", c.Request.URL.Query(), &params.Icon)
 	if err != nil {
 		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter icon: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "iconUri" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "iconUri", c.Request.URL.Query(), &params.IconUri)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter iconUri: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "projectType" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "projectType", c.Request.URL.Query(), &params.ProjectType)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter projectType: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "language" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "language", c.Request.URL.Query(), &params.Language)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter language: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "minVersion" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "minVersion", c.Request.URL.Query(), &params.MinVersion)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter minVersion: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "maxVersion" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "maxVersion", c.Request.URL.Query(), &params.MaxVersion)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter maxVersion: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "minSchemaVersion" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "minSchemaVersion", c.Request.URL.Query(), &params.MinSchemaVersion)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter minSchemaVersion: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "maxSchemaVersion" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "maxSchemaVersion", c.Request.URL.Query(), &params.MaxSchemaVersion)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter maxSchemaVersion: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "deprecated" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "deprecated", c.Request.URL.Query(), &params.Deprecated)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter deprecated: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "default" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "default", c.Request.URL.Query(), &params.Default)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter default: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "resources" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "resources", c.Request.URL.Query(), &params.Resources)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter resources: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "starterProjects" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "starterProjects", c.Request.URL.Query(), &params.StarterProjects)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter starterProjects: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "linkNames" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "linkNames", c.Request.URL.Query(), &params.LinkNames)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter linkNames: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "links" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "links", c.Request.URL.Query(), &params.Links)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter links: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "commandGroups" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "commandGroups", c.Request.URL.Query(), &params.CommandGroups)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter commandGroups: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "gitRemoteNames" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "gitRemoteNames", c.Request.URL.Query(), &params.GitRemoteNames)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter gitRemoteNames: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "gitRemotes" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "gitRemotes", c.Request.URL.Query(), &params.GitRemotes)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter gitRemotes: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "gitUrl" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "gitUrl", c.Request.URL.Query(), &params.GitUrl)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter gitUrl: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "gitRemoteName" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "gitRemoteName", c.Request.URL.Query(), &params.GitRemoteName)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter gitRemoteName: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "gitSubDir" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "gitSubDir", c.Request.URL.Query(), &params.GitSubDir)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter gitSubDir: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "gitRevision" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "gitRevision", c.Request.URL.Query(), &params.GitRevision)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter gitRevision: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "provider" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "provider", c.Request.URL.Query(), &params.Provider)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter provider: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "supportUrl" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "supportUrl", c.Request.URL.Query(), &params.SupportUrl)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter supportUrl: %s", err), http.StatusBadRequest)
 		return
 	}
 
@@ -1097,30 +1865,11 @@ func (siw *ServerInterfaceWrapper) PostDevfileIndexV2WithType(c *gin.Context) {
 		return
 	}
 
-	// Parameter object where we will unmarshal all parameters from the context
-	var params PostDevfileIndexV2WithTypeParams
-
-	// ------------- Optional query parameter "arch" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "arch", c.Request.URL.Query(), &params.Arch)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter arch: %s", err), http.StatusBadRequest)
-		return
-	}
-
-	// ------------- Optional query parameter "icon" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "icon", c.Request.URL.Query(), &params.Icon)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter icon: %s", err), http.StatusBadRequest)
-		return
-	}
-
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)
 	}
 
-	siw.Handler.PostDevfileIndexV2WithType(c, indexType, params)
+	siw.Handler.PostDevfileIndexV2WithType(c, indexType)
 }
 
 // PutDevfileIndexV2WithType operation middleware
@@ -1137,30 +1886,11 @@ func (siw *ServerInterfaceWrapper) PutDevfileIndexV2WithType(c *gin.Context) {
 		return
 	}
 
-	// Parameter object where we will unmarshal all parameters from the context
-	var params PutDevfileIndexV2WithTypeParams
-
-	// ------------- Optional query parameter "arch" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "arch", c.Request.URL.Query(), &params.Arch)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter arch: %s", err), http.StatusBadRequest)
-		return
-	}
-
-	// ------------- Optional query parameter "icon" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "icon", c.Request.URL.Query(), &params.Icon)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter icon: %s", err), http.StatusBadRequest)
-		return
-	}
-
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)
 	}
 
-	siw.Handler.PutDevfileIndexV2WithType(c, indexType, params)
+	siw.Handler.PutDevfileIndexV2WithType(c, indexType)
 }
 
 // GinServerOptions provides options for the Gin server.
@@ -1278,41 +2008,63 @@ func RegisterHandlersWithOptions(router *gin.Engine, si ServerInterface, options
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
+	"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",
+	"bn4AAA==",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

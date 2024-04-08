@@ -68,7 +68,7 @@ func (*Server) DeleteRootEndpoint(c *gin.Context) {
 }
 
 func (*Server) ServeDevfileIndexV1(c *gin.Context, params ServeDevfileIndexV1Params) {
-	ServeDevfileIndex(c, true, IndexParams(params))
+	ServeDevfileIndex(c, true, params.toIndexParams())
 }
 
 func (*Server) PostDevfileIndexV1(c *gin.Context) {
@@ -84,7 +84,7 @@ func (*Server) DeleteDevfileIndexV1(c *gin.Context) {
 }
 
 func (*Server) ServeDevfileIndexV2(c *gin.Context, params ServeDevfileIndexV2Params) {
-	ServeDevfileIndex(c, false, IndexParams(params))
+	ServeDevfileIndex(c, false, params.toIndexParams())
 }
 
 func (*Server) PostDevfileIndexV2(c *gin.Context) {
@@ -117,36 +117,36 @@ func ServeDevfileIndex(c *gin.Context, wantV1Index bool, params IndexParams) {
 func (*Server) ServeDevfileIndexV1WithType(c *gin.Context, indexType string, params ServeDevfileIndexV1WithTypeParams) {
 
 	// Serve the index with type
-	buildIndexAPIResponse(c, indexType, true, IndexParams(params))
+	buildIndexAPIResponse(c, indexType, true, params.toIndexParams())
 }
 
-func (*Server) PostDevfileIndexV1WithType(c *gin.Context, indexType string, params PostDevfileIndexV1WithTypeParams) {
+func (*Server) PostDevfileIndexV1WithType(c *gin.Context, indexType string) {
 	SetMethodNotAllowedJSONResponse(c)
 }
 
-func (*Server) PutDevfileIndexV1WithType(c *gin.Context, indexType string, params PutDevfileIndexV1WithTypeParams) {
+func (*Server) PutDevfileIndexV1WithType(c *gin.Context, indexType string) {
 	SetMethodNotAllowedJSONResponse(c)
 }
 
-func (*Server) DeleteDevfileIndexV1WithType(c *gin.Context, indexType string, params DeleteDevfileIndexV1WithTypeParams) {
+func (*Server) DeleteDevfileIndexV1WithType(c *gin.Context, indexType string) {
 	SetMethodNotAllowedJSONResponse(c)
 }
 
 func (*Server) ServeDevfileIndexV2WithType(c *gin.Context, indexType string, params ServeDevfileIndexV2WithTypeParams) {
 
 	// Serve the index with type
-	buildIndexAPIResponse(c, indexType, false, IndexParams(params))
+	buildIndexAPIResponse(c, indexType, false, params.toIndexParams())
 }
 
-func (*Server) PostDevfileIndexV2WithType(c *gin.Context, indexType string, params PostDevfileIndexV2WithTypeParams) {
+func (*Server) PostDevfileIndexV2WithType(c *gin.Context, indexType string) {
 	SetMethodNotAllowedJSONResponse(c)
 }
 
-func (*Server) PutDevfileIndexV2WithType(c *gin.Context, indexType string, params PutDevfileIndexV2WithTypeParams) {
+func (*Server) PutDevfileIndexV2WithType(c *gin.Context, indexType string) {
 	SetMethodNotAllowedJSONResponse(c)
 }
 
-func (*Server) DeleteDevfileIndexV2WithType(c *gin.Context, indexType string, params DeleteDevfileIndexV2WithTypeParams) {
+func (*Server) DeleteDevfileIndexV2WithType(c *gin.Context, indexType string) {
 	SetMethodNotAllowedJSONResponse(c)
 }
 
@@ -172,8 +172,8 @@ func (*Server) DeleteHealthCheck(c *gin.Context) {
 	SetMethodNotAllowedJSONResponse(c)
 }
 
-func (*Server) ServeDevfileWithVersion(c *gin.Context, name string, version string) {
-	bytes, devfileIndex := fetchDevfile(c, name, version)
+func (*Server) ServeDevfileWithVersion(c *gin.Context, name string, version string, params ServeDevfileWithVersionParams) {
+	bytes, devfileIndex := fetchDevfile(c, name, version, params)
 
 	if len(bytes) != 0 {
 		// Track event for telemetry.  Ignore events from the registry-viewer and DevConsole since those are tracked on the client side.  Ignore indirect calls from clients.
@@ -213,9 +213,9 @@ func (*Server) DeleteDevfileWithVersion(c *gin.Context, name string, version str
 }
 
 // ServeDevfile returns the devfile content
-func (s *Server) ServeDevfile(c *gin.Context, name string) {
+func (s *Server) ServeDevfile(c *gin.Context, name string, params ServeDevfileParams) {
 	// append the stack version, for endpoint /devfiles/name without version
-	s.ServeDevfileWithVersion(c, name, "default")
+	s.ServeDevfileWithVersion(c, name, "default", ServeDevfileWithVersionParams(params))
 }
 
 func (s *Server) PostDevfile(c *gin.Context, name string) {
@@ -231,8 +231,8 @@ func (s *Server) DeleteDevfile(c *gin.Context, name string) {
 }
 
 // ServeDevfileStarterProject returns the starter project content for the devfile using default version
-func (s *Server) ServeDevfileStarterProject(c *gin.Context, name string, starterProject string) {
-	s.ServeDevfileStarterProjectWithVersion(c, name, "default", starterProject)
+func (s *Server) ServeDevfileStarterProject(c *gin.Context, name string, starterProject string, params ServeDevfileStarterProjectParams) {
+	s.ServeDevfileStarterProjectWithVersion(c, name, "default", starterProject, ServeDevfileStarterProjectWithVersionParams(params))
 }
 
 func (s *Server) PostDevfileStarterProject(c *gin.Context, name string, starterProject string) {
@@ -248,10 +248,10 @@ func (s *Server) DeleteDevfileStarterProject(c *gin.Context, name string, starte
 }
 
 // ServeDevfileStarterProject returns the starter project content for the devfile using specified version
-func (*Server) ServeDevfileStarterProjectWithVersion(c *gin.Context, name string, version string, starterProject string) {
+func (*Server) ServeDevfileStarterProjectWithVersion(c *gin.Context, name string, version string, starterProject string, params ServeDevfileStarterProjectWithVersionParams) {
 	downloadTmpLoc := path.Join("/tmp", starterProject)
 	stackLoc := path.Join(stacksPath, name)
-	devfileBytes, devfileIndex := fetchDevfile(c, name, version)
+	devfileBytes, devfileIndex := fetchDevfile(c, name, version, ServeDevfileWithVersionParams(params))
 
 	if len(devfileIndex.Versions) > 1 {
 		versionMap, err := util.MakeVersionMap(devfileIndex)
@@ -481,18 +481,13 @@ func ServeUI(c *gin.Context) {
 func buildIndexAPIResponse(c *gin.Context, indexType string, wantV1Index bool, params IndexParams) {
 
 	iconType := ""
-	archs := []string{}
+
+	var bytes []byte
+	var responseIndexPath, responseBase64IndexPath string
 
 	if params.Icon != nil {
 		iconType = *params.Icon
 	}
-
-	if params.Arch != nil {
-		archs = append(archs, *params.Arch...)
-	}
-
-	var bytes []byte
-	var responseIndexPath, responseBase64IndexPath string
 
 	// Sets Access-Control-Allow-Origin response header to allow cross origin requests
 	c.Header("Access-Control-Allow-Origin", "*")
@@ -543,28 +538,37 @@ func buildIndexAPIResponse(c *gin.Context, indexType string, wantV1Index bool, p
 		})
 		return
 	}
+
+	// Filter based on deprecation if deprecated parameter is set
+	if params.Deprecated != nil {
+		util.FilterDevfileDeprecated(&index, *params.Deprecated, wantV1Index)
+	}
+
 	if wantV1Index {
 		index = util.ConvertToOldIndexFormat(index)
 	} else {
-		minSchemaVersion := c.Query("minSchemaVersion")
-		maxSchemaVersion := c.Query("maxSchemaVersion")
-		if maxSchemaVersion != "" || minSchemaVersion != "" {
+		minSchemaVersion := params.MinSchemaVersion
+		maxSchemaVersion := params.MaxSchemaVersion
+		minVersion := params.MinVersion
+		maxVersion := params.MaxVersion
+
+		if util.StrPtrIsSet(maxSchemaVersion) || util.StrPtrIsSet(minSchemaVersion) {
 			// check if schema version filters are in valid format.
 			// should include major and minor versions as well as an optional bugfix version. e.g. 2.1 or 2.1.0
-			if minSchemaVersion != "" {
-				matched, err := regexp.MatchString(`^([2-9])\.([0-9]+)(\.[0-9]+)?$`, minSchemaVersion)
+			if util.StrPtrIsSet(minSchemaVersion) {
+				matched, err := regexp.MatchString(`^([2-9])\.([0-9]+)(\.[0-9]+)?$`, *minSchemaVersion)
 				if !matched || err != nil {
 					c.JSON(http.StatusBadRequest, gin.H{
-						"status": fmt.Sprintf("minSchemaVersion %s is not valid, version format should be '+2.x' or '+2.x.x'. %v", minSchemaVersion, err),
+						"status": fmt.Sprintf("minSchemaVersion %s is not valid, version format should be '+2.x' or '+2.x.x'. %v", *minSchemaVersion, err),
 					})
 					return
 				}
 			}
-			if maxSchemaVersion != "" {
-				matched, err := regexp.MatchString(`^([2-9])\.([0-9]+)(\.[0-9]+)?$`, maxSchemaVersion)
+			if util.StrPtrIsSet(maxSchemaVersion) {
+				matched, err := regexp.MatchString(`^([2-9])\.([0-9]+)(\.[0-9]+)?$`, *maxSchemaVersion)
 				if !matched || err != nil {
 					c.JSON(http.StatusBadRequest, gin.H{
-						"status": fmt.Sprintf("maxSchemaVersion %s is not valid, version format should be '+2.x' or '+2.x.x'. %v", maxSchemaVersion, err),
+						"status": fmt.Sprintf("maxSchemaVersion %s is not valid, version format should be '+2.x' or '+2.x.x'. %v", *maxSchemaVersion, err),
 					})
 					return
 				}
@@ -578,11 +582,47 @@ func buildIndexAPIResponse(c *gin.Context, indexType string, wantV1Index bool, p
 				return
 			}
 		}
+
+		if util.StrPtrIsSet(minVersion) || util.StrPtrIsSet(maxVersion) {
+			// check if version filters are in valid format.
+			// should include major and minor versions as well as an optional bugfix version. e.g. 2.1 or 2.1.0
+			if util.StrPtrIsSet(minVersion) {
+				matched, err := regexp.MatchString(`^([0-9])\.([0-9]+)(\.[0-9]+)?$`, *minVersion)
+				if !matched || err != nil {
+					c.JSON(http.StatusBadRequest, gin.H{
+						"status": fmt.Sprintf("minVersion %s is not valid, version format should be 'x.x' or 'x.x.x'. %v", *minVersion, err),
+					})
+					return
+				}
+			}
+			if util.StrPtrIsSet(maxVersion) {
+				matched, err := regexp.MatchString(`^([0-9]+)\.([0-9]+)(\.[0-9]+)?$`, *maxVersion)
+				if !matched || err != nil {
+					c.JSON(http.StatusBadRequest, gin.H{
+						"status": fmt.Sprintf("maxVersion %s is not valid, version format should be 'x.x' or 'x.x.x'. %v", *maxVersion, err),
+					})
+					return
+				}
+			}
+
+			index, err = util.FilterDevfileVersion(index, minVersion, maxVersion)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"status": fmt.Sprintf("failed to apply version filter: %v", err),
+				})
+				return
+			}
+		}
 	}
-	// Filter the index if archs has been requested
-	if len(archs) > 0 {
-		index = util.FilterDevfileArchitectures(index, archs, wantV1Index)
+
+	// Filter the fields of the index
+	index, err = filterFieldsByParams(index, wantV1Index, params)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"status": fmt.Sprintf("failed to perform field filtering: %v", err),
+		})
 	}
+
 	bytes, err = json.MarshalIndent(&index, "", "  ")
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -634,7 +674,7 @@ func buildProxyErrorResponse(w http.ResponseWriter, r *http.Request, err error, 
 // fetchDevfile retrieves a specified devfile by fetching stacks from the OCI
 // registry and samples from the `samplesPath` given by server. Also retrieves index
 // schema from `indexPath` given by server.
-func fetchDevfile(c *gin.Context, name string, version string) ([]byte, indexSchema.Schema) {
+func fetchDevfile(c *gin.Context, name string, version string, params ServeDevfileWithVersionParams) ([]byte, indexSchema.Schema) {
 	var index []indexSchema.Schema
 	bytes, err := os.ReadFile(indexPath)
 	if err != nil {
@@ -657,24 +697,24 @@ func fetchDevfile(c *gin.Context, name string, version string) ([]byte, indexSch
 
 	// minSchemaVersion and maxSchemaVersion will only be applied if looking for latest stack version
 	if version == "latest" {
-		minSchemaVersion := c.Query("minSchemaVersion")
-		maxSchemaVersion := c.Query("maxSchemaVersion")
+		minSchemaVersion := params.MinSchemaVersion
+		maxSchemaVersion := params.MaxSchemaVersion
 		// check if schema version filters are in valid format.
 		// should include major and minor versions as well as an optional bugfix version. e.g. 2.1 or 2.1.0
-		if minSchemaVersion != "" {
-			matched, err := regexp.MatchString(`^([2-9])\.([0-9]+)(\.[0-9]+)?$`, minSchemaVersion)
+		if util.StrPtrIsSet(minSchemaVersion) {
+			matched, err := regexp.MatchString(`^([2-9])\.([0-9]+)(\.[0-9]+)?$`, *minSchemaVersion)
 			if !matched || err != nil {
 				c.JSON(http.StatusBadRequest, gin.H{
-					"status": fmt.Sprintf("minSchemaVersion %s is not valid, version format should be '+2.x' or '+2.x.x'. %v", minSchemaVersion, err),
+					"status": fmt.Sprintf("minSchemaVersion %s is not valid, version format should be '+2.x' or '+2.x.x'. %v", *minSchemaVersion, err),
 				})
 				return []byte{}, indexSchema.Schema{}
 			}
 		}
-		if maxSchemaVersion != "" {
-			matched, err := regexp.MatchString(`^([2-9])\.([0-9]+)(\.[0-9]+)?$`, maxSchemaVersion)
+		if util.StrPtrIsSet(maxSchemaVersion) {
+			matched, err := regexp.MatchString(`^([2-9])\.([0-9]+)(\.[0-9]+)?$`, *maxSchemaVersion)
 			if !matched || err != nil {
 				c.JSON(http.StatusBadRequest, gin.H{
-					"status": fmt.Sprintf("maxSchemaVersion %s is not valid, version format should be '+2.x' or '+2.x.x'. %v", maxSchemaVersion, err),
+					"status": fmt.Sprintf("maxSchemaVersion %s is not valid, version format should be '+2.x' or '+2.x.x'. %v", *maxSchemaVersion, err),
 				})
 				return []byte{}, indexSchema.Schema{}
 			}

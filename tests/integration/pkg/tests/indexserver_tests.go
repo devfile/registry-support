@@ -18,6 +18,7 @@ package tests
 import (
 	"io"
 	"net/http"
+	"strings"
 
 	devfilePkg "github.com/devfile/library/v2/pkg/devfile"
 	"github.com/devfile/library/v2/pkg/devfile/parser"
@@ -127,6 +128,68 @@ var _ = ginkgo.Describe("[Verify index server is working properly]", func() {
 		gomega.Expect(hasStacks && hasSamples).To(gomega.BeTrue())
 	})
 
+	ginkgo.It("/index/all?deprecated=true endpoint should return stacks and samples which are deprecated", func() {
+		if config.IsTestRegistry {
+			registryIndex := util.GetRegistryIndex(config.Registry + "/index/all?deprecated=true")
+
+			hasStacks := false
+			hasSamples := false
+			hasAllDeprecated := true
+			for _, index := range registryIndex {
+				foundDeprecated := false
+
+				if index.Type == indexSchema.StackDevfileType {
+					hasStacks = true
+				}
+				if index.Type == indexSchema.SampleDevfileType {
+					hasSamples = true
+				}
+
+				for _, tag := range index.Tags {
+					if tag == "Deprecated" {
+						foundDeprecated = true
+						break
+					}
+				}
+
+				if !foundDeprecated {
+					hasAllDeprecated = false
+				}
+			}
+
+			if len(registryIndex) > 0 {
+				gomega.Expect((hasStacks || hasSamples) && hasAllDeprecated).To(gomega.BeTrue())
+			}
+		} else {
+			ginkgo.Skip("cannot guarantee test outside of test registry, skipping test")
+		}
+	})
+
+	ginkgo.It("/index/all?deprecated=false endpoint should return stacks and samples which are non-deprecated", func() {
+		if config.IsTestRegistry {
+			registryIndex := util.GetRegistryIndex(config.Registry + "/index/all?deprecated=false")
+
+			hasStacks := false
+			hasSamples := false
+			for _, index := range registryIndex {
+				if index.Type == indexSchema.StackDevfileType {
+					hasStacks = true
+				}
+				if index.Type == indexSchema.SampleDevfileType {
+					hasSamples = true
+				}
+
+				gomega.Expect(index.Tags).ShouldNot(gomega.ContainElement("Deprecated"))
+			}
+
+			if len(registryIndex) > 0 {
+				gomega.Expect(hasStacks || hasSamples).To(gomega.BeTrue())
+			}
+		} else {
+			ginkgo.Skip("cannot guarantee test outside of test registry, skipping test")
+		}
+	})
+
 	ginkgo.It("/index/all?arch=amd64&arch=arm64 endpoint should return stacks and samples for arch amd64 and arm64", func() {
 		registryIndex := util.GetRegistryIndex(config.Registry + "/index/all?arch=amd64&arch=arm64")
 
@@ -146,6 +209,71 @@ var _ = ginkgo.Describe("[Verify index server is working properly]", func() {
 
 		if len(registryIndex) > 0 {
 			gomega.Expect(hasStacks && hasSamples).To(gomega.BeTrue())
+		}
+	})
+
+	ginkgo.It("/index?provider=Red%22Hat&resources=.zip endpoint should return stacks for provider Red Hat and resources containing .zip partial match", func() {
+		if config.IsTestRegistry {
+			registryIndex := util.GetRegistryIndex(config.Registry + "/index?provider=Red%22Hat&resources=.zip")
+
+			hasStacks := false
+			for _, index := range registryIndex {
+				if index.Type == indexSchema.StackDevfileType {
+					hasStacks = true
+				}
+				gomega.Expect(index.Resources).Should(gomega.ContainElement(gomega.ContainSubstring(".zip")))
+				gomega.Expect(index.Provider).Should(gomega.Equal("Red Hat"))
+			}
+
+			if len(registryIndex) > 0 {
+				gomega.Expect(hasStacks).To(gomega.BeTrue())
+			}
+		} else {
+			ginkgo.Skip("cannot guarantee test outside of test registry, skipping test")
+		}
+	})
+
+	ginkgo.It("/index/sample?description=Hello%22World endpoint should return samples with Hello World in the description", func() {
+		if config.IsTestRegistry {
+			registryIndex := util.GetRegistryIndex(config.Registry + "/index/sample?description=Hello%22World")
+
+			hasSamples := false
+			for _, index := range registryIndex {
+				if index.Type == indexSchema.SampleDevfileType {
+					hasSamples = true
+				}
+				gomega.Expect(index.Description).Should(gomega.ContainSubstring("Hello World"))
+			}
+
+			if len(registryIndex) > 0 {
+				gomega.Expect(hasSamples).To(gomega.BeTrue())
+			}
+		} else {
+			ginkgo.Skip("cannot guarantee test outside of test registry, skipping test")
+		}
+	})
+
+	ginkgo.It("/index/all?description=node endpoint should return stacks and samples with node (non-case sensitive) in the description", func() {
+		if config.IsTestRegistry {
+			registryIndex := util.GetRegistryIndex(config.Registry + "/index/all?description=node")
+
+			hasStacks := false
+			hasSamples := false
+			for _, index := range registryIndex {
+				if index.Type == indexSchema.StackDevfileType {
+					hasStacks = true
+				} else if index.Type == indexSchema.SampleDevfileType {
+					hasSamples = true
+				}
+				// strings.ToLower is used to do a non-case match as the fuzzy filtering is non-case sensitive
+				gomega.Expect(strings.ToLower(index.Description)).Should(gomega.ContainSubstring("node"))
+			}
+
+			if len(registryIndex) > 0 {
+				gomega.Expect(hasStacks && hasSamples).To(gomega.BeTrue())
+			}
+		} else {
+			ginkgo.Skip("cannot guarantee test outside of test registry, skipping test")
 		}
 	})
 
@@ -208,6 +336,88 @@ var _ = ginkgo.Describe("[Verify index server is working properly]", func() {
 		}
 	})
 
+	ginkgo.It("/v2index/all?deprecated=true endpoint should return stacks and samples which are deprecated", func() {
+		if config.IsTestRegistry {
+			registryIndex := util.GetRegistryIndex(config.Registry + "/v2index/all?deprecated=true")
+
+			hasStacks := false
+			hasSamples := false
+			hasAllDeprecated := true
+			for _, index := range registryIndex {
+				foundDeprecated := false
+
+				if index.Type == indexSchema.StackDevfileType {
+					hasStacks = true
+				}
+				if index.Type == indexSchema.SampleDevfileType {
+					hasSamples = true
+				}
+
+				for _, tag := range index.Tags {
+					if tag == "Deprecated" {
+						foundDeprecated = true
+						break
+					}
+				}
+
+				for _, version := range index.Versions {
+					if version.Default {
+						for _, tag := range version.Tags {
+							if tag == "Deprecrated" {
+								foundDeprecated = true
+								break
+							}
+						}
+						break
+					}
+				}
+
+				if !foundDeprecated {
+					hasAllDeprecated = false
+					break
+				}
+			}
+
+			if len(registryIndex) > 0 {
+				gomega.Expect((hasStacks || hasSamples) && hasAllDeprecated).To(gomega.BeTrue())
+			}
+		} else {
+			ginkgo.Skip("cannot guarantee test outside of test registry, skipping test")
+		}
+	})
+
+	ginkgo.It("/v2index/all?deprecated=false endpoint should return stacks and samples which are non-deprecated", func() {
+		if config.IsTestRegistry {
+			registryIndex := util.GetRegistryIndex(config.Registry + "/v2index/all?deprecated=false")
+
+			hasStacks := false
+			hasSamples := false
+			for _, index := range registryIndex {
+				if index.Type == indexSchema.StackDevfileType {
+					hasStacks = true
+				}
+				if index.Type == indexSchema.SampleDevfileType {
+					hasSamples = true
+				}
+
+				gomega.Expect(index.Tags).ShouldNot(gomega.ContainElement("Deprecated"))
+
+				for _, version := range index.Versions {
+					if version.Default {
+						gomega.Expect(version.Tags).ShouldNot(gomega.ContainElement("Deprecated"))
+						break
+					}
+				}
+			}
+
+			if len(registryIndex) > 0 {
+				gomega.Expect(hasStacks || hasSamples).To(gomega.BeTrue())
+			}
+		} else {
+			ginkgo.Skip("cannot guarantee test outside of test registry, skipping test")
+		}
+	})
+
 	ginkgo.It("/v2index/all?arch=amd64&arch=arm64 endpoint should return stacks and samples for arch amd64 and arm64", func() {
 		if config.IsTestRegistry {
 			registryIndex := util.GetRegistryIndex(config.Registry + "/v2index/all?arch=amd64&arch=arm64")
@@ -223,6 +433,114 @@ var _ = ginkgo.Describe("[Verify index server is working properly]", func() {
 				}
 				if len(index.Architectures) != 0 {
 					gomega.Expect(index.Architectures).Should(gomega.ContainElements("amd64", "arm64"))
+				}
+			}
+
+			if len(registryIndex) > 0 {
+				gomega.Expect(hasStacks && hasSamples).To(gomega.BeTrue())
+			}
+		} else {
+			ginkgo.Skip("cannot guarantee test outside of test registry, skipping test")
+		}
+	})
+
+	ginkgo.It("/v2index/all?arch=arm64&language=java endpoint should return stacks and samples for arch 'arm64' and language 'java'", func() {
+		if config.IsTestRegistry {
+			registryIndex := util.GetRegistryIndex(config.Registry + "/v2index/all?arch=arm64&language=java")
+
+			hasStacks := false
+			hasSamples := false
+			for _, index := range registryIndex {
+				if index.Type == indexSchema.SampleDevfileType {
+					hasSamples = true
+				}
+				if index.Type == indexSchema.StackDevfileType {
+					hasStacks = true
+				}
+				if len(index.Architectures) != 0 {
+					gomega.Expect(index.Architectures).Should(gomega.ContainElement("arm64"))
+				}
+
+				gomega.Expect(index.Language).Should(gomega.ContainSubstring("java"))
+			}
+
+			if len(registryIndex) > 0 {
+				gomega.Expect(hasStacks && hasSamples).To(gomega.BeTrue())
+			}
+		} else {
+			ginkgo.Skip("cannot guarantee test outside of test registry, skipping test")
+		}
+	})
+
+	ginkgo.It("/v2index?name=java&default=true endpoint should return stacks for name contains 'java' and is default stack version", func() {
+		if config.IsTestRegistry {
+			registryIndex := util.GetRegistryIndex(config.Registry + "/v2index?name=java&default=true")
+
+			hasStacks := false
+			for _, index := range registryIndex {
+				if index.Type == indexSchema.StackDevfileType {
+					hasStacks = true
+				}
+				gomega.Expect(index.Name).Should(gomega.ContainSubstring("java"))
+
+				gomega.Expect(len(index.Versions) == 1).To(gomega.BeTrue())
+				if len(index.Versions) == 1 {
+					gomega.Expect(index.Versions[0].Default).To(gomega.BeTrue())
+				}
+			}
+
+			if len(registryIndex) > 0 {
+				gomega.Expect(hasStacks).To(gomega.BeTrue())
+			}
+		} else {
+			ginkgo.Skip("cannot guarantee test outside of test registry, skipping test")
+		}
+	})
+
+	ginkgo.It("/v2index/sample?description=java&default=true endpoint should return samples for description contains 'java' and is default sample version", func() {
+		if config.IsTestRegistry {
+			registryIndex := util.GetRegistryIndex(config.Registry + "/v2index/sample?description=java&default=true")
+
+			hasSamples := false
+			for _, index := range registryIndex {
+				if index.Type == indexSchema.SampleDevfileType {
+					hasSamples = true
+				}
+				// strings.ToLower is used to do a non-case match as the fuzzy filtering is non-case sensitive
+				gomega.Expect(strings.ToLower(index.Description)).Should(gomega.ContainSubstring("java"))
+
+				gomega.Expect(len(index.Versions) == 1).To(gomega.BeTrue())
+				if len(index.Versions) == 1 {
+					gomega.Expect(index.Versions[0].Default).To(gomega.BeTrue())
+				}
+			}
+
+			if len(registryIndex) > 0 {
+				gomega.Expect(hasSamples).To(gomega.BeTrue())
+			}
+		} else {
+			ginkgo.Skip("cannot guarantee test outside of test registry, skipping test")
+		}
+	})
+
+	ginkgo.It("/v2index/all?description=java&default=true endpoint should return stacks and samples for description contains 'java' and is default sample version", func() {
+		if config.IsTestRegistry {
+			registryIndex := util.GetRegistryIndex(config.Registry + "/v2index/all?description=java&default=true")
+
+			hasStacks := false
+			hasSamples := false
+			for _, index := range registryIndex {
+				if index.Type == indexSchema.StackDevfileType {
+					hasStacks = true
+				} else if index.Type == indexSchema.SampleDevfileType {
+					hasSamples = true
+				}
+				// strings.ToLower is used to do a non-case match as the fuzzy filtering is non-case sensitive
+				gomega.Expect(strings.ToLower(index.Description)).Should(gomega.ContainSubstring("java"))
+
+				gomega.Expect(len(index.Versions) == 1).To(gomega.BeTrue())
+				if len(index.Versions) == 1 {
+					gomega.Expect(index.Versions[0].Default).To(gomega.BeTrue())
 				}
 			}
 
@@ -255,6 +573,38 @@ var _ = ginkgo.Describe("[Verify index server is working properly]", func() {
 					gomega.Expect(version.SchemaVersion).Should(gomega.Equal("2.1.0"))
 				}
 			}
+		}
+	})
+
+	ginkgo.It("/v2index?minVersion=1.1&maxVersion=1.1 endpoint should return stacks for devfile version 1.1.0", func() {
+		if config.IsTestRegistry {
+			registryIndex := util.GetRegistryIndex(config.Registry + "/v2index/all?minVersion=1.1&maxVersion=1.1")
+
+			for _, index := range registryIndex {
+				if len(index.Versions) != 0 {
+					for _, version := range index.Versions {
+						gomega.Expect(version.Version).Should(gomega.Equal("1.1.0"))
+					}
+				}
+			}
+		} else {
+			ginkgo.Skip("cannot guarantee test outside of test registry, skipping test")
+		}
+	})
+
+	ginkgo.It("/v2index?minVersion=1.1.0&maxVersion=1.1.0 endpoint should return stacks for devfile version 1.1.0", func() {
+		if config.IsTestRegistry {
+			registryIndex := util.GetRegistryIndex(config.Registry + "/v2index/all?minVersion=1.1.0&maxVersion=1.1.0")
+
+			for _, index := range registryIndex {
+				if len(index.Versions) != 0 {
+					for _, version := range index.Versions {
+						gomega.Expect(version.Version).Should(gomega.Equal("1.1.0"))
+					}
+				}
+			}
+		} else {
+			ginkgo.Skip("cannot guarantee test outside of test registry, skipping test")
 		}
 	})
 

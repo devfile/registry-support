@@ -23,6 +23,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"reflect"
 	"strconv"
 	"strings"
 
@@ -242,4 +243,53 @@ func MakeVersionMap(devfileIndex indexSchema.Schema) (map[string]indexSchema.Ver
 	}
 	versionMap["latest"] = versionMap[latestVersion]
 	return versionMap, nil
+}
+
+// StructToMap converts any struct into a map
+func StructToMap[T any](s T) map[string]any {
+	result := make(map[string]interface{})
+
+	val := reflect.ValueOf(s)
+
+	if val.Kind() == reflect.Pointer {
+		if val.IsNil() {
+			return nil
+		}
+		val = val.Elem()
+	}
+
+	structType := val.Type()
+	for i := 0; i < val.NumField(); i++ {
+		fieldName := structType.Field(i).Name
+		field := val.Field(i)
+		var fieldValueKind reflect.Kind = field.Kind()
+		var fieldValue interface{}
+
+		if fieldValueKind == reflect.Pointer {
+			if field.IsNil() {
+				continue
+			}
+			field = field.Elem()
+			fieldValueKind = field.Kind()
+		} else if field.IsZero() {
+			continue
+		}
+
+		if fieldValueKind == reflect.Struct {
+			fieldValue = StructToMap(field.Interface())
+		} else {
+			fieldValue = field.Interface()
+		}
+
+		fieldName = strings.ToLower(string(fieldName[0])) + fieldName[1:]
+
+		result[fieldName] = fieldValue
+	}
+
+	return result
+}
+
+// StrPtrIsSet checks if string pointer is set to a value
+func StrPtrIsSet(ptr *string) bool {
+	return ptr != nil && *ptr != ""
 }

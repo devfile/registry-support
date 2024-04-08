@@ -9,14 +9,18 @@ require (
 	github.com/devfile/registry-support/index/generator v0.0.0
 	github.com/getkin/kin-openapi v0.117.0
 	github.com/gin-gonic/gin v1.9.0
+	github.com/hashicorp/go-set v0.1.13
 	github.com/hashicorp/go-version v1.4.0
 	github.com/kylelemons/godebug v0.0.0-20170820004349-d65d576e9348
+	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826
 	github.com/opencontainers/go-digest v1.0.0
 	github.com/opencontainers/image-spec v1.1.0
 	github.com/prometheus/client_golang v1.14.0
 	golang.org/x/text v0.14.0
 	gopkg.in/segmentio/analytics-go.v3 v3.1.0
+	k8s.io/apiextensions-apiserver v0.26.10
 	k8s.io/apimachinery v0.26.10
+	k8s.io/utils v0.0.0-20230220204549-a5ecb0141aa5
 	oras.land/oras-go v1.2.5
 )
 
@@ -96,7 +100,6 @@ require (
 	github.com/moby/locker v1.0.1 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
-	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/openshift/api v0.0.0-20200930075302-db52bc4ef99f // indirect
 	github.com/pelletier/go-toml/v2 v2.1.1 // indirect
@@ -143,12 +146,10 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/api v0.26.10 // indirect
-	k8s.io/apiextensions-apiserver v0.26.10 // indirect
 	k8s.io/client-go v0.26.10 // indirect
 	k8s.io/klog v1.0.0 // indirect
 	k8s.io/klog/v2 v2.90.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20221012153701-172d655c2280 // indirect
-	k8s.io/utils v0.0.0-20230220204549-a5ecb0141aa5 // indirect
 	sigs.k8s.io/controller-runtime v0.14.7 // indirect
 	sigs.k8s.io/json v0.0.0-20220713155537-f223a00ba0e2 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect
