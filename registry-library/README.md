@@ -128,6 +128,22 @@ Supported devfile media types can be found in the latest version of [library.go]
       HTTPTimeout: &customTimeout
    }
    ```
+7. Filter *only deprecated* Devfiles based on the [lifecycle process for the devfiles project](https://github.com/devfile/registry/blob/main/LIFECYCLE.md)
+    ```go
+    options := registryLibrary.RegistryOptions{
+        Filter: registryLibrary.RegistryFilter{
+            Deprecated: "true",
+        },
+    }
+    ```
+8. Filter *only non deprecated* Devfiles based on the [lifecycle process for the devfiles project](https://github.com/devfile/registry/blob/main/LIFECYCLE.md)
+    ```go
+    options := registryLibrary.RegistryOptions{
+        Filter: registryLibrary.RegistryFilter{
+            Deprecated: "false",
+        },
+    }
+    ```
 
 #### Download the starter project
 
