@@ -103,6 +103,10 @@ type RegistryFilter struct {
 	// only major version and minor version are required. e.g. 2.1, 2.2 ect. service version should not be provided.
 	// will only be applied if `NewIndexSchema=true`
 	MaxSchemaVersion string
+	// Deprecated is set to filter devfile index for stacks having the "Deprecated" tag inside their default set of tags
+	// or not. the only acceptable values are "true"/"false". in case the value is "true" it will only include only
+	// deprecated stacks, if is "false" only non deprecated. will only be applied if `NewIndexSchema=true`
+	Deprecated string
 }
 
 // GetRegistryIndex returns the list of index schema structured stacks and/or samples from a specified devfile registry.
@@ -152,13 +156,17 @@ func GetRegistryIndex(registryURL string, options RegistryOptions, devfileTypes 
 				q.Add("arch", arch)
 			}
 		}
-
-		if options.NewIndexSchema && (options.Filter.MaxSchemaVersion != "" || options.Filter.MinSchemaVersion != "") {
-			if options.Filter.MinSchemaVersion != "" {
-				q.Add("minSchemaVersion", options.Filter.MinSchemaVersion)
+		if options.NewIndexSchema {
+			if options.Filter.MaxSchemaVersion != "" || options.Filter.MinSchemaVersion != "" {
+				if options.Filter.MinSchemaVersion != "" {
+					q.Add("minSchemaVersion", options.Filter.MinSchemaVersion)
+				}
+				if options.Filter.MaxSchemaVersion != "" {
+					q.Add("maxSchemaVersion", options.Filter.MaxSchemaVersion)
+				}
 			}
-			if options.Filter.MaxSchemaVersion != "" {
-				q.Add("maxSchemaVersion", options.Filter.MaxSchemaVersion)
+			if options.Filter.Deprecated == "true" || options.Filter.Deprecated == "false" {
+				q.Add("deprecated", options.Filter.Deprecated)
 			}
 		}
 		urlObj.RawQuery = q.Encode()
