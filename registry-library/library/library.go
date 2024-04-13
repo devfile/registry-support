@@ -171,7 +171,7 @@ func GetRegistryIndex(registryURL string, options RegistryOptions, devfileTypes 
 				}
 			}
 			if options.Filter.Deprecated == DeprecatedFilterTrue || options.Filter.Deprecated == DeprecatedFilterFalse {
-				q.Add("deprecated", options.Filter.Deprecated)
+				q.Add("deprecated", string(options.Filter.Deprecated))
 			}
 		}
 		urlObj.RawQuery = q.Encode()
