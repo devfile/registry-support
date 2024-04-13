@@ -48,9 +48,11 @@ const (
 	DevfilePNGLogoMediaType = "image/png"
 	DevfileArchiveMediaType = "application/x-tar"
 
-	OwnersFile                 = "OWNERS"
-	registryLibrary            = "registry-library" //constant to indicate that function is called by the library
-	httpRequestResponseTimeout = 30 * time.Second   // httpRequestTimeout configures timeout of all HTTP requests
+	OwnersFile                                  = "OWNERS"
+	registryLibrary                             = "registry-library" //constant to indicate that function is called by the library
+	httpRequestResponseTimeout                  = 30 * time.Second   // httpRequestTimeout configures timeout of all HTTP requests
+	DeprecatedFilterTrue       DeprecatedFilter = "true"
+	DeprecatedFilterFalse      DeprecatedFilter = "false"
 )
 
 var (
@@ -64,6 +66,9 @@ type Registry struct {
 	registryContents []indexSchema.Schema
 	err              error
 }
+
+// DeprecatedFilter to manage the deprecated filter values
+type DeprecatedFilter string
 
 // TelemetryData structure to pass in client telemetry information
 // The User and Locale fields should be passed in by clients if telemetry opt-in is enabled
@@ -106,7 +111,7 @@ type RegistryFilter struct {
 	// Deprecated is set to filter devfile index for stacks having the "Deprecated" tag inside their default set of tags
 	// or not. the only acceptable values are "true"/"false". in case the value is "true" it will only include only
 	// deprecated stacks, if is "false" only non deprecated. will only be applied if `NewIndexSchema=true`
-	Deprecated string
+	Deprecated DeprecatedFilter
 }
 
 // GetRegistryIndex returns the list of index schema structured stacks and/or samples from a specified devfile registry.
@@ -165,7 +170,7 @@ func GetRegistryIndex(registryURL string, options RegistryOptions, devfileTypes 
 					q.Add("maxSchemaVersion", options.Filter.MaxSchemaVersion)
 				}
 			}
-			if options.Filter.Deprecated == "true" || options.Filter.Deprecated == "false" {
+			if options.Filter.Deprecated == DeprecatedFilterTrue || options.Filter.Deprecated == DeprecatedFilterFalse {
 				q.Add("deprecated", options.Filter.Deprecated)
 			}
 		}
