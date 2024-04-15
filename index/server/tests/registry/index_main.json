@@ -162,7 +162,7 @@
       "Java",
       "Spring"
     ],
-    "icon": "https://www.eclipse.org/che/images/logo-eclipseche.svg",
+    "icon": "https://raw.githubusercontent.com/devfile-samples/devfile-stack-icons/main/spring.svg",
     "projectType": "spring",
     "language": "java",
     "versions": [
@@ -171,7 +171,7 @@
         "schemaVersion": "2.2.0",
         "default": true,
         "description": "Spring Boot® using Java",
-        "icon": "https://www.eclipse.org/che/images/logo-eclipseche.svg",
+        "icon": "https://raw.githubusercontent.com/devfile-samples/devfile-stack-icons/main/spring.svg",
         "tags": [
           "Java",
           "Spring"

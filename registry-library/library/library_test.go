@@ -50,6 +50,19 @@ var (
 		},
 	}
 
+	deprecatedFilteredIndex = []indexSchema.Schema{
+		{
+			Name: "deprecatedindex1",
+			Tags: []string{"Deprecated, arm64"},
+		},
+	}
+
+	nonDeprecatedFilteredIndex = []indexSchema.Schema{
+		{
+			Name: "deprecatedindex2",
+		},
+	}
+
 	schemaVersionFilteredIndex = []indexSchema.Schema{
 		{
 			Name: "indexSchema2.1",
@@ -206,6 +219,10 @@ func setUpIndexHandle(indexUrl *url.URL) []indexSchema.Schema {
 
 	if strings.Contains(indexUrl.String(), "arch=amd64&arch=arm64") {
 		data = archFilteredIndex
+	} else if strings.Contains(indexUrl.String(), "deprecated=true") {
+		data = deprecatedFilteredIndex
+	} else if strings.Contains(indexUrl.String(), "deprecated=false") {
+		data = nonDeprecatedFilteredIndex
 	} else if strings.Contains(indexUrl.String(), "maxSchemaVersion=2.2") && strings.Contains(indexUrl.String(), "minSchemaVersion=2.1") {
 		data = schemaVersionFilteredIndex
 	} else if indexUrl.Path == "/index/sample" {
@@ -314,6 +331,30 @@ func TestGetRegistryIndex(t *testing.T) {
 			},
 			devfileTypes: []indexSchema.DevfileType{indexSchema.StackDevfileType},
 			wantSchemas:  schemaVersionFilteredIndex,
+		},
+		{
+			name: "Get Deprecated Filtered Index",
+			url:  "http://" + serverIP,
+			options: RegistryOptions{
+				NewIndexSchema: true,
+				Filter: RegistryFilter{
+					Deprecated: DeprecatedFilterTrue,
+				},
+			},
+			devfileTypes: []indexSchema.DevfileType{indexSchema.StackDevfileType},
+			wantSchemas:  deprecatedFilteredIndex,
+		},
+		{
+			name: "Get Non Deprecated Filtered Index",
+			url:  "http://" + serverIP,
+			options: RegistryOptions{
+				NewIndexSchema: true,
+				Filter: RegistryFilter{
+					Deprecated: DeprecatedFilterFalse,
+				},
+			},
+			devfileTypes: []indexSchema.DevfileType{indexSchema.StackDevfileType},
+			wantSchemas:  nonDeprecatedFilteredIndex,
 		},
 		{
 			name: "Get Arch Filtered Index",

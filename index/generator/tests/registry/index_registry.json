@@ -154,7 +154,7 @@
     "description": "Spring Boot® using Java",
     "type": "stack",
     "tags": ["Java", "Spring"],
-    "icon": "https://www.eclipse.org/che/images/logo-eclipseche.svg",
+    "icon": "https://raw.githubusercontent.com/devfile-samples/devfile-stack-icons/main/spring.svg",
     "projectType": "spring",
     "language": "java",
     "versions": [
@@ -164,7 +164,7 @@
         "default": true,
         "description": "Spring Boot® using Java",
         "tags": ["Java", "Spring"],
-        "icon": "https://www.eclipse.org/che/images/logo-eclipseche.svg",
+        "icon": "https://raw.githubusercontent.com/devfile-samples/devfile-stack-icons/main/spring.svg",
         "links": {
           "self": "devfile-catalog/java-springboot:1.1.0"
         },

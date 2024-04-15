@@ -135,7 +135,7 @@ curl http://devfile-registry.192.168.1.1.nip.io/index
       "Java",
       "Spring"
     ],
-    "icon": "https://www.eclipse.org/che/images/logo-eclipseche.svg",
+    "icon": "https://raw.githubusercontent.com/devfile-samples/devfile-stack-icons/main/spring.svg",
     "globalMemoryLimit": "2674Mi",
     "projectType": "spring",
     "language": "java",
@@ -801,7 +801,7 @@ curl http://devfile-registry.192.168.1.1.nip.io/index/all
       "Java",
       "Spring"
     ],
-    "icon": "https://www.eclipse.org/che/images/logo-eclipseche.svg",
+    "icon": "https://raw.githubusercontent.com/devfile-samples/devfile-stack-icons/main/spring.svg",
     "globalMemoryLimit": "2674Mi",
     "projectType": "spring",
     "language": "java",
