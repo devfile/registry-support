@@ -338,7 +338,7 @@ func TestGetRegistryIndex(t *testing.T) {
 			options: RegistryOptions{
 				NewIndexSchema: true,
 				Filter: RegistryFilter{
-					Deprecated: "true",
+					Deprecated: DeprecatedFilterTrue,
 				},
 			},
 			devfileTypes: []indexSchema.DevfileType{indexSchema.StackDevfileType},
@@ -350,7 +350,7 @@ func TestGetRegistryIndex(t *testing.T) {
 			options: RegistryOptions{
 				NewIndexSchema: true,
 				Filter: RegistryFilter{
-					Deprecated: "false",
+					Deprecated: DeprecatedFilterFalse,
 				},
 			},
 			devfileTypes: []indexSchema.DevfileType{indexSchema.StackDevfileType},
