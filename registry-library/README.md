@@ -132,7 +132,7 @@ Supported devfile media types can be found in the latest version of [library.go]
     ```go
     options := registryLibrary.RegistryOptions{
         Filter: registryLibrary.RegistryFilter{
-            Deprecated: "true",
+            Deprecated: registryLibrary.DeprecatedFilterTrue,
         },
     }
     ```
@@ -140,7 +140,7 @@ Supported devfile media types can be found in the latest version of [library.go]
     ```go
     options := registryLibrary.RegistryOptions{
         Filter: registryLibrary.RegistryFilter{
-            Deprecated: "false",
+            Deprecated: registryLibrary.DeprecatedFilterFalse,
         },
     }
     ```
