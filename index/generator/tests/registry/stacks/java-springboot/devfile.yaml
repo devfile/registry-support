@@ -6,7 +6,7 @@ metadata:
   description: Spring Boot® using Java
   tags: ["Java", "Spring"]
   globalMemoryLimit: 2674Mi
-  icon: https://www.eclipse.org/che/images/logo-eclipseche.svg
+  icon: https://raw.githubusercontent.com/devfile-samples/devfile-stack-icons/main/spring.svg
   projectType: "spring"
   language: "java"
 starterProjects:
