@@ -15,6 +15,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# set podman alias if necessary
+. ../../setenv.sh
+
 IMAGE_TAG=$1
 docker tag devfile-index-base:latest $IMAGE_TAG
 docker push $IMAGE_TAG
