@@ -8,9 +8,13 @@ If you want to run the build scripts with Podman, set the environment variable
 
 The integration tests can be built to either run in a Docker container, or locally on your machine.
 
-To build the test docker image, run `./docker-build.sh`
+### Container Based
+To build the test container image, run `./docker-build.sh`.
 
-To build the test binary locally, run: `./build.sh`
+To tag and push the test container image to a repository of your choice, run `./docker-push.sh <your-image-tag>`. By default the tag will be `localhost/devfile-registry-integration:latest`.
+
+### Local
+To build the test binary locally, run: `./build.sh`.
 
 ## Custom Tests
 

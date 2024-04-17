@@ -18,7 +18,6 @@
 # This script builds a devfile registry index container image based on the mock devfile registry data under tests/registry
 # This can be useful if developing components within this repository (such as the index server or build tools)
 # and want to test all of the components together
-shopt -s expand_aliases
 set -ex
 
 # Set base registry support directory

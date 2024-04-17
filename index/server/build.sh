@@ -15,6 +15,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# this script is commonly called from build_registry.sh and the podman alias is passed down from that script
+# this can also affect pathing, to combat this we only run the setenv.sh script if build.sh is being run solo
+if [ "$0" == "$BASH_SOURCE" ]; then
+    . ../../setenv.sh
+fi
+
 # Build the index container for the registry
 buildfolder="$(realpath $(dirname ${BASH_SOURCE[0]}))"
 
