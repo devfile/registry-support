@@ -15,6 +15,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# set podman alias if necessary
+. ../setenv.sh
+
 # Build the index container for the registry
 buildfolder="$(basename "$(dirname "$0")")"
 docker build -t oci-registry:next $buildfolder
