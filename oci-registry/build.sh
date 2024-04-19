@@ -17,4 +17,8 @@
 
 # Build the index container for the registry
 buildfolder="$(basename "$(dirname "$0")")"
+
+# set podman alias if necessary
+. ${buildfolder}/../setenv.sh
+
 docker build -t oci-registry:next $buildfolder

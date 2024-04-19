@@ -15,6 +15,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# set podman alias if necessary
+. $(basename "$(dirname "$0")")/../setenv.sh
+
 IMAGE_TAG=$1
 docker tag oci-registry:next $IMAGE_TAG
 docker push $IMAGE_TAG
