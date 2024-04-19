@@ -16,7 +16,7 @@
 # limitations under the License.
 
 # set podman alias if necessary
-. ../setenv.sh
+. $(basename "$(dirname "$0")")/../setenv.sh
 
 IMAGE_TAG=$1
 docker tag oci-registry:next $IMAGE_TAG
