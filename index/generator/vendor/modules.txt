@@ -84,7 +84,7 @@ github.com/cyphar/filepath-securejoin
 # github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc
 ## explicit
 github.com/davecgh/go-spew/spew
-# github.com/devfile/api/v2 v2.2.1
+# github.com/devfile/api/v2 v2.2.2
 ## explicit; go 1.18
 github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2
 github.com/devfile/api/v2/pkg/attributes
@@ -93,7 +93,7 @@ github.com/devfile/api/v2/pkg/utils/overriding
 github.com/devfile/api/v2/pkg/utils/unions
 github.com/devfile/api/v2/pkg/validation
 github.com/devfile/api/v2/pkg/validation/variables
-# github.com/devfile/library/v2 v2.2.2-0.20240315205431-44ca18d63cf4
+# github.com/devfile/library/v2 v2.2.2
 ## explicit; go 1.19
 github.com/devfile/library/v2/pkg/devfile
 github.com/devfile/library/v2/pkg/devfile/parser
@@ -111,7 +111,7 @@ github.com/devfile/library/v2/pkg/devfile/parser/util
 github.com/devfile/library/v2/pkg/devfile/validate
 github.com/devfile/library/v2/pkg/testingutil/filesystem
 github.com/devfile/library/v2/pkg/util
-# github.com/devfile/registry-support/registry-library v0.0.0-20240311160550-e51ee8934746
+# github.com/devfile/registry-support/registry-library v0.0.0-20240328155806-7c89891a72ce
 ## explicit; go 1.19
 github.com/devfile/registry-support/registry-library/library
 # github.com/distribution/distribution/v3 v3.0.0-20221208165359-362910506bc2
