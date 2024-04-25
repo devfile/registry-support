@@ -75,6 +75,35 @@ func (e *IconUrlBrokenError) Error() string {
 	return fmt.Sprintf("Devfile %s has broken or not existing icon\n", e.devfile)
 }
 
+// InvalidDeploymentScopes error type for when deploymentScopes contains any incorrect kinds
+type InvalidDeploymentScopes struct {
+	devfile             string
+	deploymentScopeKind schema.DeploymentScopeKind
+}
+
+func (e *InvalidDeploymentScopes) Error() string {
+	return fmt.Sprintf("Deployment scope %s is incorrect for devfile %s, can only be '%s' or '%s'\n",
+		e.deploymentScopeKind, e.devfile, schema.InnerloopKind, schema.OuterloopKind)
+}
+
+// TooManyDeploymentScopes error type for when there are deploymentScopes set at once
+type TooManyDeploymentScopes struct {
+	devfile string
+}
+
+func (e *TooManyDeploymentScopes) Error() string {
+	deploymentScopeKinds := []any{
+		schema.InnerloopKind,
+		schema.OuterloopKind,
+	}
+	params := []any{
+		e.devfile,
+	}
+	params = append(params, len(deploymentScopeKinds))
+	params = append(params, deploymentScopeKinds...)
+	return fmt.Sprintf("Devfile %s has too many deployment scopes, can only be %s at most, '%s' or '%s'\n", params...)
+}
+
 // GenerateIndexStruct parses registry then generates index struct according to the schema
 func GenerateIndexStruct(registryDirPath string, force bool) ([]schema.Schema, error) {
 	// Parse devfile registry then populate index struct
@@ -192,6 +221,14 @@ func validateIndexComponent(indexComponent schema.Schema, componentType schema.D
 	}
 	if len(indexComponent.Architectures) == 0 {
 		return &MissingArchError{devfile: indexComponent.Name}
+	}
+	if len(indexComponent.DeploymentScopes) > 2 {
+		return &TooManyDeploymentScopes{devfile: indexComponent.Name}
+	}
+	for kind := range indexComponent.DeploymentScopes {
+		if kind != schema.InnerloopKind && kind != schema.OuterloopKind {
+			return &InvalidDeploymentScopes{devfile: indexComponent.Name, deploymentScopeKind: kind}
+		}
 	}
 
 	return nil
