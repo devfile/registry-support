@@ -230,6 +230,17 @@ func validateIndexComponent(indexComponent schema.Schema, componentType schema.D
 			return &InvalidDeploymentScopes{devfile: indexComponent.Name, deploymentScopeKind: kind}
 		}
 	}
+	for _, version := range indexComponent.Versions {
+		if len(version.DeploymentScopes) > 2 {
+			return &TooManyDeploymentScopes{devfile: indexComponent.Name}
+		}
+
+		for kind := range version.DeploymentScopes {
+			if kind != schema.InnerloopKind && kind != schema.OuterloopKind {
+				return &InvalidDeploymentScopes{devfile: indexComponent.Name, deploymentScopeKind: kind}
+			}
+		}
+	}
 
 	return nil
 }

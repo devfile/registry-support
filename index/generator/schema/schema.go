@@ -251,16 +251,17 @@ type StackInfo struct {
 
 // Version stores the information for each stack version
 type Version struct {
-	Version         string                    `yaml:"version,omitempty" json:"version,omitempty"`
-	SchemaVersion   string                    `yaml:"schemaVersion,omitempty" json:"schemaVersion,omitempty"`
-	Default         bool                      `yaml:"default,omitempty" json:"default,omitempty"`
-	Git             *Git                      `yaml:"git,omitempty" json:"git,omitempty"`
-	Description     string                    `yaml:"description,omitempty" json:"description,omitempty"`
-	Tags            []string                  `yaml:"tags,omitempty" json:"tags,omitempty"`
-	Architectures   []string                  `yaml:"architectures,omitempty" json:"architectures,omitempty"`
-	Icon            string                    `yaml:"icon,omitempty" json:"icon,omitempty"`
-	Links           map[string]string         `yaml:"links,omitempty" json:"links,omitempty"`
-	CommandGroups   map[CommandGroupKind]bool `yaml:"commandGroups,omitempty" json:"commandGroups,omitempty"`
-	Resources       []string                  `yaml:"resources,omitempty" json:"resources,omitempty"`
-	StarterProjects []string                  `yaml:"starterProjects,omitempty" json:"starterProjects,omitempty"`
+	Version          string                       `yaml:"version,omitempty" json:"version,omitempty"`
+	SchemaVersion    string                       `yaml:"schemaVersion,omitempty" json:"schemaVersion,omitempty"`
+	Default          bool                         `yaml:"default,omitempty" json:"default,omitempty"`
+	Git              *Git                         `yaml:"git,omitempty" json:"git,omitempty"`
+	Description      string                       `yaml:"description,omitempty" json:"description,omitempty"`
+	Tags             []string                     `yaml:"tags,omitempty" json:"tags,omitempty"`
+	Architectures    []string                     `yaml:"architectures,omitempty" json:"architectures,omitempty"`
+	Icon             string                       `yaml:"icon,omitempty" json:"icon,omitempty"`
+	Links            map[string]string            `yaml:"links,omitempty" json:"links,omitempty"`
+	CommandGroups    map[CommandGroupKind]bool    `yaml:"commandGroups,omitempty" json:"commandGroups,omitempty"`
+	DeploymentScopes map[DeploymentScopeKind]bool `yaml:"deploymentScopes,omitempty" json:"deploymentScopes,omitempty"`
+	Resources        []string                     `yaml:"resources,omitempty" json:"resources,omitempty"`
+	StarterProjects  []string                     `yaml:"starterProjects,omitempty" json:"starterProjects,omitempty"`
 }
