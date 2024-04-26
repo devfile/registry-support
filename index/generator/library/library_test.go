@@ -47,6 +47,8 @@ func TestValidateIndexComponent(t *testing.T) {
 	schemaVersionEmptyErr := ".*schema version is empty.*"
 	multipleVersionErr := ".*has multiple default versions.*"
 	iconUrlBrokenErr := ".*has broken or not existing icon.*"
+	invalidDeploymentScopeErr := ".*Deployment scope \\S+ is incorrect for devfile \\S+.*"
+	tooManyDeploymentScopesErr := ".*has too many deployment scopes.*"
 
 	tests := []struct {
 		name           string
@@ -529,6 +531,130 @@ func TestValidateIndexComponent(t *testing.T) {
 			},
 			schema.StackDevfileType,
 			&iconUrlBrokenErr,
+		},
+		{
+			name: "Case 23: deployment scope has invalid kind",
+			indexComponent: schema.Schema{
+				Name:       "java-maven",
+				Icon:       "https://raw.githubusercontent.com/devfile-samples/devfile-stack-icons/main/java-maven.jpg",
+				Provider:   "Red Hat",
+				SupportUrl: "https://devfile.io",
+				Architectures: []string{
+					"amd64",
+				},
+				Versions: []schema.Version{
+					{
+						Version:       "1.0.0",
+						SchemaVersion: "2.0.0",
+						Default:       true,
+						Links: map[string]string{
+							"self": "devfile-catalog/java-maven:latest",
+						},
+						Resources: []string{
+							"devfile.yaml",
+						},
+					},
+				},
+				DeploymentScopes: map[schema.DeploymentScopeKind]bool{
+					"foo": true,
+				},
+			},
+			componentType: schema.StackDevfileType,
+			wantErr:       &invalidDeploymentScopeErr,
+		},
+		{
+			name: "Case 24: deployment scope has invalid kind",
+			indexComponent: schema.Schema{
+				Name:       "java-maven",
+				Icon:       "https://raw.githubusercontent.com/devfile-samples/devfile-stack-icons/main/java-maven.jpg",
+				Provider:   "Red Hat",
+				SupportUrl: "https://devfile.io",
+				Architectures: []string{
+					"amd64",
+				},
+				Versions: []schema.Version{
+					{
+						Version:       "1.0.0",
+						SchemaVersion: "2.0.0",
+						Default:       true,
+						Links: map[string]string{
+							"self": "devfile-catalog/java-maven:latest",
+						},
+						Resources: []string{
+							"devfile.yaml",
+						},
+					},
+				},
+				DeploymentScopes: map[schema.DeploymentScopeKind]bool{
+					schema.InnerloopKind: true,
+					schema.OuterloopKind: false,
+					"foo":                false,
+				},
+			},
+			componentType: schema.StackDevfileType,
+			wantErr:       &tooManyDeploymentScopesErr,
+		},
+		{
+			name: "Case 25: version deployment scope has invalid kind",
+			indexComponent: schema.Schema{
+				Name:       "java-maven",
+				Icon:       "https://raw.githubusercontent.com/devfile-samples/devfile-stack-icons/main/java-maven.jpg",
+				Provider:   "Red Hat",
+				SupportUrl: "https://devfile.io",
+				Architectures: []string{
+					"amd64",
+				},
+				Versions: []schema.Version{
+					{
+						Version:       "1.0.0",
+						SchemaVersion: "2.0.0",
+						Default:       true,
+						Links: map[string]string{
+							"self": "devfile-catalog/java-maven:latest",
+						},
+						Resources: []string{
+							"devfile.yaml",
+						},
+						DeploymentScopes: map[schema.DeploymentScopeKind]bool{
+							"foo": true,
+						},
+					},
+				},
+			},
+			componentType: schema.StackDevfileType,
+			wantErr:       &invalidDeploymentScopeErr,
+		},
+		{
+			name: "Case 26: version deployment scope has invalid kind",
+			indexComponent: schema.Schema{
+				Name:       "java-maven",
+				Icon:       "https://raw.githubusercontent.com/devfile-samples/devfile-stack-icons/main/java-maven.jpg",
+				Provider:   "Red Hat",
+				SupportUrl: "https://devfile.io",
+				Architectures: []string{
+					"amd64",
+				},
+				Versions: []schema.Version{
+					{
+						Version:       "1.0.0",
+						SchemaVersion: "2.0.0",
+						Default:       true,
+						Links: map[string]string{
+							"self": "devfile-catalog/java-maven:latest",
+						},
+						Resources: []string{
+							"devfile.yaml",
+						},
+						DeploymentScopes: map[schema.DeploymentScopeKind]bool{
+							schema.InnerloopKind: true,
+							schema.OuterloopKind: false,
+							"foo":                false,
+						},
+					},
+				},
+			},
+			componentType: schema.StackDevfileType,
+			wantErr:       &tooManyDeploymentScopesErr,
 		},
 	}
 
