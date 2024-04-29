@@ -56,7 +56,7 @@ var (
 	filterAttributeNamesTestCases = []filterDevfileStrArrayFieldTestCase{
 		{
 			Name:      "two attribute filters",
-			FieldName: ARRAY_PARAM_ATTRIBUTE_NAMES,
+			FieldName: ArrayParamAttributeNames,
 			Index: []indexSchema.Schema{
 				{
 					Name: "devfileA",
@@ -114,7 +114,7 @@ var (
 		},
 		{
 			Name:      "two attribute filters v2",
-			FieldName: ARRAY_PARAM_ATTRIBUTE_NAMES,
+			FieldName: ArrayParamAttributeNames,
 			Index: []indexSchema.Schema{
 				{
 					Name: "devfileA",
@@ -189,7 +189,7 @@ var (
 	filterArchitecturesTestCases = []filterDevfileStrArrayFieldTestCase{
 		{
 			Name:      "two arch filters",
-			FieldName: ARRAY_PARAM_ARCHITECTURES,
+			FieldName: ArrayParamArchitectures,
 			Index: []indexSchema.Schema{
 				{
 					Name:          "devfileA",
@@ -217,7 +217,7 @@ var (
 		},
 		{
 			Name:      "two arch filters with v2 index",
-			FieldName: ARRAY_PARAM_ARCHITECTURES,
+			FieldName: ArrayParamArchitectures,
 			Index: []indexSchema.Schema{
 				{
 					Name:          "devfileA",
@@ -263,7 +263,7 @@ var (
 	filterTagsTestCases = []filterDevfileStrArrayFieldTestCase{
 		{
 			Name:      "two tag filters",
-			FieldName: ARRAY_PARAM_TAGS,
+			FieldName: ArrayParamTags,
 			Index: []indexSchema.Schema{
 				{
 					Name: "devfileA",
@@ -288,7 +288,7 @@ var (
 		},
 		{
 			Name:      "two tag filters with v2 index",
-			FieldName: ARRAY_PARAM_TAGS,
+			FieldName: ArrayParamTags,
 			Index: []indexSchema.Schema{
 				{
 					Name: "devfileA",
@@ -335,7 +335,7 @@ var (
 	filterResourcesTestCases = []filterDevfileStrArrayFieldTestCase{
 		{
 			Name:      "two resource filters",
-			FieldName: ARRAY_PARAM_RESOURCES,
+			FieldName: ArrayParamResources,
 			Index: []indexSchema.Schema{
 				{
 					Name:      "devfileA",
@@ -368,7 +368,7 @@ var (
 		},
 		{
 			Name:      "two resource filters with v2 index",
-			FieldName: ARRAY_PARAM_RESOURCES,
+			FieldName: ArrayParamResources,
 			Index: []indexSchema.Schema{
 				{
 					Name: "devfileA",
@@ -433,7 +433,7 @@ var (
 	filterStarterProjectsTestCases = []filterDevfileStrArrayFieldTestCase{
 		{
 			Name:      "two starter project filters",
-			FieldName: ARRAY_PARAM_STARTER_PROJECTS,
+			FieldName: ArrayParamStarterProjects,
 			Index: []indexSchema.Schema{
 				{
 					Name:            "devfileA",
@@ -462,7 +462,7 @@ var (
 		},
 		{
 			Name:      "two starter project filters with v2 index",
-			FieldName: ARRAY_PARAM_STARTER_PROJECTS,
+			FieldName: ArrayParamStarterProjects,
 			Index: []indexSchema.Schema{
 				{
 					Name: "devfileA",
@@ -535,7 +535,7 @@ var (
 	filterLinksTestCases = []filterDevfileStrArrayFieldTestCase{
 		{
 			Name:      "two link filters",
-			FieldName: ARRAY_PARAM_LINKS,
+			FieldName: ArrayParamLinks,
 			Index: []indexSchema.Schema{
 				{
 					Name: "devfileA",
@@ -584,7 +584,7 @@ var (
 		},
 		{
 			Name:      "two link filters with v2 index",
-			FieldName: ARRAY_PARAM_LINKS,
+			FieldName: ArrayParamLinks,
 			Index: []indexSchema.Schema{
 				{
 					Name: "devfileA",
@@ -678,7 +678,7 @@ var (
 	filterCommandGroupsTestCases = []filterDevfileStrArrayFieldTestCase{
 		{
 			Name:      "two command group filters",
-			FieldName: ARRAY_PARAM_COMMAND_GROUPS,
+			FieldName: ArrayParamCommandGroups,
 			Index: []indexSchema.Schema{
 				{
 					Name: "devfileA",
@@ -732,7 +732,7 @@ var (
 		},
 		{
 			Name:      "two command group filters with v2 index",
-			FieldName: ARRAY_PARAM_COMMAND_GROUPS,
+			FieldName: ArrayParamCommandGroups,
 			Index: []indexSchema.Schema{
 				{
 					Name: "devfileA",
@@ -853,7 +853,7 @@ var (
 	filterDeploymentScopesTestCases = []filterDevfileStrArrayFieldTestCase{
 		{
 			Name:      "innerloop filters v2 index",
-			FieldName: ARRAY_PARAM_DEPLOYMENT_SCOPES,
+			FieldName: ArrayParamDeploymentScopes,
 			Index: []indexSchema.Schema{
 				{
 					Name: "devfileA",
@@ -940,7 +940,7 @@ var (
 		},
 		{
 			Name:      "outerloop filters v2 index",
-			FieldName: ARRAY_PARAM_DEPLOYMENT_SCOPES,
+			FieldName: ArrayParamDeploymentScopes,
 			Index: []indexSchema.Schema{
 				{
 					Name: "devfileA",
@@ -1021,7 +1021,7 @@ var (
 		},
 		{
 			Name:      "all deployment scopes filters v2 index",
-			FieldName: ARRAY_PARAM_DEPLOYMENT_SCOPES,
+			FieldName: ArrayParamDeploymentScopes,
 			Index: []indexSchema.Schema{
 				{
 					Name: "devfileA",
@@ -1098,7 +1098,7 @@ var (
 	filterGitRemoteNamesTestCases = []filterDevfileStrArrayFieldTestCase{
 		{
 			Name:      "two git remote name filters",
-			FieldName: ARRAY_PARAM_GIT_REMOTE_NAMES,
+			FieldName: ArrayParamGitRemoteNames,
 			Index: []indexSchema.Schema{
 				{
 					Name: "devfileA",
@@ -1163,7 +1163,7 @@ var (
 		},
 		{
 			Name:      "two git remote name filters with v2 index",
-			FieldName: ARRAY_PARAM_GIT_REMOTE_NAMES,
+			FieldName: ArrayParamGitRemoteNames,
 			Index: []indexSchema.Schema{
 				{
 					Name: "devfileA",
@@ -1281,7 +1281,7 @@ var (
 	filterGitRemotesTestCases = []filterDevfileStrArrayFieldTestCase{
 		{
 			Name:      "two git remote filters",
-			FieldName: ARRAY_PARAM_GIT_REMOTES,
+			FieldName: ArrayParamGitRemotes,
 			Index: []indexSchema.Schema{
 				{
 					Name: "devfileA",
@@ -1354,7 +1354,7 @@ var (
 		},
 		{
 			Name:      "two git remote filters with v2 index",
-			FieldName: ARRAY_PARAM_GIT_REMOTES,
+			FieldName: ArrayParamGitRemotes,
 			Index: []indexSchema.Schema{
 				{
 					Name: "devfileA",
@@ -1483,7 +1483,7 @@ var (
 	filterNameFieldTestCases = []filterDevfileStrFieldTestCase{
 		{
 			Name:      "name filter",
-			FieldName: PARAM_NAME,
+			FieldName: ParamName,
 			Index: []indexSchema.Schema{
 				{
 					Name: "devfileA",
@@ -1512,7 +1512,7 @@ var (
 		},
 		{
 			Name:      "name filter v2",
-			FieldName: PARAM_NAME,
+			FieldName: ParamName,
 			Index: []indexSchema.Schema{
 				{
 					Name: "devfileA",
@@ -1542,7 +1542,7 @@ var (
 	filterDisplayNameFieldTestCases = []filterDevfileStrFieldTestCase{
 		{
 			Name:      "display name filter",
-			FieldName: PARAM_DISPLAY_NAME,
+			FieldName: ParamDisplayName,
 			Index: []indexSchema.Schema{
 				{
 					Name:        "devfileA",
@@ -1577,7 +1577,7 @@ var (
 		},
 		{
 			Name:      "display name filter v2",
-			FieldName: PARAM_DISPLAY_NAME,
+			FieldName: ParamDisplayName,
 			Index: []indexSchema.Schema{
 				{
 					Name:        "devfileA",
@@ -1613,7 +1613,7 @@ var (
 	filterDescriptionFieldTestCases = []filterDevfileStrFieldTestCase{
 		{
 			Name:      "description filter",
-			FieldName: PARAM_DESCRIPTION,
+			FieldName: ParamDescription,
 			Index: []indexSchema.Schema{
 				{
 					Name:        "devfileA",
@@ -1654,7 +1654,7 @@ var (
 		},
 		{
 			Name:      "description filter v2",
-			FieldName: PARAM_DESCRIPTION,
+			FieldName: ParamDescription,
 			Index: []indexSchema.Schema{
 				{
 					Name:        "devfileA",
@@ -1733,7 +1733,7 @@ var (
 	filterIconFieldTestCases = []filterDevfileStrFieldTestCase{
 		{
 			Name:      "icon filter",
-			FieldName: PARAM_ICON,
+			FieldName: ParamIcon,
 			Index: []indexSchema.Schema{
 				{
 					Name:        "devfileA",
@@ -1774,7 +1774,7 @@ var (
 		},
 		{
 			Name:      "icon filter v2",
-			FieldName: PARAM_ICON,
+			FieldName: ParamIcon,
 			Index: []indexSchema.Schema{
 				{
 					Name:        "devfileA",
@@ -1841,7 +1841,7 @@ var (
 	filterProjectTypeFieldTestCases = []filterDevfileStrFieldTestCase{
 		{
 			Name:      "project type filter",
-			FieldName: PARAM_PROJECT_TYPE,
+			FieldName: ParamProjectType,
 			Index: []indexSchema.Schema{
 				{
 					Name:        "devfileA",
@@ -1882,7 +1882,7 @@ var (
 		},
 		{
 			Name:      "project type filter v2",
-			FieldName: PARAM_PROJECT_TYPE,
+			FieldName: ParamProjectType,
 			Index: []indexSchema.Schema{
 				{
 					Name:        "devfileA",
@@ -1924,7 +1924,7 @@ var (
 	filterLanguageFieldTestCases = []filterDevfileStrFieldTestCase{
 		{
 			Name:      "language filter",
-			FieldName: PARAM_LANGUAGE,
+			FieldName: ParamLanguage,
 			Index: []indexSchema.Schema{
 				{
 					Name:        "devfileA",
