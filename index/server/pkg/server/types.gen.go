@@ -32,6 +32,9 @@ type CommandGroups = []string
 // Default Flag for default devfile registry entry version
 type Default = bool
 
+// DeploymentScopes List of deployment scopes that are detected in the devfile
+type DeploymentScopes = []string
+
 // Deprecated Flag for deprecated devfile registry entry
 type Deprecated = bool
 
@@ -78,6 +81,9 @@ type IndexParams struct {
 
 	// Default Flag for default devfile registry entry version
 	Default *Default `json:"default,omitempty"`
+
+	// DeploymentScopes List of deployment scopes that are detected in the devfile
+	DeploymentScopes *DeploymentScopes `json:"deploymentScopes,omitempty"`
 
 	// Deprecated Flag for deprecated devfile registry entry
 	Deprecated *Deprecated `json:"deprecated,omitempty"`
@@ -205,6 +211,9 @@ type CommandGroupsParam = CommandGroups
 
 // DefaultParam Flag for default devfile registry entry version
 type DefaultParam = Default
+
+// DeploymentScopesParam List of deployment scopes that are detected in the devfile
+type DeploymentScopesParam = DeploymentScopes
 
 // DeprecatedParam Flag for deprecated devfile registry entry
 type DeprecatedParam = Deprecated
@@ -578,6 +587,10 @@ type ServeDevfileIndexV2Params struct {
 	// groups
 	CommandGroups *CommandGroupsParam `form:"commandGroups,omitempty" json:"commandGroups,omitempty"`
 
+	// DeploymentScopes Collection of search strings to filter stacks by their present deployment
+	// scopes
+	DeploymentScopes *DeploymentScopesParam `form:"deploymentScopes,omitempty" json:"deploymentScopes,omitempty"`
+
 	// GitRemoteNames Collection of search strings to filter stacks by the names of
 	// the git remotes
 	GitRemoteNames *GitRemoteNamesParam `form:"gitRemoteNames,omitempty" json:"gitRemoteNames,omitempty"`
@@ -676,6 +689,10 @@ type ServeDevfileIndexV2WithTypeParams struct {
 	// CommandGroups Collection of search strings to filter stacks by their present command
 	// groups
 	CommandGroups *CommandGroupsParam `form:"commandGroups,omitempty" json:"commandGroups,omitempty"`
+
+	// DeploymentScopes Collection of search strings to filter stacks by their present deployment
+	// scopes
+	DeploymentScopes *DeploymentScopesParam `form:"deploymentScopes,omitempty" json:"deploymentScopes,omitempty"`
 
 	// GitRemoteNames Collection of search strings to filter stacks by the names of
 	// the git remotes
