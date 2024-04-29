@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/devfile/library/v2 v2.2.2
-	github.com/devfile/registry-support/index/generator v0.0.0-20240311135803-6215550f93d4
+	github.com/devfile/registry-support/index/generator v0.0.0-20240419194226-cca4c9a81f8d
 	github.com/onsi/ginkgo v1.16.4
 	github.com/onsi/gomega v1.27.10
 )
@@ -99,6 +99,7 @@ require (
 	go.opentelemetry.io/otel v1.24.0 // indirect
 	go.opentelemetry.io/otel/metric v1.24.0 // indirect
 	go.opentelemetry.io/otel/trace v1.24.0 // indirect
+	go.uber.org/atomic v1.9.0 // indirect
 	golang.org/x/crypto v0.21.0 // indirect
 	golang.org/x/mod v0.16.0 // indirect
 	golang.org/x/net v0.22.0 // indirect
