@@ -1624,6 +1624,9 @@ curl http://devfile-registry.192.168.1.1.nip.io/v2index?minSchemaVersion=2.1&max
 |CommandGroups
 |Collection of search strings to filter stacks by their present command groups
 
+|DeploymentScopes
+|Collection of search strings to filter stacks by their present deployment scopes
+
 |GitRemoteNames
 |Collection of search strings to filter stacks by the names of the git remotes
 
@@ -1970,6 +1973,9 @@ curl http://devfile-registry.192.168.1.1.nip.io/v2index/sample?maxSchemaVersion=
 
 |CommandGroups
 |Collection of search strings to filter samples by their present command groups
+
+|DeploymentScopes
+|Collection of search strings to filter stacks by their present deployment scopes
 
 |GitRemoteNames
 |Collection of search strings to filter samples by the names of the git remotes
@@ -2614,6 +2620,9 @@ curl http://devfile-registry.192.168.1.1.nip.io/v2index/sample?minSchemaVersion=
 
 |CommandGroups
 |Collection of search strings to filter stacks/samples by their present command groups
+
+|DeploymentScopes
+|Collection of search strings to filter stacks by their present deployment scopes
 
 |GitRemoteNames
 |Collection of search strings to filter stacks/samples by the names of the git remotes
