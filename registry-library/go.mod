@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/containerd/containerd v1.7.13
-	github.com/devfile/registry-support/index/generator v0.0.0-20240311135803-6215550f93d4
+	github.com/devfile/registry-support/index/generator v0.0.0-20240419194226-cca4c9a81f8d
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/hashicorp/go-version v1.4.0
 	github.com/mitchellh/go-homedir v1.1.0
@@ -74,7 +74,6 @@ require (
 	golang.org/x/sync v0.6.0 // indirect
 	golang.org/x/sys v0.18.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
-	golang.org/x/tools v0.19.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240304212257-790db918fca8 // indirect
 	google.golang.org/grpc v1.62.1 // indirect
 	google.golang.org/protobuf v1.33.0 // indirect
@@ -92,4 +91,4 @@ require (
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect
 )
 
-replace github.com/devfile/registry-support/index/generator v0.0.0-20240311135803-6215550f93d4 => ../index/generator
+replace github.com/devfile/registry-support/index/generator v0.0.0-20240419194226-cca4c9a81f8d => ../index/generator
