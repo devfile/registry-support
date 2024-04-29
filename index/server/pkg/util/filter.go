@@ -83,6 +83,8 @@ const (
 	ARRAY_PARAM_LINKS = "links"
 	// Parameter 'commandGroups'
 	ARRAY_PARAM_COMMAND_GROUPS = "commandGroups"
+	// Parameter 'deploymentScopes'
+	ARRAY_PARAM_DEPLOYMENT_SCOPES = "deploymentScopes"
 	// Parameter 'gitRemoteNames'
 	ARRAY_PARAM_GIT_REMOTE_NAMES = "gitRemoteNames"
 	// Parameter 'gitRemotes'
@@ -330,6 +332,7 @@ func IsArrayParameter(name string) bool {
 		ARRAY_PARAM_STARTER_PROJECTS,
 		ARRAY_PARAM_LINKS,
 		ARRAY_PARAM_COMMAND_GROUPS,
+		ARRAY_PARAM_DEPLOYMENT_SCOPES,
 		ARRAY_PARAM_GIT_REMOTE_NAMES,
 		ARRAY_PARAM_GIT_REMOTES,
 	})
@@ -709,6 +712,29 @@ func FilterDevfileStrArrayField(index []indexSchema.Schema, paramName string, re
 			}
 
 			return commandGroups
+		}
+	case ARRAY_PARAM_DEPLOYMENT_SCOPES:
+		options.GetFromIndexField = func(s *indexSchema.Schema) []string {
+			deploymentScopes := []string{}
+
+			for deploymentScope, isSet := range s.DeploymentScopes {
+				if isSet {
+					deploymentScopes = append(deploymentScopes, string(deploymentScope))
+				}
+			}
+
+			return deploymentScopes
+		}
+		options.GetFromVersionField = func(v *indexSchema.Version) []string {
+			deploymentScopes := []string{}
+
+			for deploymentScope, isSet := range v.DeploymentScopes {
+				if isSet {
+					deploymentScopes = append(deploymentScopes, string(deploymentScope))
+				}
+			}
+
+			return deploymentScopes
 		}
 	case ARRAY_PARAM_GIT_REMOTE_NAMES:
 		options.GetFromIndexField = func(s *indexSchema.Schema) []string {

@@ -850,6 +850,251 @@ var (
 			},
 		},
 	}
+	filterDeploymentScopesTestCases = []filterDevfileStrArrayFieldTestCase{
+		{
+			Name:      "innerloop filters v2 index",
+			FieldName: ARRAY_PARAM_DEPLOYMENT_SCOPES,
+			Index: []indexSchema.Schema{
+				{
+					Name: "devfileA",
+					DeploymentScopes: map[indexSchema.DeploymentScopeKind]bool{
+						indexSchema.InnerloopKind: true,
+						indexSchema.OuterloopKind: true,
+					},
+				},
+				{
+					Name: "devfileB",
+					Versions: []indexSchema.Version{
+						{
+							Version: "2.0.0",
+							DeploymentScopes: map[indexSchema.DeploymentScopeKind]bool{
+								indexSchema.InnerloopKind: true,
+								indexSchema.OuterloopKind: false,
+							},
+						},
+					},
+				},
+				{
+					Name: "devfileC",
+					DeploymentScopes: map[indexSchema.DeploymentScopeKind]bool{
+						indexSchema.InnerloopKind: true,
+					},
+					Versions: []indexSchema.Version{
+						{
+							Version: "1.0.0",
+							DeploymentScopes: map[indexSchema.DeploymentScopeKind]bool{
+								indexSchema.InnerloopKind: true,
+								indexSchema.OuterloopKind: true,
+							},
+						},
+					},
+				},
+				{
+					Name: "devfileD",
+					DeploymentScopes: map[indexSchema.DeploymentScopeKind]bool{
+						indexSchema.OuterloopKind: true,
+					},
+				},
+				{
+					Name: "devfileE",
+				},
+			},
+			V1Index: false,
+			Values:  []string{string(indexSchema.InnerloopKind)},
+			WantIndex: []indexSchema.Schema{
+				{
+					Name: "devfileA",
+					DeploymentScopes: map[indexSchema.DeploymentScopeKind]bool{
+						indexSchema.InnerloopKind: true,
+						indexSchema.OuterloopKind: true,
+					},
+				},
+				{
+					Name: "devfileB",
+					Versions: []indexSchema.Version{
+						{
+							Version: "2.0.0",
+							DeploymentScopes: map[indexSchema.DeploymentScopeKind]bool{
+								indexSchema.InnerloopKind: true,
+								indexSchema.OuterloopKind: false,
+							},
+						},
+					},
+				},
+				{
+					Name: "devfileC",
+					DeploymentScopes: map[indexSchema.DeploymentScopeKind]bool{
+						indexSchema.InnerloopKind: true,
+					},
+					Versions: []indexSchema.Version{
+						{
+							Version: "1.0.0",
+							DeploymentScopes: map[indexSchema.DeploymentScopeKind]bool{
+								indexSchema.InnerloopKind: true,
+								indexSchema.OuterloopKind: true,
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			Name:      "outerloop filters v2 index",
+			FieldName: ARRAY_PARAM_DEPLOYMENT_SCOPES,
+			Index: []indexSchema.Schema{
+				{
+					Name: "devfileA",
+					DeploymentScopes: map[indexSchema.DeploymentScopeKind]bool{
+						indexSchema.InnerloopKind: true,
+						indexSchema.OuterloopKind: true,
+					},
+				},
+				{
+					Name: "devfileB",
+					Versions: []indexSchema.Version{
+						{
+							Version: "2.0.0",
+							DeploymentScopes: map[indexSchema.DeploymentScopeKind]bool{
+								indexSchema.InnerloopKind: true,
+								indexSchema.OuterloopKind: false,
+							},
+						},
+					},
+				},
+				{
+					Name: "devfileC",
+					DeploymentScopes: map[indexSchema.DeploymentScopeKind]bool{
+						indexSchema.InnerloopKind: true,
+					},
+					Versions: []indexSchema.Version{
+						{
+							Version: "1.0.0",
+							DeploymentScopes: map[indexSchema.DeploymentScopeKind]bool{
+								indexSchema.InnerloopKind: true,
+								indexSchema.OuterloopKind: true,
+							},
+						},
+					},
+				},
+				{
+					Name: "devfileD",
+					DeploymentScopes: map[indexSchema.DeploymentScopeKind]bool{
+						indexSchema.OuterloopKind: true,
+					},
+				},
+				{
+					Name: "devfileE",
+				},
+			},
+			V1Index: false,
+			Values:  []string{string(indexSchema.OuterloopKind)},
+			WantIndex: []indexSchema.Schema{
+				{
+					Name: "devfileA",
+					DeploymentScopes: map[indexSchema.DeploymentScopeKind]bool{
+						indexSchema.InnerloopKind: true,
+						indexSchema.OuterloopKind: true,
+					},
+				},
+				{
+					Name: "devfileC",
+					DeploymentScopes: map[indexSchema.DeploymentScopeKind]bool{
+						indexSchema.InnerloopKind: true,
+					},
+					Versions: []indexSchema.Version{
+						{
+							Version: "1.0.0",
+							DeploymentScopes: map[indexSchema.DeploymentScopeKind]bool{
+								indexSchema.InnerloopKind: true,
+								indexSchema.OuterloopKind: true,
+							},
+						},
+					},
+				},
+				{
+					Name: "devfileD",
+					DeploymentScopes: map[indexSchema.DeploymentScopeKind]bool{
+						indexSchema.OuterloopKind: true,
+					},
+				},
+			},
+		},
+		{
+			Name:      "all deployment scopes filters v2 index",
+			FieldName: ARRAY_PARAM_DEPLOYMENT_SCOPES,
+			Index: []indexSchema.Schema{
+				{
+					Name: "devfileA",
+					DeploymentScopes: map[indexSchema.DeploymentScopeKind]bool{
+						indexSchema.InnerloopKind: true,
+						indexSchema.OuterloopKind: true,
+					},
+				},
+				{
+					Name: "devfileB",
+					Versions: []indexSchema.Version{
+						{
+							Version: "2.0.0",
+							DeploymentScopes: map[indexSchema.DeploymentScopeKind]bool{
+								indexSchema.InnerloopKind: true,
+								indexSchema.OuterloopKind: false,
+							},
+						},
+					},
+				},
+				{
+					Name: "devfileC",
+					DeploymentScopes: map[indexSchema.DeploymentScopeKind]bool{
+						indexSchema.InnerloopKind: true,
+					},
+					Versions: []indexSchema.Version{
+						{
+							Version: "1.0.0",
+							DeploymentScopes: map[indexSchema.DeploymentScopeKind]bool{
+								indexSchema.InnerloopKind: true,
+								indexSchema.OuterloopKind: true,
+							},
+						},
+					},
+				},
+				{
+					Name: "devfileD",
+					DeploymentScopes: map[indexSchema.DeploymentScopeKind]bool{
+						indexSchema.OuterloopKind: true,
+					},
+				},
+				{
+					Name: "devfileE",
+				},
+			},
+			V1Index: false,
+			Values:  []string{string(indexSchema.InnerloopKind), string(indexSchema.OuterloopKind)},
+			WantIndex: []indexSchema.Schema{
+				{
+					Name: "devfileA",
+					DeploymentScopes: map[indexSchema.DeploymentScopeKind]bool{
+						indexSchema.InnerloopKind: true,
+						indexSchema.OuterloopKind: true,
+					},
+				},
+				{
+					Name: "devfileC",
+					DeploymentScopes: map[indexSchema.DeploymentScopeKind]bool{
+						indexSchema.InnerloopKind: true,
+					},
+					Versions: []indexSchema.Version{
+						{
+							Version: "1.0.0",
+							DeploymentScopes: map[indexSchema.DeploymentScopeKind]bool{
+								indexSchema.InnerloopKind: true,
+								indexSchema.OuterloopKind: true,
+							},
+						},
+					},
+				},
+			},
+		},
+	}
 	filterGitRemoteNamesTestCases = []filterDevfileStrArrayFieldTestCase{
 		{
 			Name:      "two git remote name filters",
@@ -2771,6 +3016,7 @@ func TestFilterDevfileStrArrayField(t *testing.T) {
 	tests = append(tests, filterStarterProjectsTestCases...)
 	tests = append(tests, filterLinksTestCases...)
 	tests = append(tests, filterCommandGroupsTestCases...)
+	tests = append(tests, filterDeploymentScopesTestCases...)
 	tests = append(tests, filterGitRemoteNamesTestCases...)
 	tests = append(tests, filterGitRemotesTestCases...)
 
