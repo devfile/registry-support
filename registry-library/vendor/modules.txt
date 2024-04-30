@@ -36,7 +36,7 @@ github.com/containerd/containerd/version
 # github.com/containerd/log v0.1.0
 ## explicit; go 1.20
 github.com/containerd/log
-# github.com/devfile/registry-support/index/generator v0.0.0-20240311135803-6215550f93d4 => ../index/generator
+# github.com/devfile/registry-support/index/generator v0.0.0-20240419194226-cca4c9a81f8d => ../index/generator
 ## explicit; go 1.19
 github.com/devfile/registry-support/index/generator/schema
 # github.com/distribution/reference v0.5.0
@@ -309,8 +309,6 @@ golang.org/x/text/secure/bidirule
 golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
-# golang.org/x/tools v0.19.0
-## explicit; go 1.19
 # google.golang.org/genproto/googleapis/rpc v0.0.0-20240304212257-790db918fca8
 ## explicit; go 1.19
 google.golang.org/genproto/googleapis/rpc/status

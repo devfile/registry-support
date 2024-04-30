@@ -64,6 +64,10 @@ var testIndexSchema = []indexSchema.Schema{
 					indexSchema.BuildCommandGroupKind: true,
 					indexSchema.RunCommandGroupKind:   true,
 				},
+				DeploymentScopes: map[indexSchema.DeploymentScopeKind]bool{
+					indexSchema.InnerloopKind: true,
+					indexSchema.OuterloopKind: false,
+				},
 			},
 			{
 				Version:         "v2.0.0",
@@ -79,6 +83,10 @@ var testIndexSchema = []indexSchema.Schema{
 					indexSchema.BuildCommandGroupKind:  true,
 					indexSchema.RunCommandGroupKind:    true,
 					indexSchema.TestCommandGroupKind:   false,
+				},
+				DeploymentScopes: map[indexSchema.DeploymentScopeKind]bool{
+					indexSchema.InnerloopKind: true,
+					indexSchema.OuterloopKind: false,
 				},
 			},
 		},
@@ -106,6 +114,10 @@ var testIndexSchema = []indexSchema.Schema{
 			indexSchema.BuildCommandGroupKind: true,
 			indexSchema.RunCommandGroupKind:   true,
 		},
+		DeploymentScopes: map[indexSchema.DeploymentScopeKind]bool{
+			indexSchema.InnerloopKind: true,
+			indexSchema.OuterloopKind: false,
+		},
 	},
 	{
 		Name:        "devfileC",
@@ -125,6 +137,10 @@ var testIndexSchema = []indexSchema.Schema{
 			indexSchema.DeployCommandGroupKind: false,
 			indexSchema.RunCommandGroupKind:    true,
 		},
+		DeploymentScopes: map[indexSchema.DeploymentScopeKind]bool{
+			indexSchema.InnerloopKind: true,
+			indexSchema.OuterloopKind: false,
+		},
 		Versions: []indexSchema.Version{
 			{
 				Version:         "v1.0.0",
@@ -138,6 +154,10 @@ var testIndexSchema = []indexSchema.Schema{
 				CommandGroups: map[indexSchema.CommandGroupKind]bool{
 					indexSchema.DeployCommandGroupKind: false,
 					indexSchema.RunCommandGroupKind:    true,
+				},
+				DeploymentScopes: map[indexSchema.DeploymentScopeKind]bool{
+					indexSchema.InnerloopKind: true,
+					indexSchema.OuterloopKind: false,
 				},
 			},
 			{
@@ -154,6 +174,10 @@ var testIndexSchema = []indexSchema.Schema{
 					indexSchema.BuildCommandGroupKind:  true,
 					indexSchema.RunCommandGroupKind:    true,
 					indexSchema.TestCommandGroupKind:   false,
+				},
+				DeploymentScopes: map[indexSchema.DeploymentScopeKind]bool{
+					indexSchema.InnerloopKind: true,
+					indexSchema.OuterloopKind: false,
 				},
 			},
 		},
@@ -176,7 +200,7 @@ func TestFilterFieldbyParam(t *testing.T) {
 			name:       "Case 1: string parameter",
 			index:      testIndexSchema,
 			v1Index:    true,
-			paramName:  util.PARAM_ICON,
+			paramName:  util.ParamIcon,
 			paramValue: ".jpg",
 			wantIndex: []indexSchema.Schema{
 				{
@@ -197,6 +221,10 @@ func TestFilterFieldbyParam(t *testing.T) {
 						indexSchema.DeployCommandGroupKind: false,
 						indexSchema.RunCommandGroupKind:    true,
 					},
+					DeploymentScopes: map[indexSchema.DeploymentScopeKind]bool{
+						indexSchema.InnerloopKind: true,
+						indexSchema.OuterloopKind: false,
+					},
 					Versions: []indexSchema.Version{
 						{
 							Version:         "v1.0.0",
@@ -210,6 +238,10 @@ func TestFilterFieldbyParam(t *testing.T) {
 							CommandGroups: map[indexSchema.CommandGroupKind]bool{
 								indexSchema.DeployCommandGroupKind: false,
 								indexSchema.RunCommandGroupKind:    true,
+							},
+							DeploymentScopes: map[indexSchema.DeploymentScopeKind]bool{
+								indexSchema.InnerloopKind: true,
+								indexSchema.OuterloopKind: false,
 							},
 						},
 						{
@@ -227,6 +259,10 @@ func TestFilterFieldbyParam(t *testing.T) {
 								indexSchema.RunCommandGroupKind:    true,
 								indexSchema.TestCommandGroupKind:   false,
 							},
+							DeploymentScopes: map[indexSchema.DeploymentScopeKind]bool{
+								indexSchema.InnerloopKind: true,
+								indexSchema.OuterloopKind: false,
+							},
 						},
 					},
 				},
@@ -235,7 +271,7 @@ func TestFilterFieldbyParam(t *testing.T) {
 		{
 			name:       "Case 2: string parameter v2",
 			index:      testIndexSchema,
-			paramName:  util.PARAM_ICON,
+			paramName:  util.ParamIcon,
 			paramValue: ".png",
 			wantIndex: []indexSchema.Schema{
 				{
@@ -266,6 +302,10 @@ func TestFilterFieldbyParam(t *testing.T) {
 								indexSchema.RunCommandGroupKind:    true,
 								indexSchema.TestCommandGroupKind:   false,
 							},
+							DeploymentScopes: map[indexSchema.DeploymentScopeKind]bool{
+								indexSchema.InnerloopKind: true,
+								indexSchema.OuterloopKind: false,
+							},
 						},
 					},
 				},
@@ -287,6 +327,10 @@ func TestFilterFieldbyParam(t *testing.T) {
 						indexSchema.DeployCommandGroupKind: false,
 						indexSchema.RunCommandGroupKind:    true,
 					},
+					DeploymentScopes: map[indexSchema.DeploymentScopeKind]bool{
+						indexSchema.InnerloopKind: true,
+						indexSchema.OuterloopKind: false,
+					},
 					Versions: []indexSchema.Version{
 						{
 							Version:         "v1.0.0",
@@ -301,6 +345,10 @@ func TestFilterFieldbyParam(t *testing.T) {
 								indexSchema.DeployCommandGroupKind: false,
 								indexSchema.RunCommandGroupKind:    true,
 							},
+							DeploymentScopes: map[indexSchema.DeploymentScopeKind]bool{
+								indexSchema.InnerloopKind: true,
+								indexSchema.OuterloopKind: false,
+							},
 						},
 					},
 				},
@@ -309,7 +357,7 @@ func TestFilterFieldbyParam(t *testing.T) {
 		{
 			name:       "Case 3: Non-string parameter",
 			index:      testIndexSchema,
-			paramName:  util.PARAM_DEFAULT,
+			paramName:  util.ParamDefault,
 			paramValue: true,
 			wantIndex: []indexSchema.Schema{
 				{
@@ -340,6 +388,10 @@ func TestFilterFieldbyParam(t *testing.T) {
 								indexSchema.RunCommandGroupKind:    true,
 								indexSchema.TestCommandGroupKind:   false,
 							},
+							DeploymentScopes: map[indexSchema.DeploymentScopeKind]bool{
+								indexSchema.InnerloopKind: true,
+								indexSchema.OuterloopKind: false,
+							},
 						},
 					},
 				},
@@ -361,6 +413,10 @@ func TestFilterFieldbyParam(t *testing.T) {
 						indexSchema.DeployCommandGroupKind: false,
 						indexSchema.RunCommandGroupKind:    true,
 					},
+					DeploymentScopes: map[indexSchema.DeploymentScopeKind]bool{
+						indexSchema.InnerloopKind: true,
+						indexSchema.OuterloopKind: false,
+					},
 					Versions: []indexSchema.Version{
 						{
 							Version:         "v1.0.0",
@@ -374,6 +430,10 @@ func TestFilterFieldbyParam(t *testing.T) {
 							CommandGroups: map[indexSchema.CommandGroupKind]bool{
 								indexSchema.DeployCommandGroupKind: false,
 								indexSchema.RunCommandGroupKind:    true,
+							},
+							DeploymentScopes: map[indexSchema.DeploymentScopeKind]bool{
+								indexSchema.InnerloopKind: true,
+								indexSchema.OuterloopKind: false,
 							},
 						},
 					},
@@ -460,6 +520,10 @@ func TestFilterFieldsByParams(t *testing.T) {
 								indexSchema.BuildCommandGroupKind: true,
 								indexSchema.RunCommandGroupKind:   true,
 							},
+							DeploymentScopes: map[indexSchema.DeploymentScopeKind]bool{
+								indexSchema.InnerloopKind: true,
+								indexSchema.OuterloopKind: false,
+							},
 						},
 						{
 							Version:         "v2.0.0",
@@ -475,6 +539,10 @@ func TestFilterFieldsByParams(t *testing.T) {
 								indexSchema.BuildCommandGroupKind:  true,
 								indexSchema.RunCommandGroupKind:    true,
 								indexSchema.TestCommandGroupKind:   false,
+							},
+							DeploymentScopes: map[indexSchema.DeploymentScopeKind]bool{
+								indexSchema.InnerloopKind: true,
+								indexSchema.OuterloopKind: false,
 							},
 						},
 					},
@@ -497,6 +565,10 @@ func TestFilterFieldsByParams(t *testing.T) {
 						indexSchema.DeployCommandGroupKind: false,
 						indexSchema.RunCommandGroupKind:    true,
 					},
+					DeploymentScopes: map[indexSchema.DeploymentScopeKind]bool{
+						indexSchema.InnerloopKind: true,
+						indexSchema.OuterloopKind: false,
+					},
 					Versions: []indexSchema.Version{
 						{
 							Version:         "v1.0.0",
@@ -510,6 +582,10 @@ func TestFilterFieldsByParams(t *testing.T) {
 							CommandGroups: map[indexSchema.CommandGroupKind]bool{
 								indexSchema.DeployCommandGroupKind: false,
 								indexSchema.RunCommandGroupKind:    true,
+							},
+							DeploymentScopes: map[indexSchema.DeploymentScopeKind]bool{
+								indexSchema.InnerloopKind: true,
+								indexSchema.OuterloopKind: false,
 							},
 						},
 						{
@@ -526,6 +602,10 @@ func TestFilterFieldsByParams(t *testing.T) {
 								indexSchema.BuildCommandGroupKind:  true,
 								indexSchema.RunCommandGroupKind:    true,
 								indexSchema.TestCommandGroupKind:   false,
+							},
+							DeploymentScopes: map[indexSchema.DeploymentScopeKind]bool{
+								indexSchema.InnerloopKind: true,
+								indexSchema.OuterloopKind: false,
 							},
 						},
 					},
@@ -571,6 +651,10 @@ func TestFilterFieldsByParams(t *testing.T) {
 								indexSchema.BuildCommandGroupKind: true,
 								indexSchema.RunCommandGroupKind:   true,
 							},
+							DeploymentScopes: map[indexSchema.DeploymentScopeKind]bool{
+								indexSchema.InnerloopKind: true,
+								indexSchema.OuterloopKind: false,
+							},
 						},
 						{
 							Version:         "v2.0.0",
@@ -586,6 +670,10 @@ func TestFilterFieldsByParams(t *testing.T) {
 								indexSchema.BuildCommandGroupKind:  true,
 								indexSchema.RunCommandGroupKind:    true,
 								indexSchema.TestCommandGroupKind:   false,
+							},
+							DeploymentScopes: map[indexSchema.DeploymentScopeKind]bool{
+								indexSchema.InnerloopKind: true,
+								indexSchema.OuterloopKind: false,
 							},
 						},
 					},
@@ -608,6 +696,10 @@ func TestFilterFieldsByParams(t *testing.T) {
 						indexSchema.DeployCommandGroupKind: false,
 						indexSchema.RunCommandGroupKind:    true,
 					},
+					DeploymentScopes: map[indexSchema.DeploymentScopeKind]bool{
+						indexSchema.InnerloopKind: true,
+						indexSchema.OuterloopKind: false,
+					},
 					Versions: []indexSchema.Version{
 						{
 							Version:         "v1.0.0",
@@ -621,6 +713,10 @@ func TestFilterFieldsByParams(t *testing.T) {
 							CommandGroups: map[indexSchema.CommandGroupKind]bool{
 								indexSchema.DeployCommandGroupKind: false,
 								indexSchema.RunCommandGroupKind:    true,
+							},
+							DeploymentScopes: map[indexSchema.DeploymentScopeKind]bool{
+								indexSchema.InnerloopKind: true,
+								indexSchema.OuterloopKind: false,
 							},
 						},
 						{
@@ -637,6 +733,10 @@ func TestFilterFieldsByParams(t *testing.T) {
 								indexSchema.BuildCommandGroupKind:  true,
 								indexSchema.RunCommandGroupKind:    true,
 								indexSchema.TestCommandGroupKind:   false,
+							},
+							DeploymentScopes: map[indexSchema.DeploymentScopeKind]bool{
+								indexSchema.InnerloopKind: true,
+								indexSchema.OuterloopKind: false,
 							},
 						},
 					},
@@ -675,6 +775,10 @@ func TestFilterFieldsByParams(t *testing.T) {
 						indexSchema.DeployCommandGroupKind: false,
 						indexSchema.RunCommandGroupKind:    true,
 					},
+					DeploymentScopes: map[indexSchema.DeploymentScopeKind]bool{
+						indexSchema.InnerloopKind: true,
+						indexSchema.OuterloopKind: false,
+					},
 					Versions: []indexSchema.Version{
 						{
 							Version:         "v1.0.0",
@@ -688,6 +792,10 @@ func TestFilterFieldsByParams(t *testing.T) {
 							CommandGroups: map[indexSchema.CommandGroupKind]bool{
 								indexSchema.DeployCommandGroupKind: false,
 								indexSchema.RunCommandGroupKind:    true,
+							},
+							DeploymentScopes: map[indexSchema.DeploymentScopeKind]bool{
+								indexSchema.InnerloopKind: true,
+								indexSchema.OuterloopKind: false,
 							},
 						},
 						{
@@ -705,6 +813,10 @@ func TestFilterFieldsByParams(t *testing.T) {
 								indexSchema.RunCommandGroupKind:    true,
 								indexSchema.TestCommandGroupKind:   false,
 							},
+							DeploymentScopes: map[indexSchema.DeploymentScopeKind]bool{
+								indexSchema.InnerloopKind: true,
+								indexSchema.OuterloopKind: false,
+							},
 						},
 					},
 				},
@@ -718,6 +830,9 @@ func TestFilterFieldsByParams(t *testing.T) {
 				CommandGroups: &[]string{
 					string(indexSchema.BuildCommandGroupKind),
 					string(indexSchema.RunCommandGroupKind),
+				},
+				DeploymentScopes: &[]string{
+					string(indexSchema.InnerloopKind),
 				},
 			},
 			wantIndex: []indexSchema.Schema{
@@ -750,6 +865,10 @@ func TestFilterFieldsByParams(t *testing.T) {
 								indexSchema.BuildCommandGroupKind: true,
 								indexSchema.RunCommandGroupKind:   true,
 							},
+							DeploymentScopes: map[indexSchema.DeploymentScopeKind]bool{
+								indexSchema.InnerloopKind: true,
+								indexSchema.OuterloopKind: false,
+							},
 						},
 						{
 							Version:         "v2.0.0",
@@ -765,6 +884,10 @@ func TestFilterFieldsByParams(t *testing.T) {
 								indexSchema.BuildCommandGroupKind:  true,
 								indexSchema.RunCommandGroupKind:    true,
 								indexSchema.TestCommandGroupKind:   false,
+							},
+							DeploymentScopes: map[indexSchema.DeploymentScopeKind]bool{
+								indexSchema.InnerloopKind: true,
+								indexSchema.OuterloopKind: false,
 							},
 						},
 					},
@@ -787,6 +910,10 @@ func TestFilterFieldsByParams(t *testing.T) {
 						indexSchema.DeployCommandGroupKind: false,
 						indexSchema.RunCommandGroupKind:    true,
 					},
+					DeploymentScopes: map[indexSchema.DeploymentScopeKind]bool{
+						indexSchema.InnerloopKind: true,
+						indexSchema.OuterloopKind: false,
+					},
 					Versions: []indexSchema.Version{
 						{
 							Version:         "v2.0.0",
@@ -802,6 +929,10 @@ func TestFilterFieldsByParams(t *testing.T) {
 								indexSchema.BuildCommandGroupKind:  true,
 								indexSchema.RunCommandGroupKind:    true,
 								indexSchema.TestCommandGroupKind:   false,
+							},
+							DeploymentScopes: map[indexSchema.DeploymentScopeKind]bool{
+								indexSchema.InnerloopKind: true,
+								indexSchema.OuterloopKind: false,
 							},
 						},
 					},

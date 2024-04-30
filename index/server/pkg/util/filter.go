@@ -30,63 +30,65 @@ const (
 	/* Array empty strategies */
 
 	// Filters out entries with empty field
-	ARRAY_FILTER_IF_EMPTY = iota
+	ArrayFilterIfEmpty = iota
 	// Omits entries from filtering with empty field (leaves entries in result)
-	ARRAY_SKIP_IF_EMPTY = iota
+	ArraySkipIfEmpty = iota
 
 	/* Parameter Names */
 
 	// Parameter 'name'
-	PARAM_NAME = "name"
+	ParamName = "name"
 	// Parameter 'displayName'
-	PARAM_DISPLAY_NAME = "displayName"
+	ParamDisplayName = "displayName"
 	// Parameter 'description'
-	PARAM_DESCRIPTION = "description"
+	ParamDescription = "description"
 	// Parameter 'icon'
-	PARAM_ICON = "iconUri"
+	ParamIcon = "iconUri"
 	// Parameter 'projectType'
-	PARAM_PROJECT_TYPE = "projectType"
+	ParamProjectType = "projectType"
 	// Parameter 'language'
-	PARAM_LANGUAGE = "language"
+	ParamLanguage = "language"
 	// Parameter 'version'
-	PARAM_VERSION = "version"
+	ParamVersion = "version"
 	// Parameter 'schemaVersion'
-	PARAM_SCHEMA_VERSION = "schemaVersion"
+	ParamSchemaVersion = "schemaVersion"
 	// Parameter 'default'
-	PARAM_DEFAULT = "default"
+	ParamDefault = "default"
 	// Parameter 'git.url'
-	PARAM_GIT_URL = "gitUrl"
+	ParamGitUrl = "gitUrl"
 	// Parameter 'git.remoteName'
-	PARAM_GIT_REMOTE_NAME = "gitRemoteName"
+	ParamGitRemoteName = "gitRemoteName"
 	// Parameter 'git.subDir'
-	PARAM_GIT_SUBDIR = "gitSubDir"
+	ParamGitSubDir = "gitSubDir"
 	// Parameter 'git.revision'
-	PARAM_GIT_REVISION = "gitRevision"
+	ParamGitRevision = "gitRevision"
 	// Parameter 'provider'
-	PARAM_PROVIDER = "provider"
+	ParamProvider = "provider"
 	// Parameter 'supportUrl'
-	PARAM_SUPPORT_URL = "supportUrl"
+	ParamSupportUrl = "supportUrl"
 
 	/* Array Parameter Names */
 
 	// Parameter 'attributeNames'
-	ARRAY_PARAM_ATTRIBUTE_NAMES = "attributeNames"
+	ArrayParamAttributeNames = "attributeNames"
 	// Parameter 'tags'
-	ARRAY_PARAM_TAGS = "tags"
+	ArrayParamTags = "tags"
 	// Parameter 'architectures'
-	ARRAY_PARAM_ARCHITECTURES = "arch"
+	ArrayParamArchitectures = "arch"
 	// Parameter 'resources'
-	ARRAY_PARAM_RESOURCES = "resources"
+	ArrayParamResources = "resources"
 	// Parameter 'starterProjects'
-	ARRAY_PARAM_STARTER_PROJECTS = "starterProjects"
+	ArrayParamStarterProjects = "starterProjects"
 	// Parameter 'links'
-	ARRAY_PARAM_LINKS = "links"
+	ArrayParamLinks = "links"
 	// Parameter 'commandGroups'
-	ARRAY_PARAM_COMMAND_GROUPS = "commandGroups"
+	ArrayParamCommandGroups = "commandGroups"
+	// Parameter 'deploymentScopes'
+	ArrayParamDeploymentScopes = "deploymentScopes"
 	// Parameter 'gitRemoteNames'
-	ARRAY_PARAM_GIT_REMOTE_NAMES = "gitRemoteNames"
+	ArrayParamGitRemoteNames = "gitRemoteNames"
 	// Parameter 'gitRemotes'
-	ARRAY_PARAM_GIT_REMOTES = "gitRemotes"
+	ArrayParamGitRemotes = "gitRemotes"
 )
 
 // FilterResult result entity of filtering the index schema
@@ -301,21 +303,21 @@ func filterDevfileArrayFuzzy(index []indexSchema.Schema, requestedValues []strin
 
 func IsFieldParameter(name string) bool {
 	parameterNames := sets.From([]string{
-		PARAM_NAME,
-		PARAM_DISPLAY_NAME,
-		PARAM_DESCRIPTION,
-		PARAM_ICON,
-		PARAM_PROJECT_TYPE,
-		PARAM_LANGUAGE,
-		PARAM_VERSION,
-		PARAM_SCHEMA_VERSION,
-		PARAM_DEFAULT,
-		PARAM_GIT_URL,
-		PARAM_GIT_REMOTE_NAME,
-		PARAM_GIT_SUBDIR,
-		PARAM_GIT_REVISION,
-		PARAM_PROVIDER,
-		PARAM_SUPPORT_URL,
+		ParamName,
+		ParamDisplayName,
+		ParamDescription,
+		ParamIcon,
+		ParamProjectType,
+		ParamLanguage,
+		ParamVersion,
+		ParamSchemaVersion,
+		ParamDefault,
+		ParamGitUrl,
+		ParamGitRemoteName,
+		ParamGitSubDir,
+		ParamGitRevision,
+		ParamProvider,
+		ParamSupportUrl,
 	})
 
 	return parameterNames.Contains(name)
@@ -323,15 +325,16 @@ func IsFieldParameter(name string) bool {
 
 func IsArrayParameter(name string) bool {
 	parameterNames := sets.From([]string{
-		ARRAY_PARAM_ATTRIBUTE_NAMES,
-		ARRAY_PARAM_ARCHITECTURES,
-		ARRAY_PARAM_TAGS,
-		ARRAY_PARAM_RESOURCES,
-		ARRAY_PARAM_STARTER_PROJECTS,
-		ARRAY_PARAM_LINKS,
-		ARRAY_PARAM_COMMAND_GROUPS,
-		ARRAY_PARAM_GIT_REMOTE_NAMES,
-		ARRAY_PARAM_GIT_REMOTES,
+		ArrayParamAttributeNames,
+		ArrayParamArchitectures,
+		ArrayParamTags,
+		ArrayParamResources,
+		ArrayParamStarterProjects,
+		ArrayParamLinks,
+		ArrayParamCommandGroups,
+		ArrayParamDeploymentScopes,
+		ArrayParamGitRemoteNames,
+		ArrayParamGitRemotes,
 	})
 
 	return parameterNames.Contains(name)
@@ -469,85 +472,85 @@ func FilterDevfileStrField(index []indexSchema.Schema, paramName, requestedValue
 		V1Index: v1Index,
 	}
 	switch paramName {
-	case PARAM_NAME:
+	case ParamName:
 		options.GetFromIndexField = func(s *indexSchema.Schema) string {
 			return s.Name
 		}
-	case PARAM_DISPLAY_NAME:
+	case ParamDisplayName:
 		options.GetFromIndexField = func(s *indexSchema.Schema) string {
 			return s.DisplayName
 		}
-	case PARAM_DESCRIPTION:
+	case ParamDescription:
 		options.GetFromIndexField = func(s *indexSchema.Schema) string {
 			return s.Description
 		}
 		options.GetFromVersionField = func(v *indexSchema.Version) string {
 			return v.Description
 		}
-	case PARAM_ICON:
+	case ParamIcon:
 		options.GetFromIndexField = func(s *indexSchema.Schema) string {
 			return s.Icon
 		}
 		options.GetFromVersionField = func(v *indexSchema.Version) string {
 			return v.Icon
 		}
-	case PARAM_PROJECT_TYPE:
+	case ParamProjectType:
 		options.GetFromIndexField = func(s *indexSchema.Schema) string {
 			return s.ProjectType
 		}
-	case PARAM_LANGUAGE:
+	case ParamLanguage:
 		options.GetFromIndexField = func(s *indexSchema.Schema) string {
 			return s.Language
 		}
-	case PARAM_VERSION:
+	case ParamVersion:
 		options.GetFromIndexField = func(s *indexSchema.Schema) string {
 			return s.Version
 		}
 		options.GetFromVersionField = func(v *indexSchema.Version) string {
 			return v.Version
 		}
-	case PARAM_SCHEMA_VERSION:
+	case ParamSchemaVersion:
 		options.GetFromVersionField = func(v *indexSchema.Version) string {
 			return v.SchemaVersion
 		}
-	case PARAM_DEFAULT:
+	case ParamDefault:
 		options.GetFromIndexField = nil
 		options.GetFromVersionField = func(v *indexSchema.Version) string {
 			return fmt.Sprintf("%v", v.Default)
 		}
-	case PARAM_GIT_URL:
+	case ParamGitUrl:
 		options.GetFromIndexField = func(s *indexSchema.Schema) string {
 			return s.Git.Url
 		}
 		options.GetFromVersionField = func(v *indexSchema.Version) string {
 			return v.Git.Url
 		}
-	case PARAM_GIT_REMOTE_NAME:
+	case ParamGitRemoteName:
 		options.GetFromIndexField = func(s *indexSchema.Schema) string {
 			return s.Git.RemoteName
 		}
 		options.GetFromVersionField = func(v *indexSchema.Version) string {
 			return v.Git.RemoteName
 		}
-	case PARAM_GIT_SUBDIR:
+	case ParamGitSubDir:
 		options.GetFromIndexField = func(s *indexSchema.Schema) string {
 			return s.Git.SubDir
 		}
 		options.GetFromVersionField = func(v *indexSchema.Version) string {
 			return v.Git.SubDir
 		}
-	case PARAM_GIT_REVISION:
+	case ParamGitRevision:
 		options.GetFromIndexField = func(s *indexSchema.Schema) string {
 			return s.Git.Revision
 		}
 		options.GetFromVersionField = func(v *indexSchema.Version) string {
 			return v.Git.Revision
 		}
-	case PARAM_PROVIDER:
+	case ParamProvider:
 		options.GetFromIndexField = func(s *indexSchema.Schema) string {
 			return s.Provider
 		}
-	case PARAM_SUPPORT_URL:
+	case ParamSupportUrl:
 		options.GetFromIndexField = func(s *indexSchema.Schema) string {
 			return s.SupportUrl
 		}
@@ -629,7 +632,7 @@ func FilterDevfileStrArrayField(index []indexSchema.Schema, paramName string, re
 		V1Index:        v1Index,
 	}
 	switch paramName {
-	case ARRAY_PARAM_ATTRIBUTE_NAMES:
+	case ArrayParamAttributeNames:
 		options.GetFromIndexField = func(s *indexSchema.Schema) []string {
 			names := []string{}
 
@@ -639,7 +642,7 @@ func FilterDevfileStrArrayField(index []indexSchema.Schema, paramName string, re
 
 			return names
 		}
-	case ARRAY_PARAM_ARCHITECTURES:
+	case ArrayParamArchitectures:
 		options.GetFromIndexField = func(s *indexSchema.Schema) []string {
 			return s.Architectures
 		}
@@ -647,28 +650,28 @@ func FilterDevfileStrArrayField(index []indexSchema.Schema, paramName string, re
 			return v.Architectures
 		}
 		options.FilterOutEmpty = false
-	case ARRAY_PARAM_TAGS:
+	case ArrayParamTags:
 		options.GetFromIndexField = func(s *indexSchema.Schema) []string {
 			return s.Tags
 		}
 		options.GetFromVersionField = func(v *indexSchema.Version) []string {
 			return v.Tags
 		}
-	case ARRAY_PARAM_RESOURCES:
+	case ArrayParamResources:
 		options.GetFromIndexField = func(s *indexSchema.Schema) []string {
 			return s.Resources
 		}
 		options.GetFromVersionField = func(v *indexSchema.Version) []string {
 			return v.Resources
 		}
-	case ARRAY_PARAM_STARTER_PROJECTS:
+	case ArrayParamStarterProjects:
 		options.GetFromIndexField = func(s *indexSchema.Schema) []string {
 			return s.StarterProjects
 		}
 		options.GetFromVersionField = func(v *indexSchema.Version) []string {
 			return v.StarterProjects
 		}
-	case ARRAY_PARAM_LINKS:
+	case ArrayParamLinks:
 		options.GetFromIndexField = func(s *indexSchema.Schema) []string {
 			links := []string{}
 
@@ -687,7 +690,7 @@ func FilterDevfileStrArrayField(index []indexSchema.Schema, paramName string, re
 
 			return links
 		}
-	case ARRAY_PARAM_COMMAND_GROUPS:
+	case ArrayParamCommandGroups:
 		options.GetFromIndexField = func(s *indexSchema.Schema) []string {
 			commandGroups := []string{}
 
@@ -710,7 +713,30 @@ func FilterDevfileStrArrayField(index []indexSchema.Schema, paramName string, re
 
 			return commandGroups
 		}
-	case ARRAY_PARAM_GIT_REMOTE_NAMES:
+	case ArrayParamDeploymentScopes:
+		options.GetFromIndexField = func(s *indexSchema.Schema) []string {
+			deploymentScopes := []string{}
+
+			for deploymentScope, isSet := range s.DeploymentScopes {
+				if isSet {
+					deploymentScopes = append(deploymentScopes, string(deploymentScope))
+				}
+			}
+
+			return deploymentScopes
+		}
+		options.GetFromVersionField = func(v *indexSchema.Version) []string {
+			deploymentScopes := []string{}
+
+			for deploymentScope, isSet := range v.DeploymentScopes {
+				if isSet {
+					deploymentScopes = append(deploymentScopes, string(deploymentScope))
+				}
+			}
+
+			return deploymentScopes
+		}
+	case ArrayParamGitRemoteNames:
 		options.GetFromIndexField = func(s *indexSchema.Schema) []string {
 			gitRemoteNames := []string{}
 
@@ -733,7 +759,7 @@ func FilterDevfileStrArrayField(index []indexSchema.Schema, paramName string, re
 
 			return gitRemoteNames
 		}
-	case ARRAY_PARAM_GIT_REMOTES:
+	case ArrayParamGitRemotes:
 		options.GetFromIndexField = func(s *indexSchema.Schema) []string {
 			gitRemotes := []string{}
 
