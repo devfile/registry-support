@@ -21,6 +21,7 @@ metadata:
   name: {{ template "devfileregistry.fullname" . }}
   namespace: {{ .Release.Namespace }}
 spec:
+  host: {{ template "devfileregistry.routeHostname" . }}
   to:
     kind: Service
     name: {{ template "devfileregistry.fullname" . }}
