@@ -103,7 +103,7 @@ devfileEntriesFile=$1
 samplesDir=$2
 
 for sample in $(yq e '(.samples[].name)' $devfileEntriesFile); do
-  mkdir $samplesDir/$sample
+  mkdir -p $samplesDir/$sample
   echo $sample
   cache_sample $sample $samplesDir/$sample
 done
