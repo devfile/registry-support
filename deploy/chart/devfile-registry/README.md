@@ -63,12 +63,15 @@ $ helm install devfile-registry ./deploy/chart/devfile-registry \
 
 ## Installing the Devfile Registry on OpenShift
 
-If you're installing on OpenShift, you will first need to set `global.isOpenShift` to true, for example:
+If you're installing on OpenShift, you need to set `global.isOpenShift` to true, for example:
 ```
 helm install devfile-registry deploy/chart/devfile-registry --set global.isOpenShift=true
 ```
+#### Installation Via Helper Script Environment Variables
+By default the name of the install will be `devfile-registry` and the path to the chart will be `/deploy/chart/devfile-registry` as `helm-openshift-install.sh` is located at the root of the repository. If you wish to change these values you need to set the `INSTALL_NAME` and `CHART_PATH` environment variables prior to running the script. Note that `devfile-registry` will be postfixed to any custom name, e.g. `export $INSTALL_NAME=my-install` will result in a Helm install for `my-install-devfile-registry`.
 
-There are 3 ways that you can install the registry on OpenShift:
+
+There are 4 ways that you can install the registry on OpenShift:
 #### 1: Via Installation Script With OpenShift Generated Route Hostname and Domain
 
 If you wish to take advantage of OpenShift's generated hostname and domain, all you need to run is:
@@ -81,6 +84,7 @@ $ bash ./helm-openshift-install.sh \
 --set devfileIndex.image=quay.io/someuser/devfile-index \
 --set devfileIndex.tag=latest
 ```
+
 #### 2: Via Installation Script With Custom Hostname
 
 Similar to the above instructions, you can set your own custom domain as part of the arguments to the installation script.
@@ -99,6 +103,13 @@ $ helm install devfile-registry ./deploy/chart/devfile-registry \
 ```
 
 Installing to OpenShift follows the same process as Kubernetes, you just need to ensure that `--set global.isOpenShift=true` is an argument to the install. Additionally, instead of `--set global.ingress.domain=<domain>` for Kubernetes you will instead include `--set global.route.domain=<domain>` for OpenShift. All other arguments are available to either Kubernetes or OpenShift.
+
+#### 4: Via Helm CLI With OpenShift Generated Route Hostname and Domain
+If you wish to manually mimic the `helm-openshift-install.sh` helper script you can follow these steps:
+1. Run `helm install <name> <chart path> --set global.isOpenShift=true <more arguments>`
+2. Wait for the initial deployment to finish
+3. Run `oc get route <name> -o jsonpath='{.spec.host}'` to obtain the generated route
+4. Run `helm upgrade <name> <chart path> --reuse-values --set global.route.domain=<route from step 3>`
 
 ## Updating the Devfile Registry
 
