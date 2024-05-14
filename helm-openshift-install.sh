@@ -20,15 +20,22 @@ if [ $# -eq 0 ]; then
     exit 1
 fi
 
+name=${INSTALL_NAME:-"devfile-registry"}
+path=${CHART_PATH:-"deploy/chart/devfile-registry"}
 START_TIME=$(date +%s)
 TIMEOUT_SEC=25 
 SPINUP_SEC=60 # Helm Upgrade can have unexpected results if it is run while the cluster is initially starting
 
+# If user set custom name postfix devfile-registry to it to sync with what was deployed
+if [ "$name" != "devfile-registry" ]; then
+    name="${name}-devfile-registry"
+fi
+
 # Run the install without the generated Openshift Route being passed to Registry Viewer fqdn as it does not exist yet
-helm install devfile-registry deploy/chart/devfile-registry --set global.isOpenShift=true "$@"
+helm install $name $path --set global.isOpenShift=true "$@"
 
 while true; do
-    ROUTE=$(oc get route devfile-registry -o jsonpath='{.spec.host}' 2>/dev/null)
+    ROUTE=$(oc get route $name -o jsonpath='{.spec.host}' 2>/dev/null)
     if [ -n "$ROUTE" ]; then
         echo Domain found: "$ROUTE"
         break
@@ -46,4 +53,4 @@ done
 sleep $SPINUP_SEC
 
 # Run upgrade with the new variable to set fqdn of the Registry Viewer
-helm upgrade devfile-registry deploy/chart/devfile-registry --reuse-values --set global.route.domain=$ROUTE 
+helm upgrade $name $path --reuse-values --set global.route.domain=$ROUTE 
