@@ -5,7 +5,7 @@ This folder contains the Dockerfile for the OCI registry server. It is based off
 ## Build
 The scripts in this project support both `Docker` and `Podman` container engines. By default the scripts will run using `Docker`, to use `Podman` first run `export USE_PODMAN=true`.
 
-To build the image, run `bash build.sh`.
+The build script enables users to build for different architectures, by default running `bash build.sh` will build for `linux/amd64`. If you would like to build for a different architecture simply add it as an argument to the script. E.g. `bash build.sh linux/arm64` for `linux/arm64` builds.
 
 To push the image to a repository of your choice, you can run `bash push.sh <repository-tag>`.
 
