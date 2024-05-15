@@ -99,11 +99,27 @@ function cache_devfile() {
     fi
 }
 
-devfileEntriesFile=$1
-samplesDir=$2
+if [[ "$OSTYPE" == "darwin"* ]]
+then
+  if [[ $1 != ./* ]] && [[ $1 != ../* ]] && [[ $1 != /* ]]
+  then
+    devfileEntriesFile=./$1
+  else
+    devfileEntriesFile=$1
+  fi
+  if [[ $2 != ./* ]] && [[ $2 != ../* ]] && [[ $2 != /* ]]
+  then
+    samplesDir=./$2
+  else
+    samplesDir=$2
+  fi
+else
+  devfileEntriesFile=$1
+  samplesDir=$2
+fi
 
 for sample in $(yq e '(.samples[].name)' $devfileEntriesFile); do
-  mkdir $samplesDir/$sample
+  mkdir -p $samplesDir/$sample
   echo $sample
   cache_sample $sample $samplesDir/$sample
 done
