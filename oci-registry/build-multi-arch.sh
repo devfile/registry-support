@@ -15,21 +15,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+buildfolder="$(basename "$(dirname "$0")")"
 # Due to command differences between podman and docker we need to separate the process
 # for creating and adding images to a multi-arch manifest
 podman=${USE_PODMAN:-false}
+# Stores all created image tags 
+images=()
+# Base Repository
+BASE_REPO="quay.io/rh-ee-jdubrick/test-oci-registry"
+# BASE_REPO="quay.io/devfile/oci-registry"
 
 function build {
-    #IMAGE="quay.io/devfile/oci-registry:$2"
-    IMAGE="quay.io/rh-ee-jdubrick/oci-registry:$2"
+    IMAGE="$BASE_REPO:$2"
 
     echo "Building: ${IMAGE}"
-    $1 build -t $IMAGE --platform "linux/$2" .
+    $1 build -t $IMAGE --platform "linux/$2" "$buildfolder"
+
+    echo "Tagging: ${IMAGE}"
+    $1 tag "$IMAGE" "$IMAGE"
 
     echo "Pushing: ${IMAGE}"
-    $1 push $IMAGE
+    $1 push "$IMAGE"
 
-
+    # Add image to list of all images to be added to a manifest
+    images+=("${IMAGE}")
 }
 
 function engine-handler {
@@ -39,21 +48,33 @@ function engine-handler {
 }
 
 
-if [ ${podman} == true ]; then
+if [ ! ${podman} == true ]; then
   echo "Executing with podman"
 
   # Build and push multi-arch images
-    engine-handler podman
+  engine-handler podman
+
   # Create manifest and add images
+  podman manifest create oci-registry-manifest
+  for img in "${images[@]}" ; do
+    podman manifest add oci-registry-manifest "$img"
+  done
 
   # Push and delete local manifest
+  podman manifest push oci-registry-manifest "$BASE_REPO":latest
+  podman manifest rm oci-registry-manifest
+
 else
-    echo "Executing with docker"
+  echo "Executing with docker"
 
-    engine-handler docker
-    # Build and push multi-arch images
+  # Build and push multi-arch images
+  engine-handler docker
+  
+  # Create manifest and add images
+  docker manifest create "$BASE_REPO:latest" "${images[@]}"
 
-    # Create manifest and add images
-
-    # Push and delete local manifest
+  # Push and delete local manifest
+  docker manifest push "$BASE_REPO:latest"
+  docker manifest rm "$BASE_REPO:latest"
+  
 fi
