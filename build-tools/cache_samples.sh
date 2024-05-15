@@ -99,7 +99,7 @@ function cache_devfile() {
     fi
 }
 
-if [[ "$OSTYPE" == "darwin" ]]
+if [[ "$OSTYPE" == "darwin"* ]]
 then
   if [[ $1 != ./* ]] && [[ $1 != ../* ]] && [[ $1 != /* ]]
   then
