@@ -112,8 +112,11 @@ jobs:
       - name: Test index server
         run: cd index/server && go test ./... -coverprofile cover.out
 
-      - name: Check if oci server build is working
+      - name: Check if oci server build is working for amd64
         run: cd oci-registry && bash ./build.sh
+
+      - name: Check if oci server build is working for arm64
+        run: cd oci-registry && bash ./build.sh linux/arm64
 
       - name: Check if devfile-registry-integration build is working
         run: cd tests/integration && bash ./docker-build.sh
