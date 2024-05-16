@@ -22,8 +22,7 @@ podman=${USE_PODMAN:-false}
 # Stores all created image tags 
 images=()
 # Base Repository
-BASE_REPO="quay.io/rh-ee-jdubrick/test-oci-registry"
-# BASE_REPO="quay.io/devfile/oci-registry"
+BASE_REPO="quay.io/devfile/oci-registry"
 
 function build {
     IMAGE="$BASE_REPO:$2"
@@ -76,5 +75,5 @@ else
   # Push and delete local manifest
   docker manifest push "$BASE_REPO:latest"
   docker manifest rm "$BASE_REPO:latest"
-  
+
 fi
