@@ -23,6 +23,7 @@ podman=${USE_PODMAN:-false}
 images=()
 # Base Repository
 BASE_REPO="quay.io/devfile/oci-registry"
+BASE_TAG="next"
 
 function build {
     IMAGE="$BASE_REPO:$2"
@@ -60,7 +61,7 @@ if [ ! ${podman} == true ]; then
   done
 
   # Push and delete local manifest
-  podman manifest push oci-registry-manifest "$BASE_REPO":latest
+  podman manifest push oci-registry-manifest "$BASE_REPO":"$BASE_TAG"
   podman manifest rm oci-registry-manifest
 
 else
@@ -70,10 +71,10 @@ else
   engine-handler docker
   
   # Create manifest and add images
-  docker manifest create "$BASE_REPO:latest" "${images[@]}"
+  docker manifest create "$BASE_REPO:$BASE_TAG" "${images[@]}"
 
   # Push and delete local manifest
-  docker manifest push "$BASE_REPO:latest"
-  docker manifest rm "$BASE_REPO:latest"
+  docker manifest push "$BASE_REPO:$BASE_TAG"
+  docker manifest rm "$BASE_REPO:$BASE_TAG"
 
 fi
