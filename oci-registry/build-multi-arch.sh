@@ -48,7 +48,7 @@ function engine-handler {
 }
 
 
-if [ ! ${podman} == true ]; then
+if [ ${podman} == true ]; then
   echo "Executing with podman"
 
   # Build and push multi-arch images
