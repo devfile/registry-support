@@ -21,17 +21,95 @@ E.g. if your cluster's ingress domain is 192.168.1.0.nip.io, you would run:
 helm install devfile-registry deploy/chart/devfile-registry --set global.ingress.domain=192.168.1.0.nip.io
 ```
 
+### Kubernetes Installation Examples
+```bash
+$ helm install devfile-registry ./deploy/chart/devfile-registry \ 
+    --set global.ingress.domain=<ingress-domain> \
+	--set devfileIndex.image=<index-image> \
+	--set devfileIndex.tag=<index-image-tag>
+```
+
+Where `<ingress-domain>` is the ingress domain for your cluster, `<index-image>` is the devfile index image you want to deploy, and `<index-image-tag>` is the corresponding image tag for the devfile index image.
+
+For example, if you're installing your own custom devfile registry image for dev/test purposes on Minikube, you might run:
+
+```bash
+$ helm install devfile-registry ./deploy/chart/devfile-registry \
+    --set global.ingress.domain="$(minikube ip).nip.io" \
+	--set devfileIndex.image=quay.io/someuser/devfile-index \
+	--set devfileIndex.tag=latest
+```
+
+You can deploy a devfile registry with a custom registry viewer image (uses `quay.io/devfile/registry-viewer:next` by default) by running the following:
+
+```bash
+$ helm install devfile-registry ./deploy/chart/devfile-registry \
+    --set global.ingress.domain="$(minikube ip).nip.io" \
+	--set devfileIndex.image=quay.io/someuser/devfile-index \
+	--set devfileIndex.tag=latest \
+	--set registryViewer.image=quay.io/someuser/registry-viewer \
+	--set registryViewer.tag=latest
+```
+
+You can deploy a *headless* devfile registry (i.e. without the registry viewer) by specifying `--set global.headless=true` which will look like:
+
+```bash
+$ helm install devfile-registry ./deploy/chart/devfile-registry \
+    --set global.ingress.domain="$(minikube ip).nip.io" \
+	--set global.headless=true \
+	--set devfileIndex.image=quay.io/someuser/devfile-index \
+	--set devfileIndex.tag=latest
+```
+
 ## Installing the Devfile Registry on OpenShift
 
 If you're installing on OpenShift, you need to set `global.isOpenShift` to true, for example:
 ```
 helm install devfile-registry deploy/chart/devfile-registry --set global.isOpenShift=true
 ```
+#### Installation Via Helper Script Environment Variables
+By default the name of the install will be `devfile-registry` and the path to the chart will be `/deploy/chart/devfile-registry` as `helm-openshift-install.sh` is located at the root of the repository. If you wish to change these values you need to set the `INSTALL_NAME` and `CHART_PATH` environment variables prior to running the script. Note that `devfile-registry` will be postfixed to any custom name, e.g. `export $INSTALL_NAME=my-install` will result in a Helm install for `my-install-devfile-registry`.
 
-or, if you want to install a specific devfile index image, you can run:
+
+There are 4 ways that you can install the registry on OpenShift:
+#### 1: Via Installation Script With OpenShift Generated Route Hostname and Domain
+
+If you wish to take advantage of OpenShift's generated hostname and domain, all you need to run is:
 ```
-helm install devfile-registry deploy/chart/devfile-registry --set global.isOpenShift=true --set devfileIndex.image=quay.io/myuser/devfile-index --set devfileIndex.tag=latest
+$ bash ./helm-openshift-install.sh
 ```
+This will install the Devfile Registry to OpenShift for you with the generated route hostname and domain. If you wish to include additional arguments such as changing the image for `devfileIndex`, you can include those alongside the script call:
+```
+$ bash ./helm-openshift-install.sh \
+--set devfileIndex.image=quay.io/someuser/devfile-index \
+--set devfileIndex.tag=latest
+```
+
+#### 2: Via Installation Script With Custom Hostname
+
+Similar to the above instructions, you can set your own custom domain as part of the arguments to the installation script.
+```
+$ bash ./helm-openshift-install.sh --set global.route.domain=<domain> <other arguments>
+```
+
+#### 3: Via Helm CLI With Custom Hostname
+
+If you do not wish to use a helper script to install to OpenShift, you are able to mimic the Kubernetes installation with one slight change. Instead of `--set global.ingress.domain` you will swap it with `--set global.route.domain` as OpenShift utilizes Routes instead of Ingress.
+```bash
+$ helm install devfile-registry ./deploy/chart/devfile-registry \ 
+    --set global.route.domain=<route-domain> \
+	--set devfileIndex.image=<index-image> \
+	--set devfileIndex.tag=<index-image-tag>
+```
+
+Installing to OpenShift follows the same process as Kubernetes, you just need to ensure that `--set global.isOpenShift=true` is an argument to the install. Additionally, instead of `--set global.ingress.domain=<domain>` for Kubernetes you will instead include `--set global.route.domain=<domain>` for OpenShift. All other arguments are available to either Kubernetes or OpenShift.
+
+#### 4: Via Helm CLI With OpenShift Generated Route Hostname and Domain
+If you wish to manually mimic the `helm-openshift-install.sh` helper script you can follow these steps:
+1. Run `helm install <name> <chart path> --set global.isOpenShift=true <more arguments>`
+2. Wait for the initial deployment to finish
+3. Run `oc get route <name> -o jsonpath='{.spec.host}'` to obtain the generated route
+4. Run `helm upgrade <name> <chart path> --reuse-values --set global.route.domain=<route from step 3>`
 
 ## Updating the Devfile Registry
 
@@ -62,8 +140,9 @@ The following fields can be configured in the Helm chart, either via the `values
 
 | Parameter                              | Description                                     | Default                                                    |
 | -----------------------                | ---------------------------------------------   | ---------------------------------------------------------- |
-| `global.ingress.domain`                | Ingress domain for the devfile registry                                        | **MUST BE SET BY USER**     |
+| `global.ingress.domain`                | Kubernetes Ingress domain for the devfile registry                                        | **MUST BE SET BY USER**     |
 | `global.ingress.class`                 | Ingress class for the devfile registry                                         | `nginx` |
+| `global.route.domain`                  | OpenShift Route domain for the devfile registry                                          | **MUST BE SET BY USER**    |
 | `global.ingress.secretName`            | Name of an existing tls secret if using TLS                                    | ` '' ` |
 | `global.isOpenShift  `                 | Set to true to use OpenShift routes instead of ingress                         | `false` |
 | `global.tlsEnabled`                    | Set to true to use the devfile registry with TLS                               | `false` |

@@ -52,49 +52,7 @@ See the following for more on the component specific build process:
 We recommend using the [Devfile Registry Operator](https://github.com/devfile/registry-operator) to install a Devfile Registry on your Kubernetes or OpenShift cluster. Consult [its Readme for more information](https://github.com/devfile/registry-operator#running-the-controller-in-a-cluster).
 
 ### Via the Devfile Registry Helm Chart
-
-Alternatively, a Helm chart is also provided if you do not wish to use an operator. To install (with Helm 3) run:
-
-```bash
-$ helm install devfile-registry ./deploy/chart/devfile-registry \ 
-    --set global.ingress.domain=<ingress-domain> \
-	--set devfileIndex.image=<index-image> \
-	--set devfileIndex.tag=<index-image-tag>
-```
-
-Where `<ingress-domain>` is the ingress domain for your cluster, `<index-image>` is the devfile index image you want to deploy, and `<index-image-tag>` is the corresponding image tag for the devfile index image.
-
-For example, if you're installing your own custom devfile registry image for dev/test purposes on Minikube, you might run:
-
-```bash
-$ helm install devfile-registry ./deploy/chart/devfile-registry \
-    --set global.ingress.domain="$(minikube ip).nip.io" \
-	--set devfileIndex.image=quay.io/someuser/devfile-index \
-	--set devfileIndex.tag=latest
-```
-
-You can deploy a devfile registry with a custom registry viewer image (uses `quay.io/devfile/registry-viewer:next` by default) by running the following:
-
-```bash
-$ helm install devfile-registry ./deploy/chart/devfile-registry \
-    --set global.ingress.domain="$(minikube ip).nip.io" \
-	--set devfileIndex.image=quay.io/someuser/devfile-index \
-	--set devfileIndex.tag=latest \
-	--set registryViewer.image=quay.io/someuser/registry-viewer \
-	--set registryViewer.tag=latest
-```
-
-You can deploy a *headless* devfile registry (i.e. without the registry viewer) by specifying `--set global.headless=true` which will look like:
-
-```bash
-$ helm install devfile-registry ./deploy/chart/devfile-registry \
-    --set global.ingress.domain="$(minikube ip).nip.io" \
-	--set global.headless=true \
-	--set devfileIndex.image=quay.io/someuser/devfile-index \
-	--set devfileIndex.tag=latest
-```
-
-For more information on the Helm chart, consult [its readme](deploy/chart/devfile-registry/README.md).
+Alternatively, a Helm chart is also provided if you do not wish to use an operator. You can find instructions below for installing via Helm to either a Kubernetes or OpenShift environment. You can find detailed instructions [here](deploy/chart/devfile-registry/README.md).
 
 ## Contributing
 

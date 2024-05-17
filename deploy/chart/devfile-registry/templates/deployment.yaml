@@ -146,7 +146,7 @@ spec:
                 {
                   "name": "{{ template "devfileregistry.name" . }}",
                   "url": "http://localhost:8080",
-                  "fqdn": "{{ template "devfileregistry.ingressUrl" . }}"
+                  "fqdn": "{{ template "devfileregistry.fqdnUrl" . }}"
                 }
               ]
         securityContext:

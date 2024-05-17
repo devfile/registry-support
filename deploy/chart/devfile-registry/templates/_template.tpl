@@ -22,12 +22,38 @@
 {{- .Values.global.ingress.domain | printf "%s.%s" $hostname -}}
 {{- end -}}
 
+{{- define "devfileregistry.routeHostname" -}}
+{{- $hostname := .Values.hostnameOverride | default (printf "devfile-registry-%s" .Release.Namespace) -}}
+{{- if eq .Values.global.route.domain "" -}} # This allows for Openshift to generate the route name + domain
+{{- .Values.global.route.domain -}}
+{{- else -}}
+{{- .Values.global.route.domain | printf "%s.%s" $hostname -}}
+{{- end -}}
+{{- end -}}
+
 {{- define "devfileregistry.ingressUrl" -}}
 {{- $hostname := .Values.hostnameOverride | default (printf "devfile-registry-%s" .Release.Namespace) -}}
 {{- if .Values.global.tlsEnabled -}}
 {{- .Values.global.ingress.domain | printf "https://%s.%s" $hostname -}}
 {{- else -}}
 {{- .Values.global.ingress.domain | printf "http://%s.%s" $hostname -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "devfileregistry.routeUrl" -}}
+{{- $hostname := .Values.hostnameOverride | default (printf "devfile-registry-%s" .Release.Namespace) -}}
+{{- if .Values.global.tlsEnabled -}}
+{{- .Values.global.route.domain | printf "https://%s.%s" $hostname -}}
+{{- else -}}
+{{- .Values.global.route.domain | printf "http://%s.%s" $hostname -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "devfileregistry.fqdnUrl" -}}
+{{- if .Values.global.isOpenShift -}}
+{{- template "devfileregistry.routeUrl" . -}}
+{{- else -}}
+{{- template "devfileregistry.ingressUrl" . -}}
 {{- end -}}
 {{- end -}}
 
