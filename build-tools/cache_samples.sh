@@ -54,7 +54,9 @@ function cache_sample() {
           gitRepository="$(yq e '.samples[] | select(.name == "'${sampleName}'")' $devfileEntriesFile | yq e '.versions[] | select(.version == "'${version}'")' -| yq e '.git.remotes.origin' -)"
           revision="$(yq e '.samples[] | select(.name == "'${sampleName}'")' $devfileEntriesFile | yq e '.versions[] | select(.version == "'${version}'")' -| yq e '.git.revision' -)"
           clone_sample_repo $gitRepository $sampleDir/$version $revision
-          mkdir $outputDir/$version
+          if [ ! -d $outputDir/$version ]; then
+            mkdir $outputDir/$version
+          fi
           cache_devfile $sampleDir/$version $outputDir/$version $sampleName
         done
     else
