@@ -18,7 +18,8 @@ FROM golang:1.19-alpine@sha256:276692412aea6f9dd6cdc5725b2f1c05bef8df7223811afbc
 RUN apk add --no-cache git bash curl zip
 
 # Install yq
-RUN curl -sL -O https://github.com/mikefarah/yq/releases/download/v4.9.5/yq_linux_amd64 -o /usr/local/bin/yq && mv ./yq_linux_amd64 /usr/local/bin/yq && chmod +x /usr/local/bin/yq
+ENV YQ_VERSION=v4.44.1
+RUN curl -sL -O https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64 -o /usr/local/bin/yq && mv ./yq_linux_amd64 /usr/local/bin/yq && chmod +x /usr/local/bin/yq
 RUN yq
 
 # Copy the registry build tools

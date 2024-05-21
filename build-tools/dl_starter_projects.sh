@@ -16,7 +16,7 @@
 # limitations under the License.
 
 # Path of stacks directory in the registry
-STACKS_DIR=/registry/stacks
+STACKS_DIR=${STACKS_DIR:-/registry/stacks}
 # List of starter projects to use offline
 offline_starter_projects=( "$@" )
 # When no starter projects are specifed,

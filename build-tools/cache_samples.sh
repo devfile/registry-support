@@ -47,14 +47,16 @@ function cache_sample() {
     sampleDir=$tempDir/$sampleName
 
     # Git clone the sample project
-    gitRepository="$(yq e '(.samples[] | select(.name == "'${sampleName}'")' $devfileEntriesFile | yq e '(.git.remotes.origin)' -)"
-    revision="$(yq e '(.samples[] | select(.name == "'${sampleName}'")' $devfileEntriesFile | yq e '(.git.revision)' -)"
+    gitRepository="$(yq e '.samples[] | select(.name == "'${sampleName}'")' $devfileEntriesFile | yq e '(.git.remotes.origin)' -)"
+    revision="$(yq e '.samples[] | select(.name == "'${sampleName}'")' $devfileEntriesFile | yq e '(.git.revision)' -)"
     if [[ $gitRepository == "null" ]]; then
-        for version in $(yq e '(.samples[] | select(.name == "'${sampleName}'")' $devfileEntriesFile | yq e '(.versions[].version)' -); do
-          gitRepository="$(yq e '(.samples[] | select(.name == "'${sampleName}'")' $devfileEntriesFile | yq e '(.versions[] | select(.version == "'${version}'")' -| yq e '.git.remotes.origin' -)"
-          revision="$(yq e '(.samples[] | select(.name == "'${sampleName}'")' $devfileEntriesFile | yq e '(.versions[] | select(.version == "'${version}'")' -| yq e '.git.revision' -)"
+        for version in $(yq e '.samples[] | select(.name == "'${sampleName}'")' $devfileEntriesFile | yq e '(.versions[].version)' -); do
+          gitRepository="$(yq e '.samples[] | select(.name == "'${sampleName}'")' $devfileEntriesFile | yq e '.versions[] | select(.version == "'${version}'")' -| yq e '.git.remotes.origin' -)"
+          revision="$(yq e '.samples[] | select(.name == "'${sampleName}'")' $devfileEntriesFile | yq e '.versions[] | select(.version == "'${version}'")' -| yq e '.git.revision' -)"
           clone_sample_repo $gitRepository $sampleDir/$version $revision
-          mkdir $outputDir/$version
+          if [ ! -d $outputDir/$version ]; then
+            mkdir $outputDir/$version
+          fi
           cache_devfile $sampleDir/$version $outputDir/$version $sampleName
         done
     else
@@ -63,7 +65,7 @@ function cache_sample() {
     fi
 
     # Cache the icon for the sample
-    local iconPath="$(yq e '(.samples[] | select(.name == "'${sampleName}'")' $devfileEntriesFile | yq e '(.icon)' -)"
+    local iconPath="$(yq e '.samples[] | select(.name == "'${sampleName}'")' $devfileEntriesFile | yq e '(.icon)' -)"
     if [[ $iconPath != "null" ]]; then
       urlRegex='(https?)://[-A-Za-z0-9\+&@#/%?=~_|!:,.;]*[-A-Za-z0-9\+&@#/%=~_|]'
       if [[ $iconPath =~ $urlRegex ]]; then
