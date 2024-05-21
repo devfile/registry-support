@@ -18,7 +18,18 @@
 # Build the index container for the registry
 buildfolder="$(basename "$(dirname "$0")")"
 
+DEFAULT_ARCH="linux/amd64"
+
+# Check if different architecture was passed for image build
+# Will default to $DEFAULT_ARCH if unset
+if [ ! -z "$1" ]
+  then
+    arch="$1"
+else
+    arch="$DEFAULT_ARCH"
+fi
+
 # set podman alias if necessary
 . ${buildfolder}/../setenv.sh
 
-docker build -t oci-registry:next $buildfolder
+docker build -t oci-registry:next --platform "${arch}" "$buildfolder"
