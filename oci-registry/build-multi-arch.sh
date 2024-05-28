@@ -76,6 +76,6 @@ else
 
   # Push and delete local manifest
   docker manifest push "$DEFAULT_MANIFEST"
-  docker manifest rm "$$DEFAULT_MANIFEST"
+  docker manifest rm "$DEFAULT_MANIFEST"
 
 fi
