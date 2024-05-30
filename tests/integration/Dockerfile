@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-FROM golang:1.19-alpine@sha256:276692412aea6f9dd6cdc5725b2f1c05bef8df7223811afbc6aa16294e2903f9
+FROM golang:1.19-alpine@sha256:0ec0646e208ea58e5d29e558e39f2e59fccf39b7bda306cb53bbaff91919eca5
 
 WORKDIR /registry-test
 
