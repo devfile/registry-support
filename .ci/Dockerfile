@@ -14,12 +14,16 @@
 # limitations under the License.
 FROM golang:1.19-alpine@sha256:0ec0646e208ea58e5d29e558e39f2e59fccf39b7bda306cb53bbaff91919eca5 AS builder
 
+# Allows for the proper yq to be downloaded
+# This arg is automatically set if the dockerfile is built with --platform flag
+ARG TARGETARCH=amd64
+
 # Install dependencies
 RUN apk add --no-cache git bash curl zip
 
 # Install yq
 ENV YQ_VERSION=v4.44.1
-RUN curl -sL -O https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64 -o /usr/local/bin/yq && mv ./yq_linux_amd64 /usr/local/bin/yq && chmod +x /usr/local/bin/yq
+RUN curl -sL -O https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_${TARGETARCH} -o /usr/local/bin/yq && mv ./yq_linux_${TARGETARCH} /usr/local/bin/yq && chmod +x /usr/local/bin/yq
 RUN yq
 
 # Copy the registry build tools
