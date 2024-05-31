@@ -146,7 +146,7 @@ github.com/devfile/library/v2/pkg/devfile/validate
 github.com/devfile/library/v2/pkg/testingutil/filesystem
 github.com/devfile/library/v2/pkg/util
 # github.com/devfile/registry-support/index/generator v0.0.0 => ../generator
-## explicit; go 1.19
+## explicit; go 1.21
 github.com/devfile/registry-support/index/generator/library
 github.com/devfile/registry-support/index/generator/schema
 # github.com/devfile/registry-support/registry-library v0.0.0-20240328155806-7c89891a72ce
