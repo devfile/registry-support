@@ -21,6 +21,17 @@ if [ "$0" == "$BASH_SOURCE" ]; then
     . ../../setenv.sh
 fi
 
+DEFAULT_ARCH="linux/amd64"
+
+# Check if different architecture was passed for image build
+# Will default to $DEFAULT_ARCH if unset
+if [ ! -z "$1" ]
+  then
+    arch="$1"
+else
+    arch="$DEFAULT_ARCH"
+fi
+
 # Build the index container for the registry
 buildfolder="$(realpath $(dirname ${BASH_SOURCE[0]}))"
 
@@ -28,4 +39,4 @@ buildfolder="$(realpath $(dirname ${BASH_SOURCE[0]}))"
 bash ${buildfolder}/codegen.sh
 
 # Build the index server
-docker build -t devfile-index-base:latest --build-arg ENABLE_HTTP2=${ENABLE_HTTP2} $buildfolder
+docker build -t devfile-index-base:latest --platform "${arch}" --build-arg ENABLE_HTTP2=${ENABLE_HTTP2} $buildfolder

@@ -39,10 +39,15 @@ See [swagger.io/docs](https://swagger.io/docs/specification/paths-and-operations
 ## Build
 To run the build scripts with `Podman` instead of `Docker` first run `export USE_PODMAN=true`.
 
-The registry index server is built into a container image, `devfile-index-base:latest`, by running the following script:
+The registry index server is built into a container image for the `linux/amd64` architecture by default named `devfile-index-base:latest`, by running the following script:
 
 ```sh
 bash build.sh
+```
+
+to build for a different architecture like `linux/arm64`, pass it as an argument:
+```
+bash build.sh linux/arm64
 ```
 
 You retag it with one of the two command:
