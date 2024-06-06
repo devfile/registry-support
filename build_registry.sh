@@ -20,6 +20,17 @@
 # and want to test all of the components together
 set -ex
 
+DEFAULT_ARCH="linux/amd64"
+
+# Check if different architecture was passed for image build
+# Will default to $DEFAULT_ARCH if unset
+if [ ! -z "$1" ]
+  then
+    arch="$1"
+else
+    arch="$DEFAULT_ARCH"
+fi
+
 # Set base registry support directory
 BASE_DIR=$(dirname $0)
 
@@ -27,7 +38,7 @@ BASE_DIR=$(dirname $0)
 . ${BASE_DIR}/setenv.sh
 
 # Build the index server base image
-ENABLE_HTTP2=${ENABLE_HTTP2} . ${BASE_DIR}/index/server/build.sh
+ENABLE_HTTP2=${ENABLE_HTTP2} . ${BASE_DIR}/index/server/build.sh "${arch}"
 
 # Build the test devfile registry image
-docker build -t devfile-index:latest -f ${BASE_DIR}/.ci/Dockerfile ${BASE_DIR}
+docker build -t devfile-index:latest --platform "${arch}" -f ${BASE_DIR}/.ci/Dockerfile ${BASE_DIR}

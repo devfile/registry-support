@@ -105,12 +105,19 @@ jobs:
             exit 1
           fi
 
-      - name: Check if index server build is working
+      - name: Test index server build for linux/amd64
         run: |
           cd index/server
           export GOPATH=$(go env GOPATH)
           go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@${{ env.OAPI_CODEGEN_VERSION }}
           bash ./build.sh
+
+      - name: Test index server build for linux/arm64
+        run: |
+          cd index/server
+          export GOPATH=$(go env GOPATH)
+          go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@${{ env.OAPI_CODEGEN_VERSION }}
+          bash ./build.sh linux/arm64
 
       - name: Test index server
         run: cd index/server && go test ./... -coverprofile cover.out
