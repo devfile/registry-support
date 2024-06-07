@@ -17,7 +17,7 @@ package server
 
 import (
 	"github.com/devfile/api/v2/pkg/apis/workspaces/v1alpha2"
-	"sigs.k8s.io/structured-merge-diff/v4/schema"
+	"github.com/devfile/registry-support/index/generator/schema"
 )
 
 // Architectures Optional list of processor architectures that the devfile supports, empty list suggests that the devfile can be used on any architecture
