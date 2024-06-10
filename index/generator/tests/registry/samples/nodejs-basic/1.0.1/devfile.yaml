@@ -15,6 +15,7 @@ metadata:
 parent:
   id: nodejs
   registryUrl: "https://registry.devfile.io"
+  version: 2.2.0
 components:
   - name: outerloop-build
     image:
