@@ -544,8 +544,8 @@ func buildIndexAPIResponse(c *gin.Context, indexType string, wantV1Index bool, p
 		util.FilterDevfileDeprecated(&index, *params.Deprecated, wantV1Index)
 	}
 	if index == nil || len(index) == 0 {
-		c.JSON(http.StatusOK, gin.H{
-			"status": "No samples found in the registry",
+		c.JSON(http.StatusNotFound, gin.H{
+			"status": "No stacks or samples found in the registry",
 		})
 		return
 	}
