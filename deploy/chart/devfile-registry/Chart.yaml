@@ -15,7 +15,7 @@
 
 apiVersion: "v1"
 name: "devfile-registry"
-version: "0.0.1"
+version: "0.0.2"
 home: "https://devfile.io/"
 maintainers:
   - email: mvaldron@redhat.com
