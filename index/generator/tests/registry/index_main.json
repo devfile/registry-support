@@ -27,7 +27,8 @@
           "deploy": false,
           "run": true,
           "test": false
-        }
+        },
+        "lastModified": "2023-04-08"
       },
       {
         "version": "1.1.0",
@@ -47,7 +48,8 @@
           "deploy": false,
           "run": true,
           "test": false
-        }
+        },
+        "lastModified": "2023-11-08"
       }
     ]
   },
@@ -80,7 +82,8 @@
           "deploy": false,
           "run": true,
           "test": false
-        }
+        },
+        "lastModified": "2024-05-13"
       }
     ]
   },
@@ -111,7 +114,8 @@
           "deploy": false,
           "run": true,
           "test": true
-        }
+        },
+        "lastModified": "2024-04-23"
       }
     ]
   },
@@ -144,7 +148,8 @@
           "deploy": false,
           "run": true,
           "test": false
-        }
+        },
+        "lastModified": "2024-04-29"
       }
     ]
   },
@@ -176,7 +181,8 @@
           "deploy": false,
           "run": true,
           "test": false
-        }
+        },
+        "lastModified": "2024-05-13"
       }
     ]
   },
@@ -228,7 +234,8 @@
           "deploy": false,
           "run": true,
           "test": false
-        }
+        },
+        "lastModified": "2024-05-13"
       }
     ]
   },
@@ -269,7 +276,8 @@
           "deploy": false,
           "run": true,
           "test": false
-        }
+        },
+        "lastModified": "2024-04-22"
       }
     ]
   },
@@ -318,7 +326,8 @@
           "deploy": false,
           "run": true,
           "test": false
-        }
+        },
+        "lastModified": "2024-05-27"
       }
     ]
   },
@@ -350,7 +359,8 @@
           "deploy": false,
           "run": true,
           "test": true
-        }
+        },
+        "lastModified": "2024-03-25"
       }
     ]
   },
@@ -382,7 +392,8 @@
           "deploy": false,
           "run": true,
           "test": false
-        }
+        },
+        "lastModified": "2024-05-28"
       }
     ]
   },
@@ -414,7 +425,8 @@
           "deploy": false,
           "run": true,
           "test": false
-        }
+        },
+        "lastModified": "2024-05-28"
       }
     ]
   },
@@ -436,7 +448,8 @@
             "origin": "https://github.com/redhat-developer/devfile-sample"
           }
         },
-        "description": "nodejs with devfile v2.0.0"
+        "description": "nodejs with devfile v2.0.0",
+        "lastModified": "2024-06-05"
       },
       {
         "version": "1.0.1",
@@ -447,7 +460,8 @@
             "origin": "https://github.com/nodeshift-starters/devfile-sample"
           }
         },
-        "description": "nodejs with devfile v2.2.0"
+        "description": "nodejs with devfile v2.2.0",
+        "lastModified": "2024-06-05"
       }
     ]
   },
@@ -471,7 +485,8 @@
             "origin": "https://github.com/elsony/devfile-sample-code-with-quarkus.git"
           }
         },
-        "description": "java quarkus with devfile v2.0.0"
+        "description": "java quarkus with devfile v2.0.0",
+        "lastModified": "2024-04-19"
       }
     ]
   }
