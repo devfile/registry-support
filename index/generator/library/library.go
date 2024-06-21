@@ -712,7 +712,8 @@ func validateStackInfo(stackInfo schema.Schema, stackfolderDir string) []error {
 // SetLastModifiedValue adds the last modified value to a pre-created index
 // The last modified dates are contained in a file named last_modified.json that is apart of the registry dir
 func SetLastModifiedValue(index []schema.Schema, registryDirPath string) ([]schema.Schema, error) {
-	bytes, err := os.ReadFile(registryDirPath + "/last_modified.json")
+	lastModFile := path.Join(registryDirPath, "last_modified.json")
+	bytes, err := os.ReadFile(lastModFile)
 	if err != nil {
 		return index, err
 	}
@@ -725,17 +726,17 @@ func SetLastModifiedValue(index []schema.Schema, registryDirPath string) ([]sche
 
 	lastModifiedEntriesMap := make(map[string]map[string]string)
 
-	for _, entry := range lastModifiedEntries.Stacks {
-		updateLastModifiedMap(lastModifiedEntriesMap, &entry)
+	for idx := range lastModifiedEntries.Stacks {
+		updateLastModifiedMap(lastModifiedEntriesMap, &lastModifiedEntries.Stacks[idx])
 	}
 
-	for _, entry := range lastModifiedEntries.Samples {
-		updateLastModifiedMap(lastModifiedEntriesMap, &entry)
+	for idx := range lastModifiedEntries.Samples {
+		updateLastModifiedMap(lastModifiedEntriesMap, &lastModifiedEntries.Samples[idx])
 	}
 
-	for _, entry := range index {
-		for idx := range entry.Versions {
-			updateSchemaLastModified(&entry, idx, lastModifiedEntriesMap[entry.Name][entry.Versions[idx].Version])
+	for i := range index {
+		for j := range index[i].Versions {
+			updateSchemaLastModified(&index[i], j, lastModifiedEntriesMap[index[i].Name][index[i].Versions[j].Version])
 		}
 	}
 
