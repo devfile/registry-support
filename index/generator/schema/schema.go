@@ -16,6 +16,8 @@
 package schema
 
 import (
+	"time"
+
 	apiext "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 )
 
@@ -264,4 +266,16 @@ type Version struct {
 	DeploymentScopes map[DeploymentScopeKind]bool `yaml:"deploymentScopes,omitempty" json:"deploymentScopes,omitempty"`
 	Resources        []string                     `yaml:"resources,omitempty" json:"resources,omitempty"`
 	StarterProjects  []string                     `yaml:"starterProjects,omitempty" json:"starterProjects,omitempty"`
+	LastModified     string                       `yaml:"lastModified,omitempty" json:"lastModified,omitempty"`
+}
+
+type LastModifiedEntry struct {
+	Name         string    `yaml:"name,omitempty" json:"name,omitempty"`
+	Version      string    `yaml:"version,omitempty" json:"version,omitempty"`
+	LastModified time.Time `yaml:"lastModified,omitempty" json:"lastModified,omitempty"`
+}
+
+type LastModifiedInfo struct {
+	Stacks  []LastModifiedEntry `yaml:"stacks,omitempty" json:"stacks,omitempty"`
+	Samples []LastModifiedEntry `yaml:"samples,omitempty" json:"samples,omitempty"`
 }

@@ -122,6 +122,10 @@ func GenerateIndexStruct(registryDirPath string, force bool) ([]schema.Schema, e
 		index = append(index, indexFromExtraDevfileEntries...)
 	}
 
+	index, err = SetLastModifiedValue(index, registryDirPath)
+	if err != nil {
+		return index, err
+	}
 	return index, nil
 }
 
@@ -703,6 +707,52 @@ func validateStackInfo(stackInfo schema.Schema, stackfolderDir string) []error {
 	}
 
 	return errors
+}
+
+// SetLastModifiedValue adds the last modified value to a pre-created index
+// The last modified dates are contained in a file named last_modified.json that is apart of the registry dir
+func SetLastModifiedValue(index []schema.Schema, registryDirPath string) ([]schema.Schema, error) {
+	bytes, err := os.ReadFile(registryDirPath + "/last_modified.json")
+	if err != nil {
+		return index, err
+	}
+
+	var lastModifiedEntries schema.LastModifiedInfo
+	err = json.Unmarshal(bytes, &lastModifiedEntries)
+	if err != nil {
+		return index, err
+	}
+
+	lastModifiedEntriesMap := make(map[string]map[string]string)
+
+	for _, entry := range lastModifiedEntries.Stacks {
+		updateLastModifiedMap(lastModifiedEntriesMap, &entry)
+	}
+
+	for _, entry := range lastModifiedEntries.Samples {
+		updateLastModifiedMap(lastModifiedEntriesMap, &entry)
+	}
+
+	for _, entry := range index {
+		for idx := range entry.Versions {
+			updateSchemaLastModified(&entry, idx, lastModifiedEntriesMap[entry.Name][entry.Versions[idx].Version])
+		}
+	}
+
+	return index, nil
+}
+
+func updateLastModifiedMap(m map[string]map[string]string, entry *schema.LastModifiedEntry) {
+	_, ok := m[entry.Name]
+	if !ok {
+		m[entry.Name] = make(map[string]string)
+	}
+
+	m[entry.Name][entry.Version] = entry.LastModified.Format("2006-01-02") //2006-01-02 is used to turn the date into YYYY-MM-DD format
+}
+
+func updateSchemaLastModified(s *schema.Schema, versionIndx int, lastModifiedDate string) {
+	s.Versions[versionIndx].LastModified = lastModifiedDate
 }
 
 // In checks if the value is in the array
