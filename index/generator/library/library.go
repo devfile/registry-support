@@ -711,8 +711,9 @@ func validateStackInfo(stackInfo schema.Schema, stackfolderDir string) []error {
 
 // SetLastModifiedValue adds the last modified value to a pre-created index
 // The last modified dates are contained in a file named last_modified.json that is apart of the registry dir
+/* #nosec G304 -- lastModFile is produced from filepath.Join which cleans the input path */
 func SetLastModifiedValue(index []schema.Schema, registryDirPath string) ([]schema.Schema, error) {
-	lastModFile := path.Join(registryDirPath, "last_modified.json")
+	lastModFile := filepath.Join(registryDirPath, "last_modified.json")
 	bytes, err := os.ReadFile(lastModFile)
 	if err != nil {
 		return index, err
