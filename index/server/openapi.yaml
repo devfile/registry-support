@@ -121,6 +121,7 @@ paths:
         - $ref: '#/components/parameters/gitRevisionParam'
         - $ref: '#/components/parameters/providerParam'
         - $ref: '#/components/parameters/supportUrlParam'
+        - $ref: '#/components/parameters/lastModifiedParam'
       responses:
         200:
           $ref: '#/components/responses/indexResponse'
@@ -186,6 +187,7 @@ paths:
         - $ref: '#/components/parameters/gitRevisionParam'
         - $ref: '#/components/parameters/providerParam'
         - $ref: '#/components/parameters/supportUrlParam'
+        - $ref: '#/components/parameters/lastModifiedParam'
       responses:
         200:
           $ref: '#/components/responses/indexResponse'
@@ -277,6 +279,7 @@ paths:
         - $ref: '#/components/parameters/gitRevisionParam'
         - $ref: '#/components/parameters/providerParam'
         - $ref: '#/components/parameters/supportUrlParam'
+        - $ref: '#/components/parameters/lastModifiedParam'
       responses:
         200:
           $ref: '#/components/responses/v2IndexResponse'
@@ -349,6 +352,7 @@ paths:
         - $ref: '#/components/parameters/gitRevisionParam'
         - $ref: '#/components/parameters/providerParam'
         - $ref: '#/components/parameters/supportUrlParam'
+        - $ref: '#/components/parameters/lastModifiedParam'
       responses:
         200:
           $ref: '#/components/responses/v2IndexResponse'
@@ -880,6 +884,8 @@ components:
           $ref: '#/components/schemas/Provider'
         supportUrl:
           $ref: '#/components/schemas/Url'
+        lastModified:
+          $ref: '#/components/schemas/LastModified'
     Name:
       description: Name of devfile registry entry
       type: string
@@ -1015,6 +1021,9 @@ components:
       type: string
     Provider:
       description: Name of provider of the devfile registry entry
+      type: string
+    LastModified:
+      description: Last modified date of a stack or sample
       type: string
   parameters:
     nameParam:
@@ -1252,6 +1261,13 @@ components:
       description: Search string to filter stacks by their given support url
       schema:
         $ref: '#/components/schemas/Url'
+    lastModifiedParam:
+      name: lastModified
+      in: query
+      required: false
+      description: Search string to filter stacks or samples by their last modified date
+      schema:
+        $ref: '#/components/schemas/LastModified'
   responses:
     devfileErrorResponse:
       description: Failed to get the devfile.

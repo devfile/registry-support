@@ -121,6 +121,9 @@ type IndexParams struct {
 	// Language Programming language of the devfile workspace
 	Language *Language `json:"language,omitempty"`
 
+	// LastModified Last modified date of a stack or sample
+	LastModified *LastModified `json:"lastModified,omitempty"`
+
 	// LinkNames Names of devfile links
 	LinkNames *LinkNames `json:"linkNames,omitempty"`
 
@@ -166,6 +169,9 @@ type IndexSchema = schema.Schema
 
 // Language Programming language of the devfile workspace
 type Language = string
+
+// LastModified Last modified date of a stack or sample
+type LastModified = string
 
 // LinkNames Names of devfile links
 type LinkNames = []string
@@ -250,6 +256,9 @@ type IconUriParam = IconUri
 
 // LanguageParam Programming language of the devfile workspace
 type LanguageParam = Language
+
+// LastModifiedParam Last modified date of a stack or sample
+type LastModifiedParam = LastModified
 
 // LinkNamesParam Names of devfile links
 type LinkNamesParam = LinkNames
@@ -434,6 +443,9 @@ type ServeDevfileIndexV1Params struct {
 
 	// SupportUrl Search string to filter stacks by their given support url
 	SupportUrl *SupportUrlParam `form:"supportUrl,omitempty" json:"supportUrl,omitempty"`
+
+	// LastModified Search string to filter stacks or samples by their last modified date
+	LastModified *LastModifiedParam `form:"lastModified,omitempty" json:"lastModified,omitempty"`
 }
 
 // ServeDevfileIndexV1WithTypeParams defines parameters for ServeDevfileIndexV1WithType.
@@ -514,6 +526,9 @@ type ServeDevfileIndexV1WithTypeParams struct {
 
 	// SupportUrl Search string to filter stacks by their given support url
 	SupportUrl *SupportUrlParam `form:"supportUrl,omitempty" json:"supportUrl,omitempty"`
+
+	// LastModified Search string to filter stacks or samples by their last modified date
+	LastModified *LastModifiedParam `form:"lastModified,omitempty" json:"lastModified,omitempty"`
 }
 
 // ServeDevfileIndexV2Params defines parameters for ServeDevfileIndexV2.
@@ -617,6 +632,9 @@ type ServeDevfileIndexV2Params struct {
 
 	// SupportUrl Search string to filter stacks by their given support url
 	SupportUrl *SupportUrlParam `form:"supportUrl,omitempty" json:"supportUrl,omitempty"`
+
+	// LastModified Search string to filter stacks or samples by their last modified date
+	LastModified *LastModifiedParam `form:"lastModified,omitempty" json:"lastModified,omitempty"`
 }
 
 // ServeDevfileIndexV2WithTypeParams defines parameters for ServeDevfileIndexV2WithType.
@@ -720,4 +738,7 @@ type ServeDevfileIndexV2WithTypeParams struct {
 
 	// SupportUrl Search string to filter stacks by their given support url
 	SupportUrl *SupportUrlParam `form:"supportUrl,omitempty" json:"supportUrl,omitempty"`
+
+	// LastModified Search string to filter stacks or samples by their last modified date
+	LastModified *LastModifiedParam `form:"lastModified,omitempty" json:"lastModified,omitempty"`
 }
