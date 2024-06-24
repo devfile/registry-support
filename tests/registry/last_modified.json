@@ -1,0 +1,57 @@
+{
+    "stacks": [
+      {
+        "name": "go",
+        "version": "1.0.2",
+        "lastModified": "2023-11-08T12:54:08+00:00"
+      },
+      {
+        "name": "go",
+        "version": "1.2.0",
+        "lastModified": "2023-04-08T11:51:08+00:00"
+      },
+      {
+        "name": "go",
+        "version": "2.0.0",
+        "lastModified": "2023-11-08T12:54:08+00:00"
+      },
+      {
+        "name": "go",
+        "version": "2.1.0",
+        "lastModified": "2023-04-08T11:51:08+00:00"
+      },
+      {
+        "name": "java-maven",
+        "version": "1.1.0",
+        "lastModified": "2024-05-13T12:32:02+02:00"
+      },
+      {
+        "name": "java-quarkus",
+        "version": "1.1.0",
+        "lastModified": "2024-04-29T17:08:43+03:00"
+      },
+      {
+        "name": "nodejs",
+        "version": "1.0.0",
+        "lastModified": "2024-04-29T12:16:30-04:00"
+      }
+    ],
+    "samples": [
+      {
+        "name": "nodejs-basic",
+        "version": "1.1.0",
+        "lastModified": "2024-06-05T15:26:11-04:00"
+      },
+      {
+        "name": "code-with-quarkus",
+        "version": "1.1.0",
+        "lastModified": "2024-04-29T11:45:48+01:00"
+      },
+      {
+        "name": "code-with-quarkus",
+        "version": "1.0.0",
+        "lastModified": "2024-02-15T11:45:48+01:00"
+      }
+    ]
+  }
+  
