@@ -551,6 +551,7 @@ func buildIndexAPIResponse(c *gin.Context, indexType string, wantV1Index bool, p
 		maxSchemaVersion := params.MaxSchemaVersion
 		minVersion := params.MinVersion
 		maxVersion := params.MaxVersion
+		lastModified := params.LastModified
 
 		if util.StrPtrIsSet(maxSchemaVersion) || util.StrPtrIsSet(minSchemaVersion) {
 			// check if schema version filters are in valid format.
@@ -613,6 +614,17 @@ func buildIndexAPIResponse(c *gin.Context, indexType string, wantV1Index bool, p
 				return
 			}
 		}
+
+		if util.StrPtrIsSet(lastModified) {
+			index, err = util.FilterLastModifiedDate(index, lastModified)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"status": fmt.Sprintf("failed to apply last modified filter: %v", err),
+				})
+				return
+			}
+		}
+
 	}
 
 	// Filter the fields of the index

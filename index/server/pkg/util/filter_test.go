@@ -3666,3 +3666,160 @@ func TestAndFilter(t *testing.T) {
 		})
 	}
 }
+
+func TestFilterLastModifiedDate(t *testing.T) {
+
+	tests := []struct {
+		name             string
+		index            []indexSchema.Schema
+		lastModifiedDate string
+		wantIndex        []indexSchema.Schema
+	}{
+		{
+			name: "Single match",
+			index: []indexSchema.Schema{
+				{
+					Name: "devfileA",
+					Versions: []indexSchema.Version{
+						{
+							Version:      "1.0.0",
+							LastModified: "2020-01-01",
+						},
+						{
+							Version:      "1.1.0",
+							LastModified: "2021-02-02",
+						},
+						{
+							Version:      "1.2.0",
+							LastModified: "2021-02-02",
+						},
+					},
+				},
+				{
+					Name: "devfileB",
+					Versions: []indexSchema.Version{
+						{
+							Version:      "1.0.0",
+							LastModified: "2021-02-02",
+						},
+					},
+				},
+			},
+			lastModifiedDate: "2020-01-01",
+			wantIndex: []indexSchema.Schema{
+				{
+					Name: "devfileA",
+					Versions: []indexSchema.Version{
+						{
+							Version:      "1.0.0",
+							LastModified: "2020-01-01",
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "Multiple Matches",
+			index: []indexSchema.Schema{
+				{
+					Name: "devfileA",
+					Versions: []indexSchema.Version{
+						{
+							Version:      "1.0.0",
+							LastModified: "2020-01-01",
+						},
+						{
+							Version:      "1.1.0",
+							LastModified: "2021-02-02",
+						},
+						{
+							Version:      "1.2.0",
+							LastModified: "2021-02-02",
+						},
+					},
+				},
+				{
+					Name: "devfileB",
+					Versions: []indexSchema.Version{
+						{
+							Version:      "1.0.0",
+							LastModified: "2021-02-02",
+						},
+					},
+				},
+			},
+			lastModifiedDate: "2021-02-02",
+			wantIndex: []indexSchema.Schema{
+				{
+					Name: "devfileA",
+					Versions: []indexSchema.Version{
+						{
+							Version:      "1.1.0",
+							LastModified: "2021-02-02",
+						},
+						{
+							Version:      "1.2.0",
+							LastModified: "2021-02-02",
+						},
+					},
+				},
+				{
+					Name: "devfileB",
+					Versions: []indexSchema.Version{
+						{
+							Version:      "1.0.0",
+							LastModified: "2021-02-02",
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "No Match",
+			index: []indexSchema.Schema{
+				{
+					Name: "devfileA",
+					Versions: []indexSchema.Version{
+						{
+							Version:      "1.0.0",
+							LastModified: "2020-01-01",
+						},
+						{
+							Version:      "1.1.0",
+							LastModified: "2021-02-02",
+						},
+						{
+							Version:      "1.2.0",
+							LastModified: "2021-02-02",
+						},
+					},
+				},
+				{
+					Name: "devfileB",
+					Versions: []indexSchema.Version{
+						{
+							Version:      "1.0.0",
+							LastModified: "2021-02-02",
+						},
+					},
+				},
+			},
+			lastModifiedDate: "2024-04-04",
+			wantIndex:        []indexSchema.Schema{},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			gotIndex, gotErr := FilterLastModifiedDate(test.index, &test.lastModifiedDate)
+			if gotErr != nil {
+				if gotIndex != nil {
+					t.Errorf("Unexpected non-nil index on error: %v", gotIndex)
+				}
+				t.Errorf("Unexpected error: %v", gotErr)
+			} else if !reflect.DeepEqual(gotIndex, test.wantIndex) {
+				t.Errorf("Got: %v, Expected: %v", gotIndex, test.wantIndex)
+			}
+		})
+	}
+}

@@ -45,6 +45,7 @@ func (params *ServeDevfileIndexV2Params) toIndexParams() IndexParams {
 		GitRevision:      params.GitRevision,
 		Provider:         params.Provider,
 		SupportUrl:       params.SupportUrl,
+		LastModified:     params.LastModified,
 	}
 }
 
@@ -80,6 +81,7 @@ func (params *ServeDevfileIndexV2WithTypeParams) toIndexParams() IndexParams {
 		GitRevision:      params.GitRevision,
 		Provider:         params.Provider,
 		SupportUrl:       params.SupportUrl,
+		LastModified:     params.LastModified,
 	}
 }
 
