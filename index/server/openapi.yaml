@@ -121,7 +121,6 @@ paths:
         - $ref: '#/components/parameters/gitRevisionParam'
         - $ref: '#/components/parameters/providerParam'
         - $ref: '#/components/parameters/supportUrlParam'
-        - $ref: '#/components/parameters/lastModifiedParam'
       responses:
         200:
           $ref: '#/components/responses/indexResponse'
@@ -187,7 +186,6 @@ paths:
         - $ref: '#/components/parameters/gitRevisionParam'
         - $ref: '#/components/parameters/providerParam'
         - $ref: '#/components/parameters/supportUrlParam'
-        - $ref: '#/components/parameters/lastModifiedParam'
       responses:
         200:
           $ref: '#/components/responses/indexResponse'

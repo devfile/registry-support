@@ -737,7 +737,10 @@ func SetLastModifiedValue(index []schema.Schema, registryDirPath string) ([]sche
 
 	for i := range index {
 		for j := range index[i].Versions {
-			updateSchemaLastModified(&index[i], j, lastModifiedEntriesMap[index[i].Name][index[i].Versions[j].Version])
+			schemaItem := index[i] // a stack or sample
+			versions := schemaItem.Versions[j]
+			versionNum := versions.Version
+			updateSchemaLastModified(&schemaItem, j, lastModifiedEntriesMap[schemaItem.Name][versionNum])
 		}
 	}
 
