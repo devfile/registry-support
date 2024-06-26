@@ -121,20 +121,23 @@ type IndexParams struct {
 	// Language Programming language of the devfile workspace
 	Language *Language `json:"language,omitempty"`
 
-	// LastModified Last modified date of a stack or sample
-	LastModified *LastModified `json:"lastModified,omitempty"`
-
 	// LinkNames Names of devfile links
 	LinkNames *LinkNames `json:"linkNames,omitempty"`
 
 	// Links List of devfile links
 	Links *Links `json:"links,omitempty"`
 
+	// MaxLastModified Last modified date of a stack or sample
+	MaxLastModified *LastModified `json:"maxLastModified,omitempty"`
+
 	// MaxSchemaVersion Devfile schema version number
 	MaxSchemaVersion *SchemaVersion `json:"maxSchemaVersion,omitempty"`
 
 	// MaxVersion Devfile registry entry version number
 	MaxVersion *Version `json:"maxVersion,omitempty"`
+
+	// MinLastModified Last modified date of a stack or sample
+	MinLastModified *LastModified `json:"minLastModified,omitempty"`
 
 	// MinSchemaVersion Devfile schema version number
 	MinSchemaVersion *SchemaVersion `json:"minSchemaVersion,omitempty"`
@@ -257,20 +260,23 @@ type IconUriParam = IconUri
 // LanguageParam Programming language of the devfile workspace
 type LanguageParam = Language
 
-// LastModifiedParam Last modified date of a stack or sample
-type LastModifiedParam = LastModified
-
 // LinkNamesParam Names of devfile links
 type LinkNamesParam = LinkNames
 
 // LinksParam List of devfile links
 type LinksParam = Links
 
+// MaxLastModifiedParam Last modified date of a stack or sample
+type MaxLastModifiedParam = LastModified
+
 // MaxSchemaVersionParam Devfile schema version number
 type MaxSchemaVersionParam = SchemaVersion
 
 // MaxVersionParam Devfile registry entry version number
 type MaxVersionParam = Version
+
+// MinLastModifiedParam Last modified date of a stack or sample
+type MinLastModifiedParam = LastModified
 
 // MinSchemaVersionParam Devfile schema version number
 type MinSchemaVersionParam = SchemaVersion
@@ -627,8 +633,11 @@ type ServeDevfileIndexV2Params struct {
 	// SupportUrl Search string to filter stacks by their given support url
 	SupportUrl *SupportUrlParam `form:"supportUrl,omitempty" json:"supportUrl,omitempty"`
 
-	// LastModified Search string to filter stacks or samples by their last modified date
-	LastModified *LastModifiedParam `form:"lastModified,omitempty" json:"lastModified,omitempty"`
+	// MinLastModified The minimum (earliest) last modified date of a stack or sample
+	MinLastModified *MinLastModifiedParam `form:"minLastModified,omitempty" json:"minLastModified,omitempty"`
+
+	// MaxLastModified The maximum (latest) last modified date of a stack or sample
+	MaxLastModified *MaxLastModifiedParam `form:"maxLastModified,omitempty" json:"maxLastModified,omitempty"`
 }
 
 // ServeDevfileIndexV2WithTypeParams defines parameters for ServeDevfileIndexV2WithType.
@@ -733,6 +742,9 @@ type ServeDevfileIndexV2WithTypeParams struct {
 	// SupportUrl Search string to filter stacks by their given support url
 	SupportUrl *SupportUrlParam `form:"supportUrl,omitempty" json:"supportUrl,omitempty"`
 
-	// LastModified Search string to filter stacks or samples by their last modified date
-	LastModified *LastModifiedParam `form:"lastModified,omitempty" json:"lastModified,omitempty"`
+	// MinLastModified The minimum (earliest) last modified date of a stack or sample
+	MinLastModified *MinLastModifiedParam `form:"minLastModified,omitempty" json:"minLastModified,omitempty"`
+
+	// MaxLastModified The maximum (latest) last modified date of a stack or sample
+	MaxLastModified *MaxLastModifiedParam `form:"maxLastModified,omitempty" json:"maxLastModified,omitempty"`
 }

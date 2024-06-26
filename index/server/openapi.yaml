@@ -277,7 +277,8 @@ paths:
         - $ref: '#/components/parameters/gitRevisionParam'
         - $ref: '#/components/parameters/providerParam'
         - $ref: '#/components/parameters/supportUrlParam'
-        - $ref: '#/components/parameters/lastModifiedParam'
+        - $ref: '#/components/parameters/minLastModifiedParam'
+        - $ref: '#/components/parameters/maxLastModifiedParam'
       responses:
         200:
           $ref: '#/components/responses/v2IndexResponse'
@@ -350,7 +351,8 @@ paths:
         - $ref: '#/components/parameters/gitRevisionParam'
         - $ref: '#/components/parameters/providerParam'
         - $ref: '#/components/parameters/supportUrlParam'
-        - $ref: '#/components/parameters/lastModifiedParam'
+        - $ref: '#/components/parameters/minLastModifiedParam'
+        - $ref: '#/components/parameters/maxLastModifiedParam'
       responses:
         200:
           $ref: '#/components/responses/v2IndexResponse'
@@ -882,7 +884,9 @@ components:
           $ref: '#/components/schemas/Provider'
         supportUrl:
           $ref: '#/components/schemas/Url'
-        lastModified:
+        minLastModified:
+          $ref: '#/components/schemas/LastModified'
+        maxLastModified:
           $ref: '#/components/schemas/LastModified'
     Name:
       description: Name of devfile registry entry
@@ -1023,6 +1027,8 @@ components:
     LastModified:
       description: Last modified date of a stack or sample
       type: string
+      pattern: '^\d{4}\-(0[1-9]|1[012])\-(0[1-9]|[12][0-9]|3[01])$'
+      example: '2024-01-01'
   parameters:
     nameParam:
       name: name
@@ -1259,11 +1265,18 @@ components:
       description: Search string to filter stacks by their given support url
       schema:
         $ref: '#/components/schemas/Url'
-    lastModifiedParam:
-      name: lastModified
+    minLastModifiedParam:
+      name: minLastModified
       in: query
       required: false
-      description: Search string to filter stacks or samples by their last modified date
+      description: The minimum (earliest) last modified date of a stack or sample
+      schema:
+        $ref: '#/components/schemas/LastModified'
+    maxLastModifiedParam:
+      name: maxLastModified
+      in: query
+      required: false
+      description: The maximum (latest) last modified date of a stack or sample
       schema:
         $ref: '#/components/schemas/LastModified'
   responses:

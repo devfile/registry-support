@@ -24,6 +24,7 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+	"time"
 
 	devfileParser "github.com/devfile/library/v2/pkg/devfile"
 	"github.com/devfile/library/v2/pkg/devfile/parser"
@@ -725,7 +726,7 @@ func SetLastModifiedValue(index []schema.Schema, registryDirPath string) ([]sche
 		return index, err
 	}
 
-	lastModifiedEntriesMap := make(map[string]map[string]string)
+	lastModifiedEntriesMap := make(map[string]map[string]time.Time)
 
 	for idx := range lastModifiedEntries.Stacks {
 		updateLastModifiedMap(lastModifiedEntriesMap, &lastModifiedEntries.Stacks[idx])
@@ -736,28 +737,34 @@ func SetLastModifiedValue(index []schema.Schema, registryDirPath string) ([]sche
 	}
 
 	for i := range index {
+		var mostCurrentLastModifiedDate time.Time
 		for j := range index[i].Versions {
 			schemaItem := index[i] // a stack or sample
-			versions := schemaItem.Versions[j]
-			versionNum := versions.Version
-			updateSchemaLastModified(&schemaItem, j, lastModifiedEntriesMap[schemaItem.Name][versionNum])
+			version := schemaItem.Versions[j]
+			versionNum := version.Version
+			lastModifiedDate := lastModifiedEntriesMap[schemaItem.Name][versionNum]
+			updateSchemaLastModified(&schemaItem, j, lastModifiedDate)
+			if lastModifiedDate.After(mostCurrentLastModifiedDate) {
+				mostCurrentLastModifiedDate = lastModifiedDate
+			}
 		}
+		// lastModified of a stack or sample will be the date any version of it was last changed
+		index[i].LastModified = mostCurrentLastModifiedDate.Format(time.RFC3339)
 	}
 
 	return index, nil
 }
 
-func updateLastModifiedMap(m map[string]map[string]string, entry *schema.LastModifiedEntry) {
+func updateLastModifiedMap(m map[string]map[string]time.Time, entry *schema.LastModifiedEntry) {
 	_, ok := m[entry.Name]
 	if !ok {
-		m[entry.Name] = make(map[string]string)
+		m[entry.Name] = make(map[string]time.Time)
 	}
-
-	m[entry.Name][entry.Version] = entry.LastModified.Format("2006-01-02") //2006-01-02 is used to turn the date into YYYY-MM-DD format
+	m[entry.Name][entry.Version] = entry.LastModified
 }
 
-func updateSchemaLastModified(s *schema.Schema, versionIndx int, lastModifiedDate string) {
-	s.Versions[versionIndx].LastModified = lastModifiedDate
+func updateSchemaLastModified(s *schema.Schema, versionIndx int, lastModifiedDate time.Time) {
+	s.Versions[versionIndx].LastModified = lastModifiedDate.Format(time.RFC3339)
 }
 
 // In checks if the value is in the array

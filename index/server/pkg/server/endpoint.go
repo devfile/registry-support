@@ -551,7 +551,8 @@ func buildIndexAPIResponse(c *gin.Context, indexType string, wantV1Index bool, p
 		maxSchemaVersion := params.MaxSchemaVersion
 		minVersion := params.MinVersion
 		maxVersion := params.MaxVersion
-		lastModified := params.LastModified
+		minLastModified := params.MinLastModified
+		maxLastModified := params.MaxLastModified
 
 		if util.StrPtrIsSet(maxSchemaVersion) || util.StrPtrIsSet(minSchemaVersion) {
 			// check if schema version filters are in valid format.
@@ -615,8 +616,20 @@ func buildIndexAPIResponse(c *gin.Context, indexType string, wantV1Index bool, p
 			}
 		}
 
-		if util.StrPtrIsSet(lastModified) {
-			index, err = util.FilterLastModifiedDate(index, lastModified)
+		if util.StrPtrIsSet(minLastModified) || util.StrPtrIsSet(maxLastModified) {
+			if util.StrPtrIsSet(minLastModified) && util.IsInvalidLastModifiedDate(minLastModified) {
+				c.JSON(http.StatusBadRequest, gin.H{
+					"status": fmt.Sprintf("minLastModified %s is not valid, format should be 'YYYY-MM-DD' and be a valid date. %v", *minLastModified, err),
+				})
+				return
+			}
+			if util.StrPtrIsSet(maxLastModified) && util.IsInvalidLastModifiedDate(maxLastModified) {
+				c.JSON(http.StatusBadRequest, gin.H{
+					"status": fmt.Sprintf("maxLastModified %s is not valid, format should be 'YYYY-MM-DD' and be a valid date. %v", *maxLastModified, err),
+				})
+				return
+			}
+			index, err = util.FilterLastModifiedDate(index, minLastModified, maxLastModified)
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{
 					"status": fmt.Sprintf("failed to apply last modified filter: %v", err),

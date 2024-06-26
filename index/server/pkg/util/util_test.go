@@ -21,6 +21,7 @@ import (
 	"os"
 	"reflect"
 	"testing"
+	"time"
 
 	indexSchema "github.com/devfile/registry-support/index/generator/schema"
 	"k8s.io/utils/pointer"
@@ -494,6 +495,205 @@ func TestStrPtrIsSet(t *testing.T) {
 			got := StrPtrIsSet(test.ptr)
 			if got != test.want {
 				t.Errorf("Got: %v, Expected: %v", got, test.want)
+			}
+		})
+	}
+}
+
+func TestIsInvalidLastModifiedDate(t *testing.T) {
+	validFormatValidDate := "2020-12-20"
+	validFormatInvalidDate := "2020-02-31"
+	invalidFormatInvalidDate := "2020-6-45"
+	invalidFormatValidDate := "2020-6-12"
+
+	tests := []struct {
+		name         string
+		lastModified *string
+		want         bool
+	}{
+		{
+			name:         "Case 1: Valid Input Format and Valid Date",
+			lastModified: &validFormatValidDate,
+			want:         false,
+		},
+		{
+			name:         "Case 2: Valid Input Format and Invalid Date Range",
+			lastModified: &validFormatInvalidDate,
+			want:         true,
+		},
+		{
+			name:         "Case 3: Invalid Input Format and Invalid Date",
+			lastModified: &invalidFormatInvalidDate,
+			want:         true,
+		},
+
+		{
+			name:         "Case 4: Invalid Input Format and Valid Date Range",
+			lastModified: &invalidFormatValidDate,
+			want:         true,
+		},
+		{
+			name:         "Case 5: No Input",
+			lastModified: nil,
+			want:         true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			valid := IsInvalidLastModifiedDate(test.lastModified)
+			if valid != test.want {
+				t.Errorf("Got: %v, Expected: %v", valid, test.want)
+			}
+		})
+	}
+}
+
+func TestConvertRFC3339Date(t *testing.T) {
+	validRFCDate := "2024-04-08T11:51:08+00:00"
+	invalidRFCDate := "2024-04-08"
+	var validPtr *string = &validRFCDate
+	var invalidPtr *string = &invalidRFCDate
+
+	tests := []struct {
+		name       string
+		dt         *string
+		shouldFail bool
+	}{
+		{
+			name:       "Case 1: Valid Date",
+			dt:         validPtr,
+			shouldFail: false,
+		},
+		{
+			name:       "Case 2: Invalid Date",
+			dt:         invalidPtr,
+			shouldFail: true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			_, err := ConvertRFC3339Date(test.dt)
+			if err != nil && !test.shouldFail {
+				t.Errorf("Got: %v, Expected: %v", err, test.shouldFail)
+			} else if err == nil && test.shouldFail {
+				t.Errorf("Got: %v, Expected: %v", err, test.shouldFail)
+			}
+		})
+	}
+}
+
+func TestConvertNonRFC3339Date(t *testing.T) {
+	validDate := "2024-04-08"
+
+	tests := []struct {
+		name       string
+		dt         string
+		shouldFail bool
+	}{
+		{
+			name:       "Case 1: Valid Date",
+			dt:         validDate,
+			shouldFail: false,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			_, err := ConvertNonRFC3339Date(test.dt)
+			if err != nil && !test.shouldFail {
+				t.Errorf("Got: %v, Expected: %v", err, test.shouldFail)
+			} else if err == nil && test.shouldFail {
+				t.Errorf("Got: %v, Expected: %v", err, test.shouldFail)
+			}
+		})
+	}
+}
+
+func TestIsDateGreaterOrEqual(t *testing.T) {
+	bound := "2024-04-08T11:51:08+00:00"
+	boundDt, _ := ConvertRFC3339Date(&bound)
+	greaterDt, _ := ConvertNonRFC3339Date("2024-07-15")
+	lesserDt, _ := ConvertNonRFC3339Date("2020-07-15")
+	equalDt, _ := ConvertNonRFC3339Date("2024-04-08")
+	tests := []struct {
+		name   string
+		bound  time.Time
+		testDt time.Time
+		dt     string
+		want   bool
+	}{
+		{
+			name:   "Case 1: Date is Greater",
+			bound:  boundDt,
+			testDt: greaterDt,
+			want:   true,
+		},
+		{
+			name:   "Case 2: Date is Lesser",
+			bound:  boundDt,
+			testDt: lesserDt,
+			want:   false,
+		},
+		{
+			name:   "Case 3: Date is Equal",
+			bound:  boundDt,
+			testDt: equalDt,
+			want:   true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+
+			res := IsDateGreaterOrEqual(test.bound, test.testDt)
+			if res != test.want {
+				t.Errorf("Got: %v, Expected: %v", res, test.want)
+			}
+		})
+	}
+}
+
+func TestIsDateLowerOrEqual(t *testing.T) {
+	bound := "2024-04-08T11:51:08+00:00"
+	boundDt, _ := ConvertRFC3339Date(&bound)
+	greaterDt, _ := ConvertNonRFC3339Date("2024-07-15")
+	lesserDt, _ := ConvertNonRFC3339Date("2020-07-15")
+	equalDt, _ := ConvertNonRFC3339Date("2024-04-08")
+	tests := []struct {
+		name   string
+		bound  time.Time
+		testDt time.Time
+		dt     string
+		want   bool
+	}{
+		{
+			name:   "Case 1: Date is Greater",
+			bound:  boundDt,
+			testDt: greaterDt,
+			want:   false,
+		},
+		{
+			name:   "Case 2: Date is Lesser",
+			bound:  boundDt,
+			testDt: lesserDt,
+			want:   true,
+		},
+		{
+			name:   "Case 3: Date is Equal",
+			bound:  boundDt,
+			testDt: equalDt,
+			want:   true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+
+			res := IsDateLowerOrEqual(test.bound, test.testDt)
+			if res != test.want {
+				t.Errorf("Got: %v, Expected: %v", res, test.want)
 			}
 		})
 	}
