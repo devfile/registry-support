@@ -850,3 +850,155 @@ func TestCheckForRequiredMetadata(t *testing.T) {
 		}
 	}
 }
+
+func TestSetLastModifiedValue(t *testing.T) {
+	testRegistryDirPath := "../tests/registry"
+	index := []schema.Schema{
+		schema.Schema{
+			Name:        "go",
+			DisplayName: "Go Runtime",
+			Description: "Stack with the latest Go version",
+			Type:        "stack",
+			Tags:        []string{"Go"},
+			Icon:        "https://raw.githubusercontent.com/devfile-samples/devfile-stack-icons/main/golang.svg",
+			ProjectType: "go",
+			Language:    "go",
+			Provider:    "Red Hat",
+			Versions: []schema.Version{
+				schema.Version{
+					Version:         "1.2.0",
+					SchemaVersion:   "2.1.0",
+					Description:     "Stack with the latest Go version with devfile v2.1.0 schema version",
+					Icon:            "https://raw.githubusercontent.com/devfile-samples/devfile-stack-icons/main/golang.svg",
+					Tags:            []string{"testtag"},
+					Links:           map[string]string{"self": "devfile-catalog/go:1.2.0"},
+					Resources:       []string{"devfile.yaml"},
+					StarterProjects: []string{"go-starter"},
+					CommandGroups:   map[schema.CommandGroupKind]bool{"build": true, "debug": false, "deploy": false, "run": true, "test": false},
+				},
+				schema.Version{
+					Version:         "1.1.0",
+					SchemaVersion:   "2.0.0",
+					Description:     "Stack with the latest Go version with devfile v2.0.0 schema version",
+					Icon:            "https://raw.githubusercontent.com/devfile-samples/devfile-stack-icons/main/golang.svg",
+					Tags:            []string{"Go"},
+					Links:           map[string]string{"self": "devfile-catalog/go:1.1.0"},
+					Resources:       []string{"devfile.yaml"},
+					StarterProjects: []string{"go-starter"},
+					CommandGroups:   map[schema.CommandGroupKind]bool{"build": true, "debug": false, "deploy": false, "run": true, "test": false},
+				},
+			},
+		},
+		schema.Schema{
+			Name:        "code-with-quarkus",
+			DisplayName: "Basic Quarkus",
+			Description: "A simple Hello World Java application using Quarkus",
+			Type:        "sample",
+			Tags:        []string{"Java", "Quarkus"},
+			Icon:        "https://raw.githubusercontent.com/elsony/devfile-sample-code-with-quarkus/main/.devfile/icon/quarkus.png",
+			ProjectType: "quarkus",
+			Language:    "java",
+			Provider:    "Red Hat",
+			Versions: []schema.Version{
+				schema.Version{
+					Version:       "1.1.0",
+					SchemaVersion: "2.0.0",
+					Description:   "java quarkus with devfile v2.0.0",
+					Default:       true,
+					Git: &schema.Git{
+						Remotes: map[string]string{"origin": "https://github.com/elsony/devfile-sample-code-with-quarkus.git"},
+					},
+				},
+			},
+		},
+	}
+
+	wantIndex := []schema.Schema{
+		schema.Schema{
+			Name:         "go",
+			DisplayName:  "Go Runtime",
+			Description:  "Stack with the latest Go version",
+			Type:         "stack",
+			Tags:         []string{"Go"},
+			Icon:         "https://raw.githubusercontent.com/devfile-samples/devfile-stack-icons/main/golang.svg",
+			ProjectType:  "go",
+			Language:     "go",
+			Provider:     "Red Hat",
+			LastModified: "2023-11-08T12:54:08Z",
+			Versions: []schema.Version{
+				schema.Version{
+					Version:         "1.2.0",
+					SchemaVersion:   "2.1.0",
+					Description:     "Stack with the latest Go version with devfile v2.1.0 schema version",
+					Icon:            "https://raw.githubusercontent.com/devfile-samples/devfile-stack-icons/main/golang.svg",
+					Tags:            []string{"testtag"},
+					Links:           map[string]string{"self": "devfile-catalog/go:1.2.0"},
+					Resources:       []string{"devfile.yaml"},
+					StarterProjects: []string{"go-starter"},
+					CommandGroups:   map[schema.CommandGroupKind]bool{"build": true, "debug": false, "deploy": false, "run": true, "test": false},
+					LastModified:    "2023-04-08T11:51:08Z",
+				},
+				schema.Version{
+					Version:         "1.1.0",
+					SchemaVersion:   "2.0.0",
+					Description:     "Stack with the latest Go version with devfile v2.0.0 schema version",
+					Icon:            "https://raw.githubusercontent.com/devfile-samples/devfile-stack-icons/main/golang.svg",
+					Tags:            []string{"Go"},
+					Links:           map[string]string{"self": "devfile-catalog/go:1.1.0"},
+					Resources:       []string{"devfile.yaml"},
+					StarterProjects: []string{"go-starter"},
+					CommandGroups:   map[schema.CommandGroupKind]bool{"build": true, "debug": false, "deploy": false, "run": true, "test": false},
+					LastModified:    "2023-11-08T12:54:08Z",
+				},
+			},
+		},
+		schema.Schema{
+			Name:         "code-with-quarkus",
+			DisplayName:  "Basic Quarkus",
+			Description:  "A simple Hello World Java application using Quarkus",
+			Type:         "sample",
+			Tags:         []string{"Java", "Quarkus"},
+			Icon:         "https://raw.githubusercontent.com/elsony/devfile-sample-code-with-quarkus/main/.devfile/icon/quarkus.png",
+			ProjectType:  "quarkus",
+			Language:     "java",
+			Provider:     "Red Hat",
+			LastModified: "2024-04-19T11:45:48+01:00",
+			Versions: []schema.Version{
+				schema.Version{
+					Version:       "1.1.0",
+					SchemaVersion: "2.0.0",
+					Description:   "java quarkus with devfile v2.0.0",
+					Default:       true,
+					Git: &schema.Git{
+						Remotes: map[string]string{"origin": "https://github.com/elsony/devfile-sample-code-with-quarkus.git"},
+					},
+					LastModified: "2024-04-19T11:45:48+01:00",
+				},
+			},
+		},
+	}
+
+	tests := []struct {
+		name      string
+		index     []schema.Schema
+		wantIndex []schema.Schema
+	}{
+		{
+			name:      "Test SetLastModifiedValue",
+			index:     index,
+			wantIndex: wantIndex,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotIndex, err := SetLastModifiedValue(index, testRegistryDirPath)
+			if err != nil {
+				t.Errorf("Failed to set last modified value: %v", err)
+			}
+			if !reflect.DeepEqual(tt.wantIndex, gotIndex) {
+				t.Errorf("Generated index does not match")
+			}
+		})
+	}
+}
