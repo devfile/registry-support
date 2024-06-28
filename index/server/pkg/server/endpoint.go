@@ -543,6 +543,12 @@ func buildIndexAPIResponse(c *gin.Context, indexType string, wantV1Index bool, p
 	if params.Deprecated != nil {
 		util.FilterDevfileDeprecated(&index, *params.Deprecated, wantV1Index)
 	}
+	if index == nil || len(index) == 0 {
+		c.JSON(http.StatusOK, gin.H{
+			"status": "No stacks or samples found in the registry",
+		})
+		return
+	}
 
 	if wantV1Index {
 		index = util.ConvertToOldIndexFormat(index)
