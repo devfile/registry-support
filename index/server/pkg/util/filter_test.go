@@ -3666,3 +3666,295 @@ func TestAndFilter(t *testing.T) {
 		})
 	}
 }
+
+func TestFilterLastModifiedDate(t *testing.T) {
+	validMin := "2023-11-08"
+	validMax := "2024-04-08"
+	validMid := "2024-02-25"
+	invalidMin := "2025-04-04"
+	invalidMax := "2020-01-01"
+	var nilPtr *string
+	var validMinPtr *string = &validMin
+	var validMaxPtr *string = &validMax
+	var validMidPtr *string = &validMid
+	var invalidMinPtr *string = &invalidMin
+	var invalidMaxPtr *string = &invalidMax
+
+	tests := []struct {
+		name            string
+		index           []indexSchema.Schema
+		minLastModified *string
+		maxLastModified *string
+		wantIndex       []indexSchema.Schema
+	}{
+		{
+			name: "Match with minLastModified",
+			index: []indexSchema.Schema{
+				{
+					Name: "devfileA",
+					Versions: []indexSchema.Version{
+						{
+							Version:      "1.0.0",
+							LastModified: "2023-11-08T12:54:08+00:00",
+						},
+						{
+							Version:      "1.1.0",
+							LastModified: "2024-04-08T11:51:08+00:00",
+						},
+						{
+							Version:      "1.2.0",
+							LastModified: "2024-04-08T11:51:08+00:00",
+						},
+					},
+				},
+				{
+					Name: "devfileB",
+					Versions: []indexSchema.Version{
+						{
+							Version:      "1.0.0",
+							LastModified: "2024-04-08T11:51:08+00:00",
+						},
+					},
+				},
+			},
+			minLastModified: validMinPtr,
+			maxLastModified: nilPtr,
+			wantIndex: []indexSchema.Schema{
+				{
+					Name: "devfileA",
+					Versions: []indexSchema.Version{
+						{
+							Version:      "1.0.0",
+							LastModified: "2023-11-08T12:54:08+00:00",
+						},
+						{
+							Version:      "1.1.0",
+							LastModified: "2024-04-08T11:51:08+00:00",
+						},
+						{
+							Version:      "1.2.0",
+							LastModified: "2024-04-08T11:51:08+00:00",
+						},
+					},
+				},
+				{
+					Name: "devfileB",
+					Versions: []indexSchema.Version{
+						{
+							Version:      "1.0.0",
+							LastModified: "2024-04-08T11:51:08+00:00",
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "Match with maxLastModified",
+			index: []indexSchema.Schema{
+				{
+					Name: "devfileA",
+					Versions: []indexSchema.Version{
+						{
+							Version:      "1.0.0",
+							LastModified: "2023-11-08T12:54:08+00:00",
+						},
+						{
+							Version:      "1.1.0",
+							LastModified: "2024-04-08T11:51:08+00:00",
+						},
+						{
+							Version:      "1.2.0",
+							LastModified: "2024-04-08T11:51:08+00:00",
+						},
+					},
+				},
+				{
+					Name: "devfileB",
+					Versions: []indexSchema.Version{
+						{
+							Version:      "1.0.0",
+							LastModified: "2024-04-08T11:51:08+00:00",
+						},
+					},
+				},
+			},
+			minLastModified: nilPtr,
+			maxLastModified: validMaxPtr,
+			wantIndex: []indexSchema.Schema{
+				{
+					Name: "devfileA",
+					Versions: []indexSchema.Version{
+						{
+							Version:      "1.0.0",
+							LastModified: "2023-11-08T12:54:08+00:00",
+						},
+						{
+							Version:      "1.1.0",
+							LastModified: "2024-04-08T11:51:08+00:00",
+						},
+						{
+							Version:      "1.2.0",
+							LastModified: "2024-04-08T11:51:08+00:00",
+						},
+					},
+				},
+				{
+					Name: "devfileB",
+					Versions: []indexSchema.Version{
+						{
+							Version:      "1.0.0",
+							LastModified: "2024-04-08T11:51:08+00:00",
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "Match with minLastModified and maxLastModified",
+			index: []indexSchema.Schema{
+				{
+					Name: "devfileA",
+					Versions: []indexSchema.Version{
+						{
+							Version:      "1.0.0",
+							LastModified: "2023-11-08T12:54:08+00:00",
+						},
+						{
+							Version:      "1.1.0",
+							LastModified: "2024-04-08T11:51:08+00:00",
+						},
+						{
+							Version:      "1.2.0",
+							LastModified: "2024-04-08T11:51:08+00:00",
+						},
+						{
+							Version:      "1.3.0",
+							LastModified: "2024-01-23T11:51:08+00:00",
+						},
+					},
+				},
+				{
+					Name: "devfileB",
+					Versions: []indexSchema.Version{
+						{
+							Version:      "1.0.0",
+							LastModified: "2024-04-08T11:51:08+00:00",
+						},
+						{
+							Version:      "1.0.0",
+							LastModified: "2023-12-18T11:51:08+00:00",
+						},
+					},
+				},
+			},
+			minLastModified: validMinPtr,
+			maxLastModified: validMidPtr,
+			wantIndex: []indexSchema.Schema{
+				{
+					Name: "devfileA",
+					Versions: []indexSchema.Version{
+						{
+							Version:      "1.0.0",
+							LastModified: "2023-11-08T12:54:08+00:00",
+						},
+						{
+							Version:      "1.3.0",
+							LastModified: "2024-01-23T11:51:08+00:00",
+						},
+					},
+				},
+				{
+					Name: "devfileB",
+					Versions: []indexSchema.Version{
+						{
+							Version:      "1.0.0",
+							LastModified: "2023-12-18T11:51:08+00:00",
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "No Match",
+			index: []indexSchema.Schema{
+				{
+					Name: "devfileA",
+					Versions: []indexSchema.Version{
+						{
+							Version:      "1.0.0",
+							LastModified: "2023-11-08T12:54:08+00:00",
+						},
+						{
+							Version:      "1.1.0",
+							LastModified: "2024-04-08T11:51:08+00:00",
+						},
+						{
+							Version:      "1.2.0",
+							LastModified: "2024-04-08T11:51:08+00:00",
+						},
+					},
+				},
+				{
+					Name: "devfileB",
+					Versions: []indexSchema.Version{
+						{
+							Version:      "1.0.0",
+							LastModified: "2024-04-08T11:51:08+00:00",
+						},
+					},
+				},
+			},
+			minLastModified: invalidMinPtr,
+			maxLastModified: invalidMaxPtr,
+			wantIndex:       []indexSchema.Schema{},
+		},
+		{
+			name: "Unset Pointers",
+			index: []indexSchema.Schema{
+				{
+					Name: "devfileA",
+					Versions: []indexSchema.Version{
+						{
+							Version:      "1.0.0",
+							LastModified: "2023-11-08T12:54:08+00:00",
+						},
+						{
+							Version:      "1.1.0",
+							LastModified: "2024-04-08T11:51:08+00:00",
+						},
+						{
+							Version:      "1.2.0",
+							LastModified: "2024-04-08T11:51:08+00:00",
+						},
+					},
+				},
+				{
+					Name: "devfileB",
+					Versions: []indexSchema.Version{
+						{
+							Version:      "1.0.0",
+							LastModified: "2024-04-08T11:51:08+00:00",
+						},
+					},
+				},
+			},
+			minLastModified: nilPtr,
+			maxLastModified: nilPtr,
+			wantIndex:       []indexSchema.Schema{},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			gotIndex, gotErr := FilterLastModifiedDate(test.index, test.minLastModified, test.maxLastModified)
+			if gotErr != nil {
+				if gotIndex != nil {
+					t.Errorf("Unexpected non-nil index on error: %v", gotIndex)
+				}
+				t.Errorf("Unexpected error: %v", gotErr)
+			} else if !reflect.DeepEqual(gotIndex, test.wantIndex) {
+				t.Errorf("Got: %v, Expected: %v", gotIndex, test.wantIndex)
+			}
+		})
+	}
+}

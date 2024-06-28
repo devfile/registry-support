@@ -16,6 +16,8 @@
 package schema
 
 import (
+	"time"
+
 	apiext "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 )
 
@@ -38,6 +40,7 @@ Sample index file:
     ],
     "projectType": "maven",
     "language": "java",
+	"lastModified": "2024-05-13T12:32:02+02:00",
     "versions": [
       {
         "version": "1.1.0",
@@ -61,7 +64,8 @@ Sample index file:
         ],
         "starterProjects": [
           "springbootproject"
-        ]
+        ],
+		"lastModified": "2024-05-13T12:32:02+02:00"
       }
     ]
   },
@@ -79,6 +83,7 @@ Sample index file:
     ],
     "projectType": "quarkus",
     "language": "java",
+	"lastModified": "2024-04-29T17:08:43+03:00",
     "versions": [
       {
         "version": "1.1.0",
@@ -108,7 +113,8 @@ Sample index file:
         "starterProjects": [
           "community",
           "redhat-product"
-        ]
+        ],
+		"lastModified": "2024-04-29T17:08:43+03:00"
       }
     ]
   }
@@ -136,6 +142,7 @@ starterProjects: string[] - The project templates that can be used in the devfil
 git: *git - The information of remote repositories
 provider: string - The devfile provider information
 versions: []Version - The list of stack versions information
+lastModified: string - The date that a version of this stack/sample was last changed
 */
 
 // Schema is the index file schema
@@ -161,6 +168,7 @@ type Schema struct {
 	Provider          string                       `yaml:"provider,omitempty" json:"provider,omitempty"`
 	SupportUrl        string                       `yaml:"supportUrl,omitempty" json:"supportUrl,omitempty"`
 	Versions          []Version                    `yaml:"versions,omitempty" json:"versions,omitempty"`
+	LastModified      string                       `yaml:"lastModified,omitempty" json:"lastModified,omitempty"`
 }
 
 // DevfileType describes the type of devfile
@@ -264,4 +272,16 @@ type Version struct {
 	DeploymentScopes map[DeploymentScopeKind]bool `yaml:"deploymentScopes,omitempty" json:"deploymentScopes,omitempty"`
 	Resources        []string                     `yaml:"resources,omitempty" json:"resources,omitempty"`
 	StarterProjects  []string                     `yaml:"starterProjects,omitempty" json:"starterProjects,omitempty"`
+	LastModified     string                       `yaml:"lastModified,omitempty" json:"lastModified,omitempty"`
+}
+
+type LastModifiedEntry struct {
+	Name         string    `yaml:"name,omitempty" json:"name,omitempty"`
+	Version      string    `yaml:"version,omitempty" json:"version,omitempty"`
+	LastModified time.Time `yaml:"lastModified,omitempty" json:"lastModified,omitempty"`
+}
+
+type LastModifiedInfo struct {
+	Stacks  []LastModifiedEntry `yaml:"stacks,omitempty" json:"stacks,omitempty"`
+	Samples []LastModifiedEntry `yaml:"samples,omitempty" json:"samples,omitempty"`
 }

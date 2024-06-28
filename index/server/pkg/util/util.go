@@ -24,13 +24,19 @@ import (
 	"net/url"
 	"os"
 	"reflect"
+	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	versionpkg "github.com/hashicorp/go-version"
 
 	indexLibrary "github.com/devfile/registry-support/index/generator/library"
 	indexSchema "github.com/devfile/registry-support/index/generator/schema"
+)
+
+const (
+	truncateOptions = 24 * time.Hour
 )
 
 // IsHtmlRequested checks the accept header if html has been requested
@@ -292,4 +298,54 @@ func StructToMap[T any](s T) map[string]any {
 // StrPtrIsSet checks if string pointer is set to a value
 func StrPtrIsSet(ptr *string) bool {
 	return ptr != nil && *ptr != ""
+}
+
+func IsInvalidLastModifiedDate(lastModifiedDate *string) bool {
+	if lastModifiedDate == nil {
+		return true
+	}
+	validFormat, err := regexp.MatchString(`^\d{4}\-(0[1-9]|1[012])\-(0[1-9]|[12][0-9]|3[01])$`, *lastModifiedDate)
+	if !validFormat || err != nil || !isValidDate(*lastModifiedDate) {
+		return true
+	}
+	return false
+}
+
+func isValidDate(d string) bool {
+	_, err := time.Parse(time.DateOnly, d)
+	return err == nil
+}
+
+func ConvertRFC3339Date(dt *string) (time.Time, error) {
+	convertedDate, err := time.Parse(time.RFC3339, *dt)
+	if err != nil {
+		return time.Now(), err
+	}
+	return convertedDate, nil
+}
+
+func ConvertNonRFC3339Date(dt string) (time.Time, error) {
+	convertedCurrent, err := time.Parse(time.DateOnly, dt)
+	if err != nil {
+		return time.Now(), err
+	}
+	tmp := convertedCurrent.Format(time.RFC3339)
+	convertedCurrent, err = time.Parse(time.RFC3339, tmp)
+	if err != nil {
+		return time.Now(), err
+	}
+
+	return convertedCurrent, nil
+}
+
+func IsDateGreaterOrEqual(bound time.Time, current time.Time) bool {
+	equal := bound.Truncate(truncateOptions).Equal(current.Truncate(truncateOptions))
+	greater := bound.Truncate(truncateOptions).Before(current.Truncate(truncateOptions))
+	return equal || greater
+}
+
+func IsDateLowerOrEqual(bound time.Time, current time.Time) bool {
+	equal := bound.Truncate(truncateOptions).Equal(current.Truncate(truncateOptions))
+	lower := bound.Truncate(truncateOptions).After(current.Truncate(truncateOptions))
+	return equal || lower
 }

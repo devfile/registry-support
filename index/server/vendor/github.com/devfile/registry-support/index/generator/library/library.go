@@ -24,6 +24,7 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+	"time"
 
 	devfileParser "github.com/devfile/library/v2/pkg/devfile"
 	"github.com/devfile/library/v2/pkg/devfile/parser"
@@ -122,6 +123,10 @@ func GenerateIndexStruct(registryDirPath string, force bool) ([]schema.Schema, e
 		index = append(index, indexFromExtraDevfileEntries...)
 	}
 
+	index, err = SetLastModifiedValue(index, registryDirPath)
+	if err != nil {
+		return index, err
+	}
 	return index, nil
 }
 
@@ -703,6 +708,63 @@ func validateStackInfo(stackInfo schema.Schema, stackfolderDir string) []error {
 	}
 
 	return errors
+}
+
+// SetLastModifiedValue adds the last modified value to a pre-created index
+// The last modified dates are contained in a file named last_modified.json that is apart of the registry dir
+/* #nosec G304 -- lastModFile is produced from filepath.Join which cleans the input path */
+func SetLastModifiedValue(index []schema.Schema, registryDirPath string) ([]schema.Schema, error) {
+	lastModFile := filepath.Join(registryDirPath, "last_modified.json")
+	bytes, err := os.ReadFile(lastModFile)
+	if err != nil {
+		return index, err
+	}
+
+	var lastModifiedEntries schema.LastModifiedInfo
+	err = json.Unmarshal(bytes, &lastModifiedEntries)
+	if err != nil {
+		return index, err
+	}
+
+	lastModifiedEntriesMap := make(map[string]map[string]time.Time)
+
+	for idx := range lastModifiedEntries.Stacks {
+		updateLastModifiedMap(lastModifiedEntriesMap, &lastModifiedEntries.Stacks[idx])
+	}
+
+	for idx := range lastModifiedEntries.Samples {
+		updateLastModifiedMap(lastModifiedEntriesMap, &lastModifiedEntries.Samples[idx])
+	}
+
+	for i := range index {
+		var mostCurrentLastModifiedDate time.Time
+		for j := range index[i].Versions {
+			schemaItem := index[i] // a stack or sample
+			version := schemaItem.Versions[j]
+			versionNum := version.Version
+			lastModifiedDate := lastModifiedEntriesMap[schemaItem.Name][versionNum]
+			updateSchemaLastModified(&schemaItem, j, lastModifiedDate)
+			if lastModifiedDate.After(mostCurrentLastModifiedDate) {
+				mostCurrentLastModifiedDate = lastModifiedDate
+			}
+		}
+		// lastModified of a stack or sample will be the date any version of it was last changed
+		index[i].LastModified = mostCurrentLastModifiedDate.Format(time.RFC3339)
+	}
+
+	return index, nil
+}
+
+func updateLastModifiedMap(m map[string]map[string]time.Time, entry *schema.LastModifiedEntry) {
+	_, ok := m[entry.Name]
+	if !ok {
+		m[entry.Name] = make(map[string]time.Time)
+	}
+	m[entry.Name][entry.Version] = entry.LastModified
+}
+
+func updateSchemaLastModified(s *schema.Schema, versionIndx int, lastModifiedDate time.Time) {
+	s.Versions[versionIndx].LastModified = lastModifiedDate.Format(time.RFC3339)
 }
 
 // In checks if the value is in the array

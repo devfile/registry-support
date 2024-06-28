@@ -66,6 +66,8 @@ const (
 	ParamProvider = "provider"
 	// Parameter 'supportUrl'
 	ParamSupportUrl = "supportUrl"
+	// Parameter 'lastModified'
+	ParamLastModified = "lastModified"
 
 	/* Array Parameter Names */
 
@@ -793,4 +795,60 @@ func FilterDevfileStrArrayField(index []indexSchema.Schema, paramName string, re
 		Name:  filterName,
 		Index: filterDevfileArrayFuzzy(index, requestedValues, options),
 	}
+}
+
+// FilterLastModifiedDate filters based on the last modified date of a stack or sample
+func FilterLastModifiedDate(index []indexSchema.Schema, minLastModified *string, maxLastModified *string) ([]indexSchema.Schema, error) {
+	filteredIndex := deepcopy.Copy(index).([]indexSchema.Schema)
+	for i := 0; i < len(filteredIndex); i++ {
+		for versionIndex := 0; versionIndex < len(filteredIndex[i].Versions); versionIndex++ {
+			currentLastModifiedDate := filteredIndex[i].Versions[versionIndex].LastModified
+			matchedLastModified := false
+			if StrPtrIsSet(minLastModified) && StrPtrIsSet(maxLastModified) {
+				minModified, err := ConvertNonRFC3339Date(*minLastModified)
+				if err != nil {
+					return filteredIndex, err
+				}
+				maxModified, err := ConvertNonRFC3339Date(*maxLastModified)
+				if err != nil {
+					return filteredIndex, err
+				}
+				curModified, err := ConvertRFC3339Date(&currentLastModifiedDate)
+				if err != nil {
+					return filteredIndex, err
+				}
+				matchedLastModified = IsDateGreaterOrEqual(minModified, curModified) && IsDateLowerOrEqual(maxModified, curModified)
+			} else if StrPtrIsSet(minLastModified) {
+				minModified, err := ConvertNonRFC3339Date(*minLastModified)
+				if err != nil {
+					return filteredIndex, err
+				}
+				curModified, err := ConvertRFC3339Date(&currentLastModifiedDate)
+				if err != nil {
+					return filteredIndex, err
+				}
+				matchedLastModified = IsDateGreaterOrEqual(minModified, curModified)
+			} else if StrPtrIsSet(maxLastModified) {
+				maxModified, err := ConvertNonRFC3339Date(*maxLastModified)
+				if err != nil {
+					return filteredIndex, err
+				}
+				curModified, err := ConvertRFC3339Date(&currentLastModifiedDate)
+				if err != nil {
+					return filteredIndex, err
+				}
+				matchedLastModified = IsDateLowerOrEqual(maxModified, curModified)
+			}
+
+			if !matchedLastModified {
+				filterOut(&filteredIndex[i].Versions, &versionIndex)
+			}
+		}
+		if len(filteredIndex[i].Versions) == 0 {
+			// if versions list is empty after filter, remove this index
+			filterOut(&filteredIndex, &i)
+		}
+	}
+
+	return filteredIndex, nil
 }
