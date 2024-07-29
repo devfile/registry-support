@@ -37,3 +37,14 @@ samples:
         git:
           remotes:
             origin: https://github.com/elsony/devfile-sample-code-with-quarkus.git
+  - name: code-with-quarkus-no-version
+    displayName: Basic Quarkus Without Version
+    description: A simple Hello World Java application using Quarkus
+    icon: https://raw.githubusercontent.com/elsony/devfile-sample-code-with-quarkus/main/.devfile/icon/quarkus.png
+    tags: ["Java", "Quarkus"]
+    projectType: quarkus
+    language: java
+    provider: Red Hat
+    git:
+      remotes:
+        origin: https://github.com/elsony/devfile-sample-code-with-quarkus.git

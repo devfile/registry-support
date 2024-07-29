@@ -911,6 +911,20 @@ func TestSetLastModifiedValue(t *testing.T) {
 				},
 			},
 		},
+		schema.Schema{
+			Name:        "code-with-quarkus-no-version",
+			DisplayName: "Basic Quarkus Without Version",
+			Description: "A simple Hello World Java application using Quarkus",
+			Type:        "sample",
+			Tags:        []string{"Java", "Quarkus"},
+			Icon:        "https://raw.githubusercontent.com/elsony/devfile-sample-code-with-quarkus/main/.devfile/icon/quarkus.png",
+			ProjectType: "quarkus",
+			Language:    "java",
+			Provider:    "Red Hat",
+			Git: &schema.Git{
+				Remotes: map[string]string{"origin": "https://github.com/elsony/devfile-sample-code-with-quarkus.git"},
+			},
+		},
 	}
 
 	wantIndex := []schema.Schema{
@@ -975,6 +989,21 @@ func TestSetLastModifiedValue(t *testing.T) {
 					LastModified: "2024-04-19T11:45:48+01:00",
 				},
 			},
+		},
+		schema.Schema{
+			Name:        "code-with-quarkus-no-version",
+			DisplayName: "Basic Quarkus Without Version",
+			Description: "A simple Hello World Java application using Quarkus",
+			Type:        "sample",
+			Tags:        []string{"Java", "Quarkus"},
+			Icon:        "https://raw.githubusercontent.com/elsony/devfile-sample-code-with-quarkus/main/.devfile/icon/quarkus.png",
+			ProjectType: "quarkus",
+			Language:    "java",
+			Provider:    "Red Hat",
+			Git: &schema.Git{
+				Remotes: map[string]string{"origin": "https://github.com/elsony/devfile-sample-code-with-quarkus.git"},
+			},
+			LastModified: "2024-04-19T11:45:48+01:00",
 		},
 	}
 
