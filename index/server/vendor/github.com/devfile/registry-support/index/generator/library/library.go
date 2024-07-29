@@ -737,19 +737,25 @@ func SetLastModifiedValue(index []schema.Schema, registryDirPath string) ([]sche
 	}
 
 	for i := range index {
-		var mostCurrentLastModifiedDate time.Time
-		for j := range index[i].Versions {
-			schemaItem := index[i] // a stack or sample
-			version := schemaItem.Versions[j]
-			versionNum := version.Version
-			lastModifiedDate := lastModifiedEntriesMap[schemaItem.Name][versionNum]
-			updateSchemaLastModified(&schemaItem, j, lastModifiedDate)
-			if lastModifiedDate.After(mostCurrentLastModifiedDate) {
-				mostCurrentLastModifiedDate = lastModifiedDate
+		// Separate handling for versioned vs. non-versioned items
+		if len(index[i].Versions) > 0 {
+			var mostCurrentLastModifiedDate time.Time
+			for j := range index[i].Versions {
+				schemaItem := index[i] // a stack or sample
+				version := schemaItem.Versions[j]
+				versionNum := version.Version
+				lastModifiedDate := lastModifiedEntriesMap[schemaItem.Name][versionNum]
+				updateSchemaLastModified(&schemaItem, j, lastModifiedDate)
+				if lastModifiedDate.After(mostCurrentLastModifiedDate) {
+					mostCurrentLastModifiedDate = lastModifiedDate
+				}
 			}
+			// lastModified of a stack or sample will be the date any version of it was last changed
+			index[i].LastModified = mostCurrentLastModifiedDate.Format(time.RFC3339)
+		} else {
+			lastModifiedDate := lastModifiedEntriesMap[index[i].Name]["null"]
+			updateSchemaLastModifiedNoVersion(&index[i], lastModifiedDate)
 		}
-		// lastModified of a stack or sample will be the date any version of it was last changed
-		index[i].LastModified = mostCurrentLastModifiedDate.Format(time.RFC3339)
 	}
 
 	return index, nil
@@ -765,6 +771,10 @@ func updateLastModifiedMap(m map[string]map[string]time.Time, entry *schema.Last
 
 func updateSchemaLastModified(s *schema.Schema, versionIndx int, lastModifiedDate time.Time) {
 	s.Versions[versionIndx].LastModified = lastModifiedDate.Format(time.RFC3339)
+}
+
+func updateSchemaLastModifiedNoVersion(s *schema.Schema, lastModifiedDate time.Time) {
+	s.LastModified = lastModifiedDate.Format(time.RFC3339)
 }
 
 // In checks if the value is in the array
