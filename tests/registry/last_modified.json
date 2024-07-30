@@ -54,12 +54,12 @@
       },
       {
         "name": "java-springboot-basic",
-        "version": "null",
+        "version": "undefined",
         "lastModified": "2024-02-15T11:45:48+01:00"
       },
       {
         "name": "python-basic",
-        "version": "null",
+        "version": "undefined",
         "lastModified": "2024-02-15T11:45:48+01:00"
       }
     ]

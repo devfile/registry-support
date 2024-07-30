@@ -753,7 +753,7 @@ func SetLastModifiedValue(index []schema.Schema, registryDirPath string) ([]sche
 			// lastModified of a stack or sample will be the date any version of it was last changed
 			index[i].LastModified = mostCurrentLastModifiedDate.Format(time.RFC3339)
 		} else {
-			lastModifiedDate := lastModifiedEntriesMap[index[i].Name]["null"]
+			lastModifiedDate := lastModifiedEntriesMap[index[i].Name]["undefined"]
 			updateSchemaLastModifiedNoVersion(&index[i], lastModifiedDate)
 		}
 	}
