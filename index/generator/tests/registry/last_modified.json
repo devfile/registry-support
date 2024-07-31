@@ -76,6 +76,11 @@
       "name": "code-with-quarkus",
       "version": "1.1.0",
       "lastModified": "2024-04-19T11:45:48+01:00"
+    },
+    {
+      "name": "code-with-quarkus-no-version",
+      "version": "undefined",
+      "lastModified": "2024-04-19T11:45:48+01:00"
     }
   ]
 }

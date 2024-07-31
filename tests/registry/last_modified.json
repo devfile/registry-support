@@ -51,6 +51,16 @@
         "name": "code-with-quarkus",
         "version": "1.0.0",
         "lastModified": "2024-02-15T11:45:48+01:00"
+      },
+      {
+        "name": "java-springboot-basic",
+        "version": "undefined",
+        "lastModified": "2024-02-15T11:45:48+01:00"
+      },
+      {
+        "name": "python-basic",
+        "version": "undefined",
+        "lastModified": "2024-02-15T11:45:48+01:00"
       }
     ]
   }
