@@ -5,7 +5,7 @@ go 1.21
 require (
 	github.com/deepmap/oapi-codegen v1.12.4
 	github.com/devfile/api/v2 v2.3.0
-	github.com/devfile/library/v2 v2.2.2
+	github.com/devfile/library/v2 v2.3.0
 	github.com/devfile/registry-support/index/generator v0.0.0
 	github.com/getkin/kin-openapi v0.117.0
 	github.com/gin-gonic/gin v1.9.0
@@ -41,12 +41,12 @@ require (
 	github.com/containerd/log v0.1.0 // indirect
 	github.com/cyphar/filepath-securejoin v0.2.4 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
-	github.com/devfile/registry-support/registry-library v0.0.0-20240328155806-7c89891a72ce // indirect
+	github.com/devfile/registry-support/registry-library v0.0.0-20240521161747-89fc566cb024 // indirect
 	github.com/distribution/distribution/v3 v3.0.0-20221208165359-362910506bc2 // indirect
 	github.com/distribution/reference v0.5.0 // indirect
 	github.com/docker/cli v25.0.1+incompatible // indirect
 	github.com/docker/distribution v2.8.3+incompatible // indirect
-	github.com/docker/docker v25.0.1+incompatible // indirect
+	github.com/docker/docker v25.0.6+incompatible // indirect
 	github.com/docker/docker-credential-helpers v0.7.0 // indirect
 	github.com/docker/go-connections v0.5.0 // indirect
 	github.com/docker/go-metrics v0.0.1 // indirect
