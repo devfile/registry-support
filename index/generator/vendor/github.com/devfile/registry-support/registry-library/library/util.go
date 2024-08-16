@@ -122,6 +122,7 @@ func decompress(targetDir string, tarFile string, excludeFiles []string) error {
 				return returnedErr
 			}
 		case tar.TypeReg:
+			/* #nosec G304 -- target is produced using path.Join which cleans the dir path */
 			w, err := os.OpenFile(target, os.O_CREATE|os.O_RDWR, os.FileMode(header.Mode))
 			if err != nil {
 				returnedErr = multierror.Append(returnedErr, err)
@@ -194,7 +195,7 @@ func getHTTPClient(options RegistryOptions) *http.Client {
 
 // Cleans a child path to ensure that there is no escaping from the parent directory with the use of ../ escape methods
 // Ensures that the child path is always contained and absolutely pathed from the parent
-func CleanFilepath(parent string, child string)string{
+func CleanFilepath(parent string, child string) string {
 	target := path.Join(parent, filepath.Clean("/"+child))
 	return target
 }
