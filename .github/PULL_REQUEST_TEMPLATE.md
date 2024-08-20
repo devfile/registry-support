@@ -1,18 +1,25 @@
-**Please specify the area for this PR**
+# Description of Changes
+_Summarize the changes you made as part of this pull request._
 
-**What does does this PR do / why we need it**:
+# Related Issue(s)
+_Link the GitHub/GitLab/JIRA issues that are related to this PR._
 
-**Which issue(s) this PR fixes**:
+# Acceptance Criteria
+<!-- _Check the relevant boxes below_ -->
 
-Fixes #?
-
-**PR acceptance criteria**:
-
+### Tests
 - [ ] Test Coverage 
     - Are your changes sufficiently tested, and are any applicable test cases added or updated to cover your changes?
 
-Documentation (WIP)
+### Documentation
 - [ ] Does the [REST API doc](../index/server/registry-REST-API.adoc) need to be updated with your changes?
 - [ ] Does the [registry library doc](../registry-library/README.md) need to be updated with your changes?
 
-**How to test changes / Special notes to the reviewer**:
+# Tests Performed
+_Explain what tests you personally ran to ensure the changes are functioning as expected._
+
+# How To Test
+_Instructions for the reviewer on how to test your changes._
+
+# Notes To Reviewer
+_Any notes you would like to include for the reviewer._
