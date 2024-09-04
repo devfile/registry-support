@@ -57,6 +57,10 @@ We recommend using the [Devfile Registry Operator](https://github.com/devfile/re
 ### Via the Devfile Registry Helm Chart
 Alternatively, a Helm chart is also provided if you do not wish to use an operator. You can find instructions below for installing via Helm to either a Kubernetes or OpenShift environment. You can find detailed instructions [here](deploy/chart/devfile-registry/README.md).
 
+## Security
+
+Further information for the devfile organization security policy can be found [here](https://github.com/devfile/api/blob/main/SECURITY.md).
+
 ## Contributing
 
 Please see our [contributing.md](./CONTRIBUTING.md).
