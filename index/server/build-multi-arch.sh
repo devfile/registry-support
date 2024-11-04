@@ -30,6 +30,9 @@ PLATFORMS="linux/amd64,linux/arm64"
 # Generate OpenAPI endpoint and type definitions
 bash ${buildfolder}/codegen.sh
 
+# Copy license to include in image build
+cp ${buildfolder}/../../LICENSE ${buildfolder}/LICENSE
+
 if [ ${podman} == true ]; then
   echo "Executing with podman"
 
@@ -53,3 +56,6 @@ else
   docker buildx rm index-base-builder
 
 fi
+
+# Remove license from build directory
+rm ${buildfolder}/LICENSE

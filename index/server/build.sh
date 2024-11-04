@@ -41,6 +41,14 @@ echo "RUNNING: bash ${buildfolders}/codegen.sh"
 # Generate OpenAPI endpoint and type definitions
 bash ${buildfolder}/codegen.sh
 
+echo "RUNNING: cp ${buildfolder}/../../LICENSE ${buildfolder}/LICENSE"
+# Copy license to include in image build
+cp ${buildfolder}/../../LICENSE ${buildfolder}/LICENSE
+
 echo "RUNNING: docker build -t devfile-index-base:latest --platform ${arch} --build-arg ENABLE_HTTP2=${ENABLE_HTTP2} $buildfolder"
 # Build the index server
 docker build -t devfile-index-base:latest --platform "${arch}" --build-arg ENABLE_HTTP2=${ENABLE_HTTP2} $buildfolder
+
+echo "RUNNING: rm ${buildfolder}/LICENSE"
+# Remove license from build directory
+rm ${buildfolder}/LICENSE

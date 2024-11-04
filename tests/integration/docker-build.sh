@@ -20,7 +20,13 @@
 # Get the registry-library
 cp -rf ../../registry-library ./
 
+# Copy license to include in image build
+cp ../../LICENSE LICENSE
+
 # Build the container image
 docker build -t devfile-registry-integration ./
+
+# Remove license from build directory
+rm LICENSE
 
 rm -rf ./registry-library/

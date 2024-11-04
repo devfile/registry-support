@@ -24,4 +24,8 @@ RUN cd /registry-test/registry-library && ./build.sh && cp /registry-test/regist
 # Build the test binary
 RUN /registry-test/build.sh
 
+# Add license
+RUN mkdir -p /licenses
+COPY LICENSE /licenses
+
 CMD /registry-test/devfile-registry-integration
