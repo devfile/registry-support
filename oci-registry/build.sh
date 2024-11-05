@@ -32,4 +32,10 @@ fi
 # set podman alias if necessary
 . ${buildfolder}/../setenv.sh
 
+# Copy license to include in image build
+cp ${buildfolder}/../LICENSE ${buildfolder}/LICENSE
+
 docker build -t oci-registry:next --platform "${arch}" "$buildfolder"
+
+# Remove license from build directory
+rm ${buildfolder}/LICENSE

@@ -21,7 +21,13 @@ RUN microdnf update -y && rm -rf /var/cache/yum && microdnf install ca-certifica
 RUN set -x ; \
     adduser registry -u 1001 -G root && exit 0
 
+# Copy OCI registry binary from container image
 COPY --from=registry --chown=registry:0 /bin/registry /bin/registry
+
+# Add license
+RUN mkdir -p /licenses
+COPY LICENSE /licenses
+
 USER 1001
 EXPOSE 5000
 ENTRYPOINT ["registry"]
