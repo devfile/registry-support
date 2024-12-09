@@ -7,6 +7,11 @@
 - Write access to the [devfile/registry-support](https://github.com/devfile/registry-support) repository
 
 ## Process
+
+Information related to the release process can be found [here](https://docs.google.com/document/d/1JYnQf0M2VcZhJuHn6dxPEYNZ7icoViqJe8dN1jnKsCw/edit?usp=sharing).
+
+In order to use the script you will need to consider and set the following:
+
 1. Determine version and type you wish to cut
    1. E.g. "I want to cut version 2.0.0, which is a Major release" 
    2. Or "I want to cut version 2.1.0, which is a Minor release"
