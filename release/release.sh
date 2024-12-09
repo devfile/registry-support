@@ -15,13 +15,32 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+fetch_push_prior_release () {
+    git fetch $upstream_name --tags
+    LATEST_TAG=$(git tag --sort=-v:refname | head -n 1)
+    MODIFIED_TAG=$(echo "$LATEST_TAG" | awk -F. '{print $1 "." $2 ".x"}') # convert to [major].[minor].x format from [major].[minor].[patch]
+    git branch release/$MODIFIED_TAG $LATEST_TAG
+    git push $upstream_name release/$MODIFIED_TAG
+    git branch -D release/$MODIFIED_TAG
+}
+
+# append rc for release-candidate if necessary
+tag_and_push () {
+    final_version="v$VERSION"
+    if [ "$1" == "rc" ]; then
+        final_version+="-rc"
+    fi
+    git tag $final_version
+    git push $upstream_name $final_version
+}
+
 TYPES=(
     "major"
     "minor"
+    "patch"
 )
 
 UPSTREAM="https://github.com/devfile/registry-support.git"
-
 
 # $VERSION has to be set by the user in [major].[minor].[patch] format
 if [ -z "${VERSION}" ]; then 
@@ -29,7 +48,12 @@ if [ -z "${VERSION}" ]; then
     exit 1
 fi
 
-# RELEASE_CANDIDATE should be set to true for major version release candidates
+if [[ ! $VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    echo "Environment variable \$VERSION set to "$VERSION". Must be in [major].[minor].[patch] format ..."
+    exit 1
+fi
+
+# RELEASE_CANDIDATE should be set to true only for major version release candidates
 if [ -z "${RELEASE_CANDIDATE}" ]; then 
     echo "Environment variable \$RELEASE_CANDIDATE not set. Defaulting to false ..."
     RELEASE_CANDIDATE=false
@@ -54,12 +78,9 @@ else
     fi
 fi
 
-exit 0
-
 # Set upstream repo tracking if not already set
 upstream_name=$(git remote -v | awk -v url="$UPSTREAM" '$2 == url {print $1; exit}')
 
-# Setup upstream if not set
 if [ -n "$upstream_name" ]; then
   echo "Upstream repo found ... Name = $upstream_name, url=$UPSTREAM"
 else
@@ -69,30 +90,15 @@ else
   upstream_name="release-upstream"
 fi
 
-
 if [ "${RELEASE_TYPE}" == "major" ] && [ "${RELEASE_CANDIDATE}" == "true" ]; then
     # the release associated with this tag will be a pre-release, and we should be moving the code to a rc/<name> branch alongside the prev release
-    echo "Major release and release-candidate"
-    fetch_push_prior_commit
-    git push $upstream_name $upstream_name/main:rc/$VERSION
-    git tag $VERSION-rc
-    git push $upstream_name $VERSION-rc
+    fetch_push_prior_release
+    git push $upstream_name $upstream_name/main:refs/heads/rc/$VERSION
+    tag_and_push rc
+elif [ "${RELEASE_TYPE}" == "patch" ]; then
+    tag_and_push
 else
     # major/minor normal workflow
-    echo "Major or Minor release"
-    fetch_push_prior_commit
-    # Create new tag in upstream
-    git tag $VERSION
-    git push $upstream_name $VERSION
+    fetch_push_prior_release
+    tag_and_push
 fi
-
-fetch_push_prior_commit () {
-    git fetch $upstream_name --tags
-    LATEST_TAG=$(git tag --sort=-v:refname | head -n 1)
-    MODIFIED_TAG=$(echo "$LATEST_TAG" | awk -F. '{print $1 "." $2 ".x"}') # convert to [major].[minor].x format from [major].[minor].[patch]
-    git checkout -b test-fetch-tag $LATEST_TAG #TODO: fix the test-fetch-tag to something better
-    git push $upstream_name release/$MODIFIED_TAG
-
-    # navigate back to main
-    git checkout main
-}
