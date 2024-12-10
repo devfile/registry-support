@@ -42,17 +42,47 @@ Changes within PRs can be highlighted as well with the PR as a base change.
 
 ## Cutting Releases
 
-Individuals performing releases can find more information related to the process below.
+Individuals performing releases can find more information related to the process below. After the use of the release script you will have all the required branches and GitHub tags created for you. The final steps will be to create the [release on GitHub](https://github.com/devfile/registry-support/releases/new), and send out a release notification to users.
+
+### Requirements
+
+- SSH key setup with GitHub
+  - See [GitHub documentation](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account) for more information
+- Write access to the [devfile/registry-support](https://github.com/devfile/registry-support) repository
+
 
 ### Major Releases
 
-- See the dedicated release documentation [here](./README.md).
+Example major release:
+```
+export VERISON=1.1.1
+export RELEASE_TYPE=major
+bash release.sh
+```
+
+Example major release as a pre-release:
+```
+export VERSION=2.0.0
+export RELEASE_CANDIDATE=true
+export RELEASE_TYPE=major
+bash release.sh
+```
 
 ### Minor Releases
 
-- See the dedicated release documentation [here](./README.md).
-
+Example minor release:
+```
+export VERSION=2.1.0
+export RELEASE_TYPE=minor
+bash release.sh
+```
 ### Patch Releases
 
-- See the dedicated release documentation [here](./README.md).
-- If necessary, backport the change to the previous 2 releases.
+Example patch release:
+```
+export VERSION=2.1.1
+export RELEASE_TYPE=patch
+bash release.sh
+```
+
+If necessary, backport the changes to the previous 2 releases.
