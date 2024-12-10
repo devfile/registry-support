@@ -93,7 +93,7 @@ fi
 if [ "${RELEASE_TYPE}" == "major" ] && [ "${RELEASE_CANDIDATE}" == "true" ]; then
     # the release associated with this tag will be a pre-release, and we should be moving the code to a rc/<name> branch alongside the prev release
     fetch_push_prior_release
-    git push $upstream_name $upstream_name/main:refs/heads/rc/$VERSION
+    git push $upstream_name $upstream_name/main:refs/heads/rc/v$VERSION
     tag_and_push rc
 elif [ "${RELEASE_TYPE}" == "patch" ]; then
     tag_and_push
