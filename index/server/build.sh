@@ -21,6 +21,10 @@ if [ "$0" == "$BASH_SOURCE" ]; then
     . ../../setenv.sh
 fi
 
+# LICENSE build arguments
+LICENSE_REPO=${LICENSE_REPO:-"devfile/registry-support"}
+LICENSE_REF=${LICENSE_REF:-"main"}
+
 DEFAULT_ARCH="linux/amd64"
 
 # Check if different architecture was passed for image build
@@ -41,14 +45,8 @@ echo "RUNNING: bash ${buildfolders}/codegen.sh"
 # Generate OpenAPI endpoint and type definitions
 bash ${buildfolder}/codegen.sh
 
-echo "RUNNING: cp ${buildfolder}/../../LICENSE ${buildfolder}/LICENSE"
-# Copy license to include in image build
-cp ${buildfolder}/../../LICENSE ${buildfolder}/LICENSE
-
 echo "RUNNING: docker build -t devfile-index-base:latest --platform ${arch} --build-arg ENABLE_HTTP2=${ENABLE_HTTP2} $buildfolder"
 # Build the index server
-docker build -t devfile-index-base:latest --platform "${arch}" --build-arg ENABLE_HTTP2=${ENABLE_HTTP2} $buildfolder
-
-echo "RUNNING: rm ${buildfolder}/LICENSE"
-# Remove license from build directory
-rm ${buildfolder}/LICENSE
+docker build -t devfile-index-base:latest --platform "${arch}" --build-arg ENABLE_HTTP2=${ENABLE_HTTP2} \
+    --build-arg LICENSE_REPO=${LICENSE_REPO} \
+    --build-arg LICENSE_REF=${LICENSE_REF} $buildfolder

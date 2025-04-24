@@ -19,6 +19,14 @@ WORKDIR /tools
 COPY . .
 RUN CGO_ENABLED=0 go build -mod=vendor -o index-server main.go
 
+FROM registry.access.redhat.com/ubi8/ubi-minimal AS license
+ARG LICENSE_REPO="devfile/registry-support"
+ARG LICENSE_REF="main"
+
+# Fetch license
+RUN mkdir -p /licenses
+RUN curl -sL https://raw.githubusercontent.com/${LICENSE_REPO}/refs/heads/${LICENSE_REF}/LICENSE -o /licenses/LICENSE
+
 # Application image
 FROM registry.access.redhat.com/ubi8/ubi-minimal AS runner
 USER root
@@ -42,7 +50,7 @@ RUN mkdir -p /www/data && chmod -R g+rwx /www/data
 
 # Add license
 RUN mkdir -p /licenses
-COPY LICENSE /licenses
+COPY --from=license /licenses/LICENSE /licenses/LICENSE
 
 # disable http/2 on the index server by default
 ARG ENABLE_HTTP2=false

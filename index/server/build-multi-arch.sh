@@ -20,6 +20,9 @@ buildfolder="$(realpath $(dirname ${BASH_SOURCE[0]}))"
 # Due to command differences between podman and docker we need to separate the process
 # for creating and adding images to a multi-arch manifest
 podman=${USE_PODMAN:-false}
+# LICENSE build arguments
+LICENSE_REPO=${LICENSE_REPO:-"devfile/registry-support"}
+LICENSE_REF=${LICENSE_REF:-"main"}
 # Base Repository
 BASE_REPO="quay.io/devfile/devfile-index-base"
 BASE_TAG="next"
@@ -30,15 +33,14 @@ PLATFORMS="linux/amd64,linux/arm64"
 # Generate OpenAPI endpoint and type definitions
 bash ${buildfolder}/codegen.sh
 
-# Copy license to include in image build
-cp ${buildfolder}/../../LICENSE ${buildfolder}/LICENSE
-
 if [ ${podman} == true ]; then
   echo "Executing with podman"
 
   podman manifest create "$DEFAULT_IMG"
 
-  podman build --platform="$PLATFORMS" --manifest "$DEFAULT_IMG" --build-arg ENABLE_HTTP2=${ENABLE_HTTP2} $buildfolder
+  podman build --platform="$PLATFORMS" --manifest "$DEFAULT_IMG" --build-arg ENABLE_HTTP2=${ENABLE_HTTP2} \
+    --build-arg LICENSE_REPO=${LICENSE_REPO} \
+    --build-arg LICENSE_REF=${LICENSE_REF} $buildfolder
 
   podman manifest push "$DEFAULT_IMG"
 
@@ -51,11 +53,10 @@ else
 
   docker buildx use index-base-builder
 
-  docker buildx build --push --platform="$PLATFORMS" --tag "$DEFAULT_IMG" --provenance=false --build-arg ENABLE_HTTP2=${ENABLE_HTTP2} $buildfolder
+  docker buildx build --push --platform="$PLATFORMS" --tag "$DEFAULT_IMG" --provenance=false --build-arg ENABLE_HTTP2=${ENABLE_HTTP2} \
+    --build-arg LICENSE_REPO=${LICENSE_REPO} \
+    --build-arg LICENSE_REF=${LICENSE_REF} $buildfolder
   
   docker buildx rm index-base-builder
 
 fi
-
-# Remove license from build directory
-rm ${buildfolder}/LICENSE
