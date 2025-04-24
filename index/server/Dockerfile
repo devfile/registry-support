@@ -14,7 +14,8 @@
 # limitations under the License.
 
 # Index Server build stage
-FROM golang:1.21-alpine@sha256:2a1959ca3c229c72fbbee9643b88ef23d7859a7d18b60a0d94ee3d2923b49316 AS index-builder
+FROM registry.access.redhat.com/ubi8/go-toolset:1.21.13-1.1727869850 AS index-builder
+USER root
 WORKDIR /tools
 COPY . .
 RUN CGO_ENABLED=0 go build -mod=vendor -o index-server main.go
@@ -22,6 +23,7 @@ RUN CGO_ENABLED=0 go build -mod=vendor -o index-server main.go
 FROM registry.access.redhat.com/ubi8/ubi-minimal AS license
 ARG LICENSE_REPO="devfile/registry-support"
 ARG LICENSE_REF="main"
+USER root
 
 # Fetch license
 RUN mkdir -p /licenses
