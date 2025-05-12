@@ -17,16 +17,17 @@
 
 #set the docker alias if necessary
 . ../../setenv.sh
+
+# LICENSE build arguments
+LICENSE_REPO=${LICENSE_REPO:-"devfile/registry-support"}
+LICENSE_REF=${LICENSE_REF:-"main"}
+
 # Get the registry-library
 cp -rf ../../registry-library ./
 
-# Copy license to include in image build
-cp ../../LICENSE LICENSE
-
 # Build the container image
-docker build -t devfile-registry-integration ./
-
-# Remove license from build directory
-rm LICENSE
+docker build -t devfile-registry-integration \
+    --build-arg LICENSE_REPO=${LICENSE_REPO} \
+    --build-arg LICENSE_REF=${LICENSE_REF} ./
 
 rm -rf ./registry-library/
