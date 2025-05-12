@@ -22,7 +22,7 @@ RUN mkdir -p /licenses
 RUN curl -sL https://raw.githubusercontent.com/${LICENSE_REPO}/refs/heads/${LICENSE_REF}/LICENSE -o /licenses/LICENSE
 
 FROM registry.access.redhat.com/ubi8/go-toolset:1.21.13-1.1727869850
-
+USER root
 WORKDIR /registry-test
 
 COPY . .
@@ -37,4 +37,5 @@ RUN /registry-test/build.sh
 RUN mkdir -p /licenses
 COPY --from=license /licenses/LICENSE /licenses/LICENSE
 
+USER 1001
 CMD /registry-test/devfile-registry-integration
