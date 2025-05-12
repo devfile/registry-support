@@ -18,16 +18,17 @@
 #set the docker alias if necessary
 . ../../setenv.sh
 
+# Devfile Registry library build arguments
+LIBRARY_REPO=${LIBRARY_REPO:-"https://github.com/devfile/registry-support"}
+LIBRARY_REF=${LIBRARY_REF:-"main"}
+
 # LICENSE build arguments
 LICENSE_REPO=${LICENSE_REPO:-"devfile/registry-support"}
 LICENSE_REF=${LICENSE_REF:-"main"}
 
-# Get the registry-library
-cp -rf ../../registry-library ./
-
 # Build the container image
 docker build -t devfile-registry-integration \
+    --build-arg LIBRARY_REPO=${LIBRARY_REPO} \
+    --build-arg LIBRARY_REF=${LIBRARY_REF} \
     --build-arg LICENSE_REPO=${LICENSE_REPO} \
     --build-arg LICENSE_REF=${LICENSE_REF} ./
-
-rm -rf ./registry-library/

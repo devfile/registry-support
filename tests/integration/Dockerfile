@@ -12,6 +12,23 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+FROM registry.access.redhat.com/ubi8/go-toolset:1.21.13-1.1727869850 AS builder
+ARG LIBRARY_REPO="https://github.com/devfile/registry-support"
+ARG LIBRARY_REF="main"
+USER root
+WORKDIR /registry-test
+
+COPY . .
+
+# Fetch library repository
+RUN git clone ${LIBRARY_REPO} -b ${LIBRARY_REF} /registry-support
+
+# Build the registry library and add to builder path
+RUN cd /registry-support/registry-library && ./build.sh && cp /registry-support/registry-library/registry-library /usr/local/bin/registry-library
+
+# Build the test binary
+RUN /registry-test/build.sh
+
 FROM registry.access.redhat.com/ubi8/ubi-minimal AS license
 ARG LICENSE_REPO="devfile/registry-support"
 ARG LICENSE_REF="main"
@@ -21,17 +38,15 @@ USER root
 RUN mkdir -p /licenses
 RUN curl -sL https://raw.githubusercontent.com/${LICENSE_REPO}/refs/heads/${LICENSE_REF}/LICENSE -o /licenses/LICENSE
 
-FROM registry.access.redhat.com/ubi8/go-toolset:1.21.13-1.1727869850
+FROM registry.access.redhat.com/ubi8/ubi-minimal
 USER root
 WORKDIR /registry-test
 
-COPY . .
+# Add registry library to runner path
+COPY --from=builder /usr/local/bin/registry-library /usr/local/bin/registry-library
 
-# Build the registry library and add to path
-RUN cd /registry-test/registry-library && ./build.sh && cp /registry-test/registry-library/registry-library /usr/local/bin/registry-library
-
-# Build the test binary
-RUN /registry-test/build.sh
+# Add test binary to working directory of runner
+COPY --from=builder /registry-test/devfile-registry-integration /registry-test/devfile-registry-integration
 
 # Add license
 RUN mkdir -p /licenses
