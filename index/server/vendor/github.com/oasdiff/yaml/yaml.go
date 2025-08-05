@@ -5,18 +5,18 @@
 // uses json.Marshal and json.Unmarshal to convert to or from the struct. This
 // means that it effectively reuses the JSON struct tags as well as the custom
 // JSON methods MarshalJSON and UnmarshalJSON unlike go-yaml.
-//
 package yaml // import "github.com/invopop/yaml"
 
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"reflect"
 	"strconv"
 
-	"gopkg.in/yaml.v3"
+	"github.com/oasdiff/yaml3"
 )
 
 // Marshal the object into JSON then converts JSON to YAML and returns the
@@ -38,10 +38,20 @@ func Marshal(o interface{}) ([]byte, error) {
 // JSONOpt is a decoding option for decoding from JSON format.
 type JSONOpt func(*json.Decoder) *json.Decoder
 
+// YAMLOpt is a decoding option for decoding from YAML format.
+type YAMLOpt func(*yaml.Decoder) *yaml.Decoder
+
 // Unmarshal converts YAML to JSON then uses JSON to unmarshal into an object,
 // optionally configuring the behavior of the JSON unmarshal.
 func Unmarshal(y []byte, o interface{}, opts ...JSONOpt) error {
+	return UnmarshalWithOrigin(y, o, false, opts...)
+}
+
+// UnmarshalWithOrigin is like Unmarshal but if withOrigin is true, it will
+// include the origin information in the output.
+func UnmarshalWithOrigin(y []byte, o interface{}, withOrigin bool, opts ...JSONOpt) error {
 	dec := yaml.NewDecoder(bytes.NewReader(y))
+	dec.Origin(withOrigin)
 	return unmarshal(dec, o, opts)
 }
 
@@ -97,13 +107,12 @@ func JSONToYAML(j []byte) ([]byte, error) {
 // passing JSON through this method should be a no-op.
 //
 // Things YAML can do that are not supported by JSON:
-// * In YAML you can have binary and null keys in your maps. These are invalid
-//   in JSON. (int and float keys are converted to strings.)
-// * Binary data in YAML with the !!binary tag is not supported. If you want to
-//   use binary data with this library, encode the data as base64 as usual but do
-//   not use the !!binary tag in your YAML. This will ensure the original base64
-//   encoded data makes it all the way through to the JSON.
-//
+//   - In YAML you can have binary and null keys in your maps. These are invalid
+//     in JSON. (int and float keys are converted to strings.)
+//   - Binary data in YAML with the !!binary tag is not supported. If you want to
+//     use binary data with this library, encode the data as base64 as usual but do
+//     not use the !!binary tag in your YAML. This will ensure the original base64
+//     encoded data makes it all the way through to the JSON.
 func YAMLToJSON(y []byte) ([]byte, error) { //nolint:revive
 	dec := yaml.NewDecoder(bytes.NewReader(y))
 	return yamlToJSON(dec, nil)
@@ -113,7 +122,11 @@ func yamlToJSON(dec *yaml.Decoder, jsonTarget *reflect.Value) ([]byte, error) {
 	// Convert the YAML to an object.
 	var yamlObj interface{}
 	if err := dec.Decode(&yamlObj); err != nil {
-		return nil, err
+		// Functionality changed in v3 which means we need to ignore EOF error.
+		// See https://github.com/go-yaml/yaml/issues/639
+		if !errors.Is(err, io.EOF) {
+			return nil, err
+		}
 	}
 
 	// YAML objects are not completely compatible with JSON objects (e.g. you
