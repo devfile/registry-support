@@ -1,6 +1,6 @@
 module github.com/devfile/registry-support/registry-library
 
-go 1.21
+go 1.24
 
 require (
 	github.com/containerd/containerd v1.7.13
