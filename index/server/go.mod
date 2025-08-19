@@ -1,6 +1,6 @@
 module github.com/devfile/registry-support/index/server
 
-go 1.24
+go 1.23
 
 require (
 	github.com/deepmap/oapi-codegen v1.12.4

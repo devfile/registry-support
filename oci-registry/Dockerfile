@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-FROM registry.access.redhat.com/ubi9/go-toolset:1.24.4-1754467841 as registry
+FROM registry.access.redhat.com/ubi9/go-toolset:1.23.9-1751538372@sha256:8e7cfaace4ab24944480f45c95ff26dfa800eaa120e16adecf2c918a030025bf as registry
 ARG PKG="github.com/docker/distribution"
 ARG PKG_VERSION="v2.8.3"
 ENV GOPATH=/go

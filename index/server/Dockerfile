@@ -14,7 +14,7 @@
 # limitations under the License.
 
 # Index Server build stage
-FROM registry.access.redhat.com/ubi9/go-toolset:1.24.4-1754467841 AS index-builder
+FROM registry.access.redhat.com/ubi9/go-toolset:1.23.9-1751538372@sha256:8e7cfaace4ab24944480f45c95ff26dfa800eaa120e16adecf2c918a030025bf AS index-builder
 USER root
 WORKDIR /tools
 COPY . .

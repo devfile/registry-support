@@ -1,6 +1,6 @@
 module github.com/devfile/registry-support/registry-library
 
-go 1.24
+go 1.23
 
 require (
 	github.com/containerd/containerd v1.7.13
@@ -69,7 +69,7 @@ require (
 	go.opentelemetry.io/otel/metric v1.24.0 // indirect
 	go.opentelemetry.io/otel/trace v1.24.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	golang.org/x/exp v0.0.0-20240222234643-814bf88cf225 // indirect
+	golang.org/x/exp v0.0.0-20240719175910-8a7402abbf56 // indirect
 	golang.org/x/net v0.33.0 // indirect
 	golang.org/x/sync v0.10.0 // indirect
 	golang.org/x/sys v0.28.0 // indirect
@@ -90,4 +90,4 @@ require (
 	sigs.k8s.io/structured-merge-diff/v4 v4.4.1 // indirect
 )
 
-replace github.com/devfile/registry-support/index/generator v0.0.0-20240419194226-cca4c9a81f8d => ../index/generator
+replace github.com/devfile/registry-support/index/generator v0.0.0-20240816133831-cf509ccd1a6b => ../index/generator

@@ -21,7 +21,7 @@ on:
     branches: [main]
 
 env:
-  GO_VERSION: 1.24
+  GO_VERSION: 1.23
   OAPI_CODEGEN_VERSION: v1.12.4
 
 jobs:
