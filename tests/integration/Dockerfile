@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-FROM registry.access.redhat.com/ubi8/go-toolset:1.24.4-1754273152@sha256:ddad134f9fe193a6b3c7a87fa73b17e80212cdb0aa10dbd5a7581df96c998f1b AS builder
+FROM registry.access.redhat.com/ubi8/go-toolset:1.21.13-1.1727869850 AS builder
 ARG LIBRARY_REPO="https://github.com/devfile/registry-support"
 ARG LIBRARY_REF="main"
 USER root

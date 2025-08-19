@@ -1,6 +1,8 @@
 module github.com/devfile/registry-support/tests/integration
 
-go 1.24
+go 1.23.0
+
+toolchain go1.24.5
 
 require (
 	github.com/devfile/library/v2 v2.2.2
