@@ -6,7 +6,7 @@ This folder contains tools for building up a Devfile Registry Repository and pac
 
 ### Prerequisites
 
-- Golang 1.13.x or higher
+- Golang 1.24.x or higher
 - Docker 17.05 or higher
 - Git
 - [yq](https://github.com/mikefarah/yq) 4.x
