@@ -22,7 +22,7 @@
 #     the location to the offline project in the stack root
 
 # Path of stacks directory in the registry
-STACKS_DIR=/registry/stacks
+STACKS_DIR=${STACKS_DIR:-/registry/stacks}
 # Automated comment used to check whether the devfile has already been modified
 MODIFIED_MESSAGE="# AUTOMATED MODIFICATION -"
 
