@@ -1,17 +1,23 @@
 {
     "$schema": "https://docs.renovatebot.com/renovate-schema.json",
     "extends": [
-        "config:base",
+        "config:recommended",
         "helpers:pinGitHubActionDigests",
         ":gitSignOff"
     ],
     "timezone": "America/Toronto",
-    "enabledManagers": ["tekton"],
+    "enabledManagers": [
+        "tekton"
+    ],
     "packageRules": [
         {
             "description": "Schedule Konflux tekton task updates Tuesday and Thursday nights (7 PM - 2 AM)",
-            "matchManagers": ["tekton"],
-            "schedule": ["* 19-23,0-2 * * 2,4"]
+            "matchManagers": [
+                "tekton"
+            ],
+            "schedule": [
+                "* 19-23,0-2 * * 2,4"
+            ]
         }
     ],
     "prHourlyLimit": 20,
