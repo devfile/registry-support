@@ -3,7 +3,7 @@ module github.com/devfile/registry-support/registry-library
 go 1.24
 
 require (
-	github.com/containerd/containerd v1.7.27
+	github.com/containerd/containerd v1.7.29
 	github.com/devfile/registry-support/index/generator v0.0.0-20240816133831-cf509ccd1a6b
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/hashicorp/go-version v1.4.0
