@@ -19,6 +19,13 @@
                 "* 19-23 * * 2,4",
                 "* 0-2 * * 3,5"
             ]
+        },
+        {
+            "description": "Enable automerge Konflux tekton task updates",
+            "matchManagers": [
+                "tekton"
+            ],
+            "automerge": true
         }
     ],
     "prHourlyLimit": 20,
