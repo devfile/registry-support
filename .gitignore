@@ -6,3 +6,6 @@
 
 # Ignore the registry-viewer repo that we clone
 registry-viewer
+
+# vendor directories
+/**/vendor/
