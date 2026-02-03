@@ -26,12 +26,12 @@ RUN VERSION=$(git describe --match 'v[0-9]*' --dirty='.m' --always --tags) REVIS
   echo -n "${VERSION}" | tee /tmp/.version;
 RUN set -x ; CGO_ENABLED=0 GO111MODULE=auto go build -tags "include_oss,include_gcs" -trimpath -ldflags "$(cat /tmp/.ldflags) -s -w" -o /usr/bin/registry ./cmd/registry
 
-FROM registry.access.redhat.com/ubi8-minimal:8.2
-RUN microdnf update -y && rm -rf /var/cache/yum && microdnf install ca-certificates httpd-tools
+FROM registry.access.redhat.com/ubi10-minimal:10.1@sha256:380da76bb8a69e333b6c11341d600f5d3aab9ee5b8c95ceb64aae2457f5c1c6e
+RUN microdnf update -y && rm -rf /var/cache/yum && microdnf install -y ca-certificates httpd-tools shadow-utils
 
 # Create a non-root user to run the server as
 RUN set -x ; \
-    adduser registry -u 1001 -G root && exit 0
+    useradd -u 1001 -g root registry && exit 0
 
 # Copy OCI registry binary from container image
 COPY --from=registry --chown=registry:0 /usr/bin/registry /bin/registry
