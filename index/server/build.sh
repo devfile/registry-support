@@ -39,14 +39,15 @@ fi
 echo "BUILDING: devfile-index-base for ${arch}"
 
 # Build the index container for the registry
-buildfolder="$(realpath $(dirname ${BASH_SOURCE[0]}))"
+buildfolder="$(realpath $(dirname ${BASH_SOURCE[0]}))/../.."
 
-echo "RUNNING: bash ${buildfolders}/codegen.sh"
+echo "RUNNING: bash ${buildfolders}/index/server/codegen.sh"
 # Generate OpenAPI endpoint and type definitions
-bash ${buildfolder}/codegen.sh
+bash ${buildfolder}/index/server/codegen.sh
 
-echo "RUNNING: docker build -t devfile-index-base:latest --platform ${arch} --build-arg ENABLE_HTTP2=${ENABLE_HTTP2} $buildfolder"
+echo "RUNNING: docker build -t devfile-index-base:latest --platform ${arch} --build-arg ENABLE_HTTP2=${ENABLE_HTTP2} -f $buildfolder/index/server/Dockerfile $buildfolder"
 # Build the index server
 docker build -t devfile-index-base:latest --platform "${arch}" --build-arg ENABLE_HTTP2=${ENABLE_HTTP2} \
     --build-arg LICENSE_REPO=${LICENSE_REPO} \
-    --build-arg LICENSE_REF=${LICENSE_REF} $buildfolder
+    --build-arg LICENSE_REF=${LICENSE_REF} \
+    --build-arg GO_MOD=${GO_MOD:-'readonly'} -f $buildfolder/index/server/Dockerfile $buildfolder

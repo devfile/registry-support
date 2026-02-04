@@ -16,7 +16,7 @@
 # limitations under the License.
 
 # Build the index container for the registry
-buildfolder="$(realpath $(dirname ${BASH_SOURCE[0]}))"
+buildfolder="$(realpath $(dirname ${BASH_SOURCE[0]}))/../.."
 # Due to command differences between podman and docker we need to separate the process
 # for creating and adding images to a multi-arch manifest
 podman=${USE_PODMAN:-false}
@@ -31,7 +31,7 @@ DEFAULT_IMG="$BASE_REPO:$BASE_TAG"
 PLATFORMS="linux/amd64,linux/arm64"
 
 # Generate OpenAPI endpoint and type definitions
-bash ${buildfolder}/codegen.sh
+bash ${buildfolder}/index/server/codegen.sh
 
 if [ ${podman} == true ]; then
   echo "Executing with podman"
@@ -40,7 +40,8 @@ if [ ${podman} == true ]; then
 
   podman build --platform="$PLATFORMS" --manifest "$DEFAULT_IMG" --build-arg ENABLE_HTTP2=${ENABLE_HTTP2} \
     --build-arg LICENSE_REPO=${LICENSE_REPO} \
-    --build-arg LICENSE_REF=${LICENSE_REF} $buildfolder
+    --build-arg LICENSE_REF=${LICENSE_REF} \
+    --build-arg GO_MOD=${GO_MOD:-'readonly'} -f $buildfolder/index/server/Dockerfile $buildfolder
 
   podman manifest push "$DEFAULT_IMG"
 
@@ -55,7 +56,8 @@ else
 
   docker buildx build --push --platform="$PLATFORMS" --tag "$DEFAULT_IMG" --provenance=false --build-arg ENABLE_HTTP2=${ENABLE_HTTP2} \
     --build-arg LICENSE_REPO=${LICENSE_REPO} \
-    --build-arg LICENSE_REF=${LICENSE_REF} $buildfolder
+    --build-arg LICENSE_REF=${LICENSE_REF} \
+    --build-arg GO_MOD=${GO_MOD:-'readonly'} -f $buildfolder/index/server/Dockerfile $buildfolder
   
   docker buildx rm index-base-builder
 

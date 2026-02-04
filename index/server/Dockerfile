@@ -16,9 +16,11 @@
 # Index Server build stage
 FROM registry.access.redhat.com/ubi8/go-toolset:1.24.4-1754273152@sha256:ddad134f9fe193a6b3c7a87fa73b17e80212cdb0aa10dbd5a7581df96c998f1b AS index-builder
 USER root
-WORKDIR /tools
+ARG GO_MOD=readonly
+WORKDIR /tools/src
 COPY . .
-RUN CGO_ENABLED=0 go build -mod=vendor -o index-server main.go
+WORKDIR /tools/src/index/server
+RUN CGO_ENABLED=0 go build -mod=${GO_MOD} -o /tools/index-server main.go
 
 FROM registry.access.redhat.com/ubi8/ubi-minimal AS license
 ARG LICENSE_REPO="devfile/registry-support"
@@ -35,7 +37,7 @@ USER root
 
 # Install and configure dependencies
 RUN microdnf update -y && microdnf install shadow-utils findutils && rm -rf /var/cache/yum
-COPY entrypoint.sh /
+COPY index/server/entrypoint.sh /
 RUN chmod +x /entrypoint.sh
 
 # Copy index server

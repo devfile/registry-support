@@ -15,4 +15,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-CGO_ENABLED=0 go build -mod=vendor -o registry-library .
+CGO_ENABLED=0 go build -mod=${GO_MOD:-'mod'} -o registry-library .
