@@ -41,4 +41,6 @@ BASE_DIR=$(dirname $0)
 ENABLE_HTTP2=${ENABLE_HTTP2} . ${BASE_DIR}/index/server/build.sh "${arch}"
 
 # Build the test devfile registry image
-docker build -t devfile-index:latest --platform "${arch}" -f ${BASE_DIR}/.ci/Dockerfile ${BASE_DIR}
+docker build -t devfile-index:latest --platform "${arch}" \
+  --build-arg BASE_IMAGE=localhost/devfile-index-base \
+  -f ${BASE_DIR}/.ci/Dockerfile ${BASE_DIR}

@@ -12,6 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+ARG BASE_IMAGE=quay.io/devfile/devfile-index-base:next
+
 FROM golang:1.24-alpine@sha256:daae04ebad0c21149979cd8e9db38f565ecefd8547cf4a591240dc1972cf1399 AS builder
 
 # Allows for the proper yq to be downloaded
@@ -41,6 +43,6 @@ RUN bash /build-tools/dl_starter_projects.sh go-starter community
 # Run the registry build tools
 RUN bash /build-tools/build.sh /registry /build
 
-FROM devfile-index-base
+FROM ${BASE_IMAGE}
 
 COPY --from=builder /build /registry
