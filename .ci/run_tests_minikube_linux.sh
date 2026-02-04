@@ -27,7 +27,7 @@ set -u
 set -x
 
 # Build the test devfile registry image
-bash ./build_registry.sh
+BASE_IMAGE=devfile-index-base bash ./build_registry.sh
 if [ $? -ne 0 ]; then
   echo "Error building devfile registry images"
   exit 1;

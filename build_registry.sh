@@ -21,6 +21,7 @@
 set -ex
 
 DEFAULT_ARCH="linux/amd64"
+BASE_IMAGE=${BASE_IMAGE:-'localhost/devfile-index-base'}
 
 # Check if different architecture was passed for image build
 # Will default to $DEFAULT_ARCH if unset
@@ -38,9 +39,9 @@ BASE_DIR=$(dirname $0)
 . ${BASE_DIR}/setenv.sh
 
 # Build the index server base image
-ENABLE_HTTP2=${ENABLE_HTTP2} . ${BASE_DIR}/index/server/build.sh "${arch}"
+BASE_IMAGE=${BASE_IMAGE} ENABLE_HTTP2=${ENABLE_HTTP2} . ${BASE_DIR}/index/server/build.sh "${arch}"
 
 # Build the test devfile registry image
 docker build -t devfile-index:latest --platform "${arch}" \
-  --build-arg BASE_IMAGE=localhost/devfile-index-base \
+  --build-arg BASE_IMAGE=${BASE_IMAGE} \
   -f ${BASE_DIR}/.ci/Dockerfile ${BASE_DIR}

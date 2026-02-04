@@ -45,9 +45,9 @@ echo "RUNNING: bash ${buildfolders}/index/server/codegen.sh"
 # Generate OpenAPI endpoint and type definitions
 bash ${buildfolder}/index/server/codegen.sh
 
-echo "RUNNING: docker build -t devfile-index-base:latest --platform ${arch} --build-arg ENABLE_HTTP2=${ENABLE_HTTP2} -f $buildfolder/index/server/Dockerfile $buildfolder"
+echo "RUNNING: docker build -t ${BASE_IMAGE} --platform ${arch} --build-arg ENABLE_HTTP2=${ENABLE_HTTP2} -f $buildfolder/index/server/Dockerfile $buildfolder"
 # Build the index server
-docker build -t devfile-index-base:latest --platform "${arch}" --build-arg ENABLE_HTTP2=${ENABLE_HTTP2} \
+docker build -t ${BASE_IMAGE} --platform "${arch}" --build-arg ENABLE_HTTP2=${ENABLE_HTTP2} \
     --build-arg LICENSE_REPO=${LICENSE_REPO} \
     --build-arg LICENSE_REF=${LICENSE_REF} \
     --build-arg GO_MOD=${GO_MOD:-'readonly'} -f $buildfolder/index/server/Dockerfile $buildfolder
