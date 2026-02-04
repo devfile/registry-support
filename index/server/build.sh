@@ -21,6 +21,9 @@ if [ "$0" == "$BASH_SOURCE" ]; then
     . ../../setenv.sh
 fi
 
+# Base image label
+BASE_IMAGE=${BASE_IMAGE:-'localhost/devfile-index-base'}
+
 # LICENSE build arguments
 LICENSE_REPO=${LICENSE_REPO:-"devfile/registry-support"}
 LICENSE_REF=${LICENSE_REF:-"main"}
