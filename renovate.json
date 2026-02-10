@@ -6,8 +6,15 @@
         ":gitSignOff"
     ],
     "timezone": "America/Toronto",
+    "schedule": [
+        "* 19-23 * * *",
+        "* 0-2 * * *"
+    ],
     "enabledManagers": [
-        "tekton"
+        "tekton",
+        "gomod",
+        "dockerfile",
+        "github-actions"
     ],
     "packageRules": [
         {
@@ -26,7 +33,72 @@
                 "tekton"
             ],
             "automerge": true
+        },
+        {
+            "description": "Tekton (Konflux) dependencies group",
+            "matchManagers": [
+                "tekton"
+            ],
+            "groupName": "tekton (konflux) dependencies",
+            "groupSlug": "tekton-deps",
+            "commitMessageTopic": "Konflux Task {{depName}}"
+        },
+        {
+            "description": "Go dependencies group",
+            "matchManagers": [
+                "gomod"
+            ],
+            "groupName": "go dependencies",
+            "groupSlug": "go-deps",
+            "commitMessageTopic": "Go {{depName}}"
+        },
+        {
+            "description": "Dockerfile dependencies group",
+            "matchManagers": [
+                "dockerfile"
+            ],
+            "groupName": "dockerfile dependencies",
+            "groupSlug": "dockerfile-deps",
+            "commitMessageTopic": "Dockerfile {{depName}}"
+        },
+        {
+            "description": "GitHub Actions dependencies group",
+            "matchManagers": [
+                "github-actions"
+            ],
+            "groupName": "github-actions dependencies",
+            "groupSlug": "github-actions-deps",
+            "commitMessageTopic": "GitHub Action {{depName}}"
+        },
+        {
+            "description": "Disable major version updates for Go modules and Dockerfiles",
+            "matchManagers": [
+                "dockerfile",
+                "gomod"
+            ],
+            "matchUpdateTypes": ["major"],
+            "matchBaseBranches": "main",
+            "enabled": false
+        },
+        {
+            "description": "Disable minor version updates for Go version specific images",
+            "matchManagers": [
+                "dockerfile"
+            ],
+            "matchPackageNames": [
+                "go-toolset"
+            ],
+            "matchUpdateTypes": ["minor"],
+            "matchBaseBranches": "main",
+            "enabled": false
         }
+    ],
+    "constraints": {
+        "go": "1.24"
+    },
+    "ignorePaths": [
+        "tests/registry/**",
+        "build-tools/**"
     ],
     "prHourlyLimit": 20,
     "prConcurrentLimit": 10
