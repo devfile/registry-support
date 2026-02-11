@@ -46,12 +46,21 @@ jobs:
           go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@v1.12.4
           bash ./build-multi-arch.sh
 
-  dispatch:
+  konflux-wait:
     needs: indexServerBuild
-    strategy:
-      matrix:
-        repo: ["devfile/registry"]
     runs-on: ubuntu-latest
+    steps:
+      - name: Wait for Konflux tasks to finish
+        uses: lewagon/wait-on-check-action@74049309dfeff245fe8009a0137eacf28136cb3c # v1.5.0
+        with:
+          ref: ${{ github.ref }}
+          check-name: "Red Hat Konflux / devfile-registry-main-enterprise-contract / devfile-registry-base-main"
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+  dispatch-community:
+    needs: konflux-wait
+    runs-on: ubuntu-latest
+    name: Dispatch Community Devfile Registry
     steps:
       - name: Get the repository name and commit sha
         id: get_commit_info
@@ -80,7 +89,7 @@ jobs:
         uses: peter-evans/repository-dispatch@v1
         with:
           token: ${{ secrets.REPO_ACCESS_TOKEN }}
-          repository: ${{ matrix.repo }}
+          repository: devfile/registry
           event-type: build
           client-payload: '{"repo": "${{ steps.get_commit_info.outputs.REPO }}", "sha": "${{ steps.get_commit_info.outputs.SHA }}"}'
 
