@@ -21,6 +21,10 @@ on:
   repository_dispatch:
     types: [build]
 
+env:
+  INDEX_BASE_KONFLUX_BUILD_CHECK: Red Hat Konflux / devfile-registry-base-main-on-push 
+  INDEX_BASE_KONFLUX_EC_CHECK: Red Hat Konflux / devfile-registry-main-enterprise-contract / devfile-registry-base-main
+
 jobs:
   indexServerBuild:
     runs-on: ubuntu-latest
@@ -46,19 +50,48 @@ jobs:
           go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@v1.12.4
           bash ./build-multi-arch.sh
 
-  konflux-wait:
+  waitForKonfluxBuildStart:
     needs: indexServerBuild
+    uses: ./.github/workflows/includes/wait-for-check-start.yaml
+    with:
+      check-name: ${{ env.INDEX_BASE_KONFLUX_BUILD_CHECK }}
+      repository: ${{ github.repository }}
+      ref: ${{ github.ref }}
+      repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+  konfluxBuildWait:
+    needs: waitForKonfluxBuildStart
     runs-on: ubuntu-latest
     steps:
-      - name: Wait for Konflux tasks to finish
+      - name: Wait for ${{ env.INDEX_BASE_KONFLUX_BUILD_CHECK }} tasks to finish
         uses: lewagon/wait-on-check-action@74049309dfeff245fe8009a0137eacf28136cb3c # v1.5.0
         with:
           ref: ${{ github.ref }}
-          check-name: "Red Hat Konflux / devfile-registry-main-enterprise-contract / devfile-registry-base-main"
+          check-name: ${{ env.INDEX_BASE_KONFLUX_BUILD_CHECK }}
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
-  dispatch-community:
-    needs: konflux-wait
+  waitForKonfluxECStart:
+    needs: konfluxBuildWait
+    uses: ./.github/workflows/includes/wait-for-check-start.yaml
+    with:
+      check-name: ${{ env.INDEX_BASE_KONFLUX_EC_CHECK }}
+      repository: ${{ github.repository }}
+      ref: ${{ github.ref }}
+      repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+  konfluxECWait:
+    needs: waitForKonfluxECStart
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for ${{ env.INDEX_BASE_KONFLUX_EC_CHECK }} checks to finish
+        uses: lewagon/wait-on-check-action@74049309dfeff245fe8009a0137eacf28136cb3c # v1.5.0
+        with:
+          ref: ${{ github.ref }}
+          check-name: ${{ env.INDEX_BASE_KONFLUX_EC_CHECK }}
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+  dispatchCommunity:
+    needs: konfluxECWait
     runs-on: ubuntu-latest
     name: Dispatch Community Devfile Registry
     steps:
