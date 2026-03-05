@@ -27,7 +27,7 @@ require (
 	github.com/devfile/registry-support/registry-library v0.0.0-20240328155806-7c89891a72ce // indirect
 	github.com/distribution/distribution/v3 v3.0.0-20221208165359-362910506bc2 // indirect
 	github.com/distribution/reference v0.6.0 // indirect
-	github.com/docker/cli v25.0.1+incompatible // indirect
+	github.com/docker/cli v29.2.0+incompatible // indirect
 	github.com/docker/distribution v2.8.3+incompatible // indirect
 	github.com/docker/docker v25.0.13+incompatible // indirect
 	github.com/docker/docker-credential-helpers v0.7.0 // indirect
