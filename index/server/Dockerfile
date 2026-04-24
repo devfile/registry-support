@@ -14,13 +14,13 @@
 # limitations under the License.
 
 # Index Server build stage
-FROM registry.access.redhat.com/ubi8/go-toolset:1.24.4-1754273152@sha256:ddad134f9fe193a6b3c7a87fa73b17e80212cdb0aa10dbd5a7581df96c998f1b AS index-builder
+FROM registry.access.redhat.com/ubi8/go-toolset:1.25.8-1776905877@sha256:2ce718ff82405b17297f2461fd433e1de5adb18558c53561ef5243d2388642fe AS index-builder
 USER root
 WORKDIR /tools
 COPY . .
 RUN CGO_ENABLED=0 go build -mod=vendor -o index-server main.go
 
-FROM registry.access.redhat.com/ubi8/ubi-minimal:8.10@sha256:000dd8e4a3046ac7c47e65bbe01efc48d7a568e5ee9946cca1d74a7abf042d36 AS license
+FROM registry.access.redhat.com/ubi8/ubi-minimal:8.10-1776921438@sha256:46f08923b566497395dda7d4d07bad383b4eedd5a382c3e22e715b169f414331 AS license
 ARG LICENSE_REPO="devfile/registry-support"
 ARG LICENSE_REF="main"
 USER root
@@ -30,7 +30,7 @@ RUN mkdir -p /licenses
 RUN curl -sL https://raw.githubusercontent.com/${LICENSE_REPO}/refs/heads/${LICENSE_REF}/LICENSE -o /licenses/LICENSE
 
 # Application image
-FROM registry.access.redhat.com/ubi8/ubi-minimal:8.10@sha256:000dd8e4a3046ac7c47e65bbe01efc48d7a568e5ee9946cca1d74a7abf042d36 AS runner
+FROM registry.access.redhat.com/ubi8/ubi-minimal:8.10-1776921438@sha256:46f08923b566497395dda7d4d07bad383b4eedd5a382c3e22e715b169f414331 AS runner
 USER root
 
 # Install and configure dependencies
