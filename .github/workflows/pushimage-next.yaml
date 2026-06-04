@@ -63,7 +63,7 @@ jobs:
         uses: lewagon/wait-on-check-action@74049309dfeff245fe8009a0137eacf28136cb3c # v1.5.0
         with:
           ref: ${{ github.ref }}
-          check-name: Red Hat Konflux / devfile-registry-base-main-on-push 
+          check-name: Red Hat Konflux / devfile-registry-base-main-on-push
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
   waitForKonfluxECStart:
