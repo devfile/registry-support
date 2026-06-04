@@ -53,6 +53,7 @@ jobs:
       check-name: Red Hat Konflux / devfile-registry-base-main-on-push
       repository: ${{ github.repository }}
       ref: ${{ github.ref }}
+    secrets:
       repo-token: ${{ secrets.GITHUB_TOKEN }}
 
   konfluxBuildWait:
@@ -73,6 +74,7 @@ jobs:
       check-name: Red Hat Konflux / devfile-registry-main-enterprise-contract / devfile-registry-base-main
       repository: ${{ github.repository }}
       ref: ${{ github.ref }}
+    secrets:
       repo-token: ${{ secrets.GITHUB_TOKEN }}
 
   konfluxECWait:

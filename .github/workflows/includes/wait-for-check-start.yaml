@@ -42,7 +42,7 @@ jobs:
     steps:
       - name: Wait for ${{ inputs.check-name }} check to exist
         env:
-          GH_TOKEN: ${{ inputs.repo-token }}
+          GH_TOKEN: ${{ secrets.repo-token }}
           WAIT_TIMEOUT: ${{ inputs.wait-timeout }}
           WAIT_INTERVAL: ${{ inputs.wait-interval }}
           REPO: ${{ inputs.repository }}
