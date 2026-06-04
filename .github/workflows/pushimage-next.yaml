@@ -50,7 +50,7 @@ jobs:
     needs: indexServerBuild
     uses: ./.github/workflows/includes/wait-for-check-start.yaml
     with:
-      check-name: Red Hat Konflux / devfile-registry-base-main-on-push 
+      check-name: Red Hat Konflux / devfile-registry-base-main-on-push
       repository: ${{ github.repository }}
       ref: ${{ github.ref }}
       repo-token: ${{ secrets.GITHUB_TOKEN }}
