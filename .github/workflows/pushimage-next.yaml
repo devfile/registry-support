@@ -21,10 +21,6 @@ on:
   repository_dispatch:
     types: [build]
 
-env:
-  INDEX_BASE_KONFLUX_BUILD_CHECK: Red Hat Konflux / devfile-registry-base-main-on-push 
-  INDEX_BASE_KONFLUX_EC_CHECK: Red Hat Konflux / devfile-registry-main-enterprise-contract / devfile-registry-base-main
-
 jobs:
   indexServerBuild:
     runs-on: ubuntu-latest
@@ -54,7 +50,7 @@ jobs:
     needs: indexServerBuild
     uses: ./.github/workflows/includes/wait-for-check-start.yaml
     with:
-      check-name: ${{ env.INDEX_BASE_KONFLUX_BUILD_CHECK }}
+      check-name: Red Hat Konflux / devfile-registry-base-main-on-push 
       repository: ${{ github.repository }}
       ref: ${{ github.ref }}
       repo-token: ${{ secrets.GITHUB_TOKEN }}
@@ -63,18 +59,18 @@ jobs:
     needs: waitForKonfluxBuildStart
     runs-on: ubuntu-latest
     steps:
-      - name: Wait for ${{ env.INDEX_BASE_KONFLUX_BUILD_CHECK }} tasks to finish
+      - name: Wait for Red Hat Konflux / devfile-registry-base-main-on-push tasks to finish
         uses: lewagon/wait-on-check-action@74049309dfeff245fe8009a0137eacf28136cb3c # v1.5.0
         with:
           ref: ${{ github.ref }}
-          check-name: ${{ env.INDEX_BASE_KONFLUX_BUILD_CHECK }}
+          check-name: Red Hat Konflux / devfile-registry-base-main-on-push 
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
   waitForKonfluxECStart:
     needs: konfluxBuildWait
     uses: ./.github/workflows/includes/wait-for-check-start.yaml
     with:
-      check-name: ${{ env.INDEX_BASE_KONFLUX_EC_CHECK }}
+      check-name: Red Hat Konflux / devfile-registry-main-enterprise-contract / devfile-registry-base-main
       repository: ${{ github.repository }}
       ref: ${{ github.ref }}
       repo-token: ${{ secrets.GITHUB_TOKEN }}
@@ -83,11 +79,11 @@ jobs:
     needs: waitForKonfluxECStart
     runs-on: ubuntu-latest
     steps:
-      - name: Wait for ${{ env.INDEX_BASE_KONFLUX_EC_CHECK }} checks to finish
+      - name: Wait for Red Hat Konflux / devfile-registry-main-enterprise-contract / devfile-registry-base-main checks to finish
         uses: lewagon/wait-on-check-action@74049309dfeff245fe8009a0137eacf28136cb3c # v1.5.0
         with:
           ref: ${{ github.ref }}
-          check-name: ${{ env.INDEX_BASE_KONFLUX_EC_CHECK }}
+          check-name: Red Hat Konflux / devfile-registry-main-enterprise-contract / devfile-registry-base-main
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
   dispatchCommunity:
