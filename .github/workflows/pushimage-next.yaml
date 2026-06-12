@@ -48,7 +48,7 @@ jobs:
 
   waitForKonfluxBuildStart:
     needs: indexServerBuild
-    uses: ./.github/workflows/includes/wait-for-check-start.yaml
+    uses: ./.github/workflows/wait-for-check-start.yaml
     with:
       check-name: Red Hat Konflux / devfile-registry-base-main-on-push
       repository: ${{ github.repository }}
@@ -69,7 +69,7 @@ jobs:
 
   waitForKonfluxECStart:
     needs: konfluxBuildWait
-    uses: ./.github/workflows/includes/wait-for-check-start.yaml
+    uses: ./.github/workflows/wait-for-check-start.yaml
     with:
       check-name: Red Hat Konflux / devfile-registry-main-enterprise-contract / devfile-registry-base-main
       repository: ${{ github.repository }}
