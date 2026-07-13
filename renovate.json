@@ -7,12 +7,10 @@
     ],
     "timezone": "America/Toronto",
     "schedule": [
-        "* 19-23 * * *",
-        "* 0-2 * * *"
+        "* 19-23,0-2 */2,4 * 4"
     ],
     "enabledManagers": [
         "tekton",
-        "gomod",
         "dockerfile",
         "github-actions"
     ],
@@ -44,15 +42,6 @@
             "commitMessageTopic": "Konflux Task {{depName}}"
         },
         {
-            "description": "Go dependencies group",
-            "matchManagers": [
-                "gomod"
-            ],
-            "groupName": "go dependencies",
-            "groupSlug": "go-deps",
-            "commitMessageTopic": "Go {{depName}}"
-        },
-        {
             "description": "Dockerfile dependencies group",
             "matchManagers": [
                 "dockerfile"
@@ -71,13 +60,11 @@
             "commitMessageTopic": "GitHub Action {{depName}}"
         },
         {
-            "description": "Disable major version updates for Go modules and Dockerfiles",
+            "description": "Disable major version updates for Dockerfiles",
             "matchManagers": [
-                "dockerfile",
-                "gomod"
+                "dockerfile"
             ],
             "matchUpdateTypes": ["major"],
-            "matchBaseBranches": "main",
             "enabled": false
         },
         {
@@ -86,20 +73,24 @@
                 "dockerfile"
             ],
             "matchPackageNames": [
-                "go-toolset"
+                "registry.access.redhat.com/*/go-toolset",
+                "docker.io/library/golang",
+                "golang"
             ],
             "matchUpdateTypes": ["minor"],
-            "matchBaseBranches": "main",
             "enabled": false
         }
     ],
-    "constraints": {
-        "go": "1.24"
-    },
     "ignorePaths": [
         "tests/registry/**",
-        "build-tools/**"
+        "build-tools/**",
+        "**/vendor/**"
     ],
+    "vulnerabilityAlerts": {
+        "enabled": true
+    },
+    "labels": ["renovatebot"],
+    "reviewers": ["team:team-devfile-services"],
     "prHourlyLimit": 20,
     "prConcurrentLimit": 10
 }
