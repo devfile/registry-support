@@ -1,9 +1,9 @@
 module github.com/devfile/registry-support/registry-library
 
-go 1.24
+go 1.24.0
 
 require (
-	github.com/containerd/containerd v1.7.29
+	github.com/containerd/containerd v1.7.33
 	github.com/devfile/registry-support/index/generator v0.0.0-20240816133831-cf509ccd1a6b
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/hashicorp/go-version v1.4.0
@@ -70,10 +70,10 @@ require (
 	go.opentelemetry.io/otel/trace v1.24.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/exp v0.0.0-20240222234643-814bf88cf225 // indirect
-	golang.org/x/net v0.43.0 // indirect
-	golang.org/x/sync v0.16.0 // indirect
-	golang.org/x/sys v0.35.0 // indirect
-	golang.org/x/text v0.28.0 // indirect
+	golang.org/x/net v0.47.0 // indirect
+	golang.org/x/sync v0.18.0 // indirect
+	golang.org/x/sys v0.38.0 // indirect
+	golang.org/x/text v0.31.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240401170217-c3f982113cda // indirect
 	google.golang.org/grpc v1.62.1 // indirect
 	google.golang.org/protobuf v1.35.2 // indirect
