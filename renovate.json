@@ -16,13 +16,12 @@
     ],
     "packageRules": [
         {
-            "description": "Schedule Konflux tekton task updates Tuesday and Thursday nights (7 PM - 2 AM)",
+            "description": "Schedule Konflux tekton task updates Saturdays after 5 AM",
             "matchManagers": [
                 "tekton"
             ],
             "schedule": [
-                "* 19-23 * * 2,4",
-                "* 0-2 * * 3,5"
+                "* 5-23 * * 6"
             ]
         },
         {
