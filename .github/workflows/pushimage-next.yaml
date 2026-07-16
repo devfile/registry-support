@@ -84,6 +84,7 @@ jobs:
       - name: Wait for Red Hat Konflux / devfile-registry-main-enterprise-contract / devfile-registry-base-main checks to finish
         uses: lewagon/wait-on-check-action@74049309dfeff245fe8009a0137eacf28136cb3c # v1.5.0
         with:
+          allowed-conclusions: success,skipped,neutral
           ref: ${{ github.ref }}
           check-name: Red Hat Konflux / devfile-registry-main-enterprise-contract / devfile-registry-base-main
           repo-token: ${{ secrets.GITHUB_TOKEN }}
