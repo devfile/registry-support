@@ -26,7 +26,7 @@ RUN VERSION=$(git describe --match 'v[0-9]*' --dirty='.m' --always --tags) REVIS
   echo -n "${VERSION}" | tee /tmp/.version;
 RUN set -x ; CGO_ENABLED=0 GO111MODULE=auto go build -tags "include_oss,include_gcs" -trimpath -ldflags "$(cat /tmp/.ldflags) -s -w" -o /usr/bin/registry ./cmd/registry
 
-FROM registry.access.redhat.com/ubi10-minimal:10.2-1782798957@sha256:b217fa65d8c21058887b18f005f587e47a17dd1281a5196ac88d01724a273dbd
+FROM registry.access.redhat.com/ubi10-minimal:10.2-1784669047@sha256:04140c8d78c6c6915b5c1fdad2f16d10eac3630c3339999ccdf659d8c903be50
 RUN microdnf update -y && rm -rf /var/cache/yum && microdnf install -y ca-certificates httpd-tools shadow-utils
 
 # Create a non-root user to run the server as
