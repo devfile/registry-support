@@ -72,7 +72,7 @@ jobs:
           fi   
 
       - name: Upload SARIF file
-        uses: github/codeql-action/upload-sarif@b7351df727350dca84cb9d725d57dcf5bc82ba26 # v3.37.1
+        uses: github/codeql-action/upload-sarif@c4dd10e44af883a891fe31ced449bcb4a6728b9b # v3.37.6
         with:
           # Path to SARIF file relative to the root of the repository
           sarif_file: gosec.sarif
