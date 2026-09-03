@@ -29,7 +29,7 @@ RUN cd /registry-support/registry-library && ./build.sh && cp /registry-support/
 # Build the test binary
 RUN /registry-test/build.sh
 
-FROM registry.access.redhat.com/ubi8/ubi-minimal:8.10-1787646721@sha256:c2483a8f9b141b5b693b0e1482dead0cf52423de3e4158fa18b77dc97cc4454c AS license
+FROM registry.access.redhat.com/ubi8/ubi-minimal:8.10-1788329306@sha256:d9beb74f4b32ef937d3a206430b6d9200a0b0d32ecc548325a738d0e4f7f0f1b AS license
 ARG LICENSE_REPO="devfile/registry-support"
 ARG LICENSE_REF="main"
 USER root
@@ -38,7 +38,7 @@ USER root
 RUN mkdir -p /licenses
 RUN curl -sL https://raw.githubusercontent.com/${LICENSE_REPO}/refs/heads/${LICENSE_REF}/LICENSE -o /licenses/LICENSE
 
-FROM registry.access.redhat.com/ubi8/ubi-minimal:8.10-1787646721@sha256:c2483a8f9b141b5b693b0e1482dead0cf52423de3e4158fa18b77dc97cc4454c
+FROM registry.access.redhat.com/ubi8/ubi-minimal:8.10-1788329306@sha256:d9beb74f4b32ef937d3a206430b6d9200a0b0d32ecc548325a738d0e4f7f0f1b
 USER root
 WORKDIR /registry-test
 
