@@ -72,7 +72,7 @@ jobs:
           fi   
 
       - name: Upload SARIF file
-        uses: github/codeql-action/upload-sarif@b96794f015dfd88f77b49b1c93e0fa7110f94c63 # v4.38.0
+        uses: github/codeql-action/upload-sarif@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2 # v4.38.2
         with:
           # Path to SARIF file relative to the root of the repository
           sarif_file: gosec.sarif
@@ -91,7 +91,7 @@ jobs:
           go-version: ${{ env.GO_VERSION }}
       
       - name: Set up QEMU # Enables arm64 image building
-        uses: docker/setup-qemu-action@1f40c72289eff860ee54a304f1438e3cff362e0a # v4.3.0
+        uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4.4.0
 
       - name: Check license
         run: |
@@ -130,7 +130,7 @@ jobs:
         run: cd tests/integration && bash ./docker-build.sh
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@0b35c9ecc4f0529d0eb674914510c22f85b196b4 # v7.1.0
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
 
 
   test_minikube:
@@ -144,7 +144,7 @@ jobs:
         with:
           go-version: ${{ env.GO_VERSION }}
       - name: Setup Minikube
-        uses: manusa/actions-setup-minikube@b65276017fdec6f1e6498129fb740e34e260dc55 # v2.18.0
+        uses: manusa/actions-setup-minikube@001b9f30165b2a875b835ec5183ced75b94bc269 # v2.19.0
         with:
           minikube version: 'v1.31.2'
           kubernetes version: 'v1.29.2'
