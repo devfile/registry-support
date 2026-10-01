@@ -20,7 +20,7 @@ WORKDIR /tools
 COPY . .
 RUN CGO_ENABLED=0 go build -mod=vendor -o index-server main.go
 
-FROM registry.access.redhat.com/ubi8/ubi-minimal:8.10-1789521592@sha256:128021168edb5b3013258601a2dffe93fddfed91cf996c08c76a24dfdcd6de13 AS license
+FROM registry.access.redhat.com/ubi8/ubi-minimal:8.10-1790666041@sha256:a2006dac3089997a79cb2d211a80ac59949d18f16e48bb89849fb96efabb970b AS license
 ARG LICENSE_REPO="devfile/registry-support"
 ARG LICENSE_REF="main"
 USER root
@@ -30,7 +30,7 @@ RUN mkdir -p /licenses
 RUN curl -sL https://raw.githubusercontent.com/${LICENSE_REPO}/refs/heads/${LICENSE_REF}/LICENSE -o /licenses/LICENSE
 
 # Application image
-FROM registry.access.redhat.com/ubi8/ubi-minimal:8.10-1789521592@sha256:128021168edb5b3013258601a2dffe93fddfed91cf996c08c76a24dfdcd6de13 AS runner
+FROM registry.access.redhat.com/ubi8/ubi-minimal:8.10-1790666041@sha256:a2006dac3089997a79cb2d211a80ac59949d18f16e48bb89849fb96efabb970b AS runner
 USER root
 
 # Install and configure dependencies
