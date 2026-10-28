@@ -1,14 +1,6 @@
 {
     "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-    "extends": [
-        "config:recommended",
-        "helpers:pinGitHubActionDigests",
-        ":gitSignOff"
-    ],
-    "timezone": "America/Toronto",
-    "schedule": [
-        "* 19-23,0-2 */2,4 * 4"
-    ],
+    "extends": ["local>devfile/.github:renovate-config"],
     "enabledManagers": [
         "tekton",
         "dockerfile",
@@ -84,12 +76,5 @@
         "tests/registry/**",
         "build-tools/**",
         "**/vendor/**"
-    ],
-    "vulnerabilityAlerts": {
-        "enabled": true
-    },
-    "labels": ["renovatebot"],
-    "reviewers": ["team:team-devfile-services"],
-    "prHourlyLimit": 20,
-    "prConcurrentLimit": 10
+    ]
 }
