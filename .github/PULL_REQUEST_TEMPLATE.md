@@ -15,6 +15,10 @@ _Link the GitHub/GitLab/JIRA issues that are related to this PR._
 - [ ] Does the [REST API doc](../index/server/registry-REST-API.adoc) need to be updated with your changes?
 - [ ] Does the [registry library doc](../registry-library/README.md) need to be updated with your changes?
 
+- [ ] [AI Governance](https://github.com/devfile/api/blob/main/GOVERNANCE.md#ai-governance) (if applicable)
+
+_AI-assisted contributions must comply with the project's review, licensing, and attribution requirements._
+
 # Tests Performed
 _Explain what tests you personally ran to ensure the changes are functioning as expected._
 
